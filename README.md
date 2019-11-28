@@ -1,3 +1,28 @@
+# HOW WE'RE USING BRANCHES
+- Master:
+    - Stable
+    - Committed irregularly
+    - For 'major' updates
+
+
+- Staging / Sprint branch:
+    - Stable
+    - Used as a group 'working' branch
+    - Committed to when a feature is:
+        - finished
+        - fully commented and tidied
+        - compliant with group code style guidelines
+        - fully documented
+    - Commits need approval from one other group member
+    - Merged to master
+
+
+- Individual branches:
+    - Unstable
+    - For working on features
+    - Merged to staging
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
