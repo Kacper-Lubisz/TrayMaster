@@ -4,6 +4,7 @@ import {TopBar} from "./TopBar";
 import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanelComponent, BottomPanelPage} from "./BottomPanelComponent";
+import {Warehouse} from "./core/Warehouse";
 
 class App extends React.Component<any, any> {
 
@@ -11,6 +12,8 @@ class App extends React.Component<any, any> {
 
   constructor(props: any) {
     super(props);
+
+    Warehouse.loadWarehouse();
 
     this.pages = [{
       name: "Categories", sections: [

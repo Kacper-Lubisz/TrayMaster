@@ -1,72 +1,99 @@
 import "./database"
-import {databaseRef} from "./database";
 
 export class Warehouse {
-  uid: string;
-  name: string;
-  zones: Zone[];
+    uid: string;
+    name: string;
+    zones: Zone[];
 
-  private constructor() {
+    private constructor(zones: Zone[]) {
+        this.uid = "";
+        this.name = "";
+        this.zones = zones;
+    }
 
-  }
-
-  static async loadWarehouse() {
-
-    databaseRef.child()
-
-    new Warehouse()
-
-  }
-
+    static async loadWarehouse() {
+        new Warehouse([]);
+    }
 }
 
 /**
  * @property color The color of the zone as a hex string eg. '#ff0000'
  */
-export interface Zone {
-  name: string;
-  color: string;
+export class Zone {
+    name: string;
+    color: string;
 
-  parentWarehouse: Warehouse;
-  bays: Bay[];
+    parentWarehouse: Warehouse;
+    bays: Bay[];
+
+    private constructor(parentWarehouse: Warehouse) {
+        this.name = "";
+        this.color = "";
+
+        this.parentWarehouse = parentWarehouse;
+        this.bays = [];
+    }
 }
 
 /**
  * @property index The index of this bay within the parent zone (from 0, left to right)
  */
-export interface Bay {
-  name: string;
+export class Bay {
+    name: string;
+    index: number;
 
-  index: number;
-  parentZone: Zone;
-  shelves: Shelf[];
+    parentZone: Zone;
+    shelves: Shelf[];
 
+    private constructor(parentZone: Zone) {
+        this.name = "";
+        this.index = -1;
+
+        this.parentZone = parentZone;
+        this.shelves = [];
+    }
 }
 
-export interface Shelf {
-  name: string;
+export class Shelf {
+    name: string;
+    index: number;
 
-  index: number;
-  parentBay: Bay;
-  trays: Tray[];
+    parentBay: Bay;
+    trays: Tray[];
 
+    private constructor(parentBay: Bay) {
+        this.name = "";
+        this.index = -1;
+
+        this.parentBay = parentBay;
+        this.trays = [];
+    }
 }
 
-export interface Column {
+export class Column {
+    index: number;
 
-  index: number;
-  parentShelf: Shelf;
+    parentShelf: Shelf;
+    trays: Tray[];
 
-  trays: Tray[];
+    private constructor(parentShelf: Shelf) {
+        this.index = -1;
+
+        this.parentShelf = parentShelf;
+        this.trays = [];
+    }
 }
 
-class Category {
+export interface Category {
+    name: string;
 }
 
+export class Tray {
+    customField: string | undefined;
+    category?: Category;
 
-export interface Tray {
-
-  customField: string | undefined;
-  category?: Category;
-
+    private constructor(category: Category) {
+        this.category = category;
+        this.customField = "";
+    }
 }
