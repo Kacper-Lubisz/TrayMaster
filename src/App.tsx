@@ -4,6 +4,7 @@ import {TopBar} from "./TopBar";
 import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanelComponent, BottomPanelPage} from "./BottomPanelComponent";
+import {Warehouse} from "./core/Warehouse";
 
 class App extends React.Component<any, any> {
 
@@ -43,6 +44,10 @@ class App extends React.Component<any, any> {
         ]
       }
     ];
+
+    Warehouse.loadWarehouse().then(warehouse => {
+      console.log(warehouse)
+    })
 
   }
 

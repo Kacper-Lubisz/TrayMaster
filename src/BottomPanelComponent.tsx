@@ -41,7 +41,7 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
 
                 page.sections.map((section: BottomPanelSection, iSection: number) => (
                   // TODO it might be a good idea to make a page component
-                  <div className="bottomSection">
+                  <div className="bottomSection" key={iSection}>
                     <div className="titleContainer">
                       <h3>{section.title}</h3>
                     </div>

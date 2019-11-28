@@ -11,4 +11,7 @@ const firebaseConfig = { // firebase config
 };
 
 firebase.initializeApp(firebaseConfig);
-export const databaseRef = firebase.database().ref();
+export const db = firebase.firestore();
+db.enablePersistence().then((err) => {
+  console.log(err)
+});
