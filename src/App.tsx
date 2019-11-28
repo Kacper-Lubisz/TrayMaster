@@ -13,6 +13,8 @@ class App extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
 
+    Warehouse.loadWarehouse();
+
     this.pages = [{
       name: "Categories", sections: [
         {
