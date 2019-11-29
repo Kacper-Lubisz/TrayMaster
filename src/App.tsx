@@ -13,8 +13,6 @@ class App extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
 
-    Warehouse.loadWarehouse();
-
     this.pages = [{
       name: "Categories", sections: [
         {
@@ -48,8 +46,9 @@ class App extends React.Component<any, any> {
     ];
 
     Warehouse.loadWarehouse().then(warehouse => {
-      console.log(warehouse)
-    })
+      console.log(warehouse);
+    });
+    //Warehouse.createTestWarehouse();
 
   }
 
