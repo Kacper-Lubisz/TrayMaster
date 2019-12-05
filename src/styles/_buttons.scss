@@ -1,0 +1,31 @@
+// main keyboard button
+.key-btn {
+  // base styling
+  background-color: #eeeeee;
+  color: #000000;
+  border-radius: 5px;
+  font-size: 20px;
+
+  // Undecided - TODO: decide whether button text should be uppercase
+  //text-transform: uppercase;
+
+  border: 1px solid #aaaaaa;
+  margin: 3px 5px;
+
+  // set height to fit inside parent keyboard row
+  // (100% of row height) - (2 x 3px margin) - (2 x 1px border)
+  height: calc(100% - 6px - 2px);
+  // Upper bound for width: shrunk to fit inside parent keyboard row
+  width: 200px;
+
+  // HOVER AND ACTIVE VISUAL EFFECTS
+  transition: box-shadow ease 0.5s;
+
+  &:hover {
+    box-shadow: 0 0 20px -10px #000000;
+  }
+
+  &:active {
+    background-color: #dddddd;
+  }
+}
