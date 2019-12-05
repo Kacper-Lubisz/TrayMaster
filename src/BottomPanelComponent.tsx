@@ -36,12 +36,12 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
         <div
           id="pageContainer"> {/* TODO this ought to be a horizontal list, the buttons should only animate a scroll across this*/}
           {
-            this.props.pages.map((page, _) => (
-              <div className="page">{
+            this.props.pages.map((page, id) => (
+              <div className="page" key={id}>{
 
                 page.sections.map((section: BottomPanelSection, iSection: number) => (
                   // TODO it might be a good idea to make a page component
-                  <div className="bottomSection">
+                  <div className="bottomSection" key={iSection}>
                     <div className="titleContainer">
                       <h3>{section.title}</h3>
                     </div>

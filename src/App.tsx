@@ -49,14 +49,7 @@ class App extends React.Component<any, any> {
   render() {
     return (
       <div id="app">
-        <div id="top">
-          <div id="left">
-            <TopBar/>
             <ViewPort/>
-          </div>
-          <SideBar/>
-        </div>
-        <BottomPanelComponent pages={this.pages}/>
       </div>
     );
   }
