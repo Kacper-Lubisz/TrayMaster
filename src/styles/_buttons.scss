@@ -16,7 +16,7 @@
   // (100% of row height) - (2 x 3px margin) - (2 x 1px border)
   height: calc(100% - 6px - 2px);
   // Upper bound for width: shrunk to fit inside parent keyboard row
-  width: 200px;
+  width: 100vw;
 
   // HOVER AND ACTIVE VISUAL EFFECTS
   transition: box-shadow ease 0.5s;

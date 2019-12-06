@@ -8,8 +8,9 @@ interface KeyboardButtonProps {
 }
 
 interface KeyboardProps {
-  buttons: any[][], // TODO: check type
-  width: number
+  buttons: any[][], // TODO: check types here
+  gridX: number,
+  height: any
 }
 
 function KeyboardButton(props: KeyboardButtonProps) {
@@ -26,13 +27,13 @@ class Keyboard extends React.Component<KeyboardProps> {
   }
 
   generateBoard() {
-    const rowCount: number = Math.ceil(this.props.buttons.length / this.props.width);
+    const rowCount: number = Math.ceil(this.props.buttons.length / this.props.gridX);
 
     let rows: any[] = [];
     for (let i = 0; i < rowCount; i++) {
       let btns: any[] = [];
-      for (let j = 0; j < this.props.width; j++) {
-        let buttonInfo: any[] = this.props.buttons[i * this.props.width + j];
+      for (let j = 0; j < this.props.gridX; j++) {
+        let buttonInfo: any[] = this.props.buttons[i * this.props.gridX + j];
         btns.push(<KeyboardButton name={buttonInfo[0]} onClick={() => this.handleClick(buttonInfo[1])}/>);
       }
       rows.push(<div className="kb-row">{btns}</div>);
@@ -43,7 +44,7 @@ class Keyboard extends React.Component<KeyboardProps> {
   render() {
 
     return (
-      <div className="keyboard">
+      <div className="keyboard" style={{height: this.props.height}}>
         {this.generateBoard()}
       </div>
     );
