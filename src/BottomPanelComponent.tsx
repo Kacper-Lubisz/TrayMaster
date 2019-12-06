@@ -38,7 +38,9 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
       });
     }
     return (
-      <Keyboard buttons={buttons} gridX={8} height="100%"/>
+      <div id="bottom">
+        <Keyboard buttons={buttons} gridX={8}/>
+      </div>
     );
   }
 }
