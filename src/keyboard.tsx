@@ -5,22 +5,25 @@ import "./styles/shelfview.scss";
  * The properties that get passed into KeyboardButton components
  * @see KeyboardButton
  */
-interface KeyboardButtonProps {
+export interface KeyboardButtonProps {
   name: string,
-  onClick: any // TODO: check that onClick should be any and not void or something
+  onClick?: (e: React.MouseEvent) => void
 }
 
 /**
  * KeyboardButton component: returns a button to go into a keyboard
- * @param {KeyboardButtonProps} props - the name and function of the button
- * @constructor TODO: what do I put here?
+ * @see KeyboardButtonProps
  */
-function KeyboardButton(props: KeyboardButtonProps) {
-  // TODO: stop WebStorm getting angry about me using capitalised names for this React function component -
-  //  I think I'm in the right here
-  return (
-    <button className="key-btn" onClick={props.onClick}>{props.name}</button>
-  );
+class KeyboardButton extends React.Component<KeyboardButtonProps> {
+  render() {
+    return (
+      <button className="key-btn" onClick={(e) => {
+        if (this.props.onClick) {
+          this.props.onClick(e);
+        }
+      }}>{this.props.name}</button>
+    );
+  }
 }
 
 /**
@@ -28,13 +31,14 @@ function KeyboardButton(props: KeyboardButtonProps) {
  * @see Keyboard
  */
 interface KeyboardProps {
-  buttons: any[][], // TODO: check types here
+  buttons: KeyboardButtonProps[],
   gridX: number,
-  height: any
+  height: string
 }
 
 /**
  * Keyboard component: returns a full-width keyboard with the given buttons, grid width and height
+ * @see KeyboardProps
  */
 export class Keyboard extends React.Component<KeyboardProps> {
   /**
@@ -51,22 +55,27 @@ export class Keyboard extends React.Component<KeyboardProps> {
   generateBoard() {
     const rowCount: number = Math.ceil(this.props.buttons.length / this.props.gridX);
 
-    let rows: any[] = [];
-    for (let i = 0; i < rowCount; i++) {
-      let btns: any[] = [];
-      for (let j = 0; j < this.props.gridX; j++) {
-        let buttonInfo: any[] = this.props.buttons[i * this.props.gridX + j];
-        btns.push(<KeyboardButton name={buttonInfo[0]} onClick={() => this.handleClick(buttonInfo[1])}/>);
-      }
-      rows.push(<div className="kb-row">{btns}</div>);
-    }
-    return rows;
+    return Array(rowCount).fill(0).map((_, r) =>
+      <div className="kb-row" style={{
+        height: `${100 / rowCount}%`
+      }}>
+        {
+          Array(this.props.gridX).fill(0).map((_, c) => {
+              let buttonInfo: KeyboardButtonProps = this.props.buttons[r * this.props.gridX + c];
+              return <KeyboardButton name={buttonInfo.name} onClick={buttonInfo.onClick}/>;
+            }
+          )
+        }
+      </div>
+    );
   }
 
   render() {
 
     return (
-      <div className="keyboard" style={{height: this.props.height}}>
+      <div className="keyboard" style={{
+        height: this.props.height
+      }}>
         {this.generateBoard()}
       </div>
     );

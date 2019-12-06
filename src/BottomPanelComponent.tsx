@@ -1,4 +1,5 @@
 import React from "react";
+import {KeyboardButtonProps, Keyboard} from "./keyboard";
 
 /**
  * This interface represents pages of the bottom panel.
@@ -28,44 +29,16 @@ export interface BottomPanelSection {
 export class BottomPanelComponent extends React.Component<BottomPanelProps, any> {
 
   render() {
+    let buttons: KeyboardButtonProps[] = [];
+    for (let i = 0; i < 40; i++) {
+      buttons.push({
+        name: "Beans", onClick: () => {
+          alert(i);
+        }
+      });
+    }
     return (
-      <div id="bottom">
-        <button>🡄</button>
-        {/*TODO this appears on the right side, it ought to be restyled to be on the left.  We ought to make a separate component for pages */}
-
-        <div
-          id="pageContainer"> {/* TODO this ought to be a horizontal list, the buttons should only animate a scroll across this*/}
-          {
-            this.props.pages.map((page, _) => (
-              <div className="page">{
-
-                page.sections.map((section: BottomPanelSection, iSection: number) => (
-                  // TODO it might be a good idea to make a page component
-                  <div className="bottomSection">
-                    <div className="titleContainer">
-                      <h3>{section.title}</h3>
-                    </div>
-                    <div className="btnContainer">{
-
-                      section.buttons.map((label, iButton) => {
-
-                        const key = iSection.toString() + iButton.toString(); // add parent
-                        let onClick = section.onClick.bind(null, label, iButton);
-
-                        return <button key={key} onClick={onClick}>{label}</button>
-                      })
-
-                    }</div>
-                  </div>
-                ))
-              }</div>
-            ))
-          }
-        </div>
-
-        <button>🡆</button>
-        {/*🡄 🡆 🡅 🡇*/}
-      </div>
+      <Keyboard buttons={buttons} gridX={8} height="100%"/>
     );
   }
 }

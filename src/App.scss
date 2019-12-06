@@ -38,7 +38,6 @@ $top-height: 70%;
   #bottom {
     height: 30%;
     background-color: #dddddd;
-    // TODO To be quite honest, I have no clue what's going on with these nested flexboxs.  It needs some sorting out
     display: flex;
     flex-direction: row;
     align-content: flex-start;

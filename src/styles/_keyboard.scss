@@ -14,7 +14,7 @@
 
   // keyboard rows
   .kb-row {
-    height: calc(100% / 5); // TODO: ALLOW FOR ARBITRARY NUMBERS OF ROWS IN A KEYBOARD
+    // Height is set in React
     display: flex;
     flex-wrap: nowrap;
   }
