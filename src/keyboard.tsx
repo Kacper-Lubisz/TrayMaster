@@ -1,6 +1,8 @@
 import React from "react";
 import "./styles/shelfview.scss";
 
+// TODO: decide whether keyboards should just fill their parents or take in a height attribute
+
 /**
  * The properties that get passed into KeyboardButton components
  * @see KeyboardButton
@@ -18,6 +20,7 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
   render() {
     return (
       <button className="key-btn" onClick={(e) => {
+        // if we've been given an onClick function, run it
         if (this.props.onClick) {
           this.props.onClick(e);
         }
@@ -55,19 +58,17 @@ export class Keyboard extends React.Component<KeyboardProps> {
   generateBoard() {
     const rowCount: number = Math.ceil(this.props.buttons.length / this.props.gridX);
 
-    return Array(rowCount).fill(0).map((_, r) =>
-      <div className="kb-row" style={{
-        height: `${100 / rowCount}%`
-      }}>
+    return Array(rowCount).fill(0).map((_, r) => {
+      const pastButtons: number = r * this.props.gridX;
+      return (<div className="kb-row" style={{height: `${100 / rowCount}%`}}>
         {
-          Array(this.props.gridX).fill(0).map((_, c) => {
-              let buttonInfo: KeyboardButtonProps = this.props.buttons[r * this.props.gridX + c];
-              return <KeyboardButton name={buttonInfo.name} onClick={buttonInfo.onClick}/>;
-            }
-          )
+          Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
+            const buttonInfo: KeyboardButtonProps = this.props.buttons[pastButtons + c];
+            return <KeyboardButton name={buttonInfo.name} onClick={buttonInfo.onClick}/>;
+          })
         }
-      </div>
-    );
+      </div>);
+    });
   }
 
   render() {
