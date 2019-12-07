@@ -1,5 +1,4 @@
 import React from 'react';
-//import './App.scss';
 import {TopBar} from "./TopBar";
 import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
