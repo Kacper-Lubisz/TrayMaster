@@ -1,9 +1,9 @@
 import React from 'react';
-import './App.scss';
 import {TopBar} from "./TopBar";
 import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanelComponent, BottomPanelPage} from "./BottomPanelComponent";
+import "./styles/shelfview.scss";
 
 class App extends React.Component<any, any> {
 
@@ -49,13 +49,9 @@ class App extends React.Component<any, any> {
   render() {
     return (
       <div id="app">
-        <div id="top">
-          <div id="left">
-            <TopBar/>
-            <ViewPort/>
-          </div>
-          <SideBar/>
-        </div>
+        <TopBar/>
+        <ViewPort/>
+        <SideBar/>
         <BottomPanelComponent pages={this.pages}/>
       </div>
     );

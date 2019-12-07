@@ -1,2 +1,27 @@
-// Import generic keyboard styling
+// MAIN SHELF VIEW STYLING
+
 @import "./keyboard";
+// Import generic keyboard styling
+@import "./shelfviewgrid"; // Import shelf view grid layout
+
+#topBar {
+  background-color: #cccccc;
+  font-size: 20px;
+
+  // Keep contents centred
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#viewPort {
+  background-color: #dddddd;
+}
+
+#sideBar {
+  // placeholders
+}
+
+#bottom {
+  // placeholders
+}
