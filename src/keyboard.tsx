@@ -80,7 +80,7 @@ export class Keyboard extends React.Component<KeyboardProps> {
       // Work out how many buttons we've generated so far
       const pastButtons: number = r * this.props.gridX;
 
-      return (<div className="kb-row" style={{height: `${100 / rowCount}%`}}>
+      return (<div className="kb-row">
         {
           // Generate the buttons in this row
           Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
