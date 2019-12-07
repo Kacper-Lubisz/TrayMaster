@@ -1,0 +1,21 @@
+// Import generic button styling
+@import "./buttons";
+
+// keyboard instance
+.keyboard {
+  // fill parent
+  width: 100%;
+  height: 100%;
+
+  // flexbox
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+
+  // keyboard rows
+  .kb-row {
+    height: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+}
