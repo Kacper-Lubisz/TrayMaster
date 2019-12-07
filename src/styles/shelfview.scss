@@ -1,2 +1,22 @@
 // Import generic keyboard styling
 @import "./keyboard";
+@import "./shelfviewgrid";
+
+#topBar {
+  background-color: #cccccc;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+}
+
+#viewPort {
+  background-color: #dddddd;
+}
+
+#sideBar {
+}
+
+#bottom {
+}

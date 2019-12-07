@@ -1,5 +1,4 @@
 import React from "react";
-import "./styles/shelfview.scss";
 
 /**
  * The properties that get passed into KeyboardButton components
