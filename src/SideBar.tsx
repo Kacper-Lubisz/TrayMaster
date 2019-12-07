@@ -13,25 +13,25 @@ export class SideBar extends React.Component {
       {
         name: "Back",
         onClick: () => {
-          alert("Settings");
+          alert("Back");
         }
       },
       {
         name: "Edit Shelf",
         onClick: () => {
-          alert("Settings");
+          alert("Edit Shelf");
         }
       },
       {
         name: "Navigator",
         onClick: () => {
-          alert("Settings");
+          alert("Navigator");
         }
       },
       {
         name: "Next",
         onClick: () => {
-          alert("Settings");
+          alert("Next");
         }
       }
     ];
