@@ -1,18 +1,49 @@
-#inner {
+#shelf {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: stretch;
   margin: 0 1%;
+  height: 80%;
 
   .column {
     border: 1px solid white;
     text-align: center;
     background-color: blue;
     flex: auto;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: flex-end;
+
+    .tray {
+      background-color: orange;
+      border: 1px solid green;
+      width: 100%;
+      height: 15%;
+
+    }
+
+
   }
+
 }
+
+#trayExpiry {
+  background-color: #aaa; // this is the default colour when there is no expiry specified
+}
+
+.selected {
+  background-color: orangered;
+  box-shadow: 0 0 4px 2px #191919;
+  //box-shadow: 0 0 50px 30px red;
+  z-index: 1;
+
+}
+
 
 h1 {
   margin: 0;
