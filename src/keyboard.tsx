@@ -50,6 +50,11 @@ interface KeyboardProps {
   gridX: number,
 
   /**
+   * Id to give parent HTML element
+   */
+  id?: string,
+
+  /**
    * [Optional] CSS height to give the keyboard, as a string
    */
   height?: string
@@ -60,13 +65,6 @@ interface KeyboardProps {
  * @see KeyboardProps
  */
 export class Keyboard extends React.Component<KeyboardProps> {
-  /**
-   * Handle a button press. Obviously this is not the final version of this function; it's just a placeholder for now
-   * @param {number} i - The button's index
-   */
-  handleClick(i: number) {
-    alert(i);
-  }
 
   /**
    * Generate and return an object representing a full keyboard based on the given props
@@ -95,7 +93,7 @@ export class Keyboard extends React.Component<KeyboardProps> {
   render() {
 
     return (
-      <div className="keyboard" style={{
+      <div className="keyboard" id={this.props.id} style={{
         height: this.props.height
       }}>
         {this.generateBoard()}

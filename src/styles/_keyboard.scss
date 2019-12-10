@@ -19,8 +19,7 @@
   height: calc(100% - 6px - 2px);
 
   // always fill the full width of the parent flexbox
-  flex-grow: 1;
-  flex-shrink: 1;
+  flex: 1;
 
   // HOVER AND ACTIVE VISUAL EFFECTS
   transition: box-shadow ease 0.5s;

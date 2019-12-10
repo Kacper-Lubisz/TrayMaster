@@ -23,5 +23,39 @@
 }
 
 #bottom {
-  // placeholders
+  .keyboard-container {
+    display: flex;
+    justify-content: center;
+
+    height: 100%;
+
+    > div {
+      margin: 0 10px;
+    }
+
+    #exp-1 {
+      width: 20%;
+    }
+
+    #exp-2 {
+      width: 9%;
+    }
+
+    #exp-3 {
+      width: 20%;
+    }
+
+    #weight-numpad {
+      width: 30%;
+    }
+
+    #numpadR {
+      width: 10%;
+    }
+  }
+}
+
+.vl {
+  width: 0;
+  border-left: 1px solid black;
 }
