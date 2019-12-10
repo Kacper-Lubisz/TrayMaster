@@ -40,10 +40,17 @@ export class SideBar extends React.Component {
     return (
       <div id="sideBar">
         <Keyboard buttons={buttons} gridX={1}/>
+
         <div id="kb-switcher">
-          <FontAwesomeIcon icon={faHome}/>
-          <FontAwesomeIcon icon={faClock}/>
-          <FontAwesomeIcon icon={faWeightHanging}/>
+          <button>
+            <FontAwesomeIcon icon={faHome}/>
+          </button>
+          <button>
+            <FontAwesomeIcon icon={faClock}/>
+          </button>
+          <button>
+            <FontAwesomeIcon icon={faWeightHanging}/>
+          </button>
         </div>
       </div>
     );

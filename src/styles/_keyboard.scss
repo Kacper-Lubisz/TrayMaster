@@ -19,6 +19,7 @@
   // (100% of row height) - (2 x 3px margin) - (2 x 1px border)
   height: calc(100% - 6px - 2px);
 
+  // Control growth
   flex: 1;
 
   // HOVER AND ACTIVE VISUAL EFFECTS

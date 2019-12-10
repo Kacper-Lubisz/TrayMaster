@@ -19,10 +19,12 @@
 }
 
 #sideBar {
+  // arrange children
   padding: 5px;
   display: flex;
   flex-direction: column;
 
+  // container for keyboard switch buttons
   #kb-switcher {
     padding: 10px;
     display: flex;
@@ -30,9 +32,16 @@
     align-items: stretch;
     height: 50px;
 
-    > svg {
+    > button {
       height: 100%;
       flex-grow: 1;
+      border: none;
+      background: none;
+
+      > svg {
+        height: 100%;
+        width: 100%;
+      }
     }
   }
 }

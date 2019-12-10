@@ -29,6 +29,7 @@ export interface BottomPanelSection {
 export class BottomPanelComponent extends React.Component<BottomPanelProps, any> {
 
   render() {
+    // GENERATE KEYBOARD BUTTON STRUCTURES
     let categories: KeyboardButtonProps[] = [];
     for (let i = 0; i < 40; i++) {
       categories.push({
@@ -37,7 +38,6 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
         }
       });
     }
-
     let years: KeyboardButtonProps[] = [];
     for (let i = 2019; i < 2027; i++) {
       years.push({
@@ -46,7 +46,6 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
         }
       });
     }
-
     let quarters: KeyboardButtonProps[] = [];
     const quartersTranslator: string[] = [
       "Jan-Mar",
@@ -61,7 +60,6 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
         }
       });
     }
-
     let months: KeyboardButtonProps[] = [];
     const monthsTranslator: string[] = [
       "Jan",
@@ -84,7 +82,6 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
         }
       });
     }
-
     let numpad: KeyboardButtonProps[] = [];
     for (let i = 9; i >= 0; i--) {
       numpad.push({
@@ -98,7 +95,6 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
         alert("Max is our favourite scrum master");
       }
     });
-
     const numpadR: KeyboardButtonProps[] = [
       {
         name: "Back",
@@ -120,6 +116,7 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
       }
     ];
 
+    // return DOM elements using button structures
     return (
       <div id="bottom">
         <Keyboard id="cat-keyboard" buttons={categories} gridX={8}/>
