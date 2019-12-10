@@ -9,7 +9,7 @@ interface ViewPortProps {
 interface LongPress {
     isHappening: boolean;
     timeout: number;
-    dragFrom: number;
+    dragFrom: Tray;
     selectedBefore: Map<Tray, boolean>;
 }
 
@@ -18,7 +18,8 @@ interface LongPress {
  */
 interface ViewPortState {
     columns: Column[];
-    selected: Map<Tray, Boolean>;
+    selected: Map<Tray, boolean>;
+    isMultipleSelect: boolean;
     mouseDown?: boolean;
     longPress?: LongPress;
 }
@@ -47,7 +48,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }, expiry, weight);
 
         this.state = {
-            selected: new Map([trayA, trayB].map((tray) => [tray, true])),
+            isMultipleSelect: false,
+            selected: new Map([trayA].map((tray) => [tray, true])),
             columns: [
                 new Column([
                     new Tray(category, expiry, weight),
@@ -71,21 +73,72 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     // fixme This doesn't work, the style needs fixing for big trays 😉
                 ]),
             ]
-
         };
     }
 
-    selectTray(tray: Tray, toggle: boolean, e: React.MouseEvent<HTMLDivElement>) {
-        let selected = this.state.selected;
-        if (!toggle && selected.get(tray)) {
-            selected.set(tray, false);
-        } else {
-            selected.set(tray, true);
+    /**
+     * This method allows for selecting a tray.  The behaviour changes depending on if the viewport is in multiple
+     * select mode.  If in multiple select mode, the last tray can't be deselected.  The target selection state can be
+     * specified, if null will toggle.
+     *
+     * @param tray The tray to be selected
+     * @param to if the tray should be selected or deselected, if null it will toggle
+     * @param selectionMap The map of currently selected trays, defaults to the states selection of null
+     * @param isMultipleSelect If multiple selections are to be allowed
+     */
+    selectTray(
+        tray: Tray,
+        to: boolean,
+        selectionMap: Map<Tray, boolean> = this.state.selected,
+        isMultipleSelect: boolean = this.state.isMultipleSelect
+    ): Map<Tray, boolean> {
+        const selected = selectionMap;
+        const multipleSelect = isMultipleSelect;
+
+        const newSelected = (to === undefined && !selected.get(tray)) || to;
+        // if the tray will become selected
+
+        if (!multipleSelect && newSelected) { // deselect the currently selected
+            selected.forEach((_, tray) =>
+                selected.set(tray, false)
+            );
+            selected.set(tray, newSelected);
+        } else if (multipleSelect) {
+            selected.set(tray, newSelected);
+        } // else !multipleSelect && !newSelected, can't deselect
+
+        if (selectionMap === this.state.selected) {
+            this.forceUpdate();
         }
-        this.forceUpdate();
+
+        return selectionMap;
     }
 
-    updateDragSelection(form: Tray, to: Tray, originalSelection: Map<Tray, boolean>) {
+    updateDragSelection(from: Tray, to: Tray, originalSelection: Map<Tray, boolean>) {
+
+        this.state.selected.forEach((_, key) =>
+            // this.state.selected.set(key, originalSelection.get(key) ?? false)
+            this.state.selected.set(key, false)
+        );
+
+        const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
+
+        let selection = originalSelection;
+        let selecting = false;
+
+        this.state.columns.flatMap(col => {
+            return col.trays;
+        }).forEach((tray, index) => {
+            const selectThis = selecting || tray === from || tray === to;
+            if (selectThis) {
+                selection = this.selectTray(tray, true, selection, true);
+            }
+            selecting = xor(selecting, xor(tray === from, tray === to));
+        });
+
+        this.setState(Object.assign(this.state, {
+            selected: selection
+        }));
 
     }
 
@@ -106,9 +159,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         isHappening: true,
                         timeout: 0,
                         dragFrom: tray,
-                        selectedBefore: clonedSelected
-                    }
-                }));
+                        selectedBefore: clonedSelected,
+                    },
+                    isMultipleSelect: true
+                }), () => {
+                    // this.selectTray(tray, true, this.state.isMultipleSelect);
+                });
             }
         }, LONG_PRESS_TIMEOUT);
 
@@ -136,9 +192,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }
     }
 
-    onMouseLeave(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
-        console.log("mouse leave");
-
+    onMouseLeave() {
         if (!(this.state.longPress?.isHappening)) {
             this.setState(Object.assign(this.state, {
                 longPress: null
@@ -150,6 +204,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         console.log("mouse Enter");
 
         if (this.state.longPress?.isHappening) {
+
+            this.updateDragSelection(this.state.longPress.dragFrom, tray, this.state.longPress.selectedBefore);
+
         }
 
     }
@@ -170,10 +227,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             {column.trays.map((tray, trayIndex) =>
 
                                 <div
-                                    className={`tray${(this.state.selected.get(tray) ? " selected" : "")}`}
-                                    onClick={this.selectTray.bind(this, tray, true)}
+                                    className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
+                                        this.state.selected.get(tray) ? " selected" : ""}`}
+
+                                    onClick={this.selectTray.bind(this, tray, true, undefined, undefined)}
                                     onMouseDown={this.onMouseDown.bind(this, tray)}
-                                    onMouseLeave={this.onMouseLeave.bind(this, tray)}
+                                    onMouseLeave={this.onMouseLeave.bind(this)}
                                     onMouseEnter={this.onMouseEnter.bind(this, tray)}
                                     onMouseUp={this.onMouseUp.bind(this, tray)}
                                     key={trayIndex}

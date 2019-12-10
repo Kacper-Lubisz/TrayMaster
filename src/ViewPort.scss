@@ -38,10 +38,14 @@
 
 .selected {
   background-color: orangered;
-  box-shadow: 0 0 4px 2px #191919;
+  box-shadow: inset 0 0 4px 10px #3443ed;
   //box-shadow: 0 0 50px 30px red;
   z-index: 1;
 
+}
+
+.multipleSelect {
+  border-radius: 30px;
 }
 
 
