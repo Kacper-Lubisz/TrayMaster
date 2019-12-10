@@ -19,10 +19,27 @@
 }
 
 #sideBar {
-  // placeholders
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+
+  #kb-switcher {
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    height: 50px;
+
+    > svg {
+      height: 100%;
+      flex-grow: 1;
+    }
+  }
 }
 
 #bottom {
+  padding: 5px;
+
   .keyboard-container {
     display: flex;
     justify-content: center;

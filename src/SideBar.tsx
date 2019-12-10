@@ -1,5 +1,7 @@
 import React from "react";
 import {KeyboardButtonProps, Keyboard} from "./keyboard";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faHome, faClock, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
 export class SideBar extends React.Component {
   render() {
@@ -38,6 +40,11 @@ export class SideBar extends React.Component {
     return (
       <div id="sideBar">
         <Keyboard buttons={buttons} gridX={1}/>
+        <div id="kb-switcher">
+          <FontAwesomeIcon icon={faHome}/>
+          <FontAwesomeIcon icon={faClock}/>
+          <FontAwesomeIcon icon={faWeightHanging}/>
+        </div>
       </div>
     );
   }

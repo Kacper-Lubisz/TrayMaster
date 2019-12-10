@@ -52,12 +52,7 @@ interface KeyboardProps {
   /**
    * Id to give parent HTML element
    */
-  id?: string,
-
-  /**
-   * [Optional] CSS height to give the keyboard, as a string
-   */
-  height?: string
+  id?: string
 }
 
 /**
@@ -93,9 +88,7 @@ export class Keyboard extends React.Component<KeyboardProps> {
   render() {
 
     return (
-      <div className="keyboard" id={this.props.id} style={{
-        height: this.props.height
-      }}>
+      <div className="keyboard" id={this.props.id}>
         {this.generateBoard()}
       </div>
     );

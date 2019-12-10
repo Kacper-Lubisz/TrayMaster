@@ -123,7 +123,7 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
     return (
       <div id="bottom">
         <Keyboard id="cat-keyboard" buttons={categories} gridX={8}/>
-        <div id="exp-keyboard">
+        <div className="keyboard-container">
           <Keyboard id="exp-1" buttons={years} gridX={2}/>
           <div className="vl"/>
           <Keyboard id="exp-2" buttons={quarters} gridX={1}/>
