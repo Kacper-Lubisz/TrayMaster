@@ -203,7 +203,7 @@ export class Tray {
     public static async loadTrays(column: Column) {
         const trays: Tray[] = [];
         for (let i = 0; i < 3; i++) {
-            let categories: Category[] = column.parentShelf.parentBay.parentZone.parentWarehouse.categories;
+            let categories: Category[] = column?.parentShelf?.parentBay?.parentZone?.parentWarehouse?.categories ?? [{name: ""}];
             trays.push(new Tray(generateRandomId(), column,
                 // This is not nice to look at...
                 categories[Math.floor(categories.length * Math.random())],
