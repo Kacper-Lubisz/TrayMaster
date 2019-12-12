@@ -42,7 +42,7 @@ export class Warehouse {
 
         const warehouseData = warehouseQuery.data();
         if (warehouseData === undefined) {
-            throw Error("Failed to load warehouse")
+            throw Error("Failed to load warehouse");
         }
 
         const categories: Category[] = [];
@@ -191,11 +191,11 @@ export class Column {
     parentShelf: Shelf;
     trays: Tray[];
 
-    private constructor(parentShelf: Shelf) {
+    private constructor(parentShelf: Shelf, trays: Tray[]) {
         this.index = -1;
 
         this.parentShelf = parentShelf;
-        this.trays = [];
+        this.trays = trays;
     }
 }
 
@@ -203,13 +203,24 @@ export interface Category {
     name: string;
 }
 
-export class Tray {
-    customField: string | undefined;
-    category?: Category;
+export interface ExpiryRange {
+    from: number;
+    to: number;
+    label: string;
+    color: string;
+}
 
-    private constructor(category: Category) {
+export class Tray {
+    customField?: string;
+    category?: Category;
+    expiry?: ExpiryRange;
+    weight?: number;
+
+    private constructor(category: Category, expiryRange: ExpiryRange, weight: number, customField?:string) {
         this.category = category;
-        this.customField = "";
+        this.weight = weight;
+        this.expiry = expiryRange;
+        this.customField = customField;
     }
 }
 
