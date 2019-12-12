@@ -19,7 +19,7 @@ class App extends React.Component<any, any> {
                     {
                         title: "All",
                         buttons: [
-                            "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans",
+                            "Peas", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans",
                             "Beans", "Beans", "Beans", "Beans", "Beans"
                         ],
                         onClick: () => null

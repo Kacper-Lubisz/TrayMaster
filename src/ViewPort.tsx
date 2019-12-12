@@ -1,6 +1,8 @@
 import React from "react";
 import "./ViewPort.scss";
 import {Column, Tray} from "./core/Warehouse";
+import selectedIcon from "./icons/check_circle-24px.svg";
+import notSelectedIcon from "./icons/check_circle_outline-24px.svg";
 
 interface ViewPortProps {
     zoneLabel: string;
@@ -76,95 +78,123 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         };
     }
 
-    /**
-     * This method allows for selecting a tray.  The behaviour changes depending on if the viewport is in multiple
-     * select mode.  If in multiple select mode, the last tray can't be deselected.  The target selection state can be
-     * specified, if null will toggle.
-     *
-     * @param tray The tray to be selected
-     * @param to if the tray should be selected or deselected, if null it will toggle
-     * @param selectionMap The map of currently selected trays, defaults to the states selection of null
-     * @param isMultipleSelect If multiple selections are to be allowed
-     */
-    selectTray(
-        tray: Tray,
-        to: boolean,
-        selectionMap: Map<Tray, boolean> = this.state.selected,
-        isMultipleSelect: boolean = this.state.isMultipleSelect
-    ): Map<Tray, boolean> {
-        const selected = selectionMap;
-        const multipleSelect = isMultipleSelect;
+    onDragSelectStart() {
 
-        const newSelected = (to === undefined && !selected.get(tray)) || to;
-        // if the tray will become selected
+        const selectedBefore = new Map();
+        this.state.selected.forEach((selected, tray) => {
+            selectedBefore.set(tray, selected);
+        });
 
-        if (!multipleSelect && newSelected) { // deselect the currently selected
-            selected.forEach((_, tray) =>
-                selected.set(tray, false)
-            );
-            selected.set(tray, newSelected);
-        } else if (multipleSelect) {
-            selected.set(tray, newSelected);
-        } // else !multipleSelect && !newSelected, can't deselect
-
-        if (selectionMap === this.state.selected) {
-            this.forceUpdate();
-        }
-
-        return selectionMap;
+        this.setState({
+            ...this.state,
+            longPress: {
+                isHappening: true,
+                timeout: -1,
+                dragFrom: this.state.longPress?.dragFrom!!,
+                selectedBefore: selectedBefore,
+            },
+            isMultipleSelect: true
+        }, () => {
+            this.updateDragSelection(this.state.longPress?.dragFrom!!);
+        });
     }
 
-    updateDragSelection(from: Tray, to: Tray, originalSelection: Map<Tray, boolean>) {
+    updateDragSelection(to: Tray) {
 
-        this.state.selected.forEach((_, key) =>
-            // this.state.selected.set(key, originalSelection.get(key) ?? false)
-            this.state.selected.set(key, false)
-        );
+        this.state.selected.forEach((_, tray) => { // reset selection
+            this.state.selected.set(tray, this.state.longPress?.selectedBefore.get(tray) ?? false);
+        });
 
         const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
 
-        let selection = originalSelection;
-        let selecting = false;
+        const from = this.state.longPress?.dragFrom;
+        // fixme this tray order can shouldn't be calculated on each call to this method
+        // todo use the fields from trays and columns to sort this
+        const trayOrdered = this.state.columns.flatMap((column, columnIndex) =>
+            column.trays.map((tray: Tray, trayIndex) => {
+                return {
+                    columnIndex: columnIndex,
+                    trayIndex: trayIndex,
+                    tray: tray
+                };
+            })
+        ).sort(((a, b) => {
 
-        this.state.columns.flatMap(col => {
-            return col.trays;
-        }).forEach((tray, index) => {
-            const selectThis = selecting || tray === from || tray === to;
+            // this is a multi level sort
+
+            if (a.columnIndex < b.columnIndex) return -1;
+            if (a.columnIndex > b.columnIndex) return 1;
+
+            if (a.trayIndex < b.trayIndex) return 1;
+            if (a.trayIndex > b.trayIndex) return -1;
+
+            return 0;
+        })).map(it => it.tray);
+
+        trayOrdered.reduce((isSelecting, tray) => {
+
+            const selectThis = isSelecting || tray === from || tray === to;
+
             if (selectThis) {
-                selection = this.selectTray(tray, true, selection, true);
+                this.state.selected.set(tray, true);
             }
-            selecting = xor(selecting, xor(tray === from, tray === to));
-        });
+            return xor(isSelecting, xor(tray === from, tray === to));
+
+        }, false); // the accumulator of the fold is if the trays are still being selected
+
+        this.forceUpdate(); // the state has been changed
+    }
+
+    onDragSelectEnd() {
+        console.log("end of the thing")
 
         this.setState(Object.assign(this.state, {
-            selected: selection
+            longPress: null,
         }));
+    }
+
+    onTrayClick(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+
+        console.log("this is a bad");
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const newTraySelection = !this.state.selected.get(tray); // if the tray will become selected
+
+        if (!this.state.isMultipleSelect && newTraySelection) { // deselect the currently selected
+            this.state.selected.forEach((_, tray) =>
+                this.state.selected.set(tray, false)
+            );
+            this.state.selected.set(tray, newTraySelection);
+            this.forceUpdate();
+
+        } else if (this.state.isMultipleSelect) {
+            this.state.selected.set(tray, newTraySelection);
+
+            const numSelected = Array.from(this.state.selected.entries())
+                                     .filter(([_, value]) => value).length;
+
+            if (numSelected === 1) {
+                this.setState({ // if only one tray is selected, return to single select mode
+                    ...this.state,
+                    isMultipleSelect: false
+                });
+            } else {
+                this.forceUpdate();
+            }
+
+        } // else !multipleSelect && !newSelected, can't deselect
 
     }
 
-    onMouseDown(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+    onTrayMouseDown(tray: Tray) {
 
         const timeout: number = window.setTimeout(() => { // await hold time
-
             if (this.state.longPress?.timeout !== undefined) { // not interrupted
-                console.log("TIMEOUT ", JSON.stringify(this.state.longPress));
 
-                const clonedSelected = new Map();
-                this.state.selected.forEach((selected, tray) => {
-                    clonedSelected.set(tray, selected);
-                });
+                this.onDragSelectStart();
 
-                this.setState(Object.assign(this.state, {
-                    longPress: {
-                        isHappening: true,
-                        timeout: 0,
-                        dragFrom: tray,
-                        selectedBefore: clonedSelected,
-                    },
-                    isMultipleSelect: true
-                }), () => {
-                    // this.selectTray(tray, true, this.state.isMultipleSelect);
-                });
             }
         }, LONG_PRESS_TIMEOUT);
 
@@ -177,12 +207,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }));
     }
 
-    onMouseUp(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
-        console.log("mouse up");
-
+    onTrayMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (this.state.longPress !== undefined) {
             if (this.state.longPress.isHappening) {
-                // long press done
+                this.onDragSelectEnd();
+                e.preventDefault();
             } else {
                 window.clearTimeout(this.state.longPress.timeout);
                 this.setState(Object.assign(this.state, {
@@ -192,7 +221,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }
     }
 
-    onMouseLeave() {
+    onTrayMouseLeave() {
         if (!(this.state.longPress?.isHappening)) {
             this.setState(Object.assign(this.state, {
                 longPress: null
@@ -200,15 +229,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }
     }
 
-    onMouseEnter(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
-        console.log("mouse Enter");
-
+    onTrayMouseEnter(tray: Tray) {
         if (this.state.longPress?.isHappening) {
-
-            this.updateDragSelection(this.state.longPress.dragFrom, tray, this.state.longPress.selectedBefore);
-
+            this.updateDragSelection(tray);
         }
-
     }
 
     render() {
@@ -230,13 +254,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
                                         this.state.selected.get(tray) ? " selected" : ""}`}
 
-                                    onClick={this.selectTray.bind(this, tray, true, undefined, undefined)}
-                                    onMouseDown={this.onMouseDown.bind(this, tray)}
-                                    onMouseLeave={this.onMouseLeave.bind(this)}
-                                    onMouseEnter={this.onMouseEnter.bind(this, tray)}
-                                    onMouseUp={this.onMouseUp.bind(this, tray)}
+                                    onClick={this.onTrayClick.bind(this, tray)}
+                                    onMouseDown={this.onTrayMouseDown.bind(this, tray)}
+                                    onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
+                                    onMouseLeave={this.onTrayMouseLeave.bind(this)}
+                                    onMouseUp={this.onTrayMouseUp.bind(this)}
                                     key={trayIndex}
                                 >
+                                    <img src={this.state.selected.get(tray) ? selectedIcon : notSelectedIcon}
+                                         alt="selected icon"/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{
