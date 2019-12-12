@@ -46,5 +46,4 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
 }
 
 export interface BottomPanelProps {
-  pages: BottomPanelPage[]
 }
