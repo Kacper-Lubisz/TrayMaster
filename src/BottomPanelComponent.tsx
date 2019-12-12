@@ -1,25 +1,9 @@
 import React from "react";
 import {KeyboardButtonProps, Keyboard} from "./keyboard";
+import {KeyboardName} from "./SideBar";
 
-/**
- * This interface represents pages of the bottom panel.
- * @see BottomPanelComponent
- * @see BottomPanelSection
- */
-export interface BottomPanelPage {
-  name: string;
-  sections: BottomPanelSection[];
-}
-
-/**
- * This interface represents one section of a page of a bottom panel.
- * @see BottomPanelComponent
- * @see BottomPanelPage
- */
-export interface BottomPanelSection {
-  title: string;
-  buttons: string[];
-  onClick: (button: string, index: number) => void;
+export interface BottomPanelProps {
+  keyboardState: KeyboardName
 }
 
 /**
@@ -27,26 +11,34 @@ export interface BottomPanelSection {
  * @see BottomPanelPage
  */
 export class BottomPanelComponent extends React.Component<BottomPanelProps, any> {
+  categories: KeyboardButtonProps[];
+  years: KeyboardButtonProps[];
+  quarters: KeyboardButtonProps[];
+  months: KeyboardButtonProps[];
+  numpad: KeyboardButtonProps[];
+  numpadR: KeyboardButtonProps[];
 
-  render() {
+  constructor(props: any) {
+    super(props);
+
     // GENERATE KEYBOARD BUTTON STRUCTURES
-    let categories: KeyboardButtonProps[] = [];
+    this.categories = [];
     for (let i = 0; i < 40; i++) {
-      categories.push({
+      this.categories.push({
         name: "Beans", onClick: () => {
           alert(i);
         }
       });
     }
-    let years: KeyboardButtonProps[] = [];
+    this.years = [];
     for (let i = 2019; i < 2027; i++) {
-      years.push({
+      this.years.push({
         name: i.toString(), onClick: () => {
           alert(i);
         }
       });
     }
-    let quarters: KeyboardButtonProps[] = [];
+    this.quarters = [];
     const quartersTranslator: string[] = [
       "Jan-Mar",
       "Apr-Jun",
@@ -54,13 +46,13 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
       "Oct-Dec"
     ];
     for (let i = 1; i <= 4; i++) {
-      quarters.push({
+      this.quarters.push({
         name: quartersTranslator[i - 1], onClick: () => {
           alert(i);
         }
       });
     }
-    let months: KeyboardButtonProps[] = [];
+    this.months = [];
     const monthsTranslator: string[] = [
       "Jan",
       "Feb",
@@ -76,26 +68,26 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
       "Dec"
     ];
     for (let i = 1; i <= 12; i++) {
-      months.push({
+      this.months.push({
         name: monthsTranslator[i - 1], onClick: () => {
           alert(i);
         }
       });
     }
-    let numpad: KeyboardButtonProps[] = [];
+    this.numpad = [];
     for (let i = 9; i >= 0; i--) {
-      numpad.push({
+      this.numpad.push({
         name: i.toString(), onClick: () => {
           alert(i);
         }
       });
     }
-    numpad.push({
+    this.numpad.push({
       name: ".", onClick: () => {
         alert("Max is our favourite scrum master");
       }
     });
-    const numpadR: KeyboardButtonProps[] = [
+    this.numpadR = [
       {
         name: "Back",
         onClick: () => {
@@ -115,26 +107,35 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
         }
       }
     ];
+  }
 
+  chooseKeyboard() {
+    const keyboards = {
+      category: <Keyboard id="cat-keyboard" buttons={this.categories} gridX={8}/>,
+      expiry: (
+        <div className="keyboard-container">
+          <Keyboard id="exp-1" buttons={this.years} gridX={2}/>
+          <div className="vl"/>
+          <Keyboard id="exp-2" buttons={this.quarters} gridX={1}/>
+          <Keyboard id="exp-3" buttons={this.months} gridX={3}/>
+        </div>
+      ),
+      weight: (
+        <div className="keyboard-container">
+          <Keyboard id="weight-numpad" buttons={this.numpad} gridX={3}/>
+          <Keyboard id="numpadR" buttons={this.numpadR} gridX={1}/>
+        </div>
+      )
+    };
+    return keyboards[this.props.keyboardState];
+  }
+
+  render() {
     // return DOM elements using button structures
     return (
       <div id="bottom">
-        <Keyboard id="cat-keyboard" buttons={categories} gridX={8}/>
-        <div className="keyboard-container">
-          <Keyboard id="exp-1" buttons={years} gridX={2}/>
-          <div className="vl"/>
-          <Keyboard id="exp-2" buttons={quarters} gridX={1}/>
-          <Keyboard id="exp-3" buttons={months} gridX={3}/>
-        </div>
-        <div className="keyboard-container">
-          <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
-          <Keyboard id="numpadR" buttons={numpadR} gridX={1}/>
-        </div>
+        {this.chooseKeyboard()}
       </div>
     );
   }
-}
-
-export interface BottomPanelProps {
-  pages: BottomPanelPage[]
 }

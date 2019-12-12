@@ -3,7 +3,13 @@ import {KeyboardButtonProps, Keyboard} from "./keyboard";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHome, faClock, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
-export class SideBar extends React.Component {
+export type KeyboardName = "category" | "expiry" | "weight";
+
+interface SideBarProps {
+  keyboardSwitcher: (name: KeyboardName) => void
+}
+
+export class SideBar extends React.Component<SideBarProps> {
   render() {
     let buttons: KeyboardButtonProps[] = [
       {
@@ -37,18 +43,19 @@ export class SideBar extends React.Component {
         }
       }
     ];
+
     return (
       <div id="sideBar">
         <Keyboard buttons={buttons} gridX={1}/>
 
         <div id="kb-switcher">
-          <button>
+          <button onClick={() => this.props.keyboardSwitcher("category")}>
             <FontAwesomeIcon icon={faHome}/>
           </button>
-          <button>
+          <button onClick={() => this.props.keyboardSwitcher("expiry")}>
             <FontAwesomeIcon icon={faClock}/>
           </button>
-          <button>
+          <button onClick={() => this.props.keyboardSwitcher("weight")}>
             <FontAwesomeIcon icon={faWeightHanging}/>
           </button>
         </div>
