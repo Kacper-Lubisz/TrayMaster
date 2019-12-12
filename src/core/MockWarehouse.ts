@@ -43,7 +43,7 @@ export class Warehouse {
     public static async loadCategories() {
         let categories: Category[] = [];
         for (let i = 0; i < cats.length; i++)
-            categories.push({ name: cats[i] }));
+            categories.push({ name: cats[i] });
         return categories;
     }
 
