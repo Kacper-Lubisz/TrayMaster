@@ -60,15 +60,13 @@ export class Zone {
     name: string;
     color: string;
 
-    test: any;
-
     parentWarehouse?: Warehouse;
     bays: Bay[];
 
     private constructor(id: string, name: string, color: string, parentWarehouse: Warehouse) {
         this.id = id;
-        this.name = "";
-        this.color = "";
+        this.name = name;
+        this.color = color;
 
         this.parentWarehouse = parentWarehouse;
         this.bays = [];
@@ -158,7 +156,7 @@ export class Column {
     parentShelf?: Shelf;
     trays: Tray[];
 
-    private constructor(id: stirng, index: number, parentShelf: Shelf) {
+    private constructor(id: string, index: number, parentShelf: Shelf) {
         this.id = id;
         this.index = index;
 

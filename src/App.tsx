@@ -5,19 +5,23 @@ import {ViewPort} from "./ViewPort";
 import {BottomPanelComponent, BottomPanelPage} from "./BottomPanelComponent";
 import "./styles/shelfview.scss";
 import {SettingsManager} from "./core/MockSettings";
-import {generateRandomId} from "./core/MockWarehouse";
+import {Warehouse} from "./core/MockWarehouse";
 
 class App extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
 
-        // SettingsManager.loadSettings()
-        //     .then(settings => {
-        //         console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
-        //
-        //         settings.sampleSetting = "Different value";
-        //         SettingsManager.saveSettings();
-        //     });
+        SettingsManager.loadSettings()
+            .then(settings => {
+                console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
+        
+                settings.sampleSetting = "Different value";
+                SettingsManager.saveSettings();
+            });
+        Warehouse.loadWarehouse("ABCD")
+            .then(warehouse => {
+                console.log(warehouse);
+            });
     }
 
     render() {

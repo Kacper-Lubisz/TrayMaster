@@ -12,13 +12,13 @@ export class SettingsManager {
 
     public static async loadSettings(): Promise<Settings> {
         this.settingsLoaded = true;
-        return this.settings = new Settings(settingsMap);
+        return this.settings = settingsMap;
     }
 
     public static saveSettings() {
         if (this.settingsLoaded) {
             // Some clever generics casing can be used here
-            settingsMap.sampleSetting = this.settings.sampleSetting;
+            settingsMap = this.settings;
         }
     }
 
@@ -28,10 +28,6 @@ export class SettingsManager {
 }
 
 
-export class Settings {
-    public sampleSetting: string;
-
-    public constructor(settingsMap: { sampleSetting: string } = { sampleSetting: "Default" }) {
-        this.sampleSetting = settingsMap.sampleSetting;
-    }
+export interface Settings {
+    sampleSetting: string;
 }
