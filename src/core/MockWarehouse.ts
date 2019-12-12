@@ -43,7 +43,7 @@ export class Warehouse {
     public static async loadCategories() {
         let categories: Category[] = [];
         for (let i = 0; i < cats.length; i++)
-            categories.push(new Category(cats[i]));
+            categories.push({ name: cats[i] }));
         return categories;
     }
 
@@ -176,18 +176,11 @@ export class Column {
     }
 }
 
-export class ExpiryRange {
+export interface ExpiryRange {
     from: number;
     to: number;
     label: string;
     color: string;
-
-    constructor(from: number, to: number, label: string, color: string) {
-        this.from = from;
-        this.to = to;
-        this.label = label;
-        this.color = color;
-    }
 }
 
 export class Tray {
@@ -198,7 +191,7 @@ export class Tray {
     expiry?: ExpiryRange;
     weight?: number;
 
-    private constructor(id: string, parentColumn: Column, category: Category, expiryRange: ExpiryRange, weight: number, customField?:string) {
+    private constructor(id: string, parentColumn: Column, category?: Category, expiryRange?: ExpiryRange, weight?: number, customField?:string) {
         this.id = id;
         this.category = category;
         this.weight = weight;
@@ -209,20 +202,18 @@ export class Tray {
 
     public static async loadTrays(column: Column) {
         const trays: Tray[] = [];
-        for (let i = 0; i < 3; i++)
+        for (let i = 0; i < 3; i++) {
+            let categories: Category[] = column.parentShelf.parentBay.parentZone.parentWarehouse.categories;
             trays.push(new Tray(generateRandomId(), column,
                 // This is not nice to look at...
-                column.parentShelf?.parentBay?.parentZone?.parentWarehouse?.categories[Math.floor(column.parentShelf?.parentBay?.parentZone?.parentWarehouse?.categories.length * Math.random())] ?? new Category(""),
-                new ExpiryRange(0, 1, "Past", "#FF0000"), Math.floor(15 * Math.random()), undefined));
+                categories[Math.floor(categories.length * Math.random())],
+                {from: 0, to: 1, label: "Past", color: "#FF0000"}, Math.floor(15 * Math.random()), undefined));
+        }
         return trays;
     }
 }
 
-export class  Category {
+export interface Category {
     name: string;
-
-    constructor(name: string) {
-        this.name = name;
-    }
 }
 
