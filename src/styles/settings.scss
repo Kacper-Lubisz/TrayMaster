@@ -1,0 +1,34 @@
+//Setting style sheet
+
+.settings {
+
+}
+.settings-header {
+  //settings header text
+  position: fixed;
+  left: 20px;
+  font-size: 20px;
+}
+
+.settings-btns {
+  //container for all buttons
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  height: 300px;
+  width: 250px;
+
+  .line {
+    //line above 'back'
+    background: gray;
+    height: 3px;
+    width:inherit;
+  }
+  .back-btn{
+    //back button with icon
+    position: absolute;
+    left:50px;
+  }
+}
