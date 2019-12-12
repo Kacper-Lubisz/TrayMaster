@@ -38,6 +38,10 @@
       border: none;
       background: none;
 
+      &.active {
+        color: #3347ff;
+      }
+
       > svg {
         height: 100%;
         width: 100%;

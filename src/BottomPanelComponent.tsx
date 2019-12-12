@@ -18,7 +18,7 @@ export class BottomPanelComponent extends React.Component<BottomPanelProps, any>
   numpad: KeyboardButtonProps[];
   numpadR: KeyboardButtonProps[];
 
-  constructor(props: any) {
+  constructor(props: BottomPanelProps) {
     super(props);
 
     // GENERATE KEYBOARD BUTTON STRUCTURES
