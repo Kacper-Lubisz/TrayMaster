@@ -1,10 +1,8 @@
 import React from "react";
 import "./App.scss";
-import {TopBar} from "./TopBar";
-import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
-import {BottomPanelComponent, BottomPanelPage} from "./BottomPanelComponent";
-import {Warehouse} from "./core/Warehouse";
+import {BottomPanelPage} from "./BottomPanelComponent";
+import {Column, Tray} from "./core/Warehouse";
 
 class App extends React.Component<any, any> {
 
@@ -59,9 +57,51 @@ class App extends React.Component<any, any> {
     }
 
     render() {
+
+        let category = {name: "Beans"};
+        let expiry = {
+            from: new Date().getTime(),
+            to: new Date().getTime(),
+            label: "2020",
+            color: "#ff0"
+        };
+        let weight: number = 10.1;
+
+        let trayA = new Tray(category, expiry, weight, "CUSTOM FIELD");
+        let trayB = new Tray(category, expiry, weight);
+
+        let bigBoyTray = new Tray({
+            name: "BeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeans"
+        }, expiry, weight);
+
+        const columns = [
+            new Column([
+                new Tray(category, expiry, weight),
+                trayA,
+                new Tray(category, expiry, weight),
+                new Tray(category, expiry, weight)
+            ]),
+            new Column([
+                new Tray(category, expiry, weight),
+                new Tray(category, expiry, weight),
+                new Tray(category, expiry, weight)
+            ]),
+            new Column(Array(15).fill(0).map(() => {
+                return new Tray(category, expiry, weight);
+            })),
+            new Column([
+                new Tray(category, expiry, weight),
+                new Tray(category, expiry, weight),
+                trayB,
+                // bigBoyTray
+                // fixme This doesn't work, the style needs fixing for big trays 😉
+            ]),
+        ];
+        // todo derive the columns to feed to the viewport from the shelf view state
+
         return (
             <div id="app">
-                <ViewPort zoneLabel={"Green 1A"}/>
+                <ViewPort zoneLabel={"Green 1A"} columns={columns}/>
             </div>
         );
     }

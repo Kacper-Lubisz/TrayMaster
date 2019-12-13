@@ -6,8 +6,12 @@ import notSelectedIcon from "./icons/check_circle_outline-24px.svg";
 
 interface ViewPortProps {
     zoneLabel: string;
+    columns: Column[];
 }
 
+/**
+ * This is the type for the field in the state of the viewport which controls the dragging behaviour
+ */
 interface LongPress {
     isHappening: boolean;
     timeout: number;
@@ -16,68 +20,40 @@ interface LongPress {
 }
 
 /**
- *@property
+ * The state of the ViewPort
+ * @property columns The columns that the viewport displays
  */
 interface ViewPortState {
-    columns: Column[];
     selected: Map<Tray, boolean>;
     isMultipleSelect: boolean;
     mouseDown?: boolean;
-    longPress?: LongPress;
+    longPress?: LongPress | null;
 }
 
+/**
+ * The long press to drag timeout in milliseconds
+ */
 const LONG_PRESS_TIMEOUT = 300;
 
+/**
+ * This class crates and manages the behavior of the viewport
+ */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     constructor(props: ViewPortProps) {
         super(props);
 
-        let category = {name: "Beans"};
-        let expiry = {
-            from: new Date().getTime(),
-            to: new Date().getTime(),
-            label: "2020",
-            color: "#ff0"
-        };
-        let weight: number = 10.1;
-
-        let trayA = new Tray(category, expiry, weight, "CUSTOM FIELD");
-        let trayB = new Tray(category, expiry, weight);
-
-        let bigBoyTray = new Tray({
-            name: "BeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeans"
-        }, expiry, weight);
-
         this.state = {
             isMultipleSelect: false,
-            selected: new Map([trayA].map((tray) => [tray, true])),
-            columns: [
-                new Column([
-                    new Tray(category, expiry, weight),
-                    trayA,
-                    new Tray(category, expiry, weight),
-                    new Tray(category, expiry, weight)
-                ]),
-                new Column([
-                    new Tray(category, expiry, weight),
-                    new Tray(category, expiry, weight),
-                    new Tray(category, expiry, weight)
-                ]),
-                new Column(Array(15).fill(0).map(() => {
-                    return new Tray(category, expiry, weight);
-                })),
-                new Column([
-                    new Tray(category, expiry, weight),
-                    new Tray(category, expiry, weight),
-                    trayB,
-                    // bigBoyTray
-                    // fixme This doesn't work, the style needs fixing for big trays 😉
-                ]),
-            ]
+            selected: new Map(),
         };
     }
 
+    /**
+     * This method is called when a dragging event is started.  This event is started when the timeout which is started
+     * inside onTrayMouseDown succeeds.  This timeout could fail iff the mouse leaves the tray or if the mouse is
+     * released before the timeout finishes.
+     */
     onDragSelectStart() {
 
         const selectedBefore = new Map();
@@ -95,10 +71,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             },
             isMultipleSelect: true
         }, () => {
+            console.log(this.state);
             this.updateDragSelection(this.state.longPress?.dragFrom!!);
         });
     }
 
+    /**
+     * This method is called to update the state of the drag event.  It is called when the mouse enters a new tray while
+     * the viewport is in dragging mode.  This method sets the selection state based on the selection state from when
+     * the drag started (longPress.selectedBefore).
+     * @param to The tray that the mouse just entered, which triggered this listener
+     */
     updateDragSelection(to: Tray) {
 
         this.state.selected.forEach((_, tray) => { // reset selection
@@ -108,10 +91,29 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
 
         const from = this.state.longPress?.dragFrom;
-        // fixme this tray order can shouldn't be calculated on each call to this method
-        // todo use the fields from trays and columns to sort this
-        const trayOrdered = this.state.columns.flatMap((column, columnIndex) =>
+
+        const boundIndices = {
+            from: {
+                column: -1,
+                tray: -1
+            },
+            to: {
+                column: -1,
+                tray: -1
+            }
+        };
+
+        const trayOrdered = this.props.columns.flatMap((column, columnIndex) =>
             column.trays.map((tray: Tray, trayIndex) => {
+                if (tray === from) {
+                    boundIndices.from.column = columnIndex;
+                    boundIndices.from.tray = trayIndex;
+                }
+                if (tray === to) {
+                    boundIndices.to.column = columnIndex;
+                    boundIndices.to.tray = trayIndex;
+                }
+
                 return {
                     columnIndex: columnIndex,
                     trayIndex: trayIndex,
@@ -125,8 +127,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             if (a.columnIndex < b.columnIndex) return -1;
             if (a.columnIndex > b.columnIndex) return 1;
 
-            if (a.trayIndex < b.trayIndex) return 1;
-            if (a.trayIndex > b.trayIndex) return -1;
+            const invertColumns = boundIndices.from.column < boundIndices.to.column ? 1
+                                                                                    : -1;
+            // this invert makes sure that trays above the start tray are always selected
+
+            if (a.trayIndex < b.trayIndex) return 1 * invertColumns;
+            if (a.trayIndex > b.trayIndex) return -1 * invertColumns;
 
             return 0;
         })).map(it => it.tray);
@@ -145,20 +151,26 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         this.forceUpdate(); // the state has been changed
     }
 
+    /**
+     * This method is called when a drag event is ended.  It is used to finalise the state.
+     */
     onDragSelectEnd() {
-        console.log("end of the thing")
 
-        this.setState(Object.assign(this.state, {
+        this.setState({ // if only one tray is selected, return to single select mode
+            ...this.state,
             longPress: null,
-        }));
+        });
+
     }
 
+    /**
+     * This method is called when a tray is clicked, a click being a higher level combination of onMouseDown and
+     * onMouseUp.  This method controls the selecting behaviour of a singular tray.  Notably, this method is also called
+     * after a mouse drag event if the event ends on the same tray as it started.
+     * @param tray The tray that is clicked
+     * @param e The react event object which triggered this listener
+     */
     onTrayClick(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
-
-        console.log("this is a bad");
-
-        e.preventDefault();
-        e.stopPropagation();
 
         const newTraySelection = !this.state.selected.get(tray); // if the tray will become selected
 
@@ -188,13 +200,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     }
 
-    onTrayMouseDown(tray: Tray) {
+    /**
+     * This method is called when the mouse is pressed over a tray, it begins the timeout which controls dragging
+     * @param tray The tray on which the mouse is pressed
+     * @param e The react mouse event that triggered this call
+     */
+    onTrayMouseDown(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
 
         const timeout: number = window.setTimeout(() => { // await hold time
             if (this.state.longPress?.timeout !== undefined) { // not interrupted
-
                 this.onDragSelectStart();
-
             }
         }, LONG_PRESS_TIMEOUT);
 
@@ -207,41 +222,68 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }));
     }
 
-    onTrayMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        if (this.state.longPress !== undefined) {
+    /**
+     * This method is called when the mouse button is released over a tray, this either cancels the new drag event
+     * timeout, finalises a current dragging event or performs a mouse click.
+     * @param tray The tray over which the even is triggered
+     * @param e The react mouse event that triggered this call
+     */
+    onTrayMouseUp(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+
+        if (this.state.longPress) {
             if (this.state.longPress.isHappening) {
-                this.onDragSelectEnd();
-                e.preventDefault();
+                this.onDragSelectEnd(); // end of drag
             } else {
                 window.clearTimeout(this.state.longPress.timeout);
                 this.setState(Object.assign(this.state, {
                     longPress: null
                 }));
+                this.onTrayClick(tray, e);
             }
+        } else {
+            this.onTrayClick(tray, e);
         }
     }
 
-    onTrayMouseLeave() {
-        if (!(this.state.longPress?.isHappening)) {
-            this.setState(Object.assign(this.state, {
+    /**
+     * This method is called when the mouse enters the DOM element which represents a any tray.  This method stops a
+     * mouse down event from starting a drag event.
+     * @param e The react mouse event that triggered this call
+     */
+    onTrayMouseLeave(e: React.MouseEvent<HTMLDivElement>) {
+
+        if (this.state.longPress && !this.state.longPress.isHappening) {
+            // is between mouse down and drag start
+            window.clearTimeout(this.state.longPress?.timeout);
+
+            this.setState(Object.assign(this.state, { // kills the long press
                 longPress: null
             }));
         }
     }
 
+    /**
+     * This method is called when the mouse enters the DOM element which represents a particular tray
+     * @param tray The tray over which the mouse entered
+     */
     onTrayMouseEnter(tray: Tray) {
+
         if (this.state.longPress?.isHappening) {
             this.updateDragSelection(tray);
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     render() {
+
         return (
             <div id="outer">
                 <h1>Green A1</h1>
 
                 <div id="shelf">
-                    {this.state.columns.map((column, columnIndex) =>
+                    {this.props.columns.map((column, columnIndex) =>
 
                         <div
                             style={{order: columnIndex}}
@@ -254,11 +296,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
                                         this.state.selected.get(tray) ? " selected" : ""}`}
 
-                                    onClick={this.onTrayClick.bind(this, tray)}
+                                    // onClick={this.onTrayClick.bind(this, tray)}
                                     onMouseDown={this.onTrayMouseDown.bind(this, tray)}
                                     onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
                                     onMouseLeave={this.onTrayMouseLeave.bind(this)}
-                                    onMouseUp={this.onTrayMouseUp.bind(this)}
+                                    onMouseUp={this.onTrayMouseUp.bind(this, tray)}
                                     key={trayIndex}
                                 >
                                     <img src={this.state.selected.get(tray) ? selectedIcon : notSelectedIcon}
