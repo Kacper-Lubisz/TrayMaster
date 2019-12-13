@@ -1,54 +1,15 @@
 import React from "react";
-import "./App.scss";
+import {TopBar} from "./TopBar";
+import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
-import {BottomPanelPage} from "./BottomPanelComponent";
+import {BottomPanelComponent} from "./BottomPanelComponent";
+import "./styles/shelfview.scss";
 import {Column, Tray} from "./core/Warehouse";
 
 class App extends React.Component<any, any> {
 
-    pages: BottomPanelPage[];
-
     constructor(props: any) {
         super(props);
-
-        this.pages = [
-            {
-                name: "Categories", sections: [
-                    {
-                        title: "All",
-                        buttons: [
-                            "Peas", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans",
-                            "Beans", "Beans", "Beans", "Beans", "Beans"
-                        ],
-                        onClick: () => null
-                    }, {
-                        title: "Suggested",
-                        buttons: ["Beans", "Beans", "Beans <3", "Beans", "Beans"],
-                        onClick: () => null
-                    }
-                ]
-            },
-            {
-                name: "Expiry", sections: [
-                    {
-                        title: "Years",
-                        buttons: [
-                            "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020",
-                            "2020", "2020", "2020", "2020"
-                        ],
-                        onClick: () => null
-                    }, {
-                        title: "Quarters",
-                        buttons: ["Q1", "Q2", "Q3", "Q4"],
-                        onClick: () => null
-                    }, {
-                        title: "Months",
-                        buttons: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                        onClick: () => null
-                    },
-                ]
-            }
-        ];
 
         // Warehouse.loadWarehouse().then(warehouse => {
         //     console.log(warehouse);
@@ -86,22 +47,26 @@ class App extends React.Component<any, any> {
                 new Tray(category, expiry, weight),
                 new Tray(category, expiry, weight)
             ]),
-            new Column(Array(15).fill(0).map(() => {
+            new Column(Array(5).fill(0).map(() => { // todo test this on large numbers of trays
                 return new Tray(category, expiry, weight);
             })),
             new Column([
                 new Tray(category, expiry, weight),
                 new Tray(category, expiry, weight),
                 trayB,
-                // bigBoyTray
+                bigBoyTray
                 // fixme This doesn't work, the style needs fixing for big trays 😉
             ]),
         ];
         // todo derive the columns to feed to the viewport from the shelf view state
 
+
         return (
             <div id="app">
-                <ViewPort zoneLabel={"Green 1A"} columns={columns}/>
+                <TopBar/>
+                <ViewPort columns={columns}/>
+                <SideBar/>
+                <BottomPanelComponent/>
             </div>
         );
     }

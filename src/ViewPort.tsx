@@ -1,11 +1,11 @@
 import React from "react";
 import "./ViewPort.scss";
+import "./styles/shelfview.scss";
 import {Column, Tray} from "./core/Warehouse";
 import selectedIcon from "./icons/check_circle-24px.svg";
 import notSelectedIcon from "./icons/check_circle_outline-24px.svg";
 
 interface ViewPortProps {
-    zoneLabel: string;
     columns: Column[];
 }
 
@@ -279,9 +279,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     render() {
 
         return (
-            <div id="outer">
-                <h1>Green A1</h1>
-
+            <div id="viewPort">
                 <div id="shelf">
                     {this.props.columns.map((column, columnIndex) =>
 
