@@ -6,21 +6,21 @@
   background-color: #eeeeee;
   color: #000000;
   border-radius: 5px;
-  font-size: 20px;
+  font-size: 24px;
+  line-height: 0;
+  padding: 0;
 
   // Undecided - TODO: decide whether button text should be uppercase
   //text-transform: uppercase;
 
   border: 1px solid #aaaaaa;
   margin: 3px 5px;
-
   // set height to fit inside parent keyboard row
   // (100% of row height) - (2 x 3px margin) - (2 x 1px border)
   height: calc(100% - 6px - 2px);
 
-  // always fill the full width of the parent flexbox
-  flex-grow: 1;
-  flex-shrink: 1;
+  // Control growth
+  flex: 1;
 
   // HOVER AND ACTIVE VISUAL EFFECTS
   transition: box-shadow ease 0.5s;
