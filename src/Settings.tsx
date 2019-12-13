@@ -1,6 +1,6 @@
 import React from "react";
-import "./styles/shelfview.scss";
 import "./styles/settings.scss";
+import {Link} from "react-router-dom";
 
 
 export class Settings extends React.Component<any, any> {
@@ -13,12 +13,12 @@ export class Settings extends React.Component<any, any> {
       <h1>Settings</h1>
     </div>
     <div className="settings-btns">
-      <button className='key-btn'>Alerts</button>
-      <button className='key-btn'>Type Labels</button>
-      <button className='key-btn'>Time Labels</button>
-      <button className='key-btn'>General</button>
+      <Link to="/Menu" className="key-btn" style={{textDecoration:'none'}}><p>Alerts</p></Link>
+      <Link to="/Menu" className="key-btn" style={{textDecoration:'none'}}><p>Type Labels</p></Link>
+      <Link to="/Menu" className="key-btn" style={{textDecoration:'none'}}><p>Time Labels</p></Link>
+      <Link to="/Menu" className="key-btn" style={{textDecoration:'none'}}><p>General</p></Link>
       <hr className="line"/>
-      <button className='key-btn'><img className="back-btn" src="keyboard_backspace-24px.svg"/>Back</button>
+      <Link to="/Menu" className="key-btn" style={{textDecoration:'none'}}><img alt="back-arrow" className="back-btn" src="keyboard_backspace-24px.svg"/><p>Back</p></Link>
     </div>
   </div>
     );

@@ -1,5 +1,7 @@
 //Setting style sheet
 
+@import "./shelfview.scss";
+
 .settings {
 
 }
@@ -19,6 +21,9 @@
   bottom: 8px;
   height: 300px;
   width: 250px;
+  p{
+    font-size:14px;
+  }
 
   .line {
     //line above 'back'
@@ -27,8 +32,10 @@
     width:inherit;
   }
   .back-btn{
-    //back button with icon
+    //back button icon
+    //TODO center it on the button
     position: absolute;
+    margin-top:13px;
     left:50px;
   }
 }
