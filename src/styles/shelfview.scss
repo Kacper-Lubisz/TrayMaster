@@ -26,22 +26,32 @@
 
   // container for keyboard switch buttons
   #kb-switcher {
+    // Define container layout
     padding: 10px;
     display: flex;
     justify-content: space-around;
     align-items: stretch;
     height: 50px;
 
+    // buttons inside the switcher
     > button {
+      // fill available space
       height: 100%;
       flex-grow: 1;
+
+      // Styling
       border: none;
       background: none;
+      transition: color 0.2s;
+      cursor: pointer;
+      padding: 0;
 
+      // When active, appear blue
       &.active {
         color: #3347ff;
       }
 
+      // Set icon to fill containing button
       > svg {
         height: 100%;
         width: 100%;
