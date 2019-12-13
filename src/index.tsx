@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
+import "./styles/index.css";
 import App from "./App";
 import {KeyboardButtonProps} from "./keyboard";
 import * as serviceWorker from "./serviceWorker";
@@ -8,11 +8,11 @@ import * as serviceWorker from "./serviceWorker";
 
 let buttons: KeyboardButtonProps[] = [];
 for (let i = 0; i < 40; i++) {
-  buttons.push({
-    name: "Beans", onClick: () => {
-      alert(i);
-    }
-  });
+    buttons.push({
+        name: "Beans", onClick: () => {
+            alert(i);
+        }
+    });
 }
 
 ReactDOM.render(<App/>, document.getElementById("root"));

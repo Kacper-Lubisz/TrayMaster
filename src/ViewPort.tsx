@@ -1,5 +1,5 @@
 import React from "react";
-import "./ViewPort.scss";
+import "./styles/ViewPort.scss";
 import "./styles/shelfview.scss";
 import {Column, Tray} from "./core/Warehouse";
 import selectedIcon from "./icons/check_circle-24px.svg";

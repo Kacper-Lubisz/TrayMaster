@@ -148,7 +148,7 @@ export class Tray {
     expiry?: ExpiryRange;
     weight?: number;
 
-    constructor(category: Category, expiryRange: ExpiryRange, weight: number, customField?:string) {
+    constructor(category: Category, expiryRange: ExpiryRange, weight: number, customField?: string) {
         this.category = category;
         this.weight = weight;
         this.expiry = expiryRange;

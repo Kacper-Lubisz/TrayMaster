@@ -7,19 +7,19 @@ import {Keyboard, KeyboardButtonProps} from "./keyboard";
  */
 export class BottomPanelComponent extends React.Component<any, any> {
 
-  render() {
-    let buttons: KeyboardButtonProps[] = [];
-    for (let i = 0; i < 40; i++) {
-      buttons.push({
-        name: "Beans", onClick: () => {
-          alert(i);
+    render() {
+        let buttons: KeyboardButtonProps[] = [];
+        for (let i = 0; i < 40; i++) {
+            buttons.push({
+                name: "Beans", onClick: () => {
+                    alert(i);
+                }
+            });
         }
-      });
+        return (
+            <div id="bottom">
+                <Keyboard buttons={buttons} gridX={8}/>
+            </div>
+        );
     }
-    return (
-        <div id="bottom">
-          <Keyboard buttons={buttons} gridX={8}/>
-        </div>
-    );
-  }
 }
