@@ -1,0 +1,106 @@
+// todo this stylesheet needs complete redoing
+
+#shelf {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  align-items: stretch;
+  margin: 0 1%;
+  height: 80%;
+
+  .column {
+    border: 1px solid white;
+    text-align: center;
+    background-color: #eee;
+    flex: auto;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: flex-end;
+
+    .tray {
+      background-color: #eee;
+      border: 1px solid black;
+      width: 100%;
+      height: 15%;
+      min-width: 0;
+
+      position: relative;
+
+      > * {
+        position: absolute;
+      }
+
+      > svg {
+        margin: 5px 0;
+        width: 10%;
+        height: 30%;
+        top: 0;
+        left: 0;
+      }
+
+      > div.trayCategory {
+        bottom: 0;
+        left: 0;
+        font-size: 30px;
+        width: 80%;
+        text-align: left;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      > div.trayExpiry {
+        bottom: 0;
+        right: 0;
+        font-size: 25px;
+        padding: 0 5px;
+      }
+
+      > div.trayWeight {
+        top: 0;
+        right: 0;
+        font-size: 15px;
+        margin: 2px 5px;
+      }
+
+      > div.trayCustomField {
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, 0);
+      }
+    }
+
+
+  }
+
+}
+
+#trayExpiry {
+  background-color: #aaa; // this is the default colour when there is no expiry specified
+}
+
+.selected {
+  background-color: orangered;
+  box-shadow: inset 0 0 18px -10px #000000;
+  //box-shadow: 0 0 50px 30px red;
+  z-index: 1;
+
+}
+
+.multipleSelect {
+  border-radius: 10px;
+
+  .multipleSelect img {
+
+  }
+
+}
+
+h1 {
+  margin: 0;
+}
