@@ -1,5 +1,3 @@
-// TODO: Document
-
 /*
 Warehouse
 >   Settings
@@ -17,6 +15,10 @@ Warehouse
 
 const cats = ["Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard", "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc", "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti", "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"];
 
+/**
+ * Generate a pseudorandom firebase ID
+ * @returns string - A randomly generated ID
+ */
 export function generateRandomId() {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let id = "";
@@ -33,6 +35,10 @@ export class Warehouse {
     public zones: Zone[];
     public categories: Category[];
 
+    /**
+     * @param id firebase - The database ID of the warehouse
+     * @param name - The name of the warehouse
+     */
     private constructor(id: string, name: string) {
         this.id = id;
         this.name = name;
@@ -40,14 +46,25 @@ export class Warehouse {
         this.categories = [];
     }
 
-    public static async loadCategories() {
+    /**
+     * Load tray categories.
+     * @async
+     * @returns A promise which resolves to the list of categories in the warehouse
+     */
+    public static async loadCategories(): Promise<Category[]> {
         let categories: Category[] = [];
         for (let i = 0; i < cats.length; i++)
             categories.push({ name: cats[i] });
         return categories;
     }
 
-    public static async loadWarehouse(id: string) {
+    /**
+     * Load a whole warehouse corresponding to a given ID
+     * @async
+     * @param id - Database ID of the warehouse to load
+     * @returns A promise which resolves to the fully loaded warehouse
+     */
+    public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.categories = await Warehouse.loadCategories();
@@ -63,7 +80,13 @@ export class Zone {
     parentWarehouse?: Warehouse;
     bays: Bay[];
 
-    private constructor(id: string, name: string, color: string, parentWarehouse: Warehouse) {
+    /**
+     * @param id - The database ID for the zone
+     * @param name - The name of the zone
+     * @param color - The hex colour of the zone
+     * @param parentWarehouse - The (nullable) parent warehouse
+     */
+    private constructor(id: string, name: string, color: string, parentWarehouse?: Warehouse) {
         this.id = id;
         this.name = name;
         this.color = color;
@@ -72,7 +95,13 @@ export class Zone {
         this.bays = [];
     }
 
-    public static async loadZones(warehouse: Warehouse) {
+    /**
+     * Load all zones within a given warehouse
+     * @async
+     * @param warehouse - The warehouse to load the zones for
+     * @returns A promise which resolves to all loaded zones within the warehouse
+     */
+    public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
         const colours = [
             {label: "Red", hex: "#FF0000"},
             {label: "Green", hex: "#00FF00"},
@@ -99,7 +128,13 @@ export class Bay {
     parentZone?: Zone;
     shelves: Shelf[];
 
-    private constructor(id: string, name: string, index: number, parentZone: Zone) {
+    /**
+     * @param id - The database ID for the bay
+     * @param name - The name of the bay
+     * @param index - The (ordered) index of the bay within the zone
+     * @param parentZone - The (nullable) parent zone
+     */
+    private constructor(id: string, name: string, index: number, parentZone?: Zone) {
         this.id = id;
         this.name = name;
         this.index = index;
@@ -108,7 +143,13 @@ export class Bay {
         this.shelves = [];
     }
 
-    public static async loadBays(zone: Zone) {
+    /**
+     * Load all bays within a given zone
+     * @async
+     * @param zone - The zone to load the bays for
+     * @returns A promise which resolves to all loaded bays within the zone
+     */
+    public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
         for (let i = 0; i < 3; i++)
         {
@@ -128,7 +169,13 @@ export class Shelf {
     parentBay?: Bay;
     columns: Column[];
 
-    private constructor(id: string, name: string, index: number, parentBay: Bay) {
+    /**
+     * @param id - The database ID for the shelf
+     * @param name - The name of the shelf
+     * @param index - The (ordered) index of the shelf within the bay
+     * @param parentBay - The (nullable) parent bay
+     */
+    private constructor(id: string, name: string, index: number, parentBay?: Bay) {
         this.id = id;
         this.name = name;
         this.index = index;
@@ -137,7 +184,13 @@ export class Shelf {
         this.columns = [];
     }
 
-    public static async loadShelves(bay: Bay) {
+    /**
+     * Load all shelves within a given bay
+     * @async
+     * @param bay - The bay to load the shelves for
+     * @returns A promise which resolves to all loaded shelves within the bay
+     */
+    public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
         for (let i = 0; i < 3; i++)
         {
@@ -156,7 +209,12 @@ export class Column {
     parentShelf?: Shelf;
     trays: Tray[];
 
-    private constructor(id: string, index: number, parentShelf: Shelf) {
+    /**
+     * @param id - The database ID of the column
+     * @param index - The (ordered) index of the column within the shelf
+     * @param parentShelf - The (nullable) parent shelf
+     */
+    private constructor(id: string, index: number, parentShelf?: Shelf) {
         this.id = id;
         this.index = index;
 
@@ -164,7 +222,13 @@ export class Column {
         this.trays = [];
     }
 
-    public static async loadColumns(shelf: Shelf) {
+    /**
+     * Load all columns within a given column
+     * @async
+     * @param shelf - The shelf to load the columns for
+     * @returns A promise which resolves to all columns within the shelf
+     */
+    public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
         for (let i = 0; i < 3; i++)
         {
@@ -176,13 +240,6 @@ export class Column {
     }
 }
 
-export interface ExpiryRange {
-    from: number;
-    to: number;
-    label: string;
-    color: string;
-}
-
 export class Tray {
     id: string;
     parentColumn?: Column;
@@ -191,6 +248,14 @@ export class Tray {
     expiry?: ExpiryRange;
     weight?: number;
 
+    /**
+     * @param id - The database ID of the tray
+     * @param parentColumn - The (nullable) parent column
+     * @param category - The tray's (nullable) category
+     * @param expiryRange - The tray's (nullable) expiry range
+     * @param weight - The tray's (nullable) weight
+     * @param customField - The tray's (nullable) custom field
+     */
     private constructor(id: string, parentColumn: Column, category?: Category, expiryRange?: ExpiryRange, weight?: number, customField?:string) {
         this.id = id;
         this.category = category;
@@ -200,7 +265,13 @@ export class Tray {
         this.parentColumn = parentColumn;
     }
 
-    public static async loadTrays(column: Column) {
+    /**
+     * Load all trays within a given column
+     * @async
+     * @param column - The column to load the trays for
+     * @returns A promise which resolves to all trays within the column
+     */
+    public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
         for (let i = 0; i < 3; i++) {
             let categories: Category[] = column?.parentShelf?.parentBay?.parentZone?.parentWarehouse?.categories ?? [{name: ""}];
@@ -211,6 +282,13 @@ export class Tray {
         }
         return trays;
     }
+}
+
+export interface ExpiryRange {
+    from: number;
+    to: number;
+    label: string;
+    color: string;
 }
 
 export interface Category {
