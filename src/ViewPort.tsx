@@ -1,9 +1,9 @@
 import React from "react";
-import "./styles/ViewPort.scss";
 import "./styles/shelfview.scss";
 import {Column, Tray} from "./core/Warehouse";
-import selectedIcon from "./icons/check_circle-24px.svg";
-import notSelectedIcon from "./icons/check_circle_outline-24px.svg";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCheckCircle as checkSolid} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle as checkLine} from "@fortawesome/free-regular-svg-icons";
 
 interface ViewPortProps {
     columns: Column[];
@@ -301,15 +301,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     onMouseUp={this.onTrayMouseUp.bind(this, tray)}
                                     key={trayIndex}
                                 >
-                                    <img src={this.state.selected.get(tray) ? selectedIcon : notSelectedIcon}
-                                         alt="selected icon"/>
+                                    <FontAwesomeIcon style={this.state.selected.get(tray) ? {"color": "#3347ff"} : {}}
+                                                     icon={this.state.selected.get(tray) ? checkSolid : checkLine}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{
                                         backgroundColor: tray.expiry?.color
                                     }}>{tray.expiry?.label ?? "?"}</div>
 
-                                    <div className="trayWeight">{tray.weight ?? "?"}</div>
+                                    <div className="trayWeight">{tray.weight ?? "?"}kg</div>
 
                                     <div className="trayCustomField">{tray.customField ?? ""}</div>
                                 </div>)}
