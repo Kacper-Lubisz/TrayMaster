@@ -2,8 +2,8 @@ import React from "react";
 import "./styles/shelfview.scss";
 import {Column, Tray} from "./core/Warehouse";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheckCircle as checkSolid} from "@fortawesome/free-solid-svg-icons";
-import {faCheckCircle as checkLine} from "@fortawesome/free-regular-svg-icons";
+import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
 
 interface ViewPortProps {
     columns: Column[];
@@ -302,7 +302,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     key={trayIndex}
                                 >
                                     <FontAwesomeIcon style={this.state.selected.get(tray) ? {"color": "#3347ff"} : {}}
-                                                     icon={this.state.selected.get(tray) ? checkSolid : checkLine}/>
+                                                     icon={this.state.selected.get(tray) ? tickSolid : tickLine}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{
