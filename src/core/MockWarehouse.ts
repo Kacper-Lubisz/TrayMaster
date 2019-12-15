@@ -13,7 +13,12 @@ Warehouse
 >   Trays
  */
 
-const cats = ["Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard", "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc", "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti", "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"];
+const cats = [
+    "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
+    "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
+    "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
+    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
+];
 
 /**
  * Generate a pseudorandom firebase ID
@@ -29,11 +34,11 @@ export function generateRandomId() {
 
 
 export class Warehouse {
-    public id: string;
-    public name: string;
+    id: string;
+    name: string;
 
-    public zones: Zone[];
-    public categories: Category[];
+    zones: Zone[];
+    categories: Category[];
 
     /**
      * @param id firebase - The database ID of the warehouse
@@ -46,6 +51,22 @@ export class Warehouse {
         this.categories = [];
     }
 
+    get bays() {
+        return this.zones.flatMap(zone => zone.bays);
+    }
+
+    get shelves() {
+        return this.bays.flatMap(bay => bay.shelves);
+    }
+
+    get columns() {
+        return this.shelves.flatMap(shelf => shelf.columns);
+    }
+
+    get trays() {
+        return this.columns.flatMap(column => column.trays);
+    }
+
     /**
      * Load tray categories.
      * @async
@@ -54,7 +75,7 @@ export class Warehouse {
     public static async loadCategories(): Promise<Category[]> {
         let categories: Category[] = [];
         for (let i = 0; i < cats.length; i++)
-            categories.push({ name: cats[i] });
+            categories.push({name: cats[i]});
         return categories;
     }
 
@@ -95,6 +116,18 @@ export class Zone {
         this.bays = [];
     }
 
+    get shelves() {
+        return this.bays.flatMap(bay => bay.shelves);
+    }
+
+    get columns() {
+        return this.shelves.flatMap(shelf => shelf.columns);
+    }
+
+    get trays() {
+        return this.columns.flatMap(column => column.trays);
+    }
+
     /**
      * Load all zones within a given warehouse
      * @async
@@ -110,8 +143,7 @@ export class Zone {
             {label: "Black", hex: "#000000"}
         ];
         const zones: Zone[] = [];
-        for (let i = 0; i < colours.length; i++)
-        {
+        for (let i = 0; i < colours.length; i++) {
             let zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
             zones.push(zone);
@@ -143,6 +175,18 @@ export class Bay {
         this.shelves = [];
     }
 
+    get parentWarehouse(): Warehouse | undefined {
+        return this.parentZone?.parentWarehouse;
+    }
+
+    get columns() {
+        return this.shelves.flatMap(shelf => shelf.columns);
+    }
+
+    get trays() {
+        return this.columns.flatMap(column => column.trays);
+    }
+
     /**
      * Load all bays within a given zone
      * @async
@@ -151,8 +195,7 @@ export class Bay {
      */
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < 3; i++)
-        {
+        for (let i = 0; i < 3; i++) {
             let bay: Bay = new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
             bays.push(bay);
@@ -184,6 +227,18 @@ export class Shelf {
         this.columns = [];
     }
 
+    get parentZone(): Zone | undefined {
+        return this.parentBay?.parentZone;
+    }
+
+    get parentWarehouse(): Warehouse | undefined {
+        return this.parentZone?.parentWarehouse;
+    }
+
+    get trays() {
+        return this.columns.flatMap(column => column.trays);
+    }
+
     /**
      * Load all shelves within a given bay
      * @async
@@ -192,8 +247,7 @@ export class Shelf {
      */
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < 3; i++)
-        {
+        for (let i = 0; i < 3; i++) {
             let shelf: Shelf = new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
             shelves.push(shelf);
@@ -222,6 +276,18 @@ export class Column {
         this.trays = [];
     }
 
+    get parentBay(): Bay | undefined {
+        return this.parentShelf?.parentBay;
+    }
+
+    get parentZone(): Zone | undefined {
+        return this.parentBay?.parentZone;
+    }
+
+    get parentWarehouse(): Warehouse | undefined {
+        return this.parentZone?.parentWarehouse;
+    }
+
     /**
      * Load all columns within a given column
      * @async
@@ -230,8 +296,7 @@ export class Column {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 3; i++)
-        {
+        for (let i = 0; i < 3; i++) {
             let column: Column = new Column(generateRandomId(), i, shelf);
             column.trays = await Tray.loadTrays(column);
             columns.push(column);
@@ -256,13 +321,32 @@ export class Tray {
      * @param weight - The tray's (nullable) weight
      * @param customField - The tray's (nullable) custom field
      */
-    private constructor(id: string, parentColumn: Column, category?: Category, expiryRange?: ExpiryRange, weight?: number, customField?:string) {
+    private constructor(
+        id: string, parentColumn: Column, category?: Category, expiryRange?: ExpiryRange, weight?: number,
+        customField?: string
+    ) {
         this.id = id;
         this.category = category;
         this.weight = weight;
         this.expiry = expiryRange;
         this.customField = customField;
         this.parentColumn = parentColumn;
+    }
+
+    get parentShelf(): Shelf | undefined {
+        return this.parentColumn?.parentShelf;
+    }
+
+    get parentBay(): Bay | undefined {
+        return this.parentShelf?.parentBay;
+    }
+
+    get parentZone(): Zone | undefined {
+        return this.parentBay?.parentZone;
+    }
+
+    get parentWarehouse(): Warehouse | undefined {
+        return this.parentZone?.parentWarehouse;
     }
 
     /**
@@ -274,11 +358,17 @@ export class Tray {
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
         for (let i = 0; i < 3; i++) {
-            let categories: Category[] = column?.parentShelf?.parentBay?.parentZone?.parentWarehouse?.categories ?? [{name: ""}];
-            trays.push(new Tray(generateRandomId(), column,
-                // This is not nice to look at...
+            let categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
+
+            // This is not nice to look at...
+            trays.push(new Tray(
+                generateRandomId(),
+                column,
                 categories[Math.floor(categories.length * Math.random())],
-                {from: 0, to: 1, label: "Past", color: "#FF0000"}, Math.floor(15 * Math.random()), undefined));
+                {from: 0, to: 1, label: "Past", color: "#FF0000"},
+                Number((15 * Math.random()).toFixed(2)),
+                Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined
+            ));
         }
         return trays;
     }
