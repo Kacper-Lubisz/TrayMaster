@@ -1,8 +1,8 @@
 import React from "react";
-import {KeyboardButtonProps, Keyboard} from "./keyboard";
+import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faHome, faClock, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
+import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
 /**
  * Defines possible keyboard names
@@ -14,11 +14,11 @@ export type KeyboardName = "category" | "expiry" | "weight";
  * @see SideBar
  */
 interface SideBarProps {
-  /**
-   * Function passed in from parent to call when keyboard needs to be switched
-   * @param name - name of keyboard to switch to
-   */
-  keyboardSwitcher: (name: KeyboardName) => void
+    /**
+     * Function passed in from parent to call when keyboard needs to be switched
+     * @param name - name of keyboard to switch to
+     */
+    keyboardSwitcher: (name: KeyboardName) => void
 }
 
 /**
@@ -27,114 +27,114 @@ interface SideBarProps {
  * @see KeyboardName
  */
 interface SideBarState {
-  activeButton: KeyboardName
+    activeButton: KeyboardName
 }
 
 /**
  * Props to pass into keyboard switch buttons
  */
 interface KeyboardSwitchBtnProps {
-  /**
-   * Whether the button is active (ie whether it should be blue)
-   */
-  active: boolean,
+    /**
+     * Whether the button is active (ie whether it should be blue)
+     */
+    active: boolean,
 
-  /**
-   * Function to call when the button is clicked
-   */
-  onClick: any,
+    /**
+     * Function to call when the button is clicked
+     */
+    onClick: any,
 
-  /**
-   * Icon to show on the button
-   */
-  icon: IconDefinition
+    /**
+     * Icon to show on the button
+     */
+    icon: IconDefinition
 }
 
 /**
  * Button to switch keyboards
  */
 class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
-  render() {
-    return (
-      <button className={this.props.active ? "active" : ""} onClick={(e) => this.props.onClick(e)}>
-        <FontAwesomeIcon icon={this.props.icon}/>
-      </button>
-    );
-  }
+    render() {
+        return (
+            <button className={this.props.active ? "active" : ""} onClick={(e) => this.props.onClick(e)}>
+                <FontAwesomeIcon icon={this.props.icon}/>
+            </button>
+        );
+    }
 }
 
 /**
  * Main sidebar object
  */
 export class SideBar extends React.Component<SideBarProps, SideBarState> {
-  buttons: KeyboardButtonProps[];
+    buttons: KeyboardButtonProps[];
 
-  constructor(props: SideBarProps) {
-    super(props);
+    constructor(props: SideBarProps) {
+        super(props);
 
-    // Generate sidebar buttons
-    this.buttons = [
-      {
-        name: "Settings",
-        onClick: () => {
-          alert("Settings");
-        }
-      },
-      {
-        name: "Back",
-        onClick: () => {
-          alert("Back");
-        }
-      },
-      {
-        name: "Edit Shelf",
-        onClick: () => {
-          alert("Edit Shelf");
-        }
-      },
-      {
-        name: "Navigator",
-        onClick: () => {
-          alert("Navigator");
-        }
-      },
-      {
-        name: "Next",
-        onClick: () => {
-          alert("Next");
-        }
-      }
-    ];
+        // Generate sidebar buttons
+        this.buttons = [
+            {
+                name: "Settings",
+                onClick: () => {
+                    alert("Settings");
+                }
+            },
+            {
+                name: "Back",
+                onClick: () => {
+                    alert("Back");
+                }
+            },
+            {
+                name: "Edit Shelf",
+                onClick: () => {
+                    alert("Edit Shelf");
+                }
+            },
+            {
+                name: "Navigator",
+                onClick: () => {
+                    alert("Navigator");
+                }
+            },
+            {
+                name: "Next",
+                onClick: () => {
+                    alert("Next");
+                }
+            }
+        ];
 
-    // Set initial active button
-    this.state = {
-      activeButton: "category"
-    };
-  }
+        // Set initial active button
+        this.state = {
+            activeButton: "category"
+        };
+    }
 
-  // Function to be called when switcher buttons are clicked
-  changeKeyboard(name: KeyboardName) {
-    this.props.keyboardSwitcher(name);
-    this.setState({
-      ...this.state,
-      activeButton: name
-    });
-  }
+    // Function to be called when switcher buttons are clicked
+    changeKeyboard(name: KeyboardName) {
+        this.props.keyboardSwitcher(name);
+        this.setState({
+            ...this.state,
+            activeButton: name
+        });
+    }
 
-  render() {
-    return (
-      <div id="sideBar">
-        <Keyboard buttons={this.buttons} gridX={1}/>
+    render() {
+        return (
+            <div id="sideBar">
+                <Keyboard buttons={this.buttons} gridX={1}/>
 
-        <div id="kb-switcher">
-          <KeyboardSwitchBtn active={(this.state.activeButton === "category")}
-                             onClick={() => this.changeKeyboard("category")} icon={faHome}/>
-          <KeyboardSwitchBtn active={(this.state.activeButton === "expiry")}
-                             onClick={() => this.changeKeyboard("expiry")} icon={faClock}/>
-          <KeyboardSwitchBtn active={(this.state.activeButton === "weight")}
-                             onClick={() => this.changeKeyboard("weight")} icon={faWeightHanging}/>
-        </div>
-      </div>
-    );
-  }
+                <div id="kb-switcher">
+                    <KeyboardSwitchBtn active={(this.state.activeButton === "category")}
+                                       onClick={() => this.changeKeyboard("category")} icon={faHome}/>
+                    <KeyboardSwitchBtn active={(this.state.activeButton === "expiry")}
+                                       onClick={() => this.changeKeyboard("expiry")} icon={faClock}/>
+                    <KeyboardSwitchBtn active={(this.state.activeButton === "weight")}
+                                       onClick={() => this.changeKeyboard("weight")} icon={faWeightHanging}/>
+                </div>
+            </div>
+        );
+    }
 }
