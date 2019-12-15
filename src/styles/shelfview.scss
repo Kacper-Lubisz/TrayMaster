@@ -19,9 +19,83 @@
 }
 
 #sideBar {
-  // placeholders
+  // arrange children
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+
+  // container for keyboard switch buttons
+  #kb-switcher {
+    // Define container layout
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    height: 50px;
+
+    // buttons inside the switcher
+    > button {
+      // fill available space
+      height: 100%;
+      flex-grow: 1;
+
+      // Styling
+      border: none;
+      background: none;
+      transition: color 0.2s;
+      cursor: pointer;
+      padding: 0;
+
+      // When active, appear blue
+      &.active {
+        color: #3347ff;
+      }
+
+      // Set icon to fill containing button
+      > svg {
+        height: 100%;
+        width: 100%;
+      }
+    }
+  }
 }
 
 #bottom {
-  // placeholders
+  padding: 5px;
+
+  .keyboard-container {
+    display: flex;
+    justify-content: center;
+
+    height: 100%;
+
+    > div {
+      margin: 0 10px;
+    }
+
+    #exp-1 {
+      width: 20%;
+    }
+
+    #exp-2 {
+      width: 15%;
+    }
+
+    #exp-3 {
+      width: 20%;
+    }
+
+    #weight-numpad {
+      width: 30%;
+    }
+
+    #numpadR {
+      width: 10%;
+    }
+  }
+}
+
+.vl {
+  width: 0;
+  border-left: 1px solid black;
 }

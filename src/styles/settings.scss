@@ -5,6 +5,7 @@
 .settings {
 
 }
+
 .settings-header {
   //settings header text
   position: fixed;
@@ -21,21 +22,23 @@
   bottom: 8px;
   height: 300px;
   width: 250px;
-  p{
-    font-size:14px;
+
+  p {
+    font-size: 14px;
   }
 
   .line {
     //line above 'back'
     background: gray;
     height: 3px;
-    width:inherit;
+    width: inherit;
   }
-  .back-btn{
+
+  .back-btn {
     //back button icon
     //TODO center it on the button
     position: absolute;
-    margin-top:13px;
-    left:50px;
+    margin-top: 13px;
+    left: 50px;
   }
 }

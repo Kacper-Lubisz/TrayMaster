@@ -5,16 +5,16 @@ import React from "react";
  * @see KeyboardButton
  */
 export interface KeyboardButtonProps {
-  /**
-   * Name to show on the button
-   */
-  name: string,
+    /**
+     * Name to show on the button
+     */
+    name: string,
 
-  /**
-   * Function to call when button is clicked
-   * @param e
-   */
-  onClick?: (e: React.MouseEvent) => void
+    /**
+     * Function to call when button is clicked
+     * @param e
+     */
+    onClick?: (e: React.MouseEvent) => void
 }
 
 /**
@@ -22,16 +22,16 @@ export interface KeyboardButtonProps {
  * @see KeyboardButtonProps
  */
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
-  render() {
-    return (
-      <button className="key-btn" onClick={(e) => {
-        // if we've been given an onClick function, run it
-        if (this.props.onClick) {
-          this.props.onClick(e);
-        }
-      }}>{this.props.name}</button>
-    );
-  }
+    render() {
+        return (
+            <button className="key-btn" onClick={(e) => {
+                // if we've been given an onClick function, run it
+                if (this.props.onClick) {
+                    this.props.onClick(e);
+                }
+            }}>{this.props.name}</button>
+        );
+    }
 }
 
 /**
@@ -39,20 +39,20 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
  * @see Keyboard
  */
 interface KeyboardProps {
-  /**
-   * List of KeyboardButtonProps to give to child buttons
-   */
-  buttons: KeyboardButtonProps[],
+    /**
+     * List of KeyboardButtonProps to give to child buttons
+     */
+    buttons: KeyboardButtonProps[],
 
-  /**
-   * Number of buttons to show in each horizontal row
-   */
-  gridX: number,
+    /**
+     * Number of buttons to show in each horizontal row
+     */
+    gridX: number,
 
-  /**
-   * [Optional] CSS height to give the keyboard, as a string
-   */
-  height?: string
+    /**
+     * Id to give parent HTML element
+     */
+    id?: string
 }
 
 /**
@@ -60,46 +60,37 @@ interface KeyboardProps {
  * @see KeyboardProps
  */
 export class Keyboard extends React.Component<KeyboardProps> {
-  /**
-   * Handle a button press. Obviously this is not the final version of this function; it's just a placeholder for now
-   * @param {number} i - The button's index
-   */
-  handleClick(i: number) {
-    alert(i);
-  }
 
-  /**
-   * Generate and return an object representing a full keyboard based on the given props
-   */
-  generateBoard() {
-    // calculate the number of rows we need
-    const rowCount: number = Math.ceil(this.props.buttons.length / this.props.gridX);
+    /**
+     * Generate and return an object representing a full keyboard based on the given props
+     */
+    generateBoard() {
+        // calculate the number of rows we need
+        const rowCount: number = Math.ceil(this.props.buttons.length / this.props.gridX);
 
-    return Array(rowCount).fill(0).map((_, r) => {
+        return Array(rowCount).fill(0).map((_, r) => {
 
-      // Work out how many buttons we've generated so far
-      const pastButtons: number = r * this.props.gridX;
+            // Work out how many buttons we've generated so far
+            const pastButtons: number = r * this.props.gridX;
 
-      return (<div className="kb-row">
-        {
-          // Generate the buttons in this row
-          Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
-            const buttonInfo: KeyboardButtonProps = this.props.buttons[pastButtons + c];
-            return <KeyboardButton name={buttonInfo.name} onClick={buttonInfo.onClick}/>;
-          })
-        }
-      </div>);
-    });
-  }
+            return (<div className="kb-row">
+                {
+                    // Generate the buttons in this row
+                    Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
+                        const buttonInfo: KeyboardButtonProps = this.props.buttons[pastButtons + c];
+                        return <KeyboardButton name={buttonInfo.name} onClick={buttonInfo.onClick}/>;
+                    })
+                }
+            </div>);
+        });
+    }
 
-  render() {
+    render() {
 
-    return (
-      <div className="keyboard" style={{
-        height: this.props.height
-      }}>
-        {this.generateBoard()}
-      </div>
-    );
-  }
+        return (
+            <div className="keyboard" id={this.props.id}>
+                {this.generateBoard()}
+            </div>
+        );
+    }
 }
