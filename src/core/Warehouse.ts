@@ -20,7 +20,7 @@ export class Warehouse {
 
     }
 
-    static async loadWarehouse(documentPath: string = "fvv0iPeordXYBEbvxP8U") {
+    /*static async loadWarehouse(documentPath: string = "fvv0iPeordXYBEbvxP8U") {
 
         let options: { source: "cache" | "default" } = {source: "cache"};
 
@@ -37,10 +37,6 @@ export class Warehouse {
             warehouseRef.collection("zones").get(options),
             warehouseRef.collection("zones/").get(options)
         ]);
-
-        test.forEach(doc => {
-            console.log(doc);
-        });
 
         const warehouseData = warehouseQuery.data();
         if (warehouseData === undefined) {
@@ -59,7 +55,7 @@ export class Warehouse {
 
         return new Warehouse(warehouseRef, warehouseData.name, zones, categories);
 
-    }
+    }*/
 
 }
 
