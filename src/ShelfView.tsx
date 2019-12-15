@@ -4,20 +4,77 @@ import {KeyboardName, SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanelComponent} from "./BottomPanelComponent";
 import "./styles/shelfview.scss";
-import {Column, Tray} from "./core/Warehouse";
+import {Bay, Shelf, Warehouse, Zone} from "./core/MockWarehouse";
+import {Settings} from "./core/MockSettings";
+
+
+interface ShelfViewProps {
+    warehouse: Warehouse
+    settings: Settings
+}
 
 interface ShelfViewState {
     currentKeyboard: KeyboardName
+    currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
 }
 
-export class ShelfView extends React.Component<any, ShelfViewState> {
+type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next"
+
+export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     constructor(props: any) {
         super(props);
 
         this.state = {
-            currentKeyboard: "category"
+            currentKeyboard: "category",
+            currentShelf: this.props.warehouse.shelves[0],
         };
+    }
+
+    changeShelf(direction: ShelfMoveDirection): ShelfMoveDirection[] | null {
+
+        const currentWarehouse: Warehouse | undefined = this.state.currentShelf.parentWarehouse;
+        const currentZone: Zone | undefined = this.state.currentShelf.parentZone;
+        const currentBay: Bay | undefined = this.state.currentShelf.parentBay;
+
+        if (!currentBay || !currentZone || !currentWarehouse) {
+            throw Error("Failed to get parent (either bay, zone or warehouse) of current shelf");
+            //todo ensure that this is not nullable
+        }
+
+        const zoneIndex = currentWarehouse?.zones.indexOf(currentZone);
+        const bayIndex = currentZone?.bays.indexOf(currentBay);
+        const shelfIndex = currentBay?.shelves.indexOf(this.state.currentShelf);
+
+        if (direction === "up" || direction === "down") {
+            const isUp = direction === "up";
+            const newShelfIndex: number = shelfIndex + (isUp ? 1 : -1);
+
+            if (newShelfIndex < 0 || newShelfIndex >= currentBay.shelves.length) {
+                return null;
+            }
+            this.setState({
+                ...this.state,
+                currentShelf: currentBay.shelves[newShelfIndex]
+            });
+
+        } else if (direction === "left" || direction === "right") {
+            const isRight = direction === "right";
+            const newBayIndex: number = bayIndex + (isRight ? 1 : -1);
+            const newShelfIndex: number = shelfIndex;
+
+            if (newBayIndex < 0 || newBayIndex >= currentZone.bays.length) {
+                return null;
+            }
+            this.setState({
+                ...this.state,
+                currentShelf: currentBay.shelves[newShelfIndex]
+            });
+        } else if (direction === "next") {
+
+        }
+
+        return [];
     }
 
 
@@ -29,59 +86,16 @@ export class ShelfView extends React.Component<any, ShelfViewState> {
     }
 
     render() {
-
-        let category = {name: "Beans"};
-        let expiry = {
-            from: new Date().getTime(),
-            to: new Date().getTime(),
-            label: "2020",
-            color: "#ff0"
-        };
-        let weight: number = 10.1;
-
-        let trayA = new Tray(category, expiry, weight, "CUSTOM FIELD");
-        let trayB = new Tray(category, expiry, weight);
-
-        let bigBoyTray = new Tray({
-            name: "BeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeans"
-        }, expiry, weight);
-
-        const columns = [
-            new Column([
-                new Tray(category, expiry, weight),
-                trayA,
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight)
-            ]),
-            new Column([
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight)
-            ]),
-            new Column(Array(4).fill(0).map(() => { // todo test this on large numbers of trays
-                return new Tray(category, expiry, weight);
-            })),
-            new Column([
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight),
-                trayB,
-                bigBoyTray
-                // fixme This doesn't work, the style needs fixing for big trays 😉
-            ]),
-        ];
-        // todo derive the columns to feed to the viewport from the shelf view state
-
         return (
             <div id="app">
-                <TopBar/>
-                <ViewPort columns={columns}/>
+                <TopBar locationString={this.state.currentShelf.toString()}/>
+                <ViewPort shelf={this.state.currentShelf}/>
                 <SideBar keyboardSwitcher={this.switchKeyboard.bind(this)}/>
                 <BottomPanelComponent keyboardState={this.state.currentKeyboard}/>
+                {/*todo connect up the categories in warehouse */}
             </div>
         );
+
     }
 
 }
-
-
-export default ShelfView;

@@ -9,11 +9,10 @@ interface MainMenuProps {
 
 export class MainMenu extends React.Component<MainMenuProps, any> {
 
-
     render() {
         return (
             //Links are buttons
-            //When all are implemented they should not all say "/Settings"
+            //When all are implemented they should not all say "/SettingsPage"
 
             <div className="main-menu">
                 <div className="menu-header">
@@ -28,9 +27,9 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
 
                 <div className="menu-btns">
                     <Link to="/" className="key-btn" style={{textDecoration: "none"}}><p>Back to Shelf View</p></Link>
-                    <Link to="/Settings" className="key-btn" style={{textDecoration: "none"}}><p>Search</p></Link>
-                    <Link to="/Settings" className="key-btn" style={{textDecoration: "none"}}><p>Report</p></Link>
-                    <Link to="/Settings" className="key-btn" style={{textDecoration: "none"}}><p>Settings</p></Link>
+                    <Link to="/SettingsPage" className="key-btn" style={{textDecoration: "none"}}><p>Search</p></Link>
+                    <Link to="/SettingsPage" className="key-btn" style={{textDecoration: "none"}}><p>Report</p></Link>
+                    <Link to="/SettingsPage" className="key-btn" style={{textDecoration: "none"}}><p>SettingsPage</p></Link>
                 </div>
             </div>
         );

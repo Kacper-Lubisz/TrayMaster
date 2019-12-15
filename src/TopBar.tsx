@@ -1,11 +1,13 @@
 import React from "react";
 
-export class TopBar extends React.Component {
+interface TopBarProps {
+    locationString: string
+}
+
+export class TopBar extends React.Component<TopBarProps> {
     render() {
         return (
-            <div id="topBar">
-                Current Location
-            </div>
+            <div id="topBar">{this.props.locationString}</div>
         );
     }
 }

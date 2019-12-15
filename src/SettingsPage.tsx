@@ -3,7 +3,7 @@ import "./styles/settings.scss";
 import {Link} from "react-router-dom";
 
 
-export class Settings extends React.Component<any, any> {
+export class SettingsPage extends React.Component<any, any> {
 
 
     render() {

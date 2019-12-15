@@ -3,11 +3,44 @@ import {BrowserRouter, Route, Switch} from "react-router-dom";
 
 import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
-import {Settings} from "./Settings";
+import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
 
+import {Settings, SettingsManager} from "./core/MockSettings";
+import {Warehouse} from "./core/MockWarehouse";
 
-class App extends React.Component<any, any> {
+interface AppState {
+    warehouse: Warehouse
+    settings: Settings
+}
+
+class App extends React.Component<any, AppState> {
+
+    constructor(props: any) {
+        super(props);
+
+        const loadPromise = Promise.all([
+            SettingsManager.loadSettings(),
+            Warehouse.loadWarehouse("ABCD")
+        ]);
+
+        loadPromise.then((result) => {
+            const [settings, warehouse] = result;
+            console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
+            console.log(`Warehouse Loaded: ${warehouse}`);
+
+            console.log(typeof settings);
+
+            this.setState({
+                warehouse: warehouse,
+                settings: settings
+            });
+
+        }).catch(() => {
+            // todo present error message
+        });
+
+    }
 
     render() {
         return (
@@ -15,9 +48,17 @@ class App extends React.Component<any, any> {
             <BrowserRouter>
                 <div id="app">
                     <Switch>
-                        <Route path="/" component={ShelfView} exact/>
-                        <Route path="/menu" component={MainMenu}/>
-                        <Route path="/settings" component={Settings}/>
+                        <Route path="/" component={() => {
+                            if (this.state === null) {
+                                return <div>Loading</div>;
+                                // todo add a loading screen
+                                // fixme this loading screen could surround the entire router
+                            } else {
+                                return <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>;
+                            }
+                        }} exact/>
+                        <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
+                        <Route path="/settings" component={() => <SettingsPage/>}/>
                         <Route component={ErrorPage}/>
                     </Switch>
                 </div>
@@ -26,6 +67,5 @@ class App extends React.Component<any, any> {
     }
 
 }
-
 
 export default App;

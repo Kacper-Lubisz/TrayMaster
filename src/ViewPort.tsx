@@ -1,12 +1,12 @@
 import React from "react";
 import "./styles/shelfview.scss";
-import {Column, Tray} from "./core/Warehouse";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as checkSolid} from "@fortawesome/free-solid-svg-icons";
 import {faCheckCircle as checkLine} from "@fortawesome/free-regular-svg-icons";
+import {Shelf, Tray} from "./core/MockWarehouse";
 
 interface ViewPortProps {
-    columns: Column[];
+    shelf: Shelf;
 }
 
 /**
@@ -103,7 +103,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             }
         };
 
-        const trayOrdered = this.props.columns.flatMap((column, columnIndex) =>
+        const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
             column.trays.map((tray: Tray, trayIndex) => {
                 if (tray === from) {
                     boundIndices.from.column = columnIndex;
@@ -281,8 +281,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         return (
             <div id="viewPort">
                 <div id="shelf">
-                    {this.props.columns.map((column, columnIndex) =>
-
+                    {this.props.shelf.columns.map((column, columnIndex) =>
                         <div
                             style={{order: columnIndex}}
                             className="column"
