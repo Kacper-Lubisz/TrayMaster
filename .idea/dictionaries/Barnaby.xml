@@ -2,6 +2,8 @@
   <dictionary name="Barnaby">
     <words>
       <w>flexbox</w>
+      <w>janky</w>
+      <w>tickboxes</w>
     </words>
   </dictionary>
 </component>

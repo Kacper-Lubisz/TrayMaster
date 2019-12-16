@@ -1,8 +1,8 @@
 import React from "react";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheckCircle as checkSolid} from "@fortawesome/free-solid-svg-icons";
-import {faCheckCircle as checkLine} from "@fortawesome/free-regular-svg-icons";
+import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
 import {Shelf, Tray} from "./core/MockWarehouse";
 
 interface ViewPortProps {
@@ -71,7 +71,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             },
             isMultipleSelect: true
         }, () => {
-            console.log(this.state);
             this.updateDragSelection(this.state.longPress?.dragFrom!!);
         });
     }
@@ -103,6 +102,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             }
         };
 
+        // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
+        // After they have been sorted into any order, anything between the from and to trays is then marked as selected
         const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
             column.trays.map((tray: Tray, trayIndex) => {
                 if (tray === from) {
@@ -114,7 +115,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     boundIndices.to.tray = trayIndex;
                 }
 
-                return {
+                return { // this maps all trays to an object which contains the tray and relevant indices
                     columnIndex: columnIndex,
                     trayIndex: trayIndex,
                     tray: tray
@@ -130,6 +131,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             const invertColumns = boundIndices.from.column < boundIndices.to.column ? 1
                                                                                     : -1;
             // this invert makes sure that trays above the start tray are always selected
+            // todo decide if this ordering is more logical
 
             if (a.trayIndex < b.trayIndex) return 1 * invertColumns;
             if (a.trayIndex > b.trayIndex) return -1 * invertColumns;
@@ -137,6 +139,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             return 0;
         })).map(it => it.tray);
 
+        // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
+        // the from and to trays
         trayOrdered.reduce((isSelecting, tray) => {
 
             const selectThis = isSelecting || tray === from || tray === to;
@@ -213,13 +217,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             }
         }, LONG_PRESS_TIMEOUT);
 
-        this.setState(Object.assign(this.state, {
+        this.setState({
+            ...this.state,
             longPress: {
+                selectedBefore: new Map(),
                 isHappening: false,
                 timeout: timeout,
                 dragFrom: tray
             }
-        }));
+        });
     }
 
     /**
@@ -246,7 +252,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     }
 
     /**
-     * This method is called when the mouse enters the DOM element which represents a any tray.  This method stops a
+     * This method is called when the mouse leaves the DOM element which represents a any tray.  This method stops a
      * mouse down event from starting a drag event.
      * @param e The react mouse event that triggered this call
      */
@@ -301,7 +307,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     key={trayIndex}
                                 >
                                     <FontAwesomeIcon style={this.state.selected.get(tray) ? {"color": "#3347ff"} : {}}
-                                                     icon={this.state.selected.get(tray) ? checkSolid : checkLine}/>
+                                                     icon={this.state.selected.get(tray) ? tickSolid : tickLine}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{
