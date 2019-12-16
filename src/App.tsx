@@ -29,14 +29,13 @@ class App extends React.Component<any, AppState> {
             console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
             console.log(`Warehouse Loaded: ${warehouse}`);
 
-            console.log(typeof settings);
-
             this.setState({
                 warehouse: warehouse,
                 settings: settings
             });
 
         }).catch(() => {
+            console.error("Failed to load the warehouse of the settings");
             // todo present error message
         });
 

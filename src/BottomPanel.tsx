@@ -1,6 +1,6 @@
 import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
-import {KeyboardName} from "./SideBar";
+import {KeyboardName} from "./ShelfView";
 
 export interface BottomPanelProps {
     keyboardState: KeyboardName
@@ -97,24 +97,28 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
     }
 
     chooseKeyboard() {
-        const keyboards = {
-            category: <Keyboard id="cat-keyboard" buttons={this.props.categories} gridX={8}/>,
-            expiry: (
-                <div className="keyboard-container">
-                    <Keyboard id="exp-1" buttons={this.years} gridX={2}/>
-                    <div className="vl"/>
-                    <Keyboard id="exp-2" buttons={this.quarters} gridX={1}/>
-                    <Keyboard id="exp-3" buttons={this.months} gridX={3}/>
-                </div>
-            ),
-            weight: (
-                <div className="keyboard-container">
-                    <Keyboard id="weight-numpad" buttons={this.numpad} gridX={3}/>
-                    <Keyboard id="numpadR" buttons={this.numpadR} gridX={1}/>
-                </div>
-            )
-        };
-        return keyboards[this.props.keyboardState];
+
+        if (this.props.keyboardState === "category") {
+
+            return <Keyboard id="cat-keyboard" buttons={this.props.categories} gridX={8}/>;
+
+        } else if (this.props.keyboardState === "expiry") {
+
+            return <div className="keyboard-container">
+                <Keyboard id="exp-1" buttons={this.years} gridX={2}/>
+                <div className="vl"/>
+                <Keyboard id="exp-2" buttons={this.quarters} gridX={1}/>
+                <Keyboard id="exp-3" buttons={this.months} gridX={3}/>
+            </div>;
+
+        } else { // (this.props.keyboardState === "weight")
+
+            return <div className="keyboard-container">
+                <Keyboard id="weight-numpad" buttons={this.numpad} gridX={3}/>
+                <Keyboard id="numpadR" buttons={this.numpadR} gridX={1}/>
+            </div>;
+
+        }
     }
 
     render() {
