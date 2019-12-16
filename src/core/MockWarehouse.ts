@@ -20,11 +20,19 @@ const cats = [
     "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
 ];
 
+const colours = [
+    {label: "Red", hex: "#FF0000"},
+    {label: "Green", hex: "#00FF00"},
+    {label: "Blue", hex: "#0000FF"},
+    {label: "White", hex: "#FFFFFF"},
+    {label: "Black", hex: "#000000"}
+];
+
 /**
  * Generate a pseudorandom firebase ID
  * @returns string - A randomly generated ID
  */
-export function generateRandomId() {
+export function generateRandomId(): string {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let id = "";
     for (let i = 0; i < 20; i++)
@@ -32,13 +40,20 @@ export function generateRandomId() {
     return id;
 }
 
+interface UpperLayer {
+    isShallow: boolean;
+    loadNextLayer(): Promise<void>;
+}
 
-export class Warehouse {
+
+export class Warehouse implements UpperLayer {
+    isShallow: boolean = true;
+
     id: string;
     name: string;
 
-    zones: Zone[];
-    categories: Category[];
+    categories: Category[] = [];
+    zones: Zone[] = [];
 
     /**
      * @param id firebase - The database ID of the warehouse
@@ -47,23 +62,21 @@ export class Warehouse {
     private constructor(id: string, name: string) {
         this.id = id;
         this.name = name;
-        this.zones = [];
-        this.categories = [];
     }
 
-    get bays() {
+    get bays(): Bay[] {
         return this.zones.flatMap(zone => zone.bays);
     }
 
-    get shelves() {
+    get shelves(): Shelf[] {
         return this.bays.flatMap(bay => bay.shelves);
     }
 
-    get columns() {
+    get columns(): Column[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays() {
+    get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 
@@ -89,17 +102,43 @@ export class Warehouse {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.categories = await Warehouse.loadCategories();
+        warehouse.isShallow = false;
         return warehouse;
+    }
+
+    /**
+     * Load a warehouse (without any zones) by ID
+     * @async
+     * @param id
+     * @returns A promise which resolves to the flat warehouse
+     */
+    public static async loadFlatWarehouse(id: string): Promise<Warehouse> {
+        let warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
+        warehouse.categories = await Warehouse.loadCategories();
+        return warehouse;
+    }
+
+    /**
+     * Load the zones into the warehouse
+     * @async
+     */
+    public async loadNextLayer(): Promise<void> {
+        if (this.isShallow)
+            this.zones = await Zone.loadFlatZones(this);
+        this.isShallow = false;
     }
 }
 
-export class Zone {
+
+export class Zone implements UpperLayer {
+    isShallow: boolean = true;
+
     id: string;
     name: string;
     color: string;
 
     parentWarehouse?: Warehouse;
-    bays: Bay[];
+    bays: Bay[] = [];
 
     /**
      * @param id - The database ID for the zone
@@ -113,18 +152,17 @@ export class Zone {
         this.color = color;
 
         this.parentWarehouse = parentWarehouse;
-        this.bays = [];
     }
 
-    get shelves() {
+    get shelves(): Shelf[] {
         return this.bays.flatMap(bay => bay.shelves);
     }
 
-    get columns() {
+    get columns(): Column[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays() {
+    get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 
@@ -135,24 +173,44 @@ export class Zone {
      * @returns A promise which resolves to all loaded zones within the warehouse
      */
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
-        const colours = [
-            {label: "Red", hex: "#FF0000"},
-            {label: "Green", hex: "#00FF00"},
-            {label: "Blue", hex: "#0000FF"},
-            {label: "White", hex: "#FFFFFF"},
-            {label: "Black", hex: "#000000"}
-        ];
-        const zones: Zone[] = [];
+        let zones: Zone[] = [];
         for (let i = 0; i < colours.length; i++) {
             let zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
+            zone.isShallow = false;
             zones.push(zone);
         }
         return zones;
     }
+
+    /**
+     * Load all zones (without any bays) in a warehouse
+     * @async
+     * @param warehouse - The warehouse to load the zones for
+     * @returns A promise which resolves to the flat zones list
+     */
+    public static async loadFlatZones(warehouse: Warehouse): Promise<Zone[]> {
+        let zones: Zone[] = [];
+        for (let i = 0; i < colours.length; i++)
+            zones.push(new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse));
+        return zones;
+    }
+
+    /**
+     * Load the bays into the zone
+     * @async
+     */
+    public async loadNextLayer(): Promise<void> {
+        if (this.isShallow)
+            this.bays = await Bay.loadFlatBays(this);
+        this.isShallow = false;
+    }
 }
 
-export class Bay {
+
+export class Bay implements UpperLayer {
+    isShallow: boolean;
+
     id: string;
     name: string;
     index: number;
@@ -167,6 +225,8 @@ export class Bay {
      * @param parentZone - The (nullable) parent zone
      */
     private constructor(id: string, name: string, index: number, parentZone?: Zone) {
+        this.isShallow = true;
+
         this.id = id;
         this.name = name;
         this.index = index;
@@ -179,11 +239,11 @@ export class Bay {
         return this.parentZone?.parentWarehouse;
     }
 
-    get columns() {
+    get columns(): Column[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays() {
+    get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 
@@ -198,13 +258,40 @@ export class Bay {
         for (let i = 0; i < 3; i++) {
             let bay: Bay = new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
+            bay.isShallow = false;
             bays.push(bay);
         }
         return bays;
     }
+
+    /**
+     * Load all bays (without any shelves) in a zone
+     * @async
+     * @param zone - The zone to load the bays for
+     * @returns A promise which resolves to the flat bays list
+     */
+    public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
+        let bays: Bay[] = [];
+        for (let i = 0; i < colours.length; i++)
+            bays.push(new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone));
+        return bays;
+    }
+
+    /**
+     * Load the shelves into the bay
+     * @async
+     */
+    public async loadNextLayer(): Promise<void> {
+        if (this.isShallow)
+            this.shelves = await Shelf.loadFlatShelves(this);
+        this.isShallow = false;
+    }
 }
 
-export class Shelf {
+
+export class Shelf implements UpperLayer {
+    isShallow: boolean;
+
     id: string;
     name: string;
     index: number;
@@ -219,6 +306,8 @@ export class Shelf {
      * @param parentBay - The (nullable) parent bay
      */
     private constructor(id: string, name: string, index: number, parentBay?: Bay) {
+        this.isShallow = true;
+
         this.id = id;
         this.name = name;
         this.index = index;
@@ -235,7 +324,7 @@ export class Shelf {
         return this.parentZone?.parentWarehouse;
     }
 
-    get trays() {
+    get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 
@@ -254,9 +343,35 @@ export class Shelf {
         }
         return shelves;
     }
+
+    /**
+     * Load all shelves (without any columns) in a bay
+     * @async
+     * @param bay - The bay to load the shelves for
+     * @returns A promise which resolves to the flat shelf list
+     */
+    public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
+        let shelves: Shelf[] = [];
+        for (let i = 0; i < colours.length; i++)
+            shelves.push(new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay));
+        return shelves;
+    }
+
+    /**
+     * Load the columns into the shelf
+     * @async
+     */
+    public async loadNextLayer(): Promise<void> {
+        if (this.isShallow)
+            this.columns = await Column.loadFlatColumns(this);
+        this.isShallow = false;
+    }
 }
 
-export class Column {
+
+export class Column implements UpperLayer {
+    isShallow: boolean;
+
     id: string;
     index: number;
 
@@ -269,6 +384,8 @@ export class Column {
      * @param parentShelf - The (nullable) parent shelf
      */
     private constructor(id: string, index: number, parentShelf?: Shelf) {
+        this.isShallow = true;
+
         this.id = id;
         this.index = index;
 
@@ -303,7 +420,31 @@ export class Column {
         }
         return columns;
     }
+
+    /**
+     * Load all columns (without any trays) in a shelf
+     * @async
+     * @param shelf - The shelf to load the columns for
+     * @returns A promise which resolves to the flat column list
+     */
+    public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
+        let columns: Column[] = [];
+        for (let i = 0; i < colours.length; i++)
+            columns.push(new Column(generateRandomId(), i, shelf));
+        return columns;
+    }
+
+    /**
+     * Load the trays into the column
+     * @async
+     */
+    public async loadNextLayer(): Promise<void> {
+        if (this.isShallow)
+            this.trays = await Tray.loadTrays(this);
+        this.isShallow = false;
+    }
 }
+
 
 export class Tray {
     id: string;
@@ -321,10 +462,8 @@ export class Tray {
      * @param weight - The tray's (nullable) weight
      * @param customField - The tray's (nullable) custom field
      */
-    private constructor(
-        id: string, parentColumn: Column, category?: Category, expiryRange?: ExpiryRange, weight?: number,
-        customField?: string
-    ) {
+    private constructor(id: string, parentColumn: Column, category?: Category,
+                        expiryRange?: ExpiryRange, weight?: number, customField?: string) {
         this.id = id;
         this.category = category;
         this.weight = weight;
@@ -359,8 +498,6 @@ export class Tray {
         const trays: Tray[] = [];
         for (let i = 0; i < 3; i++) {
             let categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
-
-            // This is not nice to look at...
             trays.push(new Tray(
                 generateRandomId(),
                 column,
@@ -374,6 +511,7 @@ export class Tray {
     }
 }
 
+
 export interface ExpiryRange {
     from: number;
     to: number;
@@ -381,7 +519,7 @@ export interface ExpiryRange {
     color: string;
 }
 
+
 export interface Category {
     name: string;
 }
-
