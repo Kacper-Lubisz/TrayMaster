@@ -29,7 +29,7 @@ export class ShelfView extends React.Component<any, ShelfViewState> {
 
     render() {
         return (
-            <div id="app">
+            <div id="shelfView">
                 <TopBar/>
                 <ViewPort/>
                 <SideBar keyboardSwitcher={this.switchKeyboard.bind(this)}/>
