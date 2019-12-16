@@ -2,9 +2,9 @@ import React from "react";
 import {TopBar} from "./TopBar";
 import {KeyboardName, SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
-import {BottomPanelComponent} from "./BottomPanelComponent";
+import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Shelf, Warehouse, Zone} from "./core/MockWarehouse";
+import {Bay, Category, Shelf, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 
 
@@ -14,6 +14,7 @@ interface ShelfViewProps {
 }
 
 interface ShelfViewState {
+    // todo raise viewport selection state out into shelfview
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
 }
@@ -103,8 +104,12 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     }
 
     possibleMoveDirections(): ShelfMoveDirection[] {
-
+        // TODO implement this
         return ["next"];
+    }
+
+    categorySelected(category: Category) {
+        alert(`You selected ${JSON.stringify(category)}`);
     }
 
     switchKeyboard(id: KeyboardName) {
@@ -139,7 +144,16 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     },
                     {name: "Next", onClick: this.changeShelf.bind(this, "next")},
                 ]} keyboardSwitcher={this.switchKeyboard.bind(this)}/>
-                <BottomPanelComponent keyboardState={this.state.currentKeyboard}/>
+
+                <BottomPanel
+                    categories={this.props.warehouse.categories.map((category) => {
+                        return {
+                            name: category.name,
+                            onClick: this.categorySelected.bind(this, category)
+                        };
+                    })}
+                    keyboardState={this.state.currentKeyboard}
+                />
             </div>
         );
 
