@@ -7,6 +7,7 @@ import {Shelf, Tray} from "./core/MockWarehouse";
 
 interface ViewPortProps {
     shelf: Shelf;
+    selected: Map<Tray, boolean>;
 }
 
 /**
@@ -24,7 +25,6 @@ interface LongPress {
  * @property columns The columns that the viewport displays
  */
 interface ViewPortState {
-    selected: Map<Tray, boolean>;
     isMultipleSelect: boolean;
     mouseDown?: boolean;
     longPress?: LongPress | null;
@@ -37,6 +37,7 @@ const LONG_PRESS_TIMEOUT = 300;
 
 /**
  * This class crates and manages the behavior of the viewport
+ * // todo fixme ensure that the selection is always handled safely
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
@@ -45,7 +46,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.state = {
             isMultipleSelect: false,
-            selected: new Map(),
         };
     }
 
@@ -57,7 +57,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     onDragSelectStart() {
 
         const selectedBefore = new Map();
-        this.state.selected.forEach((selected, tray) => {
+        this.props.selected.forEach((selected, tray) => {
             selectedBefore.set(tray, selected);
         });
 
@@ -83,8 +83,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     updateDragSelection(to: Tray) {
 
-        this.state.selected.forEach((_, tray) => { // reset selection
-            this.state.selected.set(tray, this.state.longPress?.selectedBefore.get(tray) ?? false);
+        this.props.selected.forEach((_, tray) => { // reset selection
+            this.props.selected.set(tray, this.state.longPress?.selectedBefore.get(tray) ?? false);
         });
 
         const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
@@ -146,7 +146,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             const selectThis = isSelecting || tray === from || tray === to;
 
             if (selectThis) {
-                this.state.selected.set(tray, true);
+                this.props.selected.set(tray, true);
             }
             return xor(isSelecting, xor(tray === from, tray === to));
 
@@ -176,19 +176,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     onTrayClick(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
 
-        const newTraySelection = !this.state.selected.get(tray); // if the tray will become selected
+        const newTraySelection = !this.props.selected.get(tray); // if the tray will become selected
 
         if (!this.state.isMultipleSelect && newTraySelection) { // deselect the currently selected
-            this.state.selected.forEach((_, tray) =>
-                this.state.selected.set(tray, false)
+            this.props.selected.forEach((_, tray) =>
+                this.props.selected.set(tray, false)
             );
-            this.state.selected.set(tray, newTraySelection);
+            this.props.selected.set(tray, newTraySelection);
             this.forceUpdate();
 
         } else if (this.state.isMultipleSelect) {
-            this.state.selected.set(tray, newTraySelection);
+            this.props.selected.set(tray, newTraySelection);
 
-            const numSelected = Array.from(this.state.selected.entries())
+            const numSelected = Array.from(this.props.selected.entries())
                                      .filter(([_, value]) => value).length;
 
             if (numSelected === 1) {
@@ -297,7 +297,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                                 <div
                                     className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
-                                        this.state.selected.get(tray) ? " selected" : ""}`}
+                                        this.props.selected.get(tray) ? " selected" : ""}`}
 
                                     // onClick={this.onTrayClick.bind(this, tray)}
                                     onMouseDown={this.onTrayMouseDown.bind(this, tray)}
@@ -306,8 +306,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     onMouseUp={this.onTrayMouseUp.bind(this, tray)}
                                     key={trayIndex}
                                 >
-                                    <FontAwesomeIcon style={this.state.selected.get(tray) ? {"color": "#3347ff"} : {}}
-                                                     icon={this.state.selected.get(tray) ? tickSolid : tickLine}/>
+                                    <FontAwesomeIcon style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
+                                                     icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{

@@ -4,7 +4,7 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, Shelf, Warehouse, Zone} from "./core/MockWarehouse";
+import {Bay, Category, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
@@ -28,6 +28,7 @@ interface ShelfViewState {
     // todo raise viewport selection state out into ShelfView
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
+    selected: Map<Tray, boolean>;
 }
 
 export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
@@ -36,6 +37,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         super(props);
 
         this.state = {
+            selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
         };
@@ -60,7 +62,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         const shelfIndex = bay?.shelves.indexOf(shelf);
         // this might need changing if these lists become unsorted
 
-        if (zoneIndex === undefined || bayIndex  === undefined  || shelfIndex === undefined ) {
+        if (zoneIndex === undefined || bayIndex === undefined || shelfIndex === undefined) {
 
             throw Error("Failed to get the indices of children from warehouse to current shelf (zone, bay or, shelf)");
             //todo ensure that this is not nullable
@@ -187,7 +189,13 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
-        alert(`You selected ${JSON.stringify(category)}`);
+        // alert(`You set ${JSON.stringify(category)}`);
+        this.state.selected.forEach((selected, tray) => {
+            if (selected) {
+                tray.category = category;
+            }
+        });
+        this.forceUpdate();
     }
 
     /**
@@ -220,7 +228,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         return (
             <div id="shelfView">
                 <TopBar locationString={this.state.currentShelf.toString()}/>
-                <ViewPort shelf={this.state.currentShelf}/>
+                <ViewPort selected={this.state.selected} shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
