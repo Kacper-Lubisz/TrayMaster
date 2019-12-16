@@ -13,14 +13,12 @@ class App extends React.Component<any, any> {
         return (
             //Declare the paths for all screens
             <BrowserRouter>
-                <div id="app">
-                    <Switch>
-                        <Route path="/" component={ShelfView} exact/>
-                        <Route path="/menu" component={MainMenu}/>
-                        <Route path="/settings" component={Settings}/>
-                        <Route component={ErrorPage}/>
-                    </Switch>
-                </div>
+                <Switch>
+                    <Route path="/" component={ShelfView} exact/>
+                    <Route path="/menu" component={MainMenu}/>
+                    <Route path="/settings" component={Settings}/>
+                    <Route component={ErrorPage}/>
+                </Switch>
             </BrowserRouter>
         );
     }

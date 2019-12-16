@@ -72,7 +72,7 @@ export class ShelfView extends React.Component<any, ShelfViewState> {
         // todo derive the columns to feed to the viewport from the shelf view state
 
         return (
-            <div id="app">
+            <div id="shelfView">
                 <TopBar/>
                 <ViewPort columns={columns}/>
                 <SideBar keyboardSwitcher={this.switchKeyboard.bind(this)}/>
