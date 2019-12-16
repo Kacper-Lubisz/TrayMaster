@@ -31,28 +31,30 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         };
     }
 
-    changeShelf(direction: ShelfMoveDirection): ShelfMoveDirection[] | null {
+    changeShelf(direction: ShelfMoveDirection) {
 
-        const currentWarehouse: Warehouse | undefined = this.state.currentShelf.parentWarehouse;
+        const warehouse: Warehouse | undefined = this.state.currentShelf.parentWarehouse;
         const currentZone: Zone | undefined = this.state.currentShelf.parentZone;
         const currentBay: Bay | undefined = this.state.currentShelf.parentBay;
 
-        if (!currentBay || !currentZone || !currentWarehouse) {
+        if (!currentBay || !currentZone || !warehouse) {
             throw Error("Failed to get parent (either bay, zone or warehouse) of current shelf");
             //todo ensure that this is not nullable
         }
 
-        const zoneIndex = currentWarehouse?.zones.indexOf(currentZone);
+        const zoneIndex = warehouse?.zones.indexOf(currentZone);
         const bayIndex = currentZone?.bays.indexOf(currentBay);
         const shelfIndex = currentBay?.shelves.indexOf(this.state.currentShelf);
+        // this might need changing if these lists become unsorted
 
         if (direction === "up" || direction === "down") {
             const isUp = direction === "up";
-            const newShelfIndex: number = shelfIndex + (isUp ? 1 : -1);
 
+            const newShelfIndex: number = shelfIndex + (isUp ? 1 : -1);
             if (newShelfIndex < 0 || newShelfIndex >= currentBay.shelves.length) {
-                return null;
+                return;
             }
+
             this.setState({
                 ...this.state,
                 currentShelf: currentBay.shelves[newShelfIndex]
@@ -60,23 +62,50 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
         } else if (direction === "left" || direction === "right") {
             const isRight = direction === "right";
-            const newBayIndex: number = bayIndex + (isRight ? 1 : -1);
-            const newShelfIndex: number = shelfIndex;
 
+            const newBayIndex: number = bayIndex + (isRight ? 1 : -1);
             if (newBayIndex < 0 || newBayIndex >= currentZone.bays.length) {
-                return null;
+                return;
             }
+
+            const newShelfIndex: number = Math.max(Math.min(
+                shelfIndex,
+                currentZone.bays[newBayIndex].shelves.length - 1),
+                0
+            );
             this.setState({
                 ...this.state,
-                currentShelf: currentBay.shelves[newShelfIndex]
+                currentShelf: currentZone.bays[newBayIndex].shelves[newShelfIndex]
             });
         } else if (direction === "next") {
-
+            if (shelfIndex + 1 !== currentBay.shelves.length) {// increment shelfIndex
+                const newShelfIndex = shelfIndex + 1;
+                this.setState({
+                    ...this.state,
+                    currentShelf: currentBay.shelves[newShelfIndex]
+                });
+            } else if (bayIndex + 1 !== currentZone.bays.length) { // increment bayIndex
+                const newBayIndex = bayIndex + 1;
+                this.setState({
+                    ...this.state,
+                    currentShelf: currentZone.bays[newBayIndex].shelves[0]
+                    // fixme ensure that this bay has shelves
+                });
+            } else { // increment zone
+                const newZoneIndex = (zoneIndex + 1) % warehouse.zones.length;
+                this.setState({
+                    ...this.state,
+                    currentShelf: warehouse.zones[newZoneIndex].bays[0].shelves[0]
+                    // fixme ensure that this zone has bays and this bay has shelves
+                });
+            }
         }
-
-        return [];
     }
 
+    possibleMoveDirections(): ShelfMoveDirection[] {
+
+        return ["next"];
+    }
 
     switchKeyboard(id: KeyboardName) {
         this.setState({
@@ -87,12 +116,30 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     render() {
         return (
-            <div id="app">
+            <div id="shelfView">
                 <TopBar locationString={this.state.currentShelf.toString()}/>
                 <ViewPort shelf={this.state.currentShelf}/>
-                <SideBar keyboardSwitcher={this.switchKeyboard.bind(this)}/>
+                <SideBar buttons={[ // Generate sidebar buttons
+                    {
+                        name: "Settings", onClick: () => {
+                            alert("Settings");
+                        }
+                    }, {
+                        name: "Back", onClick: () => {
+                            alert("Back");
+                        }
+                    }, {
+                        name: "Edit Shelf", onClick: () => {
+                            alert("Edit Shelf");
+                        }
+                    }, {
+                        name: "Navigator", onClick: () => {
+                            alert("Navigator");
+                        }
+                    },
+                    {name: "Next", onClick: this.changeShelf.bind(this, "next")},
+                ]} keyboardSwitcher={this.switchKeyboard.bind(this)}/>
                 <BottomPanelComponent keyboardState={this.state.currentKeyboard}/>
-                {/*todo connect up the categories in warehouse */}
             </div>
         );
 

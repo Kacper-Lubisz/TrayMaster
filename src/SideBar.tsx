@@ -19,6 +19,8 @@ interface SideBarProps {
      * @param name - name of keyboard to switch to
      */
     keyboardSwitcher: (name: KeyboardName) => void
+
+    buttons: KeyboardButtonProps[];
 }
 
 /**
@@ -67,44 +69,9 @@ class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
  * Main sidebar object
  */
 export class SideBar extends React.Component<SideBarProps, SideBarState> {
-    buttons: KeyboardButtonProps[];
 
     constructor(props: SideBarProps) {
         super(props);
-
-        // Generate sidebar buttons
-        this.buttons = [
-            {
-                name: "Settings",
-                onClick: () => {
-                    alert("Settings");
-                }
-            },
-            {
-                name: "Back",
-                onClick: () => {
-                    alert("Back");
-                }
-            },
-            {
-                name: "Edit Shelf",
-                onClick: () => {
-                    alert("Edit Shelf");
-                }
-            },
-            {
-                name: "Navigator",
-                onClick: () => {
-                    alert("Navigator");
-                }
-            },
-            {
-                name: "Next",
-                onClick: () => {
-                    alert("Next");
-                }
-            }
-        ];
 
         // Set initial active button
         this.state = {
@@ -124,7 +91,7 @@ export class SideBar extends React.Component<SideBarProps, SideBarState> {
     render() {
         return (
             <div id="sideBar">
-                <Keyboard buttons={this.buttons} gridX={1}/>
+                <Keyboard buttons={this.props.buttons} gridX={1}/>
 
                 <div id="kb-switcher">
                     <KeyboardSwitchBtn active={(this.state.activeButton === "category")}

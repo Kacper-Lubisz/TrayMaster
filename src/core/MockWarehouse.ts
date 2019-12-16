@@ -197,7 +197,7 @@ export class Bay {
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
         for (let i = 0; i < 3; i++) {
-            const bay: Bay = new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone);
+            const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
             bays.push(bay);
         }
@@ -249,7 +249,7 @@ export class Shelf {
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
         for (let i = 0; i < 3; i++) {
-            const shelf: Shelf = new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay);
+            const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
             shelves.push(shelf);
         }
@@ -257,7 +257,8 @@ export class Shelf {
     }
 
     public toString(): string {
-        return "TODO shelf string"; // todo decide and implement this shelf toString
+        return `${this.parentZone?.name} ${this.parentBay?.name}${this.name}`; // todo decide and implement this shelf
+                                                                               // toString
     }
 
 }
