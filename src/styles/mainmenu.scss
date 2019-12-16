@@ -1,6 +1,6 @@
 //Main menu style sheet
 
-@import "./keyboard.scss";
+@import "./keyboard";
 
 .main-menu {
 
@@ -9,17 +9,22 @@
 .menu-header {
   //shelfmaster text
   position: fixed;
-  left: 20px;
-  font-size: 20px;
+  top: 20px;
+  left: 40px;
+  font-size: 40px;
+
+  h1 {
+    margin: 0;
+  }
 }
 
-.menu-btns {
+.menu-btn-container {
   //container for all buttons
   display: flex;
   flex-direction: column;
   position: fixed;
-  left: 8px;
-  bottom: 8px;
+  left: 15px;
+  bottom: 15px;
   height: 300px;
   width: 250px;
 
@@ -28,37 +33,37 @@
 .alert {
   //container for the alert
   position: fixed;
-  width: 350px;
-  right: 10px;
-  top: 10px;
-  box-shadow: 3px 3px 3px 3px gray;
+  width: 500px;
+  right: 30px;
+  top: 30px;
+  box-shadow: 0 0 30px -15px #000000;
+  border-radius: 10px;
+  border: 1px solid #bbbbbb;
+  padding: 20px;
 
-  .warning-icon {
-    //warning icon
-    //TODO needs to be red
-    position: relative;
-    height: 60px;
-    float: left;
-    margin-left: 10px;
-    //TODO position should be dependent on .alert
-    top: 15px;
-  }
+  .alert-header {
+    display: flex;
+    align-items: center;
 
-  h2 {
-    //text "expiry imminent"
-    position: center;
-    font-size: 30px;
-    right: 0;
-    margin-right: 0;
+    .alert-warning {
+      //warning icon
+      flex-shrink: 1;
+      color: #ff0000;
+      height: 55px;
+      width: 55px;
+      //TODO position should be dependent on .alert [what does this mean? -BC]
+    }
 
+    h2 {
+      margin: 0 0 0 20px;
+      //text "expiry imminent"
+      font-size: 30px;
+    }
   }
 
   p {
     //text how many items expire
-    position: static;
     font-size: 16px;
-    bottom: 0;
-    margin-bottom: 10px;
-    margin-left: 10px;
+    margin-bottom: 0;
   }
 }

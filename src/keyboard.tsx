@@ -15,6 +15,11 @@ export interface KeyboardButtonProps {
      * @param e
      */
     onClick?: (e: React.MouseEvent) => void
+
+    /**
+     * Whether the button should be visibly selected
+     */
+    selected?: boolean
 }
 
 /**
@@ -24,7 +29,7 @@ export interface KeyboardButtonProps {
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
-            <button className="key-btn" onClick={(e) => {
+            <button className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
                 // if we've been given an onClick function, run it
                 if (this.props.onClick) {
                     this.props.onClick(e);
