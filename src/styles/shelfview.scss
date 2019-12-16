@@ -2,7 +2,9 @@
 
 @import "./keyboard";
 // Import generic keyboard styling
-@import "./shelfviewgrid"; // Import shelf view grid layout
+@import "./shelfviewgrid";
+// Import shelf view grid layout
+@import "./viewport"; // Import viewport styling
 
 #topBar {
   background-color: #cccccc;
