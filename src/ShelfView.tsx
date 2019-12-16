@@ -60,7 +60,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         const shelfIndex = bay?.shelves.indexOf(shelf);
         // this might need changing if these lists become unsorted
 
-        if (!zoneIndex || !bayIndex || !shelfIndex) {
+        if (zoneIndex === undefined || bayIndex  === undefined  || shelfIndex === undefined ) {
+
             throw Error("Failed to get the indices of children from warehouse to current shelf (zone, bay or, shelf)");
             //todo ensure that this is not nullable
         }
