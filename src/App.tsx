@@ -1,37 +1,25 @@
 import React from "react";
-import {TopBar} from "./TopBar";
-import {SideBar} from "./SideBar";
-import {ViewPort} from "./ViewPort";
-import {BottomPanelComponent, BottomPanelPage} from "./BottomPanelComponent";
-import "./styles/shelfview.scss";
-import {SettingsManager} from "./core/MockSettings";
-import {Warehouse} from "./core/MockWarehouse";
+import {BrowserRouter, Route, Switch} from "react-router-dom";
+
+import {ShelfView} from "./ShelfView";
+import {MainMenu} from "./MainMenu";
+import {Settings} from "./Settings";
+import {ErrorPage} from "./ErrorPage";
+
 
 class App extends React.Component<any, any> {
-    constructor(props: any) {
-        super(props);
-
-        SettingsManager.loadSettings()
-            .then(settings => {
-                console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
-        
-                settings.sampleSetting = "Different value";
-                SettingsManager.saveSettings();
-            });
-        Warehouse.loadWarehouse("ABCD")
-            .then(warehouse => {
-                console.log(warehouse);
-            });
-    }
 
     render() {
         return (
-            <div id="app">
-                <TopBar/>
-                <ViewPort/>
-                <SideBar/>
-                <BottomPanelComponent/>
-            </div>
+            //Declare the paths for all screens
+            <BrowserRouter>
+                <Switch>
+                    <Route path="/" component={ShelfView} exact/>
+                    <Route path="/menu" component={MainMenu}/>
+                    <Route path="/settings" component={Settings}/>
+                    <Route component={ErrorPage}/>
+                </Switch>
+            </BrowserRouter>
         );
     }
 
