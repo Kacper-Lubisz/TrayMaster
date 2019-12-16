@@ -28,6 +28,46 @@ const colours = [
     {label: "Black", hex: "#000000"}
 ];
 
+const expires = [
+    {
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 2).getTime(),
+        label: "Jan 2020",
+        color: "#FF0"
+    },
+    {
+        from: new Date(2020, 2).getTime(),
+        to: new Date(2020, 3).getTime(),
+        label: "Feb 2020",
+        color: "#0ff"
+    },
+    {
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 4).getTime(),
+        label: "Jan-Mar 2020",
+        color: "#00f"
+    },
+    {
+        from: new Date(2020, 4).getTime(),
+        to: new Date(2020, 7).getTime(),
+        label: "Apr-Jun 2020",
+        color: "#F0f"
+    },
+    {
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2021, 1).getTime(),
+        label: "2020",
+        color: "#FF0000"
+    },
+    {
+        from: new Date(2021, 1).getTime(),
+        to: new Date(2022, 1).getTime(),
+        label: "2021",
+        color: "#0f0"
+    },
+];
+
+
 /**
  * Generate a pseudorandom firebase ID
  * @returns string - A randomly generated ID
@@ -42,6 +82,7 @@ export function generateRandomId(): string {
 
 interface UpperLayer {
     isShallow: boolean;
+
     loadNextLayer(): Promise<void>;
 }
 
@@ -86,7 +127,7 @@ export class Warehouse implements UpperLayer {
      * @returns A promise which resolves to the list of categories in the warehouse
      */
     public static async loadCategories(): Promise<Category[]> {
-        let categories: Category[] = [];
+        const categories: Category[] = [];
         for (let i = 0; i < cats.length; i++)
             categories.push({name: cats[i]});
         return categories;
@@ -113,7 +154,7 @@ export class Warehouse implements UpperLayer {
      * @returns A promise which resolves to the flat warehouse
      */
     public static async loadFlatWarehouse(id: string): Promise<Warehouse> {
-        let warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
+        const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.categories = await Warehouse.loadCategories();
         return warehouse;
     }
@@ -173,9 +214,9 @@ export class Zone implements UpperLayer {
      * @returns A promise which resolves to all loaded zones within the warehouse
      */
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
-        let zones: Zone[] = [];
+        const zones: Zone[] = [];
         for (let i = 0; i < colours.length; i++) {
-            let zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
+            const zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
             zone.isShallow = false;
             zones.push(zone);
@@ -190,7 +231,7 @@ export class Zone implements UpperLayer {
      * @returns A promise which resolves to the flat zones list
      */
     public static async loadFlatZones(warehouse: Warehouse): Promise<Zone[]> {
-        let zones: Zone[] = [];
+        const zones: Zone[] = [];
         for (let i = 0; i < colours.length; i++)
             zones.push(new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse));
         return zones;
@@ -256,7 +297,7 @@ export class Bay implements UpperLayer {
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
         for (let i = 0; i < 3; i++) {
-            let bay: Bay = new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone);
+            const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
             bay.isShallow = false;
             bays.push(bay);
@@ -271,7 +312,7 @@ export class Bay implements UpperLayer {
      * @returns A promise which resolves to the flat bays list
      */
     public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
-        let bays: Bay[] = [];
+        const bays: Bay[] = [];
         for (let i = 0; i < colours.length; i++)
             bays.push(new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone));
         return bays;
@@ -337,11 +378,16 @@ export class Shelf implements UpperLayer {
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
         for (let i = 0; i < 3; i++) {
-            let shelf: Shelf = new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay);
+            const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
             shelves.push(shelf);
         }
         return shelves;
+    }
+
+    public toString(): string {
+        return `${this.parentZone?.name} ${this.parentBay?.name}${this.name}`;
+        // todo decide and implement this shelf toString
     }
 
     /**
@@ -351,7 +397,7 @@ export class Shelf implements UpperLayer {
      * @returns A promise which resolves to the flat shelf list
      */
     public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
-        let shelves: Shelf[] = [];
+        const shelves: Shelf[] = [];
         for (let i = 0; i < colours.length; i++)
             shelves.push(new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay));
         return shelves;
@@ -414,7 +460,7 @@ export class Column implements UpperLayer {
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
         for (let i = 0; i < 3; i++) {
-            let column: Column = new Column(generateRandomId(), i, shelf);
+            const column: Column = new Column(generateRandomId(), i, shelf);
             column.trays = await Tray.loadTrays(column);
             columns.push(column);
         }
@@ -428,7 +474,7 @@ export class Column implements UpperLayer {
      * @returns A promise which resolves to the flat column list
      */
     public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
-        let columns: Column[] = [];
+        const columns: Column[] = [];
         for (let i = 0; i < colours.length; i++)
             columns.push(new Column(generateRandomId(), i, shelf));
         return columns;
@@ -463,7 +509,8 @@ export class Tray {
      * @param customField - The tray's (nullable) custom field
      */
     private constructor(id: string, parentColumn: Column, category?: Category,
-                        expiryRange?: ExpiryRange, weight?: number, customField?: string) {
+                        expiryRange?: ExpiryRange, weight?: number, customField?: string
+    ) {
         this.id = id;
         this.category = category;
         this.weight = weight;
@@ -497,12 +544,14 @@ export class Tray {
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
         for (let i = 0; i < 3; i++) {
-            let categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
+            const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
+
+            // This is not nice to look at...
             trays.push(new Tray(
                 generateRandomId(),
                 column,
                 categories[Math.floor(categories.length * Math.random())],
-                {from: 0, to: 1, label: "Past", color: "#FF0000"},
+                expires[Math.floor(expires.length * Math.random())],
                 Number((15 * Math.random()).toFixed(2)),
                 Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined
             ));

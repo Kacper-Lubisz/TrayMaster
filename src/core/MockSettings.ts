@@ -1,7 +1,7 @@
 // TODO: Agree on which initial settings we are using (can add more later)
 // TODO: Document
 
-let settingsMap: { sampleSetting: string } = {
+let settingsMap: Settings = {
     sampleSetting: "Custom setting"
 };
 
