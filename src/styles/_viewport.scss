@@ -56,7 +56,7 @@
         // Round the corners
         border-radius: 10px;
 
-        > svg {
+        > svg.tray-tickbox {
           // Show the tickboxes
           visibility: visible;
         }
@@ -75,7 +75,7 @@
       }
 
       // Tickboxes
-      > svg {
+      > svg.tray-tickbox {
         // Layout
         margin: 5px 0;
         width: 10%;
@@ -125,15 +125,18 @@
       > div.trayWeight {
         top: 0;
         right: 0;
-        font-size: 15px;
+        font-size: 20px;
         margin: 2px 5px;
       }
 
-      // Custom field: top middle
-      > div.trayCustomField {
-        top: 0;
+      // Tooltip custom field thingy: top middle
+      > svg.customField {
+        top: 10px;
         left: 50%;
         transform: translate(-50%, 0);
+        color: #333333;
+        height: 30%;
+        width: 20%;
       }
     }
   }

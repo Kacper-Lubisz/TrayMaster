@@ -1,7 +1,7 @@
 import React from "react";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle as tickSolid, faStickyNote as postIt} from "@fortawesome/free-solid-svg-icons";
 import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
 import {Shelf, Tray} from "./core/MockWarehouse";
 
@@ -306,8 +306,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     onMouseUp={this.onTrayMouseUp.bind(this, tray)}
                                     key={trayIndex}
                                 >
-                                    <FontAwesomeIcon className={this.props.selected.get(tray) ? "tick-selected" : ""}
-                                                     icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
+                                    <FontAwesomeIcon
+                                        className={`tray-tickbox ${this.props.selected.get(tray) ? "tick-selected"
+                                                                                                 : ""}`}
+                                        icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{
@@ -316,7 +318,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                                     <div className="trayWeight">{tray.weight ?? "?"}kg</div>
 
-                                    <div className="trayCustomField">{tray.customField ?? ""}</div>
+                                    {tray.customField ? <FontAwesomeIcon className="customField" icon={postIt}
+                                                                         title={tray.customField}/> : ""}
                                 </div>)}
                         </div>)
                     }</div>

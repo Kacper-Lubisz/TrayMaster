@@ -227,7 +227,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     render() {
         return (
             <div id="shelfView">
-                <TopBar locationString={this.state.currentShelf.toString()}/>
+                <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
+                        locationString={this.state.currentShelf.toString()}/>
                 <ViewPort selected={this.state.selected} shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons
