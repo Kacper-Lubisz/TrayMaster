@@ -46,11 +46,11 @@ const YEAR_PERIOD = 8;
  * @return number - the saturation to use for that range
  */
 function getSaturation(days: number) {
-    if (days <= 0) return 0;        // not a valid range
-    if (days <= 20) return 1;       // less than a month
-    if (days <= 40) return 0.9;     // month
-    if (days <= 100) return 0.8;    // quarter
-    if (days <= 183) return 0.7;   // 6 months
+    if (days <= 0) return 1;        // not a valid range - TODO: decide whether to return 1 or 0 here
+    //if (days <= 20) return 1;       // less than a month  TODO: also decide whether we should throw errors for bad nos
+    if (days <= 40) return 1;     // month
+    if (days <= 100) return 0.75;    // quarter
+    if (days <= 183) return 0.6;   // 6 months
     if (days <= 366) return 0.5;    // year
     return 0;                       // more than a year
 }
@@ -157,9 +157,27 @@ let expires = [
         color: ""
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
+        from: new Date(2020, 2).getTime(),
+        to: new Date(2020, 3).getTime(),
+        label: "Feb 2020",
+        color: ""
+    },
+    {
+        from: new Date(2024, 11).getTime(),
+        to: new Date(2024, 12).getTime(),
+        label: "Nov 2022",
+        color: ""
+    },
+    {
+        from: new Date(2024, 5).getTime(),
+        to: new Date(2024, 6).getTime(),
+        label: "May 2024",
+        color: ""
+    },
+    {
+        from: new Date(2026, 8).getTime(),
+        to: new Date(2026, 9).getTime(),
+        label: "August 2026",
         color: ""
     },
 ];
