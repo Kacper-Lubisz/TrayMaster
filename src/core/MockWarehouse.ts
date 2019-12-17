@@ -1,3 +1,7 @@
+import "dayjs";
+import dayjs, {Dayjs} from "dayjs";
+import {hslToRgb} from "./hslToRgb";
+
 /*
 Warehouse
 >   SettingsPage
@@ -28,44 +32,115 @@ const colours = [
     {label: "Black", hex: "#000000"}
 ];
 
-const expires = [
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
-        color: "#FF0"
-    },
-    {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Feb 2020",
-        color: "#0ff"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020",
-        color: "#00f"
-    },
-    {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020",
-        color: "#F0f"
-    },
+
+const YEAR_PERIOD = 8;
+
+function getSaturation(days: number) {
+    if (days <= 0) return 0;        // not a valid range
+    if (days <= 20) return 1;       // less than a month
+    if (days <= 40) return 0.9;     // month
+    if (days <= 100) return 0.8;    // quarter
+    if (days <= 183) return 0.7;   // 6 months
+    if (days <= 366) return 0.5;    // year
+    return 0;                       // more than a year
+}
+
+function getExpiryColour(range: ExpiryRange) {
+    const djsDate: Dayjs = dayjs(range.from);
+    const modYear: number = djsDate.year() % YEAR_PERIOD;
+    const ratioMonth: number = (djsDate.date() - 1) / djsDate.date(-1).date();
+    const ratioYear: number = ((djsDate.month() - 1) + ratioMonth) / 12;
+    const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
+    const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
+    return hslToRgb(ratioPeriod * 360, saturation, 1);
+}
+
+let expires = [
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2021, 1).getTime(),
         label: "2020",
-        color: "#FF0000"
+        color: ""
     },
     {
         from: new Date(2021, 1).getTime(),
         to: new Date(2022, 1).getTime(),
         label: "2021",
-        color: "#0f0"
+        color: ""
+    },
+    {
+        from: new Date(2022, 1).getTime(),
+        to: new Date(2023, 1).getTime(),
+        label: "2022",
+        color: ""
+    },
+    {
+        from: new Date(2023, 1).getTime(),
+        to: new Date(2024, 1).getTime(),
+        label: "2023",
+        color: ""
+    },
+    {
+        from: new Date(2024, 1).getTime(),
+        to: new Date(2025, 1).getTime(),
+        label: "2024",
+        color: ""
+    },
+    {
+        from: new Date(2025, 1).getTime(),
+        to: new Date(2026, 1).getTime(),
+        label: "2025",
+        color: ""
+    },
+    {
+        from: new Date(2026, 1).getTime(),
+        to: new Date(2027, 1).getTime(),
+        label: "2026",
+        color: ""
+    },
+    {
+        from: new Date(2027, 1).getTime(),
+        to: new Date(2028, 1).getTime(),
+        label: "2027",
+        color: ""
+    },
+    {
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 4).getTime(),
+        label: "Jan-Mar 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 4).getTime(),
+        to: new Date(2020, 7).getTime(),
+        label: "Apr-Jun 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 7).getTime(),
+        to: new Date(2020, 10).getTime(),
+        label: "Jul-Sep 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 10).getTime(),
+        to: new Date(2021, 1).getTime(),
+        label: "Oct-Dec 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 2).getTime(),
+        label: "Jan 2020",
+        color: ""
     },
 ];
+// fixme this is a bit of a janky solution: I wrote it as a stopgap until we start dynamically generating expiry ranges
+// fixme        rather than requiring an explicit list.
+expires = expires.map((exp) => {
+    exp.color = getExpiryColour(exp);
+    return exp;
+});
 
 
 /**
