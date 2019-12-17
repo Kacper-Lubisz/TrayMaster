@@ -105,6 +105,10 @@ export class Warehouse implements UpperLayer {
         this.name = name;
     }
 
+    public static create(id: string, name: string): Warehouse {
+        return new Warehouse(id, name);
+    }
+
     get bays(): Bay[] {
         return this.zones.flatMap(zone => zone.bays);
     }
@@ -195,6 +199,10 @@ export class Zone implements UpperLayer {
         this.parentWarehouse = parentWarehouse;
     }
 
+    public static create(id: string, name: string, color: string, parentWarehouse?: Warehouse): Zone {
+        return new Zone(id, name, color, parentWarehouse);
+    }
+
     get shelves(): Shelf[] {
         return this.bays.flatMap(bay => bay.shelves);
     }
@@ -250,14 +258,14 @@ export class Zone implements UpperLayer {
 
 
 export class Bay implements UpperLayer {
-    isShallow: boolean;
+    isShallow: boolean = true;
 
     id: string;
     name: string;
     index: number;
 
     parentZone?: Zone;
-    shelves: Shelf[];
+    shelves: Shelf[] = [];
 
     /**
      * @param id - The database ID for the bay
@@ -266,14 +274,15 @@ export class Bay implements UpperLayer {
      * @param parentZone - The (nullable) parent zone
      */
     private constructor(id: string, name: string, index: number, parentZone?: Zone) {
-        this.isShallow = true;
-
         this.id = id;
         this.name = name;
         this.index = index;
 
         this.parentZone = parentZone;
-        this.shelves = [];
+    }
+
+    public static create(id: string, name: string, index: number, parentZone?: Zone): Bay {
+        return new Bay(id, name, index, parentZone);
     }
 
     get parentWarehouse(): Warehouse | undefined {
@@ -331,14 +340,14 @@ export class Bay implements UpperLayer {
 
 
 export class Shelf implements UpperLayer {
-    isShallow: boolean;
+    isShallow: boolean = true;
 
     id: string;
     name: string;
     index: number;
 
     parentBay?: Bay;
-    columns: Column[];
+    columns: Column[] = [];
 
     /**
      * @param id - The database ID for the shelf
@@ -347,14 +356,15 @@ export class Shelf implements UpperLayer {
      * @param parentBay - The (nullable) parent bay
      */
     private constructor(id: string, name: string, index: number, parentBay?: Bay) {
-        this.isShallow = true;
-
         this.id = id;
         this.name = name;
         this.index = index;
 
         this.parentBay = parentBay;
-        this.columns = [];
+    }
+
+    public static create(id: string, name: string, index: number, parentBay?: Bay): Shelf {
+        return new Shelf(id, name, index, parentBay);
     }
 
     get parentZone(): Zone | undefined {
@@ -416,13 +426,13 @@ export class Shelf implements UpperLayer {
 
 
 export class Column implements UpperLayer {
-    isShallow: boolean;
+    isShallow: boolean = true;
 
     id: string;
     index: number;
 
     parentShelf?: Shelf;
-    trays: Tray[];
+    trays: Tray[] = [];
 
     /**
      * @param id - The database ID of the column
@@ -430,13 +440,20 @@ export class Column implements UpperLayer {
      * @param parentShelf - The (nullable) parent shelf
      */
     private constructor(id: string, index: number, parentShelf?: Shelf) {
-        this.isShallow = true;
-
         this.id = id;
         this.index = index;
 
         this.parentShelf = parentShelf;
-        this.trays = [];
+    }
+
+    public static create(trays: Tray[]) {
+        const column: Column = new Column(generateRandomId(), -1);
+        column.trays = trays;
+        for (let i = 0; i < column.trays.length; i++) {
+            column.trays[i].parentColumn = column;
+            column.trays[i].index = i;
+        }
+        return column;
     }
 
     get parentBay(): Bay | undefined {
@@ -494,28 +511,46 @@ export class Column implements UpperLayer {
 
 export class Tray {
     id: string;
-    parentColumn?: Column;
+    index: number;
+
     customField?: string;
     category?: Category;
     expiry?: ExpiryRange;
     weight?: number;
 
+    parentColumn?: Column;
+
     /**
      * @param id - The database ID of the tray
+     * @param index - The index of the tray within the column
      * @param parentColumn - The (nullable) parent column
      * @param category - The tray's (nullable) category
      * @param expiryRange - The tray's (nullable) expiry range
      * @param weight - The tray's (nullable) weight
      * @param customField - The tray's (nullable) custom field
      */
-    private constructor(id: string, parentColumn: Column, category?: Category,
-                        expiryRange?: ExpiryRange, weight?: number, customField?: string
+    private constructor(
+        id: string, index: number, category?: Category, expiryRange?: ExpiryRange,
+        weight?: number, customField?: string, parentColumn?: Column
     ) {
         this.id = id;
+        this.index = index;
+
         this.category = category;
         this.weight = weight;
         this.expiry = expiryRange;
         this.customField = customField;
+        this.parentColumn = parentColumn;
+    }
+
+    public static create(
+        category?: Category, expiryRange?: ExpiryRange, weight?: number, customField?: string, parentColumn?: Column
+    ): Tray {
+        return new Tray(generateRandomId(), -1, category, expiryRange, weight, customField, parentColumn);
+    }
+
+    public placeAsChild(index: number, parentColumn: Column) {
+        this.index = index;
         this.parentColumn = parentColumn;
     }
 
@@ -548,12 +583,12 @@ export class Tray {
 
             // This is not nice to look at...
             trays.push(new Tray(
-                generateRandomId(),
-                column,
+                generateRandomId(), i,
                 categories[Math.floor(categories.length * Math.random())],
                 expires[Math.floor(expires.length * Math.random())],
                 Number((15 * Math.random()).toFixed(2)),
-                Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined
+                Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
+                column
             ));
         }
         return trays;
