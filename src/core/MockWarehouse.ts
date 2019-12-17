@@ -428,5 +428,6 @@ export interface ExpiryRange {
 
 export interface Category {
     name: string;
+    shortName?: string;
 }
 

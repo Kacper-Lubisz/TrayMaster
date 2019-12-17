@@ -249,7 +249,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 <BottomPanel
                     categories={this.props.warehouse.categories.map((category) => {
                         return {
-                            name: category.name,
+                            name: category.shortName ?? category.name,
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
