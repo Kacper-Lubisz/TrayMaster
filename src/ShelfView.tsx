@@ -4,7 +4,7 @@ import {KeyboardName, SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanelComponent} from "./BottomPanelComponent";
 import "./styles/shelfview.scss";
-import {Column, Tray} from "./core/Warehouse";
+import {Column, Tray} from "./core/MockWarehouse";
 
 interface ShelfViewState {
     currentKeyboard: KeyboardName
@@ -39,31 +39,31 @@ export class ShelfView extends React.Component<any, ShelfViewState> {
         };
         let weight: number = 10.1;
 
-        let trayA = new Tray(category, expiry, weight, "CUSTOM FIELD");
-        let trayB = new Tray(category, expiry, weight);
+        let trayA = Tray.create(category, expiry, weight, "CUSTOM FIELD");
+        let trayB = Tray.create(category, expiry, weight);
 
-        let bigBoyTray = new Tray({
+        let bigBoyTray = Tray.create({
             name: "BeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeansBeans"
         }, expiry, weight);
 
         const columns = [
-            new Column([
-                new Tray(category, expiry, weight),
+            Column.create([
+                Tray.create(category, expiry, weight),
                 trayA,
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight)
+                Tray.create(category, expiry, weight),
+                Tray.create(category, expiry, weight)
             ]),
-            new Column([
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight)
+            Column.create([
+                Tray.create(category, expiry, weight),
+                Tray.create(category, expiry, weight),
+                Tray.create(category, expiry, weight)
             ]),
-            new Column(Array(4).fill(0).map(() => { // todo test this on large numbers of trays
-                return new Tray(category, expiry, weight);
+            Column.create(Array(4).fill(0).map(() => { // todo test this on large numbers of trays
+                return Tray.create(category, expiry, weight);
             })),
-            new Column([
-                new Tray(category, expiry, weight),
-                new Tray(category, expiry, weight),
+            Column.create([
+                Tray.create(category, expiry, weight),
+                Tray.create(category, expiry, weight),
                 trayB,
                 bigBoyTray
                 // fixme This doesn't work, the style needs fixing for big trays 😉
