@@ -306,7 +306,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     onMouseUp={this.onTrayMouseUp.bind(this, tray)}
                                     key={trayIndex}
                                 >
-                                    <FontAwesomeIcon style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
+                                    <FontAwesomeIcon className={this.props.selected.get(tray) ? "tick-selected" : ""}
                                                      icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 

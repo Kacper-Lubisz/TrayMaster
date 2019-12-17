@@ -1,10 +1,13 @@
 // MAIN SHELF VIEW STYLING
 
-@import "./keyboard";
+// Import system-wide variables: we need to know $accent-colour here
+@import "./variables";
 // Import generic keyboard styling
-@import "./shelfviewgrid";
+@import "./keyboard";
 // Import shelf view grid layout
-@import "./viewport"; // Import viewport styling
+@import "./shelfviewgrid";
+// Import viewport styling
+@import "./viewport";
 
 #topBar {
   background-color: #cccccc;
@@ -29,7 +32,7 @@
   // container for keyboard switch buttons
   #kb-switcher {
     // Define container layout
-    padding: 10px;
+    margin-top: 10px;
     display: flex;
     justify-content: space-around;
     align-items: stretch;
@@ -50,7 +53,7 @@
 
       // When active, appear blue
       &.active {
-        color: #3347ff;
+        color: $accent-colour;
       }
 
       // Set icon to fill containing button

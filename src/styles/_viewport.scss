@@ -1,5 +1,8 @@
 // VIEWPORT STYLING
 
+// Import system-wide variables: we need to know $accent-colour here
+@import "variables";
+
 // Shelf
 #shelf {
   // Layout
@@ -82,6 +85,10 @@
 
         // Hide by default; will be shown when in multiple select mode
         visibility: hidden;
+
+        &.tick-selected {
+          color: $accent-colour;
+        }
       }
 
       // Tray category: bottom left
