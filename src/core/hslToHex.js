@@ -1,3 +1,5 @@
+// BOTH OF THESE FUNCTIONS WERE TAKEN FROM THE GIVEN SOURCES AND ADAPTED TO FIT THE NEEDS OF THIS PROJECT
+
 // SOURCE: https://campushippo.com/lessons/how-to-convert-rgb-colors-to-hexadecimal-with-javascript-78219fdb
 function rgbToHex(rgb) {
     let hex = Number(rgb).toString(16);
@@ -9,15 +11,15 @@ function rgbToHex(rgb) {
 
 // SOURCE: https://gist.github.com/mjackson/5311256#gistcomment-2789005
 /**
- * Converts an HSL color value to RGB. Conversion formula
+ * Converts an HSL color value to HSL. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
  *
  * @param   h       The hue, in [0-360]
  * @param   s       The saturation, in [0-1]
  * @param   l       The lightness, in [0-1]
- * @return  string           The
+ * @return  string  The hex code corresponding to the given HSL value
  */
-export function hslToRgb(h, s, l) {
+export function hslToHex(h, s, l) {
     let hprime = h / 60;
     const c = l * s;
     const x = c * (1 - Math.abs(hprime % 2 - 1));

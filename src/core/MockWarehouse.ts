@@ -1,6 +1,6 @@
 import "dayjs";
 import dayjs, {Dayjs} from "dayjs";
-import {hslToRgb} from "./hslToRgb";
+import {hslToHex} from "./hslToHex";
 
 /*
 Warehouse
@@ -32,9 +32,19 @@ const colours = [
     {label: "Black", hex: "#000000"}
 ];
 
-
+/**
+ * Period to use for a complete cycle around the hue colour wheel
+ * Using 8 currently because that's the number on the expiry keyboard (and what common food lasts longer than 8 years??)
+ */
 const YEAR_PERIOD = 8;
 
+/**
+ * Takes in the length of an expiry range in days (1-366 inclusive) and returns a saturation value to use
+ * Used inside getExpiryColour
+ * @see getExpiryColour
+ * @param days - the length of an expiry range in days
+ * @return number - the saturation to use for that range
+ */
 function getSaturation(days: number) {
     if (days <= 0) return 0;        // not a valid range
     if (days <= 20) return 1;       // less than a month
@@ -45,14 +55,32 @@ function getSaturation(days: number) {
     return 0;                       // more than a year
 }
 
+/**
+ * Takes in an ExpiryRange object and returns a hex colour to use for that range
+ * Hue depends on the start time of the expiry range in an 8 year cycle
+ * Saturation depends on the length of the range (more precision = more intense colour)
+ * @param range {ExpiryRange} - the expiry range to return a colour for
+ * @return string - the 7-digit hex value to use for that expiry range
+ */
 function getExpiryColour(range: ExpiryRange) {
+    // get a dayjs date corresponding to the from property of the range, to use later
     const djsDate: Dayjs = dayjs(range.from);
+
+    // Year modulo YEAR_PERIOD
     const modYear: number = djsDate.year() % YEAR_PERIOD;
+
+    // Ratio of the way through the month
     const ratioMonth: number = (djsDate.date() - 1) / djsDate.date(-1).date();
+
+    // Ratio of the way through the year
     const ratioYear: number = ((djsDate.month() - 1) + ratioMonth) / 12;
+
+    // Ratio of the way through the period
     const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
+
+    // get saturation from difference between from and to and return hex value
     const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
-    return hslToRgb(ratioPeriod * 360, saturation, 1);
+    return hslToHex(ratioPeriod * 360, saturation, 1);
 }
 
 let expires = [
