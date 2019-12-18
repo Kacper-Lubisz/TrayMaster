@@ -11,7 +11,7 @@ interface TopBarProps {
  *          https://stackoverflow.com/a/3943023 - decide what colour to use
  * @param hex - the background colour provided by the zone
  */
-function getFontColour(hex?: string) {
+function getFontColour(hex: string) {
     if (hex) {
         let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         if (result) {
@@ -28,7 +28,7 @@ export class TopBar extends React.Component<TopBarProps> {
         return (
             <div id="topBar" style={{
                 backgroundColor: this.props.zoneColour,
-                color: getFontColour(this.props.zoneColour)
+                color: this.props.zoneColour ? getFontColour(this.props.zoneColour) : "#000000"
             }}>{this.props.locationString}</div>
         );
     }
