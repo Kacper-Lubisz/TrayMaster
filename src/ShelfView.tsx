@@ -189,7 +189,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
-        // alert(`You set ${JSON.stringify(category)}`);
         this.state.selected.forEach((selected, tray) => {
             if (selected) {
                 tray.category = category;
