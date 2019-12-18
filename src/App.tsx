@@ -1,5 +1,6 @@
 import React from "react";
 import {BrowserRouter, Route, Switch} from "react-router-dom";
+import "fullscreen-polyfill";
 
 import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";

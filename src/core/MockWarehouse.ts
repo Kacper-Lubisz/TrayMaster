@@ -364,7 +364,7 @@ export class Tray {
      */
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
             const testExpires = [
                 {

@@ -48,16 +48,18 @@
       // Relative positioning: required to allow us to give children position: absolute;
       position: relative;
 
-      // When we're in multiple select mode
-      &.multipleSelect {
-        // Round the corners
-        border-radius: 10px;
+      border-radius: 10px;
 
-        > svg {
-          // Show the tickboxes
-          visibility: visible;
-        }
-      }
+      //// When we're in multiple select mode
+      //&.multipleSelect {
+      //  // Round the corners
+      //  border-radius: 10px;
+      //
+      //  > svg {
+      //    // Show the tickboxes
+      //    visibility: visible;
+      //  }
+      //}
 
       // When the tray is selected
       &.selected {
@@ -80,8 +82,8 @@
         top: 0;
         left: 0;
 
-        // Hide by default; will be shown when in multiple select mode
-        visibility: hidden;
+        //// Hide by default; will be shown when in multiple select mode
+        //visibility: hidden;
       }
 
       // Tray category: bottom left
