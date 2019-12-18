@@ -22,10 +22,10 @@ interface LongPress {
 
 /**
  * The state of the ViewPort
- * @property columns The columns that the viewport displays
  */
 interface ViewPortState {
     longPress?: LongPress | null;
+    multipleSelect: boolean;
 }
 
 /**
@@ -43,6 +43,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         super(props);
         this.state = {
             longPress: null,
+            multipleSelect: false,
         };
     }
 
@@ -60,6 +61,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.setState({
             ...this.state,
+            multipleSelect: true,
             longPress: {
                 isHappening: true,
                 timeout: undefined,
@@ -152,15 +154,30 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     /**
      * This method is called when a drag event is ended by pointer up, or when the pointer leaves the viewport during a
-     * drag.  It is used to finalise the state.
+     * drag. After drag finishes and the state is set, the callback is to fix the UI select display mode
      */
     onDragSelectEnd() {
 
         this.setState({
             ...this.state,
             longPress: null,
-        });
+        }, this.fixSelectDisplayMode);
+    }
 
+    /**
+     * This method is called to fix the UI select display mode (whether in multiple-select mode), once the selection
+     * has been updated. It's called after a click, or after a drag finishes.
+     */
+    fixSelectDisplayMode() {
+        const currSelected = Array.from(this.props.selected.entries())
+                                  .filter(([_, value]) => value);
+
+        const multipleSelect = currSelected.length > 1;
+
+        this.setState({
+            ...this.state,
+            multipleSelect: multipleSelect,
+        }, this.forceUpdate);
     }
 
     /**
@@ -175,16 +192,18 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const currSelected = Array.from(this.props.selected.entries())
                                   .filter(([_, value]) => value);
 
-        // If there's only one thing selected, and it's not the current thing, then deselect that thing and just toggle
-        // this one as normal below
-        if (currSelected.length === 1) {
-            if (tray != currSelected[0][0]) {
+        // If there's only one thing selected, and not in multiple select mode, and it's not the current thing, then
+        // deselect that thing and just toggle this one as normal below
+        if (currSelected.length === 1 && !this.state.multipleSelect) {
+            if (tray !== currSelected[0][0]) {
                 this.props.selected.set(currSelected[0][0], false);
             }
         }
 
+        // Toggle the selection
         this.props.selected.set(tray, !this.props.selected.get(tray));
-        this.forceUpdate();
+        // Fix the select display mode
+        this.fixSelectDisplayMode();
 
     }
 
@@ -194,7 +213,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param e The react pointer event that triggered this call
      */
     onTrayPointerDown(tray: Tray, e: React.PointerEvent<HTMLDivElement>) {
-
+        e.currentTarget.releasePointerCapture(e.pointerId);
         const timeout: number = window.setTimeout(() => { // await hold time
             if (this.state.longPress) { // not interrupted
                 this.onDragSelectStart();
@@ -231,18 +250,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 });
                 this.onTrayClick(tray, e);
             }
-        } else {
-            // Don't think we actually want this to happen, shouldn't get a pointer up without a pointer down somewhere
-            // else, which would have set longPress. Also don't want this happening because you want to be able to
-            // cancel a long press if the drag action leaves the viewport
-
-            // this.onTrayClick(tray, e);
         }
+
     }
 
     /**
-     * This method is called when the pointer leaves the DOM element which represents a any tray.  This method stops a
-     * pointer down event from starting a drag event.
+     * This method is called when the pointer leaves the DOM element which represents any tray.  This method stops a
+     * pointer down event from starting a drag event if the pointer leaves that tray.
      * @param e The react pointer event that triggered this call
      */
     onTrayPointerLeave(e: React.PointerEvent<HTMLDivElement>) {
@@ -285,7 +299,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             {column.trays.map((tray, trayIndex) =>
 
                                 <div
-                                    className={`tray${
+                                    className={`tray${this.state.multipleSelect ? " multipleSelect" : ""}${
                                         this.props.selected.get(tray) ? " selected" : ""}`}
 
                                     // onClick={this.onTrayClick.bind(this, tray)}
@@ -295,8 +309,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     onPointerUp={this.onTrayPointerUp.bind(this, tray)}
                                     key={trayIndex}
                                 >
-                                    <FontAwesomeIcon style={this.props.selected.get(tray) ? {"color": "#3347ff"}
-                                                                                          : {"color": "#cacaca"}}
+                                    <FontAwesomeIcon style={
+                                        this.props.selected.get(tray) ? {"visibility": "visible", "color": "#3347ff"}
+                                                                      : {"color": "#cacaca"}
+                                    }
                                                      icon={tickSolid}/>
                                     <div className="trayCategory">{tray.category?.name ?? "?"}</div>
 

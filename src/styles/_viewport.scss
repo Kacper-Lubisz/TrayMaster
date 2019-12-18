@@ -50,16 +50,11 @@
 
       border-radius: 10px;
 
-      //// When we're in multiple select mode
-      //&.multipleSelect {
-      //  // Round the corners
-      //  border-radius: 10px;
-      //
-      //  > svg {
-      //    // Show the tickboxes
-      //    visibility: visible;
-      //  }
-      //}
+      // When we're in multiple select mode, show all tickboxes
+      &.multipleSelect > svg {
+        // Show the tickboxes
+        visibility: visible;
+      }
 
       // When the tray is selected
       &.selected {
@@ -71,6 +66,7 @@
       > * {
         // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
         position: absolute;
+        pointer-events: none;
       }
 
       // Tickboxes
@@ -82,8 +78,8 @@
         top: 0;
         left: 0;
 
-        //// Hide by default; will be shown when in multiple select mode
-        //visibility: hidden;
+        // Hide by default; will be shown when in multiple select mode
+        visibility: hidden;
       }
 
       // Tray category: bottom left
