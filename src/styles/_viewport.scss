@@ -129,14 +129,11 @@
         margin: 2px 5px;
       }
 
-      // Tooltip custom field thingy: top middle
-      > svg.customField {
-        top: 10px;
+      // Custom field: top middle
+      > div.trayCustomField {
+        top: 0;
         left: 50%;
         transform: translate(-50%, 0);
-        color: #333333;
-        height: 30%;
-        width: 20%;
       }
     }
   }
