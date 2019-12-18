@@ -15,6 +15,11 @@ export interface KeyboardButtonProps {
      * @param e
      */
     onClick?: (e: React.MouseEvent) => void
+
+    /**
+     * Whether the button should be visibly selected
+     */
+    selected?: boolean
 }
 
 /**
@@ -24,7 +29,7 @@ export interface KeyboardButtonProps {
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
-            <button className="key-btn" onClick={(e) => {
+            <button className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
                 // if we've been given an onClick function, run it
                 if (this.props.onClick) {
                     this.props.onClick(e);
@@ -73,12 +78,10 @@ export class Keyboard extends React.Component<KeyboardProps> {
             // Work out how many buttons we've generated so far
             const pastButtons: number = r * this.props.gridX;
 
-            return (<div className="kb-row">
-                {
-                    // Generate the buttons in this row
+            return (<div key={r} className="kb-row">
+                {  // Generate the buttons in this row
                     Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
-                        const buttonInfo: KeyboardButtonProps = this.props.buttons[pastButtons + c];
-                        return <KeyboardButton name={buttonInfo.name} onClick={buttonInfo.onClick}/>;
+                        return <KeyboardButton key={c} {...this.props.buttons[pastButtons + c]}/>;
                     })
                 }
             </div>);

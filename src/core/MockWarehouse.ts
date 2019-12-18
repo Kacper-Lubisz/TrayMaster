@@ -80,13 +80,13 @@ export function generateRandomId(): string {
     return id;
 }
 
-
 /**
  * All non-tray warehouse model classes may be only shallow loaded at a time, this
  * interface begins to unify the warehouse model for consistent recursive data access.
  */
 interface UpperLayer {
     isDeepLoaded: boolean;
+
     loadNextLayer(): Promise<void>;
 }
 
@@ -187,6 +187,7 @@ export class Warehouse implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 }
 
@@ -293,6 +294,7 @@ export class Zone implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 }
 
@@ -397,12 +399,14 @@ export class Bay implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 
     //#region Parent Getters
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
@@ -507,6 +511,7 @@ export class Shelf implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 
     //#region Parent Getters
@@ -517,6 +522,7 @@ export class Shelf implements UpperLayer {
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
@@ -575,7 +581,7 @@ export class Column implements UpperLayer {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             const column: Column = new Column(generateRandomId(), i, shelf);
             column.trays = await Tray.loadTrays(column);
             columns.push(column);
@@ -618,6 +624,7 @@ export class Column implements UpperLayer {
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
@@ -693,7 +700,8 @@ export class Tray {
         for (let i = 0; i < 3; i++) {
             const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
             trays.push(new Tray(
-                generateRandomId(), i,
+                generateRandomId(),
+                i,
                 categories[Math.floor(categories.length * Math.random())],
                 expires[Math.floor(expires.length * Math.random())],
                 Number((15 * Math.random()).toFixed(2)),
@@ -720,6 +728,7 @@ export class Tray {
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
