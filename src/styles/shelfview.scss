@@ -2,10 +2,10 @@
 
 // Import system-wide variables: we need to know $accent-colour here
 @import "./variables";
-// Import generic keyboard styling
-@import "./keyboard";
 // Import shelf view grid layout
 @import "./shelfviewgrid";
+// Import generic keyboard styling
+@import "./keyboard";
 // Import viewport styling
 @import "./viewport";
 
