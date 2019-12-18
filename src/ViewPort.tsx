@@ -5,6 +5,7 @@ import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
 import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
 import {Shelf, Tray} from "./core/MockWarehouse";
 
+
 interface ViewPortProps {
     shelf: Shelf;
     selected: Map<Tray, boolean>;
