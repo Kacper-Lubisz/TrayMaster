@@ -4,7 +4,7 @@ import {hslToHex} from "./hslToHex";
 
 /*
 Warehouse
->   SettingsPage
+>   Settings
 >   Categories
 >   Zones
     >   Bays
@@ -201,15 +201,19 @@ export function generateRandomId(): string {
     return id;
 }
 
+/**
+ * All non-tray warehouse model classes may be only shallow loaded at a time, this
+ * interface begins to unify the warehouse model for consistent recursive data access.
+ */
 interface UpperLayer {
-    isShallow: boolean;
+    isDeepLoaded: boolean;
 
     loadNextLayer(): Promise<void>;
 }
 
 
 export class Warehouse implements UpperLayer {
-    isShallow: boolean = true;
+    isDeepLoaded: boolean = false;
 
     id: string;
     name: string;
@@ -226,20 +230,18 @@ export class Warehouse implements UpperLayer {
         this.name = name;
     }
 
-    get bays(): Bay[] {
-        return this.zones.flatMap(zone => zone.bays);
-    }
-
-    get shelves(): Shelf[] {
-        return this.bays.flatMap(bay => bay.shelves);
-    }
-
-    get columns(): Column[] {
-        return this.shelves.flatMap(shelf => shelf.columns);
-    }
-
-    get trays(): Tray[] {
-        return this.columns.flatMap(column => column.trays);
+    /**
+     * Create a warehouse from a collection of zones
+     * @param zones - The zones to put in the warehouse
+     * @param name - The name of the warehouse
+     * @returns The newly created warehouse
+     */
+    public static create(zones: Zone[], name?: string): Warehouse {
+        const warehouse: Warehouse = new Warehouse(generateRandomId(), name ?? "");
+        warehouse.zones = zones;
+        for (let i = 0; i < warehouse.zones.length; i++)
+            warehouse.zones[i].placeInWarehouse(warehouse);
+        return warehouse;
     }
 
     /**
@@ -262,10 +264,9 @@ export class Warehouse implements UpperLayer {
      */
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
-        warehouse.categories = await Warehouse.loadCategories();
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.categories = await Warehouse.loadCategories();
-        warehouse.isShallow = false;
+        warehouse.isDeepLoaded = false;
         return warehouse;
     }
 
@@ -286,15 +287,34 @@ export class Warehouse implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (this.isShallow)
+        if (!this.isDeepLoaded)
             this.zones = await Zone.loadFlatZones(this);
-        this.isShallow = false;
+        this.isDeepLoaded = true;
     }
+
+    //#region Children Getters
+    get bays(): Bay[] {
+        return this.zones.flatMap(zone => zone.bays);
+    }
+
+    get shelves(): Shelf[] {
+        return this.bays.flatMap(bay => bay.shelves);
+    }
+
+    get columns(): Column[] {
+        return this.shelves.flatMap(shelf => shelf.columns);
+    }
+
+    get trays(): Tray[] {
+        return this.columns.flatMap(column => column.trays);
+    }
+
+    //#endregion
 }
 
 
 export class Zone implements UpperLayer {
-    isShallow: boolean = true;
+    isDeepLoaded: boolean = false;
 
     id: string;
     name: string;
@@ -317,16 +337,30 @@ export class Zone implements UpperLayer {
         this.parentWarehouse = parentWarehouse;
     }
 
-    get shelves(): Shelf[] {
-        return this.bays.flatMap(bay => bay.shelves);
+    /**
+     * Create a zone from a collection of bays
+     * @param bays - The bays to put in the zone
+     * @param name - The name of the zone
+     * @param color - The hex colour of the zone
+     * @param parentWarehouse - The warehouse the zone belongs to
+     * @returns The newly created zone
+     */
+    public static create(bays: Bay[], name?: string, color?: string, parentWarehouse?: Warehouse): Zone {
+        const zone: Zone = new Zone(generateRandomId(), name ?? "", color ?? "#000000", parentWarehouse);
+        zone.bays = bays;
+        for (let i = 0; i < zone.bays.length; i++)
+            zone.bays[i].placeInZone(i, zone);
+        return zone;
     }
 
-    get columns(): Column[] {
-        return this.shelves.flatMap(shelf => shelf.columns);
-    }
-
-    get trays(): Tray[] {
-        return this.columns.flatMap(column => column.trays);
+    /**
+     * Place the zone within a warehouse
+     * @param parentWarehouse - The warehouse the zone is being added to
+     * @param name - The name of the zone
+     */
+    public placeInWarehouse(parentWarehouse: Warehouse, name?: string) {
+        this.parentWarehouse = parentWarehouse;
+        this.name = name ?? this.name;
     }
 
     /**
@@ -340,7 +374,7 @@ export class Zone implements UpperLayer {
         for (let i = 0; i < colours.length; i++) {
             const zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
-            zone.isShallow = false;
+            zone.isDeepLoaded = false;
             zones.push(zone);
         }
         return zones;
@@ -364,42 +398,14 @@ export class Zone implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (this.isShallow)
+        if (!this.isDeepLoaded)
             this.bays = await Bay.loadFlatBays(this);
-        this.isShallow = false;
-    }
-}
-
-
-export class Bay implements UpperLayer {
-    isShallow: boolean;
-
-    id: string;
-    name: string;
-    index: number;
-
-    parentZone?: Zone;
-    shelves: Shelf[];
-
-    /**
-     * @param id - The database ID for the bay
-     * @param name - The name of the bay
-     * @param index - The (ordered) index of the bay within the zone
-     * @param parentZone - The (nullable) parent zone
-     */
-    private constructor(id: string, name: string, index: number, parentZone?: Zone) {
-        this.isShallow = true;
-
-        this.id = id;
-        this.name = name;
-        this.index = index;
-
-        this.parentZone = parentZone;
-        this.shelves = [];
+        this.isDeepLoaded = true;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
-        return this.parentZone?.parentWarehouse;
+    //#region Children Getters
+    get shelves(): Shelf[] {
+        return this.bays.flatMap(bay => bay.shelves);
     }
 
     get columns(): Column[] {
@@ -408,6 +414,62 @@ export class Bay implements UpperLayer {
 
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
+    }
+
+    //#endregion
+}
+
+
+export class Bay implements UpperLayer {
+    isDeepLoaded: boolean = false;
+
+    id: string;
+    name: string;
+    index: number;
+
+    parentZone?: Zone;
+    shelves: Shelf[] = [];
+
+    /**
+     * @param id - The database ID for the bay
+     * @param name - The name of the bay
+     * @param index - The (ordered) index of the bay within the zone
+     * @param parentZone - The (nullable) parent zone
+     */
+    private constructor(id: string, name: string, index: number, parentZone?: Zone) {
+        this.id = id;
+        this.name = name;
+        this.index = index;
+
+        this.parentZone = parentZone;
+    }
+
+    /**
+     * Create a bay from a collection of shelves
+     * @param shelves - The shelves to put in the bay
+     * @param name - The name of the bay
+     * @param index - The index of the bay within its zone
+     * @param parentZone - The zone the bay belongs to
+     * @returns The newly created bay
+     */
+    public static create(shelves: Shelf[], name?: string, index?: number, parentZone?: Zone): Bay {
+        const bay: Bay = new Bay(generateRandomId(), name ?? "", index ?? -1, parentZone);
+        bay.shelves = shelves;
+        for (let i = 0; i < bay.shelves.length; i++)
+            bay.shelves[i].placeInBay(i, bay);
+        return bay;
+    }
+
+    /**
+     * Place the bay within a zone
+     * @param index - The index of the bay within the zone
+     * @param parentZone - The zone the bay is being added to
+     * @param name - The name of the bay
+     */
+    public placeInZone(index: number, parentZone: Zone, name?: string) {
+        this.index = index;
+        this.parentZone = parentZone;
+        this.name = name ?? this.name;
     }
 
     /**
@@ -421,7 +483,7 @@ export class Bay implements UpperLayer {
         for (let i = 0; i < 3; i++) {
             const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
-            bay.isShallow = false;
+            bay.isDeepLoaded = false;
             bays.push(bay);
         }
         return bays;
@@ -445,22 +507,40 @@ export class Bay implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (this.isShallow)
+        if (!this.isDeepLoaded)
             this.shelves = await Shelf.loadFlatShelves(this);
-        this.isShallow = false;
+        this.isDeepLoaded = true;
     }
+
+    //#region Children Getters
+    get columns(): Column[] {
+        return this.shelves.flatMap(shelf => shelf.columns);
+    }
+
+    get trays(): Tray[] {
+        return this.columns.flatMap(column => column.trays);
+    }
+
+    //#endregion
+
+    //#region Parent Getters
+    get parentWarehouse(): Warehouse | undefined {
+        return this.parentZone?.parentWarehouse;
+    }
+
+    //#endregion
 }
 
 
 export class Shelf implements UpperLayer {
-    isShallow: boolean;
+    isDeepLoaded: boolean = false;
 
     id: string;
     name: string;
     index: number;
 
     parentBay?: Bay;
-    columns: Column[];
+    columns: Column[] = [];
 
     /**
      * @param id - The database ID for the shelf
@@ -469,26 +549,39 @@ export class Shelf implements UpperLayer {
      * @param parentBay - The (nullable) parent bay
      */
     private constructor(id: string, name: string, index: number, parentBay?: Bay) {
-        this.isShallow = true;
-
         this.id = id;
         this.name = name;
         this.index = index;
 
         this.parentBay = parentBay;
-        this.columns = [];
     }
 
-    get parentZone(): Zone | undefined {
-        return this.parentBay?.parentZone;
+    /**
+     * Create a shelf from a collection of columns
+     * @param columns - The columns to put in the shelf
+     * @param name - The name of the shelf
+     * @param index - The index of the shelf within its bay
+     * @param parentBay - The bay the shelf belongs to
+     * @returns The newly created shelf
+     */
+    public static create(columns: Column[], name?: string, index?: number, parentBay?: Bay): Shelf {
+        const shelf: Shelf = new Shelf(generateRandomId(), name ?? "", index ?? -1);
+        shelf.columns = columns;
+        for (let i = 0; i < shelf.columns.length; i++)
+            shelf.columns[i].placeInShelf(i, shelf);
+        return shelf;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
-        return this.parentZone?.parentWarehouse;
-    }
-
-    get trays(): Tray[] {
-        return this.columns.flatMap(column => column.trays);
+    /**
+     * Place the shelf within a bay
+     * @param index - The index of the shelf within the bay
+     * @param parentBay - The bay the shelf is being added to
+     * @param name - The name of the shelf
+     */
+    public placeInBay(index: number, parentBay: Bay, name?: string) {
+        this.index = index;
+        this.parentBay = parentBay;
+        this.name = name ?? this.name;
     }
 
     /**
@@ -530,21 +623,39 @@ export class Shelf implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (this.isShallow)
+        if (!this.isDeepLoaded)
             this.columns = await Column.loadFlatColumns(this);
-        this.isShallow = false;
+        this.isDeepLoaded = true;
     }
+
+    //#region Children Getters
+    get trays(): Tray[] {
+        return this.columns.flatMap(column => column.trays);
+    }
+
+    //#endregion
+
+    //#region Parent Getters
+    get parentZone(): Zone | undefined {
+        return this.parentBay?.parentZone;
+    }
+
+    get parentWarehouse(): Warehouse | undefined {
+        return this.parentZone?.parentWarehouse;
+    }
+
+    //#endregion
 }
 
 
 export class Column implements UpperLayer {
-    isShallow: boolean;
+    isDeepLoaded: boolean = false;
 
     id: string;
     index: number;
 
     parentShelf?: Shelf;
-    trays: Tray[];
+    trays: Tray[] = [];
 
     /**
      * @param id - The database ID of the column
@@ -552,25 +663,35 @@ export class Column implements UpperLayer {
      * @param parentShelf - The (nullable) parent shelf
      */
     private constructor(id: string, index: number, parentShelf?: Shelf) {
-        this.isShallow = true;
-
         this.id = id;
         this.index = index;
 
         this.parentShelf = parentShelf;
-        this.trays = [];
     }
 
-    get parentBay(): Bay | undefined {
-        return this.parentShelf?.parentBay;
+    /**
+     * Create a column from a collection of trays
+     * @param trays - The trays to put in the column
+     * @param index - The index of the column within its shelf
+     * @param parentShelf - The shelf the column belongs to
+     * @returns The newly created column
+     */
+    public static create(trays: Tray[], index?: number, parentShelf?: Shelf): Column {
+        const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf);
+        column.trays = trays;
+        for (let i = 0; i < column.trays.length; i++)
+            column.trays[i].placeInColumn(i, column);
+        return column;
     }
 
-    get parentZone(): Zone | undefined {
-        return this.parentBay?.parentZone;
-    }
-
-    get parentWarehouse(): Warehouse | undefined {
-        return this.parentZone?.parentWarehouse;
+    /**
+     * Place the column within a shelf
+     * @param index - The index of the column within the shelf
+     * @param parentShelf - The shelf the column is being added to
+     */
+    public placeInShelf(index: number, parentShelf: Shelf) {
+        this.index = index;
+        this.parentShelf = parentShelf;
     }
 
     /**
@@ -581,7 +702,7 @@ export class Column implements UpperLayer {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             const column: Column = new Column(generateRandomId(), i, shelf);
             column.trays = await Tray.loadTrays(column);
             columns.push(column);
@@ -607,33 +728,55 @@ export class Column implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (this.isShallow)
+        if (!this.isDeepLoaded)
             this.trays = await Tray.loadTrays(this);
-        this.isShallow = false;
+        this.isDeepLoaded = true;
     }
+
+    //#region Parent Getters
+    get parentBay(): Bay | undefined {
+        return this.parentShelf?.parentBay;
+    }
+
+    get parentZone(): Zone | undefined {
+        return this.parentBay?.parentZone;
+    }
+
+    get parentWarehouse(): Warehouse | undefined {
+        return this.parentZone?.parentWarehouse;
+    }
+
+    //#endregion
 }
 
 
 export class Tray {
     id: string;
-    parentColumn?: Column;
+    index: number;
+
     customField?: string;
     category?: Category;
     expiry?: ExpiryRange;
     weight?: number;
 
+    parentColumn?: Column;
+
     /**
      * @param id - The database ID of the tray
-     * @param parentColumn - The (nullable) parent column
+     * @param index - The index of the tray within the column
      * @param category - The tray's (nullable) category
      * @param expiryRange - The tray's (nullable) expiry range
      * @param weight - The tray's (nullable) weight
      * @param customField - The tray's (nullable) custom field
+     * @param parentColumn - The (nullable) parent column
      */
-    private constructor(id: string, parentColumn: Column, category?: Category,
-                        expiryRange?: ExpiryRange, weight?: number, customField?: string
+    private constructor(
+        id: string, index: number, category?: Category, expiryRange?: ExpiryRange,
+        weight?: number, customField?: string, parentColumn?: Column
     ) {
         this.id = id;
+        this.index = index;
+
         this.category = category;
         this.weight = weight;
         this.expiry = expiryRange;
@@ -641,6 +784,56 @@ export class Tray {
         this.parentColumn = parentColumn;
     }
 
+    /**
+     * Create a new tray
+     * @param category - The tray's (nullable) category
+     * @param expiryRange - The tray's (nullable) expiry range
+     * @param weight - The tray's (nullable) weight
+     * @param customField - The tray's (nullable) custom field
+     * @param index - The index of the tray within the column
+     * @param parentColumn - The (nullable) parent column
+     */
+    public static create(
+        category?: Category, expiryRange?: ExpiryRange, weight?: number,
+        customField?: string, index?: number, parentColumn?: Column
+    ): Tray {
+        return new Tray(generateRandomId(), index ?? -1, category, expiryRange, weight, customField, parentColumn);
+    }
+
+    /**
+     * Place the tray within a column
+     * @param index - The index of the tray within the column
+     * @param parentColumn - The column the tray is being added to
+     */
+    public placeInColumn(index: number, parentColumn: Column) {
+        this.index = index;
+        this.parentColumn = parentColumn;
+    }
+
+    /**
+     * Load all trays within a given column
+     * @async
+     * @param column - The column to load the trays for
+     * @returns A promise which resolves to all trays within the column
+     */
+    public static async loadTrays(column: Column): Promise<Tray[]> {
+        const trays: Tray[] = [];
+        for (let i = 0; i < 3; i++) {
+            const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
+            trays.push(new Tray(
+                generateRandomId(),
+                i,
+                categories[Math.floor(categories.length * Math.random())],
+                expires[Math.floor(expires.length * Math.random())],
+                Number((15 * Math.random()).toFixed(2)),
+                Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
+                column
+            ));
+        }
+        return trays;
+    }
+
+    //#region Parent Getters
     get parentShelf(): Shelf | undefined {
         return this.parentColumn?.parentShelf;
     }
@@ -657,29 +850,7 @@ export class Tray {
         return this.parentZone?.parentWarehouse;
     }
 
-    /**
-     * Load all trays within a given column
-     * @async
-     * @param column - The column to load the trays for
-     * @returns A promise which resolves to all trays within the column
-     */
-    public static async loadTrays(column: Column): Promise<Tray[]> {
-        const trays: Tray[] = [];
-        for (let i = 0; i < 3; i++) {
-            const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
-
-            // This is not nice to look at...
-            trays.push(new Tray(
-                generateRandomId(),
-                column,
-                categories[Math.floor(categories.length * Math.random())],
-                expires[Math.floor(expires.length * Math.random())],
-                Number((15 * Math.random()).toFixed(2)),
-                Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined
-            ));
-        }
-        return trays;
-    }
+    //#endregion
 }
 
 
@@ -693,4 +864,5 @@ export interface ExpiryRange {
 
 export interface Category {
     name: string;
+    shortName?: string;
 }

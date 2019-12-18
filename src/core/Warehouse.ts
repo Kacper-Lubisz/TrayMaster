@@ -242,7 +242,7 @@ export async function createTestWarehouse() {
     let categorySnapshot = [];
     for (let i: number = 0; i < 25; i++)
         categorySnapshot.push(await warehouseRef.doc(warehouseSnapshot.id).collection("categories")
-            .add({name: `Category ${Math.random()}`}));
+                                                .add({name: `Category ${Math.random()}`}));
 
     let traySnapshots = [];
     const colours = [
@@ -296,7 +296,7 @@ export async function createTestWarehouse() {
                             location: trayRef.path
                         };
                         traySnapshots.push(await warehouseRef.doc(warehouseSnapshot.id).collection("trays")
-                            .add(traySearchReference));
+                                                             .add(traySearchReference));
                     }
                 }
             }

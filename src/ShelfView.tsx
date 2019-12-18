@@ -189,7 +189,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
-        // alert(`You set ${JSON.stringify(category)}`);
         this.state.selected.forEach((selected, tray) => {
             if (selected) {
                 tray.category = category;
@@ -227,7 +226,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     render() {
         return (
             <div id="shelfView">
-                <TopBar locationString={this.state.currentShelf.toString()}/>
+                <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
+                        locationString={this.state.currentShelf.toString()}/>
                 <ViewPort selected={this.state.selected} shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons
@@ -249,7 +249,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 <BottomPanel
                     categories={this.props.warehouse.categories.map((category) => {
                         return {
-                            name: category.name,
+                            name: category.shortName ?? category.name,
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
