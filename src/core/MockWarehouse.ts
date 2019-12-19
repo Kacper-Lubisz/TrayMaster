@@ -28,7 +28,7 @@ const colours = [
     {label: "Black", hex: "#000000"}
 ];
 
-const expires = [
+const expires: ExpiryRange[] = [
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2020, 2).getTime(),
@@ -559,12 +559,16 @@ export class Shelf implements UpperLayer {
     //#endregion
 }
 
+type ColumnSize = "small" | "normal" | "big"
 
 export class Column implements UpperLayer {
     isDeepLoaded: boolean = false;
 
     id: string;
     index: number;
+
+    size?: ColumnSize;
+    maxHeight?: number;
 
     parentShelf?: Shelf;
     trays: Tray[] = [];
@@ -573,10 +577,14 @@ export class Column implements UpperLayer {
      * @param id - The database ID of the column
      * @param index - The (ordered) index of the column within the shelf
      * @param parentShelf - The (nullable) parent shelf
+     * @param size - The size of the tray
+     * @param maxHeight - The maximum number of trays that can be placed in this column
      */
-    private constructor(id: string, index: number, parentShelf?: Shelf) {
+    private constructor(id: string, index: number, parentShelf?: Shelf, size?: ColumnSize, maxHeight?: number) {
         this.id = id;
         this.index = index;
+        this.size = size;
+        this.maxHeight = maxHeight;
 
         this.parentShelf = parentShelf;
     }
@@ -614,8 +622,16 @@ export class Column implements UpperLayer {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 4; i++) {
-            const column: Column = new Column(generateRandomId(), i, shelf);
+
+        const colNumber = shelf.index % 2 === 0 ? 4 : 2;
+        const columnsSizes: ColumnSize[] = ["small", "normal", "big"];
+
+        for (let i = 0; i < colNumber; i++) {
+            const size: ColumnSize = columnsSizes[Math.floor(Math.random() * columnsSizes.length)];
+            const maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
+                                                    : 2;
+
+            const column: Column = new Column(generateRandomId(), i, shelf, size, maxHeight);
             column.trays = await Tray.loadTrays(column);
             columns.push(column);
         }
@@ -731,7 +747,11 @@ export class Tray {
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
         const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
-        for (let i = 0; i < 3; i++) {
+
+        const height = Math.random() > 0.5 ? column.maxHeight ?? 3
+                                           : Math.min(3, column.maxHeight ?? 3);
+
+        for (let i = 0; i < height; i++) {
             trays.push(new Tray(
                 generateRandomId(),
                 i,
@@ -769,7 +789,7 @@ export class Tray {
 export interface ExpiryRange {
     from: number;
     to: number;
-    label: string;
+    label: string | string[];
     color: string;
 }
 

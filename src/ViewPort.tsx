@@ -3,7 +3,7 @@ import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
 import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
-import {Shelf, Tray} from "./core/MockWarehouse";
+import {Column, Shelf, Tray} from "./core/MockWarehouse";
 
 
 interface ViewPortProps {
@@ -284,44 +284,56 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     render() {
-
         return (
             <div id="viewPort">
                 <div id="shelf">
                     {this.props.shelf.columns.map((column, columnIndex) =>
-                        <div
-                            style={{order: columnIndex}}
-                            className="column"
-                            key={columnIndex}
-                        >
-                            {column.trays.map((tray, trayIndex) =>
-
-                                <div
-                                    className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
-                                        this.props.selected.get(tray) ? " selected" : ""}`}
-
-                                    // onClick={this.onTrayClick.bind(this, tray)}
-                                    onMouseDown={this.onTrayMouseDown.bind(this, tray)}
-                                    onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
-                                    onMouseLeave={this.onTrayMouseLeave.bind(this)}
-                                    onMouseUp={this.onTrayMouseUp.bind(this, tray)}
-                                    key={trayIndex}
-                                >
-                                    <FontAwesomeIcon style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
-                                                     icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
-                                    <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
-
-                                    <div className="trayExpiry" style={{
-                                        backgroundColor: tray.expiry?.color
-                                    }}>{tray.expiry?.label ?? "?"}</div>
-
-                                    <div className="trayWeight">{tray.weight ?? "?"}kg</div>
-
-                                    <div className="trayCustomField">{tray.customField ?? ""}</div>
-                                </div>)}
-                        </div>)
-                    }</div>
+                        this.renderColumn(column, columnIndex)
+                    )}
+                </div>
             </div>
         );
+    }
+
+    renderColumn(column: Column, order: number) {
+        return <div
+            style={{order: order}}
+            className="column"
+            key={order}
+        >{column.trays.map((tray, trayIndex) =>
+
+            <div
+                className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
+                    this.props.selected.get(tray) ? " selected" : ""}`}
+
+                // onClick={this.onTrayClick.bind(this, tray)}
+                onMouseDown={this.onTrayMouseDown.bind(this, tray)}
+                onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
+                onMouseLeave={this.onTrayMouseLeave.bind(this)}
+                onMouseUp={this.onTrayMouseUp.bind(this, tray)}
+                key={trayIndex}
+            >
+                <FontAwesomeIcon
+                    style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
+                    icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
+                <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
+
+                <div className="trayExpiry" style={{
+                    backgroundColor: tray.expiry?.color
+                }}>{tray.expiry?.label ?? "?"}</div>
+
+                <div className="trayWeight">{tray.weight ?? "?"}kg</div>
+
+                <div className="trayCustomField">{tray.customField ?? ""}</div>
+            </div>)
+        }{column.maxHeight && column.maxHeight - column.trays.length !== 0 &&
+
+        Array(column.maxHeight - column.trays.length).fill(0).map((_, index) =>
+            <div className="tray" key={column.trays.length + index}>
+                EMPTY TRAY
+            </div>
+        )}
+
+        </div>;
     }
 }

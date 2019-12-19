@@ -41,7 +41,7 @@ class App extends React.Component<any, AppState> {
             });
 
         }).catch(() => {
-            console.error("Failed to load the warehouse of the settings");
+            console.error("Failed to load the warehouse or the settings");
             // todo present error message
         });
 
@@ -49,7 +49,7 @@ class App extends React.Component<any, AppState> {
 
     render() {
         // todo add a loading screen
-        return this.state === null ? <div>Loading</div> : <BrowserRouter> /*Declare the paths for all screens*/
+        return this.state === null ? <div>Loading</div> : <BrowserRouter> {/*Declare the paths for all screens*/}
             <Switch>
                 <Route path="/" component={() =>
                     <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>
