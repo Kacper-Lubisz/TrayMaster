@@ -1,0 +1,13 @@
+// GLOBAL VARIABLES
+// Used for certain values that we want to use for the same thing in multiple places. Allows us to easily make changes
+// to these values product-wide in future
+
+// To use, just add your value as a Sass variable*, import this file in all relevant stylesheets and use it wherever you
+// need :D
+// * https://sass-lang.com/documentation/variables
+
+
+/**
+ * Application accent colour: used to indicate something is selected
+ */
+$accent-colour: #3347ff;

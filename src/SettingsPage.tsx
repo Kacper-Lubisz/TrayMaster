@@ -1,6 +1,8 @@
 import React from "react";
 import "./styles/settings.scss";
 import {Link} from "react-router-dom";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 
 
 export class SettingsPage extends React.Component<any, any> {
@@ -19,10 +21,9 @@ export class SettingsPage extends React.Component<any, any> {
                     <Link to="/menu" className="key-btn" style={{textDecoration: "none"}}><p>General</p></Link>
                     <hr className="line"/>
                     <Link to="/menu" className="key-btn" style={{textDecoration: "none"}}>
-                        <img alt="back-arrow"
-                             className="back-btn"
-                             src="keyboard_backspace-24px.svg"/>
-                        <p>Back</p></Link>
+                        <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
+                        <p>Back</p>
+                    </Link>
                 </div>
             </div>
         );
