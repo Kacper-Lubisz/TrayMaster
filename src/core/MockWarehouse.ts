@@ -91,6 +91,16 @@ interface UpperLayer {
 }
 
 
+/**
+ * Objects of this interface represent all possible search queries that can be performed by the search page.
+ * The predicate for a tray t that this query represents is
+ * (t.category in categories) and //todo agree and finish this
+ */
+export interface SearchQuery {
+    categories: (Category | undefined)[]
+    sortBy: "expiry"
+}
+
 export class Warehouse implements UpperLayer {
     isDeepLoaded: boolean = false;
 
@@ -107,6 +117,28 @@ export class Warehouse implements UpperLayer {
     private constructor(id: string, name: string) {
         this.id = id;
         this.name = name;
+    }
+
+    // todo
+    async traySearch(query: SearchQuery): Promise<Tray[]> {
+
+        // this is an example implementation
+        return this.trays.filter((tray) =>
+            query.categories.includes(tray.category)
+        ).sort((a, b) => {
+            if (query.sortBy === "expiry") {
+                if (a.expiry === undefined) {
+                    return -1;
+                } else if (b.expiry === undefined) {
+                    return 1;
+                } else {
+                    return a.expiry.from < b.expiry.from ? -1 : 1;
+                }
+            } else {
+                return 0;
+            }
+        });
+
     }
 
     /**
@@ -143,8 +175,9 @@ export class Warehouse implements UpperLayer {
      */
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
-        warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.categories = await Warehouse.loadCategories();
+        // fixme this needs to be in the correct order to work
+        warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.isDeepLoaded = false;
         return warehouse;
     }
@@ -697,8 +730,8 @@ export class Tray {
      */
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
+        const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
         for (let i = 0; i < 3; i++) {
-            const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
             trays.push(new Tray(
                 generateRandomId(),
                 i,

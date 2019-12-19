@@ -231,7 +231,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                                 .map(([tray, _]) => tray.category);
         const distinctCategories = Array.from(new Set(categories));
 
-        SearchPage.openSearch({categories: [], sortBy: "expiry"});
+        SearchPage.openSearch({categories: distinctCategories, sortBy: "expiry"});
 
     }
 
