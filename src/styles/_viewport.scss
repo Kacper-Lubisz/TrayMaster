@@ -65,6 +65,22 @@
         z-index: 1; // TODO: is there any reason for this?
       }
 
+      // The first empty space a tray can take above
+      &.traySpace.firstTraySpace { //todo this needs to be completely restyled
+        background-color: #00000011;
+        border-color: #888;
+      }
+
+      &.traySpace {
+        background-color: #00000011;
+        border-color: #8880;
+      }
+
+      &.traySpace.selected { //todo this needs to be completely restyled
+        background-color: #00000011;
+        border-color: #888;
+      }
+
       // Everything inside a tray
       > * {
         // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)

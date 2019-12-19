@@ -30,6 +30,7 @@ interface ShelfViewState {
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
     selected: Map<Tray, boolean>;
+    isEditShelf: boolean;
 }
 
 export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
@@ -41,6 +42,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
+            isEditShelf: false
         };
     }
 
@@ -214,8 +216,25 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method enters edit shelf mode
      */
     enterEditShelf() {
-        throw Error("Unimplemented method stub");
+        this.setState({
+            ...this.state,
+            isEditShelf: !this.state.isEditShelf
+        });
+        //todo
+        // throw Error("Unimplemented method stub");
     }
+
+    /**
+     * This method exists edit shelf mode
+     */
+    exitEditShelf() {
+        this.setState({
+            ...this.state,
+            isEditShelf: !this.state.isEditShelf
+        });
+        //todo
+    }
+
 
     /**
      * This method opens the navigation popover which allows for navigating between shelves
@@ -239,9 +258,16 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         return (
             <div id="shelfView">
                 <TopBar locationString={this.state.currentShelf.toString()}/>
-                <ViewPort selected={this.state.selected} shelf={this.state.currentShelf}/>
+                <ViewPort
+                    selected={this.state.selected}
+                    shelf={this.state.currentShelf}
+                    isShelfEdit={this.state.isEditShelf}
+                />
                 <SideBar
-                    buttons={[ // Generate sidebar buttons
+                    buttons={this.state.isEditShelf ? [
+                        {name: "Cancel", onClick: this.exitEditShelf.bind(this)},
+                        {name: "Save", onClick: this.exitEditShelf.bind(this)},
+                    ] : [ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
                         {name: "Back", onClick: () => alert("Back")},
                         {name: "Search", onClick: this.makeSearch.bind(this)},

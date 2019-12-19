@@ -4,11 +4,17 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
 import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
 import {Column, Shelf, Tray} from "./core/MockWarehouse";
+import classNames from "classnames/bind";
 
+interface TraySpace {
+    column: Column;
+    index: number;
+}
 
 interface ViewPortProps {
     shelf: Shelf;
-    selected: Map<Tray, boolean>;
+    selected: Map<Tray | TraySpace, boolean>;
+    isShelfEdit: boolean;
 }
 
 /**
@@ -17,8 +23,8 @@ interface ViewPortProps {
 interface LongPress {
     isHappening: boolean;
     timeout: number;
-    dragFrom: Tray;
-    selectedBefore: Map<Tray, boolean>;
+    dragFrom: Tray | TraySpace;
+    selectedBefore: Map<Tray | TraySpace, boolean>;
 }
 
 /**
@@ -82,7 +88,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * the drag started (longPress.selectedBefore).
      * @param to The tray that the mouse just entered, which triggered this listener
      */
-    updateDragSelection(to: Tray) {
+    updateDragSelection(to: Tray | TraySpace) {
 
         this.props.selected.forEach((_, tray) => { // reset selection
             this.props.selected.set(tray, this.state.longPress?.selectedBefore.get(tray) ?? false);
@@ -106,7 +112,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
         // After they have been sorted into any order, anything between the from and to trays is then marked as selected
         const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
-            column.trays.map((tray: Tray, trayIndex) => {
+            this.padWithTraySpaces(column).map((tray: Tray | TraySpace, trayIndex) => {
                 if (tray === from) {
                     boundIndices.from.column = columnIndex;
                     boundIndices.from.tray = trayIndex;
@@ -175,7 +181,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param tray The tray that is clicked
      * @param e The react event object which triggered this listener
      */
-    onTrayClick(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+    onTrayClick(tray: Tray | TraySpace, e: React.MouseEvent<HTMLDivElement>) {
 
         const newTraySelection = !this.props.selected.get(tray); // if the tray will become selected
 
@@ -210,7 +216,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param tray The tray on which the mouse is pressed
      * @param e The react mouse event that triggered this call
      */
-    onTrayMouseDown(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+    onTrayMouseDown(tray: Tray | TraySpace, e: React.MouseEvent<HTMLDivElement>) {
 
         const timeout: number = window.setTimeout(() => { // await hold time
             if (this.state.longPress?.timeout !== undefined) { // not interrupted
@@ -235,7 +241,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param tray The tray over which the even is triggered
      * @param e The react mouse event that triggered this call
      */
-    onTrayMouseUp(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+    onTrayMouseUp(tray: Tray | TraySpace, e: React.MouseEvent<HTMLDivElement>) {
 
         if (this.state.longPress) {
             if (this.state.longPress.isHappening) {
@@ -273,7 +279,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when the mouse enters the DOM element which represents a particular tray
      * @param tray The tray over which the mouse entered
      */
-    onTrayMouseEnter(tray: Tray) {
+    onTrayMouseEnter(tray: Tray | TraySpace) {
 
         if (this.state.longPress?.isHappening) {
             this.updateDragSelection(tray);
@@ -296,44 +302,73 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     }
 
     renderColumn(column: Column, order: number) {
-        return <div
-            style={{order: order}}
+        return this.props.isShelfEdit ? <div
+            style={{
+                order: order,
+                flexGrow: column.size === "small" ? 2 :
+                          column.size === "normal" ? 3
+                                                   : 4
+            }}
             className="column"
             key={order}
-        >{column.trays.map((tray, trayIndex) =>
+        >
+            <div id="columnSize">{column.size ?? "?"}</div>
+            <div id="columnHeight">{column.maxHeight ?? "?"}</div>
 
-            <div
-                className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
-                    this.props.selected.get(tray) ? " selected" : ""}`}
+        </div> : <div
+                   style={{
+                       order: order,
+                       flexGrow: column.size === "small" ? 2 :
+                                 column.size === "normal" ? 3
+                                                          : 4
+                   }}
+                   className="column"
+                   key={order}
+               >{this.padWithTraySpaces(column).map(((tray, index) =>
+                <div
+                    className={classNames("tray", {
+                        "multipleSelect": this.state.isMultipleSelect,
+                        "selected": this.props.selected.get(tray) || !(tray instanceof Tray),
+                        "firstTraySpace": index === column.trays.length,
+                        "traySpace": !(tray instanceof Tray)
+                    })}
+                    onMouseDown={this.onTrayMouseDown.bind(this, tray)}
+                    onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
+                    onMouseLeave={this.onTrayMouseLeave.bind(this)}
+                    onMouseUp={this.onTrayMouseUp.bind(this, tray)}
+                    key={index}
+                >
+                    <FontAwesomeIcon
+                        style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
+                        icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
 
-                // onClick={this.onTrayClick.bind(this, tray)}
-                onMouseDown={this.onTrayMouseDown.bind(this, tray)}
-                onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
-                onMouseLeave={this.onTrayMouseLeave.bind(this)}
-                onMouseUp={this.onTrayMouseUp.bind(this, tray)}
-                key={trayIndex}
-            >
-                <FontAwesomeIcon
-                    style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
-                    icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
-                <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
+                    {tray instanceof Tray && [
+                        <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>,
 
-                <div className="trayExpiry" style={{
-                    backgroundColor: tray.expiry?.color
-                }}>{tray.expiry?.label ?? "?"}</div>
+                        <div className="trayExpiry" style={{
+                            backgroundColor: tray.expiry?.color
+                        }}>{tray.expiry?.label ?? "?"}</div>,
 
-                <div className="trayWeight">{tray.weight ?? "?"}kg</div>
+                        <div className="trayWeight">{tray.weight ?? "?"}kg</div>,
 
-                <div className="trayCustomField">{tray.customField ?? ""}</div>
-            </div>)
-        }{column.maxHeight && column.maxHeight - column.trays.length !== 0 &&
+                        <div className="trayCustomField">{tray.customField ?? ""}</div>
+                    ]}
+                    {!(tray instanceof Tray) && [
+                        index === column.trays.length && <p>Tray Space!!! {tray.index}</p>
+                    ]}
 
-        Array(column.maxHeight - column.trays.length).fill(0).map((_, index) =>
-            <div className="tray" key={column.trays.length + index}>
-                EMPTY TRAY
-            </div>
-        )}
+                </div>
+        ))}
 
-        </div>;
+               </div>;
     }
+
+    padWithTraySpaces(column: Column): (Tray | TraySpace)[] {
+        return Array(column.maxHeight).fill(0).map((_, index) =>
+            index < column.trays.length ? column.trays[index]
+                                        : {column: column, index: index}
+        );
+
+    }
+
 }
