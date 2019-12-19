@@ -1,4 +1,5 @@
 import React from "react";
+import classNames from "classnames";
 
 /**
  * The properties that get passed into KeyboardButton components
@@ -29,7 +30,9 @@ export interface KeyboardButtonProps {
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
-            <button className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
+            <button className={classNames("key-btn", {
+                "key-btn-selected": this.props.selected
+            })} onClick={(e) => {
                 // if we've been given an onClick function, run it
                 if (this.props.onClick) {
                     this.props.onClick(e);

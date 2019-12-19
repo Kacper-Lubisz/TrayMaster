@@ -3,6 +3,7 @@ import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {KeyboardName} from "./ShelfView";
+import classNames from "classnames";
 
 
 /**
@@ -67,7 +68,9 @@ class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
     render() {
         return (
             // by this point this.props.onClick has had bind called on it 2 times
-            <button className={this.props.active ? "active" : ""} onClick={this.props.onClick}>
+            <button className={classNames({
+                "active": this.props.active
+            })} onClick={this.props.onClick}>
                 <FontAwesomeIcon icon={this.props.icon}/>
             </button>
         );
