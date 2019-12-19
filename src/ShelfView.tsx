@@ -7,6 +7,7 @@ import "./styles/shelfview.scss";
 import {Bay, Category, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
+import {SearchPage} from "./SearchPage";
 
 /**
  * Defines possible keyboard names
@@ -223,6 +224,17 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         throw Error("Unimplemented method stub");
     }
 
+    makeSearch() {
+
+        const categories = Array.from(this.state.selected)
+                                .filter(([_, selected]) => selected)
+                                .map(([tray, _]) => tray.category);
+        const distinctCategories = Array.from(new Set(categories));
+
+        SearchPage.openSearch({categories: [], sortBy: "expiry"});
+
+    }
+
     render() {
         return (
             <div id="shelfView">
@@ -232,6 +244,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     buttons={[ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
                         {name: "Back", onClick: () => alert("Back")},
+                        {name: "Search", onClick: this.makeSearch.bind(this)},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)},
                         {name: "Next", onClick: this.changeShelf.bind(this, "next")},
