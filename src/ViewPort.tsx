@@ -5,6 +5,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
 import {Shelf, Tray} from "./core/MockWarehouse";
 
+
 interface ViewPortProps {
     shelf: Shelf;
     selected: Map<Tray, boolean>;
@@ -309,12 +310,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     onPointerUp={this.onTrayPointerUp.bind(this, tray)}
                                     key={trayIndex}
                                 >
-                                    <FontAwesomeIcon style={
-                                        this.props.selected.get(tray) ? {"visibility": "visible", "color": "#3347ff"}
-                                                                      : {"color": "#cacaca"}
-                                    }
-                                                     icon={tickSolid}/>
-                                    <div className="trayCategory">{tray.category?.name ?? "?"}</div>
+                                    <FontAwesomeIcon
+                                        className={`tray-tickbox ${this.props.selected.get(tray) ? "tick-selected"
+                                                                                                 : ""}`}
+                                        icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
+                                    <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{
                                         backgroundColor: tray.expiry?.color

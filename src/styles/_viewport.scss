@@ -1,5 +1,8 @@
 // VIEWPORT STYLING
 
+// Import system-wide variables: we need to know $accent-colour here
+@import "variables";
+
 // Shelf
 #shelf {
   // Layout
@@ -50,10 +53,10 @@
 
       border-radius: 10px;
 
-      // When we're in multiple select mode, show all tickboxes
-      &.multipleSelect > svg {
-        // Show the tickboxes
-        visibility: visible;
+        > svg.tray-tickbox {
+          // Show the tickboxes
+          visibility: visible;
+        }
       }
 
       // When the tray is selected
@@ -70,7 +73,7 @@
       }
 
       // Tickboxes
-      > svg {
+      > svg.tray-tickbox {
         // Layout
         margin: 5px 0;
         width: 10%;
@@ -80,6 +83,10 @@
 
         // Hide by default; will be shown when in multiple select mode
         visibility: hidden;
+
+        &.tick-selected {
+          color: $accent-colour;
+        }
       }
 
       // Tray category: bottom left
@@ -91,7 +98,7 @@
         text-align: left;
 
         // Truncate long categories: TODO make this work properly on all screen & tray sizes
-        width: 80%;
+        width: 60%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -101,8 +108,14 @@
       > div.trayExpiry {
         bottom: 0;
         right: 0;
-        font-size: 25px;
+        font-size: 20px;
         padding: 0 5px;
+
+        // Break lines when it gets too wide
+        width: 30%;
+        text-align: center;
+        word-wrap: break-word;
+
         background-color: #aaa; // this is the default colour when there is no expiry specified
       }
 
@@ -110,7 +123,7 @@
       > div.trayWeight {
         top: 0;
         right: 0;
-        font-size: 15px;
+        font-size: 20px;
         margin: 2px 5px;
       }
 
