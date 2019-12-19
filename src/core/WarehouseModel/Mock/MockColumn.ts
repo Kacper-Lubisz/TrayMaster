@@ -1,26 +1,26 @@
 import {UpperLayer} from "../UpperLayer";
-import {Shelf} from "./Shelf";
-import {Bay} from "./Bay";
-import {Zone} from "./Zone";
-import {Warehouse} from "./Warehouse";
-import {Tray} from "./Tray";
+import {MockShelf} from "./MockShelf";
+import {MockBay} from "./MockBay";
+import {MockZone} from "./MockZone";
+import {MockWarehouse} from "./MockWarehouse";
+import {MockTray} from "./MockTray";
 import {Utils} from "../../Utils";
 
-export class Column implements UpperLayer {
+export class MockColumn implements UpperLayer {
     isDeepLoaded: boolean = false;
 
     id: string;
     index: number;
 
-    parentShelf?: Shelf;
-    trays: Tray[] = [];
+    parentShelf?: MockShelf;
+    trays: MockTray[] = [];
 
     /**
      * @param id - The database ID of the column
      * @param index - The (ordered) index of the column within the shelf
      * @param parentShelf - The (nullable) parent shelf
      */
-    private constructor(id: string, index: number, parentShelf?: Shelf) {
+    private constructor(id: string, index: number, parentShelf?: MockShelf) {
         this.id = id;
         this.index = index;
 
@@ -34,8 +34,8 @@ export class Column implements UpperLayer {
      * @param parentShelf - The shelf the column belongs to
      * @returns The newly created column
      */
-    public static create(trays: Tray[], index?: number, parentShelf?: Shelf): Column {
-        const column: Column = new Column(Utils.generateRandomId(), index ?? -1, parentShelf);
+    public static create(trays: MockTray[], index?: number, parentShelf?: MockShelf): MockColumn {
+        const column: MockColumn = new MockColumn(Utils.generateRandomId(), index ?? -1, parentShelf);
         column.trays = trays;
         for (let i = 0; i < column.trays.length; i++)
             column.trays[i].placeInColumn(i, column);
@@ -47,7 +47,7 @@ export class Column implements UpperLayer {
      * @param index - The index of the column within the shelf
      * @param parentShelf - The shelf the column is being added to
      */
-    public placeInShelf(index: number, parentShelf: Shelf) {
+    public placeInShelf(index: number, parentShelf: MockShelf) {
         this.index = index;
         this.parentShelf = parentShelf;
     }
@@ -58,11 +58,11 @@ export class Column implements UpperLayer {
      * @param shelf - The shelf to load the columns for
      * @returns A promise which resolves to all columns within the shelf
      */
-    public static async loadColumns(shelf: Shelf): Promise<Column[]> {
-        const columns: Column[] = [];
+    public static async loadColumns(shelf: MockShelf): Promise<MockColumn[]> {
+        const columns: MockColumn[] = [];
         for (let i = 0; i < 4; i++) {
-            const column: Column = new Column(Utils.generateRandomId(), i, shelf);
-            column.trays = await Tray.loadTrays(column);
+            const column: MockColumn = new MockColumn(Utils.generateRandomId(), i, shelf);
+            column.trays = await MockTray.loadTrays(column);
             column.isDeepLoaded = true;
             columns.push(column);
         }
@@ -75,10 +75,10 @@ export class Column implements UpperLayer {
      * @param shelf - The shelf to load the columns for
      * @returns A promise which resolves to the flat column list
      */
-    public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
-        const columns: Column[] = [];
+    public static async loadFlatColumns(shelf: MockShelf): Promise<MockColumn[]> {
+        const columns: MockColumn[] = [];
         for (let i = 0; i < 4; i++)
-            columns.push(new Column(Utils.generateRandomId(), i, shelf));
+            columns.push(new MockColumn(Utils.generateRandomId(), i, shelf));
         return columns;
     }
 
@@ -88,20 +88,20 @@ export class Column implements UpperLayer {
      */
     public async loadNextLayer(): Promise<void> {
         if (!this.isDeepLoaded)
-            this.trays = await Tray.loadTrays(this);
+            this.trays = await MockTray.loadTrays(this);
         this.isDeepLoaded = true;
     }
 
     //#region Parent Getters
-    get parentBay(): Bay | undefined {
+    get parentBay(): MockBay | undefined {
         return this.parentShelf?.parentBay;
     }
 
-    get parentZone(): Zone | undefined {
+    get parentZone(): MockZone | undefined {
         return this.parentBay?.parentZone;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
+    get parentWarehouse(): MockWarehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
 

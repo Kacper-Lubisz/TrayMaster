@@ -1,20 +1,20 @@
 import {UpperLayer} from "../UpperLayer";
-import {Bay} from "./Bay";
-import {Zone} from "./Zone";
-import {Warehouse} from "./Warehouse";
-import {Column} from "./Column";
-import {Tray} from "./Tray";
+import {OnlineBay} from "./OnlineBay";
+import {OnlineZone} from "./OnlineZone";
+import {OnlineWarehouse} from "./OnlineWarehouse";
+import {OnlineColumn} from "./OnlineColumn";
+import {OnlineTray} from "./OnlineTray";
 import {Utils} from "../../Utils";
 
-export class Shelf implements UpperLayer {
+export class OnlineShelf implements UpperLayer {
     isDeepLoaded: boolean = false;
 
     id: string;
     name: string;
     index: number;
 
-    parentBay?: Bay;
-    columns: Column[] = [];
+    parentBay?: OnlineBay;
+    columns: OnlineColumn[] = [];
 
     /**
      * @param id - The database ID for the shelf
@@ -22,7 +22,7 @@ export class Shelf implements UpperLayer {
      * @param index - The (ordered) index of the shelf within the bay
      * @param parentBay - The (nullable) parent bay
      */
-    private constructor(id: string, name: string, index: number, parentBay?: Bay) {
+    private constructor(id: string, name: string, index: number, parentBay?: OnlineBay) {
         this.id = id;
         this.name = name;
         this.index = index;
@@ -38,8 +38,8 @@ export class Shelf implements UpperLayer {
      * @param parentBay - The bay the shelf belongs to
      * @returns The newly created shelf
      */
-    public static create(columns: Column[], name?: string, index?: number, parentBay?: Bay): Shelf {
-        const shelf: Shelf = new Shelf(Utils.generateRandomId(), name ?? "", index ?? -1);
+    public static create(columns: OnlineColumn[], name?: string, index?: number, parentBay?: OnlineBay): OnlineShelf {
+        const shelf: OnlineShelf = new OnlineShelf(Utils.generateRandomId(), name ?? "", index ?? -1);
         shelf.columns = columns;
         for (let i = 0; i < shelf.columns.length; i++)
             shelf.columns[i].placeInShelf(i, shelf);
@@ -52,7 +52,7 @@ export class Shelf implements UpperLayer {
      * @param parentBay - The bay the shelf is being added to
      * @param name - The name of the shelf
      */
-    public placeInBay(index: number, parentBay: Bay, name?: string) {
+    public placeInBay(index: number, parentBay: OnlineBay, name?: string) {
         this.index = index;
         this.parentBay = parentBay;
         this.name = name ?? this.name;
@@ -64,11 +64,11 @@ export class Shelf implements UpperLayer {
      * @param bay - The bay to load the shelves for
      * @returns A promise which resolves to all loaded shelves within the bay
      */
-    public static async loadShelves(bay: Bay): Promise<Shelf[]> {
-        const shelves: Shelf[] = [];
+    public static async loadShelves(bay: OnlineBay): Promise<OnlineShelf[]> {
+        const shelves: OnlineShelf[] = [];
         for (let i = 0; i < 3; i++) {
-            const shelf: Shelf = new Shelf(Utils.generateRandomId(), `${i + 1}`, i, bay);
-            shelf.columns = await Column.loadColumns(shelf);
+            const shelf: OnlineShelf = new OnlineShelf(Utils.generateRandomId(), `${i + 1}`, i, bay);
+            shelf.columns = await OnlineColumn.loadColumns(shelf);
             shelf.isDeepLoaded = true;
             shelves.push(shelf);
         }
@@ -86,10 +86,10 @@ export class Shelf implements UpperLayer {
      * @param bay - The bay to load the shelves for
      * @returns A promise which resolves to the flat shelf list
      */
-    public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
-        const shelves: Shelf[] = [];
+    public static async loadFlatShelves(bay: OnlineBay): Promise<OnlineShelf[]> {
+        const shelves: OnlineShelf[] = [];
         for (let i = 0; i < 3; i++)
-            shelves.push(new Shelf(Utils.generateRandomId(), `${i + 1}`, i, bay));
+            shelves.push(new OnlineShelf(Utils.generateRandomId(), `${i + 1}`, i, bay));
         return shelves;
     }
 
@@ -99,23 +99,23 @@ export class Shelf implements UpperLayer {
      */
     public async loadNextLayer(): Promise<void> {
         if (!this.isDeepLoaded)
-            this.columns = await Column.loadFlatColumns(this);
+            this.columns = await OnlineColumn.loadFlatColumns(this);
         this.isDeepLoaded = true;
     }
 
     //#region Children Getters
-    get trays(): Tray[] {
+    get trays(): OnlineTray[] {
         return this.columns.flatMap(column => column.trays);
     }
 
     //#endregion
 
     //#region Parent Getters
-    get parentZone(): Zone | undefined {
+    get parentZone(): OnlineZone | undefined {
         return this.parentBay?.parentZone;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
+    get parentWarehouse(): OnlineWarehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
 

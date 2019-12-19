@@ -1,9 +1,9 @@
-import {Zone} from "./Zone";
+import {OnlineZone} from "./OnlineZone";
 import {UpperLayer} from "../UpperLayer";
-import {Bay} from "./Bay";
-import {Shelf} from "./Shelf";
-import {Column} from "./Column";
-import {Tray} from "./Tray";
+import {OnlineBay} from "./OnlineBay";
+import {OnlineShelf} from "./OnlineShelf";
+import {OnlineColumn} from "./OnlineColumn";
+import {OnlineTray} from "./OnlineTray";
 import {Category} from "../Category";
 import {Utils} from "../../Utils";
 
@@ -14,15 +14,14 @@ const cats = [
     "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
 ];
 
-
-export class Warehouse implements UpperLayer {
+export class OnlineWarehouse implements UpperLayer {
     isDeepLoaded: boolean = false;
 
     id: string;
     name: string;
 
     categories: Category[] = [];
-    zones: Zone[] = [];
+    zones: OnlineZone[] = [];
 
     /**
      * @param id firebase - The database ID of the warehouse
@@ -39,8 +38,8 @@ export class Warehouse implements UpperLayer {
      * @param name - The name of the warehouse
      * @returns The newly created warehouse
      */
-    public static create(zones: Zone[], name?: string): Warehouse {
-        const warehouse: Warehouse = new Warehouse(Utils.generateRandomId(), name ?? "");
+    public static create(zones: OnlineZone[], name?: string): OnlineWarehouse {
+        const warehouse: OnlineWarehouse = new OnlineWarehouse(Utils.generateRandomId(), name ?? "");
         warehouse.zones = zones;
         for (let i = 0; i < warehouse.zones.length; i++)
             warehouse.zones[i].placeInWarehouse(warehouse);
@@ -65,10 +64,10 @@ export class Warehouse implements UpperLayer {
      * @param id - Database ID of the warehouse to load
      * @returns A promise which resolves to the fully loaded warehouse
      */
-    public static async loadWarehouse(id: string): Promise<Warehouse> {
-        const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
-        warehouse.zones = await Zone.loadZones(warehouse);
-        warehouse.categories = await Warehouse.loadCategories();
+    public static async loadWarehouse(id: string): Promise<OnlineWarehouse> {
+        const warehouse: OnlineWarehouse = new OnlineWarehouse(id, `Warehouse ${Math.random()}`);
+        warehouse.zones = await OnlineZone.loadZones(warehouse);
+        warehouse.categories = await OnlineWarehouse.loadCategories();
         warehouse.isDeepLoaded = true;
         return warehouse;
     }
@@ -79,9 +78,9 @@ export class Warehouse implements UpperLayer {
      * @param id
      * @returns A promise which resolves to the flat warehouse
      */
-    public static async loadFlatWarehouse(id: string): Promise<Warehouse> {
-        const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
-        warehouse.categories = await Warehouse.loadCategories();
+    public static async loadFlatWarehouse(id: string): Promise<OnlineWarehouse> {
+        const warehouse: OnlineWarehouse = new OnlineWarehouse(id, `Warehouse ${Math.random()}`);
+        warehouse.categories = await OnlineWarehouse.loadCategories();
         return warehouse;
     }
 
@@ -91,24 +90,24 @@ export class Warehouse implements UpperLayer {
      */
     public async loadNextLayer(): Promise<void> {
         if (!this.isDeepLoaded)
-            this.zones = await Zone.loadFlatZones(this);
+            this.zones = await OnlineZone.loadFlatZones(this);
         this.isDeepLoaded = true;
     }
 
     //#region Children Getters
-    get bays(): Bay[] {
+    get bays(): OnlineBay[] {
         return this.zones.flatMap(zone => zone.bays);
     }
 
-    get shelves(): Shelf[] {
+    get shelves(): OnlineShelf[] {
         return this.bays.flatMap(bay => bay.shelves);
     }
 
-    get columns(): Column[] {
+    get columns(): OnlineColumn[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays(): Tray[] {
+    get trays(): OnlineTray[] {
         return this.columns.flatMap(column => column.trays);
     }
 

@@ -5,12 +5,12 @@ import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
-import {Warehouse} from "./core/WarehouseModel/Mock/Warehouse";
+import {Warehouse} from "./core/WarehouseModel/MockWarehouseModel";
 import {Settings} from "./core/Settings/Settings";
-import {Shelf} from "./core/WarehouseModel/Mock/Shelf";
-import {Tray} from "./core/WarehouseModel/Mock/Tray";
-import {Zone} from "./core/WarehouseModel/Mock/Zone";
-import {Bay} from "./core/WarehouseModel/Mock/Bay";
+import {MockShelf} from "./core/WarehouseModel/Mock/MockShelf";
+import {MockTray} from "./core/WarehouseModel/Mock/MockTray";
+import {MockZone} from "./core/WarehouseModel/Mock/MockZone";
+import {MockBay} from "./core/WarehouseModel/Mock/MockBay";
 import {Category} from "./core/WarehouseModel/Category";
 
 /**
@@ -32,8 +32,8 @@ interface ShelfViewProps {
 interface ShelfViewState {
     // todo raise viewport selection state out into ShelfView
     currentKeyboard: KeyboardName
-    currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
-    selected: Map<Tray, boolean>;
+    currentShelf: MockShelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
+    selected: Map<MockTray, boolean>;
 }
 
 export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
@@ -52,10 +52,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method returns all the parents of a shelf and the indices of all of them within each other
      * @param shelf The shelf in question
      */
-    private static currentShelfParentsAndIndices(shelf: Shelf) { // return type implied
+    private static currentShelfParentsAndIndices(shelf: MockShelf) { // return type implied
         const warehouse: Warehouse | undefined = shelf.parentWarehouse;
-        const zone: Zone | undefined = shelf.parentZone;
-        const bay: Bay | undefined = shelf.parentBay;
+        const zone: MockZone | undefined = shelf.parentZone;
+        const bay: MockBay | undefined = shelf.parentBay;
 
         if (!bay || !zone || !warehouse) {
             throw Error("Failed to get parent (either bay, zone or warehouse) of current shelf");
@@ -90,9 +90,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * can't be moved in.
      * @param shelf The shelf to move to or otherwise the direction in which to move.
      */
-    changeShelf(shelf: ShelfMoveDirection | Shelf) {
+    changeShelf(shelf: ShelfMoveDirection | MockShelf) {
 
-        if (shelf instanceof Shelf) {
+        if (shelf instanceof MockShelf) {
             this.setState({
                 ...this.state,
                 currentShelf: shelf
@@ -171,7 +171,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This returns the possible directions in which changeShelf can move from the specified shelf
      * @param shelf The shelf to consider movement directions from
      */
-    possibleMoveDirections(shelf: Shelf): ShelfMoveDirection[] {
+    possibleMoveDirections(shelf: MockShelf): ShelfMoveDirection[] {
         const {
             warehouse, zone, bay, bayIndex, shelfIndex,
         } = ShelfView.currentShelfParentsAndIndices(shelf);

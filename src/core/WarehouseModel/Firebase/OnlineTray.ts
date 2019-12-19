@@ -1,8 +1,8 @@
-import {Column} from "./Column";
-import {Shelf} from "./Shelf";
-import {Bay} from "./Bay";
-import {Zone} from "./Zone";
-import {Warehouse} from "./Warehouse";
+import {OnlineColumn} from "./OnlineColumn";
+import {OnlineShelf} from "./OnlineShelf";
+import {OnlineBay} from "./OnlineBay";
+import {OnlineZone} from "./OnlineZone";
+import {OnlineWarehouse} from "./OnlineWarehouse";
 import {Category} from "../Category";
 import {ExpiryRange} from "../ExpiryRange";
 import {Utils} from "../../Utils";
@@ -46,7 +46,7 @@ const expires: ExpiryRange[] = [
     },
 ];
 
-export class Tray {
+export class OnlineTray {
     id: string;
     index: number;
 
@@ -55,7 +55,7 @@ export class Tray {
     expiry?: ExpiryRange;
     weight?: number;
 
-    parentColumn?: Column;
+    parentColumn?: OnlineColumn;
 
     /**
      * @param id - The database ID of the tray
@@ -68,7 +68,7 @@ export class Tray {
      */
     private constructor(
         id: string, index: number, category?: Category, expiryRange?: ExpiryRange,
-        weight?: number, customField?: string, parentColumn?: Column
+        weight?: number, customField?: string, parentColumn?: OnlineColumn
     ) {
         this.id = id;
         this.index = index;
@@ -91,9 +91,9 @@ export class Tray {
      */
     public static create(
         category?: Category, expiryRange?: ExpiryRange, weight?: number,
-        customField?: string, index?: number, parentColumn?: Column
-    ): Tray {
-        return new Tray(Utils.generateRandomId(), index ?? -1, category, expiryRange, weight, customField, parentColumn);
+        customField?: string, index?: number, parentColumn?: OnlineColumn
+    ): OnlineTray {
+        return new OnlineTray(Utils.generateRandomId(), index ?? -1, category, expiryRange, weight, customField, parentColumn);
     }
 
     /**
@@ -101,7 +101,7 @@ export class Tray {
      * @param index - The index of the tray within the column
      * @param parentColumn - The column the tray is being added to
      */
-    public placeInColumn(index: number, parentColumn: Column) {
+    public placeInColumn(index: number, parentColumn: OnlineColumn) {
         this.index = index;
         this.parentColumn = parentColumn;
     }
@@ -112,11 +112,11 @@ export class Tray {
      * @param column - The column to load the trays for
      * @returns A promise which resolves to all trays within the column
      */
-    public static async loadTrays(column: Column): Promise<Tray[]> {
-        const trays: Tray[] = [];
+    public static async loadTrays(column: OnlineColumn): Promise<OnlineTray[]> {
+        const trays: OnlineTray[] = [];
         for (let i = 0; i < 3; i++) {
             const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
-            trays.push(new Tray(
+            trays.push(new OnlineTray(
                 Utils.generateRandomId(),
                 i,
                 categories[Math.floor(categories.length * Math.random())],
@@ -130,19 +130,19 @@ export class Tray {
     }
 
     //#region Parent Getters
-    get parentShelf(): Shelf | undefined {
+    get parentShelf(): OnlineShelf | undefined {
         return this.parentColumn?.parentShelf;
     }
 
-    get parentBay(): Bay | undefined {
+    get parentBay(): OnlineBay | undefined {
         return this.parentShelf?.parentBay;
     }
 
-    get parentZone(): Zone | undefined {
+    get parentZone(): OnlineZone | undefined {
         return this.parentBay?.parentZone;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
+    get parentWarehouse(): OnlineWarehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
 
