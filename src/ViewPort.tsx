@@ -294,7 +294,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             {column.trays.map((tray, trayIndex) =>
 
                                 <div
-                                    className={`tray${
+                                    className={`tray${this.state.isMultipleSelect ? " multipleSelect"
+                                                                                  : ""}${
                                         this.props.selected.get(tray) ? " selected" : ""}`}
 
                                     // onClick={this.onTrayClick.bind(this, tray)}
@@ -305,10 +306,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     key={trayIndex}
                                 >
                                     <FontAwesomeIcon
-                                        className={`tray-tickbox ${this.state.multipleSelect ? " multiple-select"
-                                                                                             : ""} ${this.props.selected.get(tray)
-                                                                                                     ? "tick-selected"
-                                                                                                     : "tick-unselected"}`}
+                                        className={`tray-tickbox ${this.props.selected.get(tray)
+                                                                   ? "tick-selected"
+                                                                   : ""}`}
                                         icon={tickSolid}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 

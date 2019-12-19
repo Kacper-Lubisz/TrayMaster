@@ -51,7 +51,17 @@
       // Relative positioning: required to allow us to give children position: absolute;
       position: relative;
 
-      border-radius: 10px;
+
+      // When we're in multiple select mode
+      &.multipleSelect {
+        // Round the corners
+        border-radius: 10px;
+
+        > svg.tray-tickbox {
+          // Show the tickboxes
+          visibility: visible;
+        }
+      }
 
       // When the tray is selected
       &.selected {
@@ -76,20 +86,16 @@
         top: 0;
         left: 0;
 
+        // Grey unselected by default
+        // Needed because now just using tickSolid (better not to switch icons to avoid flickering)
+        color: #cacaca;
+
         // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
         visibility: hidden;
-
-        &.multiple-select {
-          visibility: visible;
-        }
 
         &.tick-selected {
           color: $accent-colour;
           visibility: visible;
-        }
-
-        &.tick-unselected {
-          color: #cacaca;
         }
 
       }
