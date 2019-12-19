@@ -1,0 +1,52 @@
+// SEARCH VIEW GRID LAYOUT
+
+#app {
+  // fill whole screen, centre text
+  text-align: center;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  // define grid
+  display: grid;
+  // MASTER GRID PARAMETERS: USE THESE TO ADJUST RATIOS
+  grid-template-columns: 10fr 2fr;
+  grid-template-rows: 1fr 10fr 2fr;
+
+
+  // these values specify what sectors of the grid each component takes up
+  #topBar {
+    // top left sector
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row-start: 1;
+    grid-row-end: 2;
+  }
+
+  #viewPort {
+    // middle left sector
+    grid-column-start: 1;
+    grid-column-end: 3;
+    grid-row-start: 2;
+    grid-row-end: 4;
+  }
+
+  #side {
+    // sidebar keyboard
+    grid-column-start: 3;
+    grid-column-end: 4;
+    grid-row-start: 2;
+    grid-row-end: 3;
+  }
+
+  #under {
+    // ugly code to let me have a submit button maybe
+    grid-column-start: 3;
+    grid-column-end: 4;
+    grid-row-start: 3;
+    grid-row-end: 4;
+  }
+}

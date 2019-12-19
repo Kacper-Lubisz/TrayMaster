@@ -1,0 +1,29 @@
+// SEARCH PAGE STYLING
+
+@import "./keyboard";
+// Import generic keyboard styling
+@import "./searchviewgrid";
+// Import shelf view grid layout
+
+#topBar {
+  background-color: #cccccc;
+  font-size: 20px;
+
+  // Keep contents centred
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#side {
+  background-color: #dddddd;
+}
+
+#under {
+  background-color: #dddddd;
+}
+
+#viewPort {
+  background-color: #ffffff;
+}
+

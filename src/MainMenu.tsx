@@ -27,7 +27,7 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
 
                 <div className="menu-btns">
                     <Link to="/" className="key-btn" style={{textDecoration: "none"}}><p>Back to Shelf View</p></Link>
-                    <Link to="/SettingsPage" className="key-btn" style={{textDecoration: "none"}}><p>Search</p></Link>
+                    <Link to="/search" className="key-btn" style={{textDecoration: "none"}}><p>Search</p></Link>
                     <Link to="/SettingsPage" className="key-btn" style={{textDecoration: "none"}}><p>Report</p></Link>
                     <Link to="/SettingsPage" className="key-btn" style={{textDecoration: "none"}}><p>SettingsPage</p></Link>
                 </div>

@@ -5,6 +5,7 @@ import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
+import {SearchPage} from "./search";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
 import {Warehouse} from "./core/MockWarehouse";
@@ -58,6 +59,7 @@ class App extends React.Component<any, AppState> {
                     }} exact/>
                     <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
                     <Route path="/settings" component={() => <SettingsPage/>}/>
+                    <Route path="/search" component={() => <SearchPage/>}/>
                     <Route component={ErrorPage}/>
                 </Switch>
             </BrowserRouter>
