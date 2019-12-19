@@ -1,6 +1,6 @@
 import React from "react";
 import "./styles/shelfview.scss";
-import {Column, Tray} from "./core/Warehouse";
+import {Column, Tray} from "./core/MockWarehouse";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
 import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";

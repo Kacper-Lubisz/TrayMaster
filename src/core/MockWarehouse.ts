@@ -87,6 +87,7 @@ export function generateRandomId(): string {
  */
 interface UpperLayer {
     isDeepLoaded: boolean;
+
     loadNextLayer(): Promise<void>;
 }
 
@@ -187,6 +188,7 @@ export class Warehouse implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 }
 
@@ -293,6 +295,7 @@ export class Zone implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 }
 
@@ -397,12 +400,14 @@ export class Bay implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 
     //#region Parent Getters
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
@@ -507,6 +512,7 @@ export class Shelf implements UpperLayer {
     get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
+
     //#endregion
 
     //#region Parent Getters
@@ -517,6 +523,7 @@ export class Shelf implements UpperLayer {
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
@@ -618,6 +625,7 @@ export class Column implements UpperLayer {
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
@@ -720,6 +728,7 @@ export class Tray {
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
+
     //#endregion
 }
 
