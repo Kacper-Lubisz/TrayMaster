@@ -80,7 +80,6 @@ export function generateRandomId(): string {
     return id;
 }
 
-
 /**
  * All non-tray warehouse model classes may be only shallow loaded at a time, this
  * interface begins to unify the warehouse model for consistent recursive data access.
@@ -146,7 +145,7 @@ export class Warehouse implements UpperLayer {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.categories = await Warehouse.loadCategories();
-        warehouse.isDeepLoaded = false;
+        warehouse.isDeepLoaded = true;
         return warehouse;
     }
 
@@ -254,7 +253,7 @@ export class Zone implements UpperLayer {
         for (let i = 0; i < colours.length; i++) {
             const zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
-            zone.isDeepLoaded = false;
+            zone.isDeepLoaded = true;
             zones.push(zone);
         }
         return zones;
@@ -363,7 +362,7 @@ export class Bay implements UpperLayer {
         for (let i = 0; i < 3; i++) {
             const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
-            bay.isDeepLoaded = false;
+            bay.isDeepLoaded = true;
             bays.push(bay);
         }
         return bays;
@@ -475,6 +474,7 @@ export class Shelf implements UpperLayer {
         for (let i = 0; i < 3; i++) {
             const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
+            shelf.isDeepLoaded = true;
             shelves.push(shelf);
         }
         return shelves;
@@ -582,9 +582,10 @@ export class Column implements UpperLayer {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             const column: Column = new Column(generateRandomId(), i, shelf);
             column.trays = await Tray.loadTrays(column);
+            column.isDeepLoaded = true;
             columns.push(column);
         }
         return columns;
@@ -701,7 +702,8 @@ export class Tray {
         for (let i = 0; i < 3; i++) {
             const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
             trays.push(new Tray(
-                generateRandomId(), i,
+                generateRandomId(),
+                i,
                 categories[Math.floor(categories.length * Math.random())],
                 expires[Math.floor(expires.length * Math.random())],
                 Number((15 * Math.random()).toFixed(2)),
@@ -743,4 +745,5 @@ export interface ExpiryRange {
 
 export interface Category {
     name: string;
+    shortName?: string;
 }
