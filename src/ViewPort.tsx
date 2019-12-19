@@ -25,8 +25,8 @@ interface LongPress {
  * The state of the ViewPort
  */
 interface ViewPortState {
+    isMultipleSelect: boolean;
     longPress?: LongPress | null;
-    multipleSelect: boolean;
 }
 
 /**
@@ -43,8 +43,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     constructor(props: ViewPortProps) {
         super(props);
         this.state = {
+            isMultipleSelect: false,
             longPress: null,
-            multipleSelect: false,
         };
     }
 
@@ -62,13 +62,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.setState({
             ...this.state,
-            multipleSelect: true,
             longPress: {
                 isHappening: true,
                 timeout: undefined,
                 dragFrom: this.state.longPress?.dragFrom!!,
                 selectedBefore: selectedBefore,
             },
+            isMultipleSelect: true
         }, () => {
             this.updateDragSelectionTo(this.state.longPress?.dragFrom!!);
         });
@@ -127,12 +127,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             if (a.columnIndex < b.columnIndex) return -1;
             if (a.columnIndex > b.columnIndex) return 1;
 
-            // this invert makes sure that trays above the start tray are always selected
-            // todo decide if this ordering is more logical
-
-            // const invertColumns = boundIndices.from.column < boundIndices.to.column ? 1 : -1;
-            // if (a.trayIndex < b.trayIndex) return 1 * invertColumns;
-            // if (a.trayIndex > b.trayIndex) return -1 * invertColumns;
+            if (a.trayIndex < b.trayIndex) return -1;
+            if (a.trayIndex > b.trayIndex) return 1;
 
             return 0;
         })).map(it => it.tray);
@@ -161,24 +157,20 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.setState({
             ...this.state,
+            isMultipleSelect: this.shouldBeMultipleSelect(),
             longPress: null,
-        }, this.fixSelectDisplayMode);
+        });
     }
 
     /**
-     * This method is called to fix the UI select display mode (whether in multiple-select mode), once the selection
+     * This method is consulted to decide whether UI should be in multiple-select mode once the selection
      * has been updated. It's called after a click, or after a drag finishes.
      */
-    fixSelectDisplayMode() {
+    shouldBeMultipleSelect() {
         const currSelected = Array.from(this.props.selected.entries())
                                   .filter(([_, value]) => value);
 
-        const multipleSelect = currSelected.length > 1;
-
-        this.setState({
-            ...this.state,
-            multipleSelect: multipleSelect,
-        }, this.forceUpdate);
+        return currSelected.length > 1;
     }
 
     /**
@@ -193,18 +185,20 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const currSelected = Array.from(this.props.selected.entries())
                                   .filter(([_, value]) => value);
 
-        // If there's only one thing selected, and not in multiple select mode, and it's not the current thing, then
-        // deselect that thing and just toggle this one as normal below
-        if (currSelected.length === 1 && !this.state.multipleSelect) {
-            if (tray !== currSelected[0][0]) {
-                this.props.selected.set(currSelected[0][0], false);
-            }
+        // If there's only one tray selected, and we're not in multiple select mode, and it's not the clicked-on tray
+        // then deselect that previously selected tray first, before toggling this clicked-on tray as normal
+        if (currSelected.length === 1 && !this.state.isMultipleSelect && currSelected[0][0] !== tray) {
+            this.props.selected.set(currSelected[0][0], false);
         }
 
-        // Toggle the selection
+        // Toggle the tray being clicked on
         this.props.selected.set(tray, !this.props.selected.get(tray));
+
         // Fix the select display mode
-        this.fixSelectDisplayMode();
+        this.setState({
+            ...this.state,
+            isMultipleSelect: this.shouldBeMultipleSelect()
+        });
 
     }
 
