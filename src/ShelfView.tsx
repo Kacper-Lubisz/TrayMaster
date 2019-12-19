@@ -231,15 +231,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 <ViewPort selected={this.state.selected} shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons
-                        {
-                            name: "Full Screen", onClick: () => {
-                                if (document.fullscreenElement) {
-                                    document.exitFullscreen();
-                                } else {
-                                    document.documentElement.requestFullscreen();
-                                }
-                            }
-                        },
                         {name: "Settings", onClick: () => alert("Settings")},
                         {name: "Back", onClick: () => alert("Back")},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
