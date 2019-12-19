@@ -1,3 +1,5 @@
+import {Settings} from "./Settings";
+
 // TODO: Agree on which settings to be used
 
 // Offline mock settings
@@ -39,12 +41,4 @@ export class SettingsManager {
     public static getSettings(): Settings {
         return this.settings;
     }
-}
-
-
-/**
- * Represents the firebase settings map
- */
-export interface Settings {
-    sampleSetting: string;
 }

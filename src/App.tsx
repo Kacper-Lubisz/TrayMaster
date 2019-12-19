@@ -5,9 +5,9 @@ import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
-
-import {Settings, SettingsManager} from "./core/MockSettings";
-import {Warehouse} from "./core/MockWarehouse";
+import {Warehouse} from "./core/WarehouseModel/Warehouse";
+import {Settings} from "./core/Settings/Settings";
+import {SettingsManager} from "./core/Settings/MockSettings";
 
 interface AppState {
     warehouse: Warehouse

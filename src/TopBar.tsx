@@ -13,9 +13,11 @@ interface TopBarProps {
  */
 function getFontColour(hex: string) {
     if (hex) {
-        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         if (result) {
-            let r = parseInt(result[1], 16), g = parseInt(result[2], 16), b = parseInt(result[3], 16);
+            const r = parseInt(result[1], 16),
+                  g = parseInt(result[2], 16),
+                  b = parseInt(result[3], 16);
             if (r * 0.299 + g * 0.587 + b * 0.114 < 186) return "#ffffff";
         }
     }
