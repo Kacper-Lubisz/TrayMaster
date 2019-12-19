@@ -1,11 +1,11 @@
 import {Zone} from "./Zone";
-import {UpperLayer} from "./UpperLayer";
+import {UpperLayer} from "../UpperLayer";
 import {Bay} from "./Bay";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
-import {Category} from "./Category";
-import {Utils} from "../Utils";
+import {Category} from "../Category";
+import {Utils} from "../../Utils";
 
 const cats = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",

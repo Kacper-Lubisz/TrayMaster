@@ -3,11 +3,11 @@ import {Shelf} from "./Shelf";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
-import {Category} from "./Category";
-import {ExpiryRange} from "./ExpiryRange";
-import {Utils} from "../Utils";
+import {Category} from "../Category";
+import {ExpiryRange} from "../ExpiryRange";
+import {Utils} from "../../Utils";
 
-const expires = [
+const expires: ExpiryRange[] = [
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2020, 2).getTime(),

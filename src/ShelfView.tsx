@@ -5,12 +5,12 @@ import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
-import {Warehouse} from "./core/WarehouseModel/Warehouse";
+import {Warehouse} from "./core/WarehouseModel/Mock/Warehouse";
 import {Settings} from "./core/Settings/Settings";
-import {Shelf} from "./core/WarehouseModel/Shelf";
-import {Tray} from "./core/WarehouseModel/Tray";
-import {Zone} from "./core/WarehouseModel/Zone";
-import {Bay} from "./core/WarehouseModel/Bay";
+import {Shelf} from "./core/WarehouseModel/Mock/Shelf";
+import {Tray} from "./core/WarehouseModel/Mock/Tray";
+import {Zone} from "./core/WarehouseModel/Mock/Zone";
+import {Bay} from "./core/WarehouseModel/Mock/Bay";
 import {Category} from "./core/WarehouseModel/Category";
 
 /**

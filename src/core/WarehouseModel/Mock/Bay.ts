@@ -1,10 +1,11 @@
-import {UpperLayer} from "./UpperLayer";
+import {UpperLayer} from "../UpperLayer";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
-import {Utils} from "../Utils";
+import {Utils} from "../../Utils";
+
 
 export class Bay implements UpperLayer {
     isDeepLoaded: boolean = false;

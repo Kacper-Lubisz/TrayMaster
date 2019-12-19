@@ -5,7 +5,7 @@ import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
-import {Warehouse} from "./core/WarehouseModel/Warehouse";
+import {Warehouse} from "./core/WarehouseModel/Mock/Warehouse";
 import {Settings} from "./core/Settings/Settings";
 import {SettingsManager} from "./core/Settings/MockSettings";
 

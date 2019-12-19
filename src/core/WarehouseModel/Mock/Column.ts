@@ -1,10 +1,10 @@
-import {UpperLayer} from "./UpperLayer";
+import {UpperLayer} from "../UpperLayer";
 import {Shelf} from "./Shelf";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Tray} from "./Tray";
-import {Utils} from "../Utils";
+import {Utils} from "../../Utils";
 
 export class Column implements UpperLayer {
     isDeepLoaded: boolean = false;

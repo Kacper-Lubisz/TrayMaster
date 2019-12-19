@@ -1,10 +1,10 @@
 import {Warehouse} from "./Warehouse";
-import {UpperLayer} from "./UpperLayer";
+import {UpperLayer} from "../UpperLayer";
 import {Bay} from "./Bay";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
-import {Utils} from "../Utils";
+import {Utils} from "../../Utils";
 
 const colours = [
     {label: "Red", hex: "#FF0000"},

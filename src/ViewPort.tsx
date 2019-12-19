@@ -3,8 +3,8 @@ import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
 import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
-import {Shelf} from "./core/WarehouseModel/Shelf";
-import {Tray} from "./core/WarehouseModel/Tray";
+import {Shelf} from "./core/WarehouseModel/Mock/Shelf";
+import {Tray} from "./core/WarehouseModel/Mock/Tray";
 
 
 interface ViewPortProps {
