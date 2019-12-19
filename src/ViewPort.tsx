@@ -33,7 +33,7 @@ interface LongPress {
  */
 interface ViewPortState {
     isMultipleSelect: boolean;
-    mouseDown?: boolean;
+    mouseDown?: boolean | null;
     longPress?: LongPress | null;
 }
 
@@ -47,6 +47,8 @@ const LONG_PRESS_TIMEOUT = 300;
  * // todo fixme ensure that the selection is always handled safely
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
+
+    private traySpaces: Map<Column, TraySpace[]> = new Map();
 
     constructor(props: ViewPortProps) {
         super(props);
@@ -312,8 +314,38 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             className="column"
             key={order}
         >
-            <div id="columnSize">{column.size ?? "?"}</div>
+            <div>
+                <button onClick={() => {
+                    if (column.size === "small") {
+                        column.size = "normal";
+                    } else if (column.size === "normal") {
+                        column.size = "big";
+                    }
+                    this.forceUpdate();
+                }}>{"←→"}</button>
+
+                <div id="columnSize">{column.size ?? "?"}</div>
+                <button onClick={() => {
+                    if (column.size === "big") {
+                        column.size = "normal";
+                    } else if (column.size === "normal") {
+                        column.size = "small";
+                    }
+                    this.forceUpdate();
+                }}>{"→←"}</button>
+            </div>
+
+            <button onClick={() => {
+                column.maxHeight = 1 + (column.maxHeight ?? 3);
+                this.traySpaces.delete(column);
+                this.forceUpdate();
+            }}>{"↑"}</button>
             <div id="columnHeight">{column.maxHeight ?? "?"}</div>
+            <button onClick={() => {
+                column.maxHeight = -1 + (column.maxHeight ?? 3);
+                this.traySpaces.delete(column);
+                this.forceUpdate();
+            }}>{"↓"}</button>
 
         </div> : <div
                    style={{
@@ -324,50 +356,75 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                    }}
                    className="column"
                    key={order}
-               >{this.padWithTraySpaces(column).map(((tray, index) =>
-                <div
-                    className={classNames("tray", {
-                        "multipleSelect": this.state.isMultipleSelect,
-                        "selected": this.props.selected.get(tray) || !(tray instanceof Tray),
-                        "firstTraySpace": index === column.trays.length,
-                        "traySpace": !(tray instanceof Tray)
-                    })}
-                    onMouseDown={this.onTrayMouseDown.bind(this, tray)}
-                    onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
-                    onMouseLeave={this.onTrayMouseLeave.bind(this)}
-                    onMouseUp={this.onTrayMouseUp.bind(this, tray)}
-                    key={index}
-                >
-                    <FontAwesomeIcon
-                        style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
-                        icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
+               >{
+            this.padWithTraySpaces(column).map(((tray, index) =>
+                    <div
+                        className={classNames("tray", {
+                            "multipleSelect": this.state.isMultipleSelect,
+                            "selected": this.props.selected.get(tray) || !(tray instanceof Tray),
+                            "firstTraySpace": index === column.trays.length,
+                            "traySpace": !(tray instanceof Tray)
+                        })}
+                        onMouseDown={this.onTrayMouseDown.bind(this, tray)}
+                        onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
+                        onMouseLeave={this.onTrayMouseLeave.bind(this)}
+                        onMouseUp={this.onTrayMouseUp.bind(this, tray)}
+                        key={index}
+                    >
+                        <FontAwesomeIcon
+                            style={this.props.selected.get(tray) ? {"color": "#3347ff"} : {}}
+                            icon={this.props.selected.get(tray) ? tickSolid : tickLine}/>
 
-                    {tray instanceof Tray && [
-                        <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>,
+                        {tray instanceof Tray && [
+                            <div className="trayCategory" key={1}>{tray.category?.name ?? "Mixed"}</div>,
 
-                        <div className="trayExpiry" style={{
-                            backgroundColor: tray.expiry?.color
-                        }}>{tray.expiry?.label ?? "?"}</div>,
+                            <div className="trayExpiry" key={2} style={{
+                                backgroundColor: tray.expiry?.color
+                            }}>{tray.expiry?.label ?? "?"}</div>,
 
-                        <div className="trayWeight">{tray.weight ?? "?"}kg</div>,
+                            <div className="trayWeight" key={3}>{tray.weight ?? "?"}kg</div>,
 
-                        <div className="trayCustomField">{tray.customField ?? ""}</div>
-                    ]}
-                    {!(tray instanceof Tray) && [
-                        index === column.trays.length && <p>Tray Space!!! {tray.index}</p>
-                    ]}
+                            <div className="trayCustomField" key={4}>{tray.customField ?? ""}</div>
+                        ]}
+                        {!(tray instanceof Tray) && [
+                            index === column.trays.length && <p key={1}>Tray Space!!! {tray.index}</p>
+                        ]}
 
-                </div>
-        ))}
-
+                    </div>
+            ))}
                </div>;
     }
 
+    componentDidUpdate(prevProps: Readonly<ViewPortProps>, prevState: Readonly<ViewPortState>, snapshot?: any): void {
+        if (this.props.shelf !== prevProps.shelf) {
+            this.traySpaces.clear();
+            this.setState({
+                ...this.state,
+                mouseDown: null,
+                longPress: null
+            });
+        }
+    }
+
     padWithTraySpaces(column: Column): (Tray | TraySpace)[] {
-        return Array(column.maxHeight).fill(0).map((_, index) =>
-            index < column.trays.length ? column.trays[index]
-                                        : {column: column, index: index}
-        );
+
+        const existing = this.traySpaces.get(column);
+        if (existing) {
+            return (column.trays as (Tray | TraySpace)[]).concat(existing);
+        } else { // build tray spaces
+
+            const addSpaces = column.maxHeight ? column.maxHeight - column.trays.length
+                                               : 1;
+
+            const newSpaces = Array(addSpaces).fill(0).map((_, index) => {
+                    return {column: column, index: column.trays.length + index};
+                }
+            );
+            this.traySpaces.set(column, newSpaces);
+
+            return (column.trays as (Tray | TraySpace)[]).concat(newSpaces);
+
+        }
 
     }
 
