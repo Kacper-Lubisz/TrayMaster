@@ -53,12 +53,6 @@
 
       border-radius: 10px;
 
-        > svg.tray-tickbox {
-          // Show the tickboxes
-          visibility: visible;
-        }
-      }
-
       // When the tray is selected
       &.selected {
         box-shadow: inset 0 0 18px -10px #000000;
@@ -69,6 +63,7 @@
       > * {
         // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
         position: absolute;
+        // Make all children elements (inside tray) transparent to pointer events (so they bubble to the tray itself)
         pointer-events: none;
       }
 
@@ -81,12 +76,22 @@
         top: 0;
         left: 0;
 
-        // Hide by default; will be shown when in multiple select mode
+        // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
         visibility: hidden;
+
+        &.multiple-select {
+          visibility: visible;
+        }
 
         &.tick-selected {
           color: $accent-colour;
+          visibility: visible;
         }
+
+        &.tick-unselected {
+          color: #cacaca;
+        }
+
       }
 
       // Tray category: bottom left
