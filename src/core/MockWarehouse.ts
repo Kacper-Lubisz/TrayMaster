@@ -303,7 +303,7 @@ export class Column {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             const column: Column = new Column(generateRandomId(), i, shelf);
             column.trays = await Tray.loadTrays(column);
             columns.push(column);
@@ -364,7 +364,7 @@ export class Tray {
      */
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 3; i++) {
             const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
             const testExpires = [
                 {
