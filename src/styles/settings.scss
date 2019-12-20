@@ -1,0 +1,48 @@
+//Setting style sheet
+
+@import "./keyboard.scss";
+
+.settings {
+
+}
+
+.settings-header {
+  //settings header text
+  position: fixed;
+  left: 20px;
+  font-size: 20px;
+}
+
+.settings-btns {
+  //container for all buttons
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  height: 300px;
+  width: 250px;
+
+  a {
+    position: relative;
+  }
+
+  p {
+    font-size: 14px;
+  }
+
+  .line {
+    //line above 'back'
+    background: gray;
+    height: 3px;
+    width: inherit;
+  }
+
+  .back-btn {
+    //back button icon
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+    left: 50px;
+  }
+}

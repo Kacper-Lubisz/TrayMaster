@@ -1,67 +1,68 @@
-import React from 'react';
-import './App.scss';
-import {TopBar} from "./TopBar";
-import {SideBar} from "./SideBar";
-import {ViewPort} from "./ViewPort";
-import {BottomPanelComponent, BottomPanelPage} from "./BottomPanelComponent";
+import React from "react";
+import {BrowserRouter, Route, Switch} from "react-router-dom";
 
-class App extends React.Component<any, any> {
+import {ShelfView} from "./ShelfView";
+import {MainMenu} from "./MainMenu";
+import {SettingsPage} from "./SettingsPage";
+import {ErrorPage} from "./ErrorPage";
 
-  pages: BottomPanelPage[];
+import {Settings, SettingsManager} from "./core/MockSettings";
+import {Warehouse} from "./core/MockWarehouse";
 
-  constructor(props: any) {
-    super(props);
-
-    this.pages = [{
-      name: "Categories", sections: [
-        {
-          title: "All",
-          buttons: ["Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans", "Beans"],
-          onClick: () => null
-        }, {
-          title: "Suggested",
-          buttons: ["Beans", "Beans", "Beans <3", "Beans", "Beans"],
-          onClick: () => null
-        }
-      ]
-    },
-      {
-        name: "Expiry", sections: [
-          {
-            title: "Years",
-            buttons: ["2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020"],
-            onClick: () => null
-          }, {
-            title: "Quarters",
-            buttons: ["Q1", "Q2", "Q3", "Q4"],
-            onClick: () => null
-          }, {
-            title: "Months",
-            buttons: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-            onClick: () => null
-          },
-        ]
-      }
-    ];
-
-  }
-
-  render() {
-    return (
-      <div id="app">
-        <div id="top">
-          <div id="left">
-            <TopBar/>
-            <ViewPort/>
-          </div>
-          <SideBar/>
-        </div>
-        <BottomPanelComponent pages={this.pages}/>
-      </div>
-    );
-  }
-
+interface AppState {
+    warehouse: Warehouse
+    settings: Settings
 }
 
+class App extends React.Component<any, AppState> {
+
+    constructor(props: any) {
+        super(props);
+
+        const loadPromise = Promise.all([
+            SettingsManager.loadSettings(),
+            Warehouse.loadWarehouse("ABCD")
+        ]);
+
+        loadPromise.then((result) => {
+            const [settings, warehouse] = result;
+            console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
+            console.log(`Warehouse Loaded: ${warehouse}`);
+
+            this.setState({
+                warehouse: warehouse,
+                settings: settings
+            });
+
+        }).catch(() => {
+            console.error("Failed to load the warehouse of the settings");
+            // todo present error message
+        });
+
+    }
+
+    render() {
+        return (
+            //Declare the paths for all screens
+            <BrowserRouter>
+                <Switch>
+                    <Route path="/" component={() => {
+                        if (this.state === null) {
+                            return <div>Loading</div>;
+                            // todo add a loading screen
+                            // fixme this loading screen could surround the entire router
+                        } else {
+                            return <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>;
+                        }
+                    }} exact/>
+                    <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
+                    <Route path="/settings" component={() => <SettingsPage/>}/>
+                    <Route component={ErrorPage}/>
+                </Switch>
+            </BrowserRouter>
+        );
+    }
+
+}
 
 export default App;

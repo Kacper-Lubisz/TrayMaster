@@ -1,0 +1,111 @@
+// MAIN SHELF VIEW STYLING
+
+// Import system-wide variables: we need to know $accent-colour here
+@import "./variables";
+// Import shelf view grid layout
+@import "./shelfviewgrid";
+// Import generic keyboard styling
+@import "./keyboard";
+// Import viewport styling
+@import "./viewport";
+
+#topBar {
+  background-color: #cccccc;
+  font-size: 20px;
+
+  // Keep contents centred
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#viewPort {
+  background-color: #dddddd;
+
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#sideBar {
+  // arrange children
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+
+  // container for keyboard switch buttons
+  #kb-switcher {
+    // Define container layout
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    height: 50px;
+
+    // buttons inside the switcher
+    > button {
+      // fill available space
+      height: 100%;
+      flex-grow: 1;
+
+      // Styling
+      border: none;
+      background: none;
+      transition: color 0.2s;
+      cursor: pointer;
+      padding: 0;
+      margin: 0 5px;
+
+      // When active, appear blue
+      &.active {
+        color: $accent-colour;
+      }
+
+      // Set icon to fill containing button
+      > svg {
+        height: 100%;
+        width: 100%;
+      }
+    }
+  }
+}
+
+#bottom {
+  padding: 5px;
+
+  .keyboard-container {
+    display: flex;
+    justify-content: center;
+
+    height: 100%;
+
+    > div {
+      margin: 0 10px;
+    }
+
+    #exp-1 {
+      width: 20%;
+    }
+
+    #exp-2 {
+      width: 15%;
+    }
+
+    #exp-3 {
+      width: 20%;
+    }
+
+    #weight-numpad {
+      width: 30%;
+    }
+
+    #numpadR {
+      width: 10%;
+    }
+  }
+}
+
+.vl {
+  width: 0;
+  border-left: 1px solid black;
+}
