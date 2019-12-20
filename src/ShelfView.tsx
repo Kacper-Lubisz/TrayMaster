@@ -4,7 +4,7 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
+import {Bay, Category, Column, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 import {SearchPage} from "./SearchPage";
@@ -12,7 +12,7 @@ import {SearchPage} from "./SearchPage";
 /**
  * Defines possible keyboard names
  */
-export type KeyboardName = "category" | "expiry" | "weight";
+export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
 
 /**
  * The directions in which you can navigate
@@ -224,6 +224,17 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         // throw Error("Unimplemented method stub");
     }
 
+    addColumn() {
+        this.state.currentShelf.columns.push(Column.create(
+            [],
+            this.state.currentShelf.columns.length,
+            this.state.currentShelf,
+            "normal",
+            3
+        ));
+        this.forceUpdate();
+    }
+
     /**
      * This method exists edit shelf mode
      */
@@ -265,6 +276,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 />
                 <SideBar
                     buttons={this.state.isEditShelf ? [
+                        {name: "Add Column", onClick: this.addColumn.bind(this)},
                         {name: "Cancel", onClick: this.exitEditShelf.bind(this)},
                         {name: "Save", onClick: this.exitEditShelf.bind(this)},
                     ] : [ // Generate sidebar buttons
@@ -291,7 +303,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
-                    keyboardState={this.state.currentKeyboard}
+                    keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
+                    //fixme move this edit state to change current keyboard
                 />
             </div>
         );

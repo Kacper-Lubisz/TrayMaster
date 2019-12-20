@@ -594,10 +594,18 @@ export class Column implements UpperLayer {
      * @param trays - The trays to put in the column
      * @param index - The index of the column within its shelf
      * @param parentShelf - The shelf the column belongs to
+     * @param size - The column size
+     * @param maxHeight - The max number of trays that can go in this column
      * @returns The newly created column
      */
-    public static create(trays: Tray[], index?: number, parentShelf?: Shelf): Column {
-        const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf);
+    public static create(
+        trays: Tray[],
+        index?: number,
+        parentShelf?: Shelf,
+        size?: ColumnSize,
+        maxHeight?: number
+    ): Column {
+        const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf, size, maxHeight);
         column.trays = trays;
         for (let i = 0; i < column.trays.length; i++)
             column.trays[i].placeInColumn(i, column);

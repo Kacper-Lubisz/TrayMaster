@@ -314,6 +314,18 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             className="column"
             key={order}
         >
+            <button onClick={() => {
+                const shelf: Shelf | undefined = column.parentShelf;
+                if (shelf) {
+                    const index = shelf.columns.indexOf(column);
+                    shelf.columns.splice(index, 1);
+                } else {
+                    throw Error("Shelf undefined");
+                }
+                this.forceUpdate();
+            }}>Remove
+            </button>
+
             <div>
                 <button onClick={() => {
                     if (column.size === "small") {
