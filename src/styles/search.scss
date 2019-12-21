@@ -1,9 +1,48 @@
 // SEARCH PAGE STYLING
 
+@import "variables";
+
 @import "./keyboard";
 // Import generic keyboard styling
 @import "./searchviewgrid";
 // Import shelf view grid layout
 
+#topPanel {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 -20px 15px 10px #000000;
 
+  #searchSentence {
+    font-size: 30px;
+
+    span.searchField {
+      color: $accent-colour;
+    }
+  }
+}
+
+#searchResults {
+  padding: 0 20px;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+
+    th {
+      border-bottom: 1px solid #000000;
+    }
+
+    tr > * {
+      padding: 5px;
+
+      &:not(:first-child):not(:last-child) {
+        border-left: 1px solid #000000;
+        border-right: 1px solid #000000;
+      }
+    }
+  }
+}
 

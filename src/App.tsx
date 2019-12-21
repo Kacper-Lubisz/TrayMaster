@@ -35,7 +35,10 @@ class App extends React.Component<any, AppState> {
                 warehouse: warehouse,
                 settings: settings,
                 searchQuery: {
-                    categories: [warehouse.categories[Math.floor(Math.random() * warehouse.categories.length)]],
+                    categories: [
+                        warehouse.categories[Math.floor(Math.random() * warehouse.categories.length)],
+                        warehouse.categories[Math.floor(Math.random() * warehouse.categories.length)]
+                    ],
                     sortBy: "expiry"
                 }
             });
@@ -49,7 +52,7 @@ class App extends React.Component<any, AppState> {
 
     render() {
         // todo add a loading screen
-        return this.state === null ? <div>Loading</div> : <BrowserRouter> /*Declare the paths for all screens*/
+        return this.state === null ? <div>Loading</div> : <BrowserRouter> {/*Declare the paths for all screens*/}
             <Switch>
                 <Route path="/" component={() =>
                     <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>
