@@ -5,7 +5,6 @@ import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
-import {SearchPage} from "./search";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
 import {SearchQuery, Warehouse} from "./core/MockWarehouse";

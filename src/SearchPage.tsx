@@ -1,12 +1,30 @@
 import React from "react";
 import {SearchQuery, Tray, Warehouse} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
+import "./styles/search.scss";
 
 interface SearchPageProps {
     warehouse: Warehouse,
     settings: Settings,
     query?: SearchQuery
     setQuery: (query: SearchQuery) => void;
+}
+
+export interface SearchPanelProps {
+    keyboardState: string
+    // I don't know what other information the SearchPanel needs
+}
+
+export class SearchPanel extends React.Component<SearchPanelProps> {
+
+    render() {
+        // return DOM elements using button structures
+        return (
+            <div id="searchPanel">
+                This is the side panel fellas. keyboardState is "{this.props.keyboardState}"
+            </div>
+        );
+    }
 }
 
 interface SearchPageState {
@@ -30,15 +48,25 @@ export class SearchPage extends React.Component<SearchPageProps, SearchPageState
     }
 
     render() {
-        return <div>
-            We are searching for some stuff<br/>
-            searchQuery: {JSON.stringify(this.props.query)}
-            {this.state && (<div>
-                results: {JSON.stringify(this.state.results?.map(tray =>
-                `${tray.category?.name ?? "Mixed"} ${tray.parentZone?.name} ${tray.parentBay?.name}${tray.parentShelf?.name}`
-            ))}
-            </div>)}
-        </div>;
+        return (
+            <div id="searchPage">
+                <div id="leftPanel">
+                    <div id="searchSentence">
+                        Beans and stuff expiring soon
+                    </div>
+                    <div id="searchResults">
+                        searchQuery: {JSON.stringify(this.props.query)}
+                        {this.state && (<div>
+                                results: {JSON.stringify(this.state.results?.map(tray =>
+                                `${tray.category?.name ?? "Mixed"} ${tray.parentZone?.name} ${tray.parentBay?.name}${tray.parentShelf?.name}`
+                            ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <SearchPanel keyboardState="yeet"/>
+            </div>
+        );
     }
 
     /**
