@@ -176,7 +176,6 @@ export class Warehouse implements UpperLayer {
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.categories = await Warehouse.loadCategories();
-        // fixme this needs to be in the correct order to work
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.isDeepLoaded = true;
         return warehouse;
