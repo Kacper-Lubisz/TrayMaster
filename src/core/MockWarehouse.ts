@@ -143,8 +143,8 @@ export class Warehouse implements UpperLayer {
      */
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
-        warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.categories = await Warehouse.loadCategories();
+        warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.isDeepLoaded = true;
         return warehouse;
     }
