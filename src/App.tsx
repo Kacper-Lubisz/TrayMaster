@@ -8,11 +8,13 @@ import {ErrorPage} from "./ErrorPage";
 import {SearchPage} from "./search";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
-import {Warehouse} from "./core/MockWarehouse";
+import {SearchQuery, Warehouse} from "./core/MockWarehouse";
+import {SearchPage} from "./SearchPage";
 
 interface AppState {
     warehouse: Warehouse
     settings: Settings
+    searchQuery?: SearchQuery
 }
 
 class App extends React.Component<any, AppState> {
@@ -27,43 +29,50 @@ class App extends React.Component<any, AppState> {
 
         loadPromise.then((result) => {
             const [settings, warehouse] = result;
-            console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
-            console.log(`Warehouse Loaded: ${warehouse}`);
-
-            console.log(typeof settings);
+            console.log(`Settings Loaded:`, settings);
+            console.log(`Warehouse Loaded:`, warehouse);
 
             this.setState({
                 warehouse: warehouse,
-                settings: settings
+                settings: settings,
+                searchQuery: {
+                    categories: [warehouse.categories[Math.floor(Math.random() * warehouse.categories.length)]],
+                    sortBy: "expiry"
+                }
             });
 
         }).catch(() => {
+            console.error("Failed to load the warehouse of the settings");
             // todo present error message
         });
 
     }
 
     render() {
-        return (
-            //Declare the paths for all screens
-            <BrowserRouter>
-                <Switch>
-                    <Route path="/" component={() => {
-                        if (this.state === null) {
-                            return <div>Loading</div>;
-                            // todo add a loading screen
-                            // fixme this loading screen could surround the entire router
-                        } else {
-                            return <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>;
-                        }
-                    }} exact/>
-                    <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
-                    <Route path="/settings" component={() => <SettingsPage/>}/>
-                    <Route path="/search" component={() => <SearchPage/>}/>
-                    <Route component={ErrorPage}/>
-                </Switch>
-            </BrowserRouter>
-        );
+        // todo add a loading screen
+        return this.state === null ? <div>Loading</div> : <BrowserRouter> /*Declare the paths for all screens*/
+            <Switch>
+                <Route path="/" component={() =>
+                    <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>
+                } exact/>
+                <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
+                <Route path="/settings" component={() => <SettingsPage/>}/>
+                <Route path="/search" component={() =>
+                    <SearchPage
+                        warehouse={this.state?.warehouse}
+                        settings={this.state?.settings}
+                        query={this.state?.searchQuery}
+                        setQuery={(query => {
+                            this.setState({
+                                ...this.state,
+                                searchQuery: query
+                            });
+                        })}
+                    />
+                }/>
+                <Route component={ErrorPage}/>
+            </Switch>
+        </BrowserRouter>;
     }
 
 }
