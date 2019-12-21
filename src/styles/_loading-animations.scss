@@ -1,0 +1,106 @@
+// all trays, all the time
+.spinner-tray {
+  transform: translate(0);
+  animation-fill-mode: none;
+
+  // Each animation type
+  &.d1 {
+    animation: d1 0.2s ease;
+  }
+
+  &.d2 {
+    animation: d2 0.2s ease;
+  }
+
+  &.u1 {
+    animation: u1 0.2s ease;
+  }
+
+  &.u2 {
+    animation: u2 0.2s ease;
+  }
+
+  &.r1 {
+    animation: r1 0.2s ease;
+  }
+
+  &.r2 {
+    animation: r2 0.2s ease;
+  }
+
+  &.r3 {
+    animation: r3 0.2s ease;
+  }
+
+  &.l1 {
+    animation: l1 0.2s ease;
+  }
+
+  &.l2 {
+    animation: l2 0.2s ease;
+  }
+
+  &.l3 {
+    animation: l3 0.2s ease;
+  }
+}
+
+@keyframes d1 {
+  100% {
+    transform: translate(0, 25px)
+  }
+}
+
+@keyframes d2 {
+  100% {
+    transform: translate(0, 50px)
+  }
+}
+
+@keyframes u1 {
+  100% {
+    transform: translate(0, -25px)
+  }
+}
+
+@keyframes u2 {
+  100% {
+    transform: translate(0, -50px)
+  }
+}
+
+@keyframes r1 {
+  100% {
+    transform: translate(40px, 0)
+  }
+}
+
+@keyframes r2 {
+  100% {
+    transform: translate(80px, 0)
+  }
+}
+
+@keyframes r3 {
+  100% {
+    transform: translate(120px, 0)
+  }
+}
+
+@keyframes l1 {
+  100% {
+    transform: translate(-40px, 0)
+  }
+}
+
+@keyframes l2 {
+  100% {
+    transform: translate(-80px, 0)
+  }
+}
+
+@keyframes l3 {
+  100% {
+    transform: translate(-120px, 0)
+  }
+}

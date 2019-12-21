@@ -1,0 +1,55 @@
+@import "./variables";
+@import "loading-animations";
+
+
+// Main page styles
+#loadingPage {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #eeeeee;
+
+  // Shelfmaster text
+  #menu-header {
+    position: fixed;
+    top: 20px;
+    left: 40px;
+    font-size: 40px;
+
+    h1 {
+      margin: 0;
+    }
+  }
+
+  // Centred box
+  #loading-box {
+    padding: 2%;
+    border-radius: 10px;
+    box-shadow: 0 0 15px -8px #000000;
+    background-color: #ffffff;
+
+
+    h2 {
+      margin: 0;
+      text-align: center;
+    }
+  }
+}
+
+// Epic flying tray spinner
+#spinner {
+  width: 155px;
+  height: 70px;
+  margin-bottom: 20px;
+
+  .spinner-tray {
+    width: 35px;
+    height: 20px;
+    fill: #000000;
+  }
+}
