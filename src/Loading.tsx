@@ -82,6 +82,16 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
                 </div>
                 <div id="loading-box">
                     <svg id="spinner">
+                        <g>
+                            {
+                                Array(4).fill(0).map((_, i) => {
+                                    return Array(3).fill(0).map((_, j) => {
+                                        let key = `${i}${j}`;
+                                        return <rect className="spinner-tray-slot" key={key} x={i * 40} y={j * 25}/>;
+                                    });
+                                })
+                            }
+                        </g>
                         {
                             Array(4).fill(0).map((_, i) => {
                                 return Array(3).fill(0).map((_, j) => {

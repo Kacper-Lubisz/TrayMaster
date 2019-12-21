@@ -47,9 +47,13 @@
   height: 70px;
   margin-bottom: 20px;
 
-  .spinner-tray {
+  rect {
     width: 35px;
     height: 20px;
     fill: #000000;
+
+    &.spinner-tray-slot {
+      fill: #cccccc;
+    }
   }
 }
