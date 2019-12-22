@@ -78,77 +78,70 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     updateDragSelectionTo(to: Tray) {
 
-        // Reset parent's state to the selectedBefore from our state, then update changes from this drag in the callback
-        this.props.setSelected(this.state.longPress?.selectedBefore ?? new Map(), () => {
+        // Shallow clone what was previously selected, which we will mutate
+        let newSelectedMap = new Map(this.state.longPress?.selectedBefore ?? new Map<Tray, boolean>());
 
-            // Shallow clone the selected map from our props (which we just changed and have been passed down, since
-            // this is in a callback!), which we will mutate
-            let newSelectedMap = new Map(this.props.selected);
+        const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
 
-            const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
+        const from = this.state.longPress?.dragFrom;
 
-            const from = this.state.longPress?.dragFrom;
+        const boundIndices = {
+            from: {
+                column: -1,
+                tray: -1
+            },
+            to: {
+                column: -1,
+                tray: -1
+            }
+        };
 
-            const boundIndices = {
-                from: {
-                    column: -1,
-                    tray: -1
-                },
-                to: {
-                    column: -1,
-                    tray: -1
+        // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
+        // After they have been sorted into any order, anything between the from and to trays is then marked as selected
+        const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
+            column.trays.map((tray: Tray, trayIndex) => {
+                if (tray === from) {
+                    boundIndices.from.column = columnIndex;
+                    boundIndices.from.tray = trayIndex;
                 }
-            };
-
-            // This block takes all the trays in the current shelf and sorts them into the order that the drag
-            // select uses. After they have been sorted into any order, anything between the from and to trays is
-            // then marked as selected
-            const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
-                column.trays.map((tray: Tray, trayIndex) => {
-                    if (tray === from) {
-                        boundIndices.from.column = columnIndex;
-                        boundIndices.from.tray = trayIndex;
-                    }
-                    if (tray === to) {
-                        boundIndices.to.column = columnIndex;
-                        boundIndices.to.tray = trayIndex;
-                    }
-
-                    return { // this maps all trays to an object which contains the tray and relevant indices
-                        columnIndex: columnIndex,
-                        trayIndex: trayIndex,
-                        tray: tray
-                    };
-                })
-            ).sort(((a, b) => {
-
-                // this is a multi level sort
-
-                if (a.columnIndex < b.columnIndex) return -1;
-                if (a.columnIndex > b.columnIndex) return 1;
-
-                if (a.trayIndex < b.trayIndex) return -1;
-                if (a.trayIndex > b.trayIndex) return 1;
-
-                return 0;
-            })).map(it => it.tray);
-
-            // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays
-            // between the from and to trays
-            trayOrdered.reduce((isSelecting, tray) => {
-
-                const selectThis = isSelecting || tray === from || tray === to;
-
-                if (selectThis) {
-                    newSelectedMap.set(tray, true);
+                if (tray === to) {
+                    boundIndices.to.column = columnIndex;
+                    boundIndices.to.tray = trayIndex;
                 }
-                return xor(isSelecting, xor(tray === from, tray === to));
 
-            }, false); // the accumulator of the fold is if the trays are still being selected
+                return { // this maps all trays to an object which contains the tray and relevant indices
+                    columnIndex: columnIndex,
+                    trayIndex: trayIndex,
+                    tray: tray
+                };
+            })
+        ).sort(((a, b) => {
 
-            this.props.setSelected(newSelectedMap);
-        });
+            // this is a multi level sort
 
+            if (a.columnIndex < b.columnIndex) return -1;
+            if (a.columnIndex > b.columnIndex) return 1;
+
+            if (a.trayIndex < b.trayIndex) return -1;
+            if (a.trayIndex > b.trayIndex) return 1;
+
+            return 0;
+        })).map(it => it.tray);
+
+        // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
+        // the from and to trays
+        trayOrdered.reduce((isSelecting, tray) => {
+
+            const selectThis = isSelecting || tray === from || tray === to;
+
+            if (selectThis) {
+                newSelectedMap.set(tray, true);
+            }
+            return xor(isSelecting, xor(tray === from, tray === to));
+
+        }, false); // the accumulator of the fold is if the trays are still being selected
+
+        this.props.setSelected(newSelectedMap);
     }
 
     /**
