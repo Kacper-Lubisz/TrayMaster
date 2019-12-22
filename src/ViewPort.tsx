@@ -9,6 +9,9 @@ import {Shelf, Tray} from "./core/MockWarehouse";
 interface ViewPortProps {
     shelf: Shelf;
     selected: Map<Tray, boolean>;
+    setSelected: (newMap: Map<Tray, boolean>, callback?: ((() => void) | undefined)) => void;
+    isTraySelected: ((tray: Tray) => boolean | undefined);
+    areMultipleTraysSelected: () => boolean;
 }
 
 /**
@@ -25,7 +28,6 @@ interface LongPress {
  * The state of the ViewPort
  */
 interface ViewPortState {
-    isMultipleSelect: boolean;
     longPress?: LongPress | null;
 }
 
@@ -36,14 +38,12 @@ const LONG_PRESS_TIMEOUT = 300;
 
 /**
  * This class crates and manages the behavior of the viewport
- * // todo fixme ensure that the selection is always handled safely
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     constructor(props: ViewPortProps) {
         super(props);
         this.state = {
-            isMultipleSelect: false,
             longPress: null,
         };
     }
@@ -54,11 +54,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * released before the timeout finishes.
      */
     onDragSelectStart() {
-
-        const selectedBefore = new Map();
-        this.props.selected.forEach((selected, tray) => {
-            selectedBefore.set(tray, selected);
-        });
+        // Shallow clone the selected map from props, which we will save
+        const selectedBefore = new Map(this.props.selected);
 
         this.setState({
             ...this.state,
@@ -68,7 +65,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 dragFrom: this.state.longPress?.dragFrom!!,
                 selectedBefore: selectedBefore,
             },
-            isMultipleSelect: true
         }, () => {
             this.updateDragSelectionTo(this.state.longPress?.dragFrom!!);
         });
@@ -82,71 +78,77 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     updateDragSelectionTo(to: Tray) {
 
-        this.props.selected.forEach((_, tray) => { // reset selection
-            this.props.selected.set(tray, this.state.longPress?.selectedBefore.get(tray) ?? false);
+        // Reset parent's state to the selectedBefore from our state, then update changes from this drag in the callback
+        this.props.setSelected(this.state.longPress?.selectedBefore ?? new Map(), () => {
+
+            // Shallow clone the selected map from our props (which we just changed and have been passed down, since
+            // this is in a callback!), which we will mutate
+            let newSelectedMap = new Map(this.props.selected);
+
+            const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
+
+            const from = this.state.longPress?.dragFrom;
+
+            const boundIndices = {
+                from: {
+                    column: -1,
+                    tray: -1
+                },
+                to: {
+                    column: -1,
+                    tray: -1
+                }
+            };
+
+            // This block takes all the trays in the current shelf and sorts them into the order that the drag
+            // select uses. After they have been sorted into any order, anything between the from and to trays is
+            // then marked as selected
+            const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
+                column.trays.map((tray: Tray, trayIndex) => {
+                    if (tray === from) {
+                        boundIndices.from.column = columnIndex;
+                        boundIndices.from.tray = trayIndex;
+                    }
+                    if (tray === to) {
+                        boundIndices.to.column = columnIndex;
+                        boundIndices.to.tray = trayIndex;
+                    }
+
+                    return { // this maps all trays to an object which contains the tray and relevant indices
+                        columnIndex: columnIndex,
+                        trayIndex: trayIndex,
+                        tray: tray
+                    };
+                })
+            ).sort(((a, b) => {
+
+                // this is a multi level sort
+
+                if (a.columnIndex < b.columnIndex) return -1;
+                if (a.columnIndex > b.columnIndex) return 1;
+
+                if (a.trayIndex < b.trayIndex) return -1;
+                if (a.trayIndex > b.trayIndex) return 1;
+
+                return 0;
+            })).map(it => it.tray);
+
+            // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays
+            // between the from and to trays
+            trayOrdered.reduce((isSelecting, tray) => {
+
+                const selectThis = isSelecting || tray === from || tray === to;
+
+                if (selectThis) {
+                    newSelectedMap.set(tray, true);
+                }
+                return xor(isSelecting, xor(tray === from, tray === to));
+
+            }, false); // the accumulator of the fold is if the trays are still being selected
+
+            this.props.setSelected(newSelectedMap);
         });
 
-        const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
-
-        const from = this.state.longPress?.dragFrom;
-
-        const boundIndices = {
-            from: {
-                column: -1,
-                tray: -1
-            },
-            to: {
-                column: -1,
-                tray: -1
-            }
-        };
-
-        // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
-        // After they have been sorted into any order, anything between the from and to trays is then marked as selected
-        const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
-            column.trays.map((tray: Tray, trayIndex) => {
-                if (tray === from) {
-                    boundIndices.from.column = columnIndex;
-                    boundIndices.from.tray = trayIndex;
-                }
-                if (tray === to) {
-                    boundIndices.to.column = columnIndex;
-                    boundIndices.to.tray = trayIndex;
-                }
-
-                return { // this maps all trays to an object which contains the tray and relevant indices
-                    columnIndex: columnIndex,
-                    trayIndex: trayIndex,
-                    tray: tray
-                };
-            })
-        ).sort(((a, b) => {
-
-            // this is a multi level sort
-
-            if (a.columnIndex < b.columnIndex) return -1;
-            if (a.columnIndex > b.columnIndex) return 1;
-
-            if (a.trayIndex < b.trayIndex) return -1;
-            if (a.trayIndex > b.trayIndex) return 1;
-
-            return 0;
-        })).map(it => it.tray);
-
-        // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
-        // the from and to trays
-        trayOrdered.reduce((isSelecting, tray) => {
-
-            const selectThis = isSelecting || tray === from || tray === to;
-
-            if (selectThis) {
-                this.props.selected.set(tray, true);
-            }
-            return xor(isSelecting, xor(tray === from, tray === to));
-
-        }, false); // the accumulator of the fold is if the trays are still being selected
-
-        this.forceUpdate(); // the state has been changed
     }
 
     /**
@@ -157,20 +159,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.setState({
             ...this.state,
-            isMultipleSelect: this.shouldBeMultipleSelect(),
             longPress: null,
         });
-    }
-
-    /**
-     * This method is consulted to decide whether UI should be in multiple-select mode once the selection
-     * has been updated. It's called after a click, or after a drag finishes.
-     */
-    shouldBeMultipleSelect() {
-        const currSelected = Array.from(this.props.selected.entries())
-                                  .filter(([_, value]) => value);
-
-        return currSelected.length > 1;
     }
 
     /**
@@ -185,21 +175,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const currSelected = Array.from(this.props.selected.entries())
                                   .filter(([_, value]) => value);
 
-        // If there's only one tray selected, and we're not in multiple select mode, and it's not the clicked-on tray
+        // Shallow clone the selected map from props, which we will mutate
+        let newSelectedMap = new Map(this.props.selected);
+
+        // If there's only one tray selected, and it's not the clicked-on tray
         // then deselect that previously selected tray first, before toggling this clicked-on tray as normal
-        if (currSelected.length === 1 && !this.state.isMultipleSelect && currSelected[0][0] !== tray) {
-            this.props.selected.set(currSelected[0][0], false);
+        if (currSelected.length === 1 && currSelected[0][0] !== tray) {
+            newSelectedMap.set(currSelected[0][0], false);
         }
 
         // Toggle the tray being clicked on
-        this.props.selected.set(tray, !this.props.selected.get(tray));
+        newSelectedMap.set(tray, !this.props.isTraySelected(tray));
 
-        // Fix the select display mode
-        this.setState({
-            ...this.state,
-            isMultipleSelect: this.shouldBeMultipleSelect()
-        });
-
+        this.props.setSelected(newSelectedMap);
     }
 
     /**
@@ -294,9 +282,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             {column.trays.map((tray, trayIndex) =>
 
                                 <div
-                                    className={`tray${this.state.isMultipleSelect ? " multipleSelect"
-                                                                                  : ""}${
-                                        this.props.selected.get(tray) ? " selected" : ""}`}
+                                    className={`tray${(this.props.areMultipleTraysSelected() || this.state.longPress?.isHappening)
+                                                      ? " multipleSelect"
+                                                      : ""}${
+                                        this.props.isTraySelected(tray) ? " selected" : ""}`}
 
                                     // onClick={this.onTrayClick.bind(this, tray)}
                                     onPointerDown={this.onTrayPointerDown.bind(this, tray)}
@@ -306,7 +295,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     key={trayIndex}
                                 >
                                     <FontAwesomeIcon
-                                        className={`tray-tickbox ${this.props.selected.get(tray)
+                                        className={`tray-tickbox ${this.props.isTraySelected(tray)
                                                                    ? "tick-selected"
                                                                    : ""}`}
                                         icon={tickSolid}/>

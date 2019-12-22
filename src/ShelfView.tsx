@@ -25,7 +25,6 @@ interface ShelfViewProps {
 }
 
 interface ShelfViewState {
-    // todo raise viewport selection state out into ShelfView
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
     selected: Map<Tray, boolean>;
@@ -41,6 +40,26 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
         };
+        this.setSelected = this.setSelected.bind(this);
+        this.isTraySelected = this.isTraySelected.bind(this);
+        this.areMultipleTraysSelected = this.areMultipleTraysSelected.bind(this);
+    }
+
+    public setSelected(newMap: Map<Tray, boolean>, callback?: ((() => void) | undefined)) {
+        this.setState({
+            ...this.state,
+            selected: newMap
+        }, callback);
+    }
+
+    public isTraySelected(tray: Tray) {
+        return this.state.selected.get(tray);
+    }
+
+    public areMultipleTraysSelected() {
+        const currSelected = Array.from(this.state.selected.entries())
+                                  .filter(([_, value]) => value);
+        return currSelected.length > 1;
     }
 
     /**
@@ -90,6 +109,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         if (shelf instanceof Shelf) {
             this.setState({
                 ...this.state,
+                selected: new Map(),
                 currentShelf: shelf
             });
             return;
@@ -110,6 +130,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
             this.setState({
                 ...this.state,
+                selected: new Map(),
                 currentShelf: currentBay.shelves[newShelfIndex]
             });
 
@@ -128,6 +149,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             );
             this.setState({
                 ...this.state,
+                selected: new Map(),
                 currentShelf: currentZone.bays[newBayIndex].shelves[newShelfIndex]
             });
 
@@ -138,6 +160,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 const newShelfIndex = shelfIndex + 1;
                 this.setState({
                     ...this.state,
+                    selected: new Map(),
                     currentShelf: currentBay.shelves[newShelfIndex]
                 });
             } else if (bayIndex + 1 !== currentZone.bays.length) { // increment bayIndex
@@ -145,6 +168,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 const newBayIndex = bayIndex + 1;
                 this.setState({
                     ...this.state,
+                    selected: new Map(),
                     currentShelf: currentZone.bays[newBayIndex].shelves[0]
                     // fixme ensure that this bay has shelves
                     // the best solution would be to store the bay and have the shelf view display a message saying:
@@ -155,6 +179,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 const newZoneIndex = (zoneIndex + 1) % warehouse.zones.length;
                 this.setState({
                     ...this.state,
+                    selected: new Map(),
                     currentShelf: warehouse.zones[newZoneIndex].bays[0].shelves[0]
                     // fixme ensure that this zone has bays and this bay has shelves
                 });
@@ -228,7 +253,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             <div id="shelfView">
                 <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
                         locationString={this.state.currentShelf.toString()}/>
-                <ViewPort selected={this.state.selected} shelf={this.state.currentShelf}/>
+                <ViewPort selected={this.state.selected} setSelected={this.setSelected}
+                          isTraySelected={this.isTraySelected} areMultipleTraysSelected={this.areMultipleTraysSelected}
+                          shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
