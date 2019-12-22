@@ -16,7 +16,7 @@ export type KeyboardName = "category" | "expiry" | "weight";
 /**
  * The directions in which you can navigate
  */
-type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next"
+type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next" | "previous"
 
 
 interface ShelfViewProps {
@@ -184,6 +184,45 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     // fixme ensure that this zone has bays and this bay has shelves
                 });
             }
+        } else if (shelf === "previous") {
+
+            if (shelfIndex - 1 >= 0) {// decrement shelfIndex
+
+                const newShelfIndex = shelfIndex - 1;
+                const newShelf = currentBay.shelves[newShelfIndex];
+                this.setState({
+                    ...this.state,
+                    selected: new Map(),
+                    currentShelf: newShelf
+                });
+            } else if (bayIndex - 1 >= 0) { // decrement bayIndex
+
+                const newBayIndex = bayIndex - 1;
+                const newBay = currentZone.bays[newBayIndex];
+                // Go to last shelf in that bay
+                const newShelf = newBay.shelves[newBay.shelves.length - 1];
+                this.setState({
+                    ...this.state,
+                    selected: new Map(),
+                    currentShelf: newShelf
+                    // fixme ensure that this bay has shelves
+                    // the best solution would be to store the bay and have the shelf view display a message saying:
+                    // "this bay doesn't have any shelves yet"
+                });
+            } else { // decrement zone, looping back around if necessary
+                let newZoneIndex = ((zoneIndex - 1) >= 0) ? (zoneIndex - 1) : (warehouse.zones.length - 1);
+                let newZone = warehouse.zones[newZoneIndex];
+                // Go to last bay in that zone
+                const newBay = newZone.bays[newZone.bays.length - 1];
+                // Go to last shelf in that bay
+                const newShelf = newBay.shelves[newBay.shelves.length - 1];
+                this.setState({
+                    ...this.state,
+                    selected: new Map(),
+                    currentShelf: newShelf
+                    // fixme ensure that this zone has bays and this bay has shelves
+                });
+            }
         }
     }
 
@@ -262,6 +301,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         {name: "Back", onClick: () => alert("Back")},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)},
+                        {name: "Previous", onClick: this.changeShelf.bind(this, "previous")},
                         {name: "Next", onClick: this.changeShelf.bind(this, "next")},
                     ]}
                     keyboards={[
