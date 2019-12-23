@@ -217,7 +217,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     // "this bay doesn't have any shelves yet"
                 });
             } else { // decrement zone, looping back around if necessary
-                const newZoneIndex = properMod((zoneIndex - 1), warehouse.zones.length);
+                const newZoneIndex = properMod(zoneIndex - 1, warehouse.zones.length);
                 const newZone = warehouse.zones[newZoneIndex];
                 // Go to last bay in that zone
                 const newBay = newZone.bays[newZone.bays.length - 1];
