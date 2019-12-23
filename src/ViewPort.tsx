@@ -9,6 +9,9 @@ import {Shelf, Tray} from "./core/MockWarehouse";
 interface ViewPortProps {
     shelf: Shelf;
     selected: Map<Tray, boolean>;
+    setSelected: (newMap: Map<Tray, boolean>, callback?: ((() => void) | undefined)) => void;
+    isTraySelected: ((tray: Tray) => boolean | undefined);
+    areMultipleTraysSelected: () => boolean;
 }
 
 /**
@@ -25,7 +28,6 @@ interface LongPress {
  * The state of the ViewPort
  */
 interface ViewPortState {
-    isMultipleSelect: boolean;
     longPress?: LongPress | null;
 }
 
@@ -36,14 +38,12 @@ const LONG_PRESS_TIMEOUT = 300;
 
 /**
  * This class crates and manages the behavior of the viewport
- * // todo fixme ensure that the selection is always handled safely
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     constructor(props: ViewPortProps) {
         super(props);
         this.state = {
-            isMultipleSelect: false,
             longPress: null,
         };
     }
@@ -54,11 +54,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * released before the timeout finishes.
      */
     onDragSelectStart() {
-
-        const selectedBefore = new Map();
-        this.props.selected.forEach((selected, tray) => {
-            selectedBefore.set(tray, selected);
-        });
+        // Shallow clone the selected map from props, which we will save
+        const selectedBefore = new Map(this.props.selected);
 
         this.setState({
             ...this.state,
@@ -68,7 +65,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 dragFrom: this.state.longPress?.dragFrom!!,
                 selectedBefore: selectedBefore,
             },
-            isMultipleSelect: true
         }, () => {
             this.updateDragSelectionTo(this.state.longPress?.dragFrom!!);
         });
@@ -82,9 +78,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     updateDragSelectionTo(to: Tray) {
 
-        this.props.selected.forEach((_, tray) => { // reset selection
-            this.props.selected.set(tray, this.state.longPress?.selectedBefore.get(tray) ?? false);
-        });
+        // Shallow clone what was previously selected, which we will mutate
+        let newSelectedMap = new Map(this.state.longPress?.selectedBefore ?? new Map<Tray, boolean>());
 
         const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
 
@@ -140,13 +135,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             const selectThis = isSelecting || tray === from || tray === to;
 
             if (selectThis) {
-                this.props.selected.set(tray, true);
+                newSelectedMap.set(tray, true);
             }
             return xor(isSelecting, xor(tray === from, tray === to));
 
         }, false); // the accumulator of the fold is if the trays are still being selected
 
-        this.forceUpdate(); // the state has been changed
+        this.props.setSelected(newSelectedMap);
     }
 
     /**
@@ -157,20 +152,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.setState({
             ...this.state,
-            isMultipleSelect: this.shouldBeMultipleSelect(),
             longPress: null,
         });
-    }
-
-    /**
-     * This method is consulted to decide whether UI should be in multiple-select mode once the selection
-     * has been updated. It's called after a click, or after a drag finishes.
-     */
-    shouldBeMultipleSelect() {
-        const currSelected = Array.from(this.props.selected.entries())
-                                  .filter(([_, value]) => value);
-
-        return currSelected.length > 1;
     }
 
     /**
@@ -185,21 +168,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const currSelected = Array.from(this.props.selected.entries())
                                   .filter(([_, value]) => value);
 
-        // If there's only one tray selected, and we're not in multiple select mode, and it's not the clicked-on tray
+        // Shallow clone the selected map from props, which we will mutate
+        let newSelectedMap = new Map(this.props.selected);
+
+        // If there's only one tray selected, and it's not the clicked-on tray
         // then deselect that previously selected tray first, before toggling this clicked-on tray as normal
-        if (currSelected.length === 1 && !this.state.isMultipleSelect && currSelected[0][0] !== tray) {
-            this.props.selected.set(currSelected[0][0], false);
+        if (currSelected.length === 1 && currSelected[0][0] !== tray) {
+            newSelectedMap.set(currSelected[0][0], false);
         }
 
         // Toggle the tray being clicked on
-        this.props.selected.set(tray, !this.props.selected.get(tray));
+        newSelectedMap.set(tray, !this.props.isTraySelected(tray));
 
-        // Fix the select display mode
-        this.setState({
-            ...this.state,
-            isMultipleSelect: this.shouldBeMultipleSelect()
-        });
-
+        this.props.setSelected(newSelectedMap);
     }
 
     /**
@@ -294,9 +275,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             {column.trays.map((tray, trayIndex) =>
 
                                 <div
-                                    className={`tray${this.state.isMultipleSelect ? " multipleSelect"
-                                                                                  : ""}${
-                                        this.props.selected.get(tray) ? " selected" : ""}`}
+                                    className={`tray${(this.props.areMultipleTraysSelected() || this.state.longPress?.isHappening)
+                                                      ? " multipleSelect"
+                                                      : ""}${
+                                        this.props.isTraySelected(tray) ? " selected" : ""}`}
 
                                     // onClick={this.onTrayClick.bind(this, tray)}
                                     onPointerDown={this.onTrayPointerDown.bind(this, tray)}
@@ -306,7 +288,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     key={trayIndex}
                                 >
                                     <FontAwesomeIcon
-                                        className={`tray-tickbox ${this.props.selected.get(tray)
+                                        className={`tray-tickbox ${this.props.isTraySelected(tray)
                                                                    ? "tick-selected"
                                                                    : ""}`}
                                         icon={tickSolid}/>
