@@ -9,6 +9,16 @@ import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
 /**
+ * Proper modulo function (gives a non-negative remainder as per mathematical definition)
+ * @param dividend - the number that is being divided
+ * @param divisor - the number to divide by
+ * @returns the non-negative remainder
+ */
+function properMod(dividend: number, divisor: number): number {
+    return ((dividend % divisor) + divisor) % divisor;
+}
+
+/**
  * Defines possible keyboard names
  */
 export type KeyboardName = "category" | "expiry" | "weight";
@@ -40,9 +50,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
         };
-        this.setSelected = this.setSelected.bind(this);
-        this.isTraySelected = this.isTraySelected.bind(this);
-        this.areMultipleTraysSelected = this.areMultipleTraysSelected.bind(this);
     }
 
     public setSelected(newMap: Map<Tray, boolean>, callback?: ((() => void) | undefined)) {
@@ -210,8 +217,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     // "this bay doesn't have any shelves yet"
                 });
             } else { // decrement zone, looping back around if necessary
-                let newZoneIndex = ((zoneIndex - 1) >= 0) ? (zoneIndex - 1) : (warehouse.zones.length - 1);
-                let newZone = warehouse.zones[newZoneIndex];
+                const newZoneIndex = properMod((zoneIndex - 1), warehouse.zones.length);
+                const newZone = warehouse.zones[newZoneIndex];
                 // Go to last bay in that zone
                 const newBay = newZone.bays[newZone.bays.length - 1];
                 // Go to last shelf in that bay
@@ -238,7 +245,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         const possibleDirections: ShelfMoveDirection[] = [];
 
         // this could potentially be slow
-        if (warehouse.shelves.length > 1) possibleDirections.push("next");
+        if (warehouse.shelves.length > 1) possibleDirections.push("next", "previous");
         if (shelfIndex + 1 !== bay.shelves.length) possibleDirections.push("up");
         if (shelfIndex - 1 !== -1) possibleDirections.push("down");
         if (bayIndex + 1 !== zone.bays.length) possibleDirections.push("right");
@@ -292,8 +299,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             <div id="shelfView">
                 <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
                         locationString={this.state.currentShelf.toString()}/>
-                <ViewPort selected={this.state.selected} setSelected={this.setSelected}
-                          isTraySelected={this.isTraySelected} areMultipleTraysSelected={this.areMultipleTraysSelected}
+                <ViewPort selected={this.state.selected} setSelected={this.setSelected.bind(this)}
+                          isTraySelected={this.isTraySelected.bind(this)}
+                          areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
                           shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons
