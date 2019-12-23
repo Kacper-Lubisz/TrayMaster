@@ -1,37 +1,77 @@
 import React from "react";
 import "./styles/loading.scss";
 
+// VARIABLES DEFINING THE TRAY SPINNER GRID
+// DO NOT ADJUST THESE WITHOUT ADJUSTING THE CORRESPONDING VALUES IN "loading.scss"
+const gridDistX = 40;   // distance between rows in the grid (in px) (ie, width of tray + 1 x gutter width)
+const gridDistY = 25;   // distance between columns in the grid (in px) (ie, height of tray + 1 x gutter width)
+const gridCols = 4;     // number of columns in the grid
+const gridRows = 3;     // number of rows in the grid
+
+/**
+ * Props to be passed into SpinnerTray components
+ */
 interface SpinnerTrayProps {
-    pos: number[],
+    /**
+     * Co-ordinates inside the SVG in pixels, from top left, in the format [x, y]
+     */
+    pos: [number, number],
+
+    /**
+     * Animation class to give to the returned SVG rect
+     */
     anim?: string
 }
 
+/**
+ * State of the LoadingPage component
+ */
 interface LoadingPageState {
+    /**
+     * Object that defines any ongoing animations in the format:
+     * {
+     *     [trayKey]: [animationClass],
+     *     [tray2Key]: [animationClass2]
+     * }
+     */
     animation?: any
 }
 
+/**
+ * Spinner tray
+ * Returns an SVG rect with class equal to its anim prop
+ */
 class SpinnerTray extends React.Component<SpinnerTrayProps> {
 
     render() {
+        // generate rect with appropriate position and animation class as given in this.props.anim
         return (
-            <rect x={this.props.pos[0] * 40} y={this.props.pos[1] * 25}
+            <rect x={this.props.pos[0] * gridDistX} y={this.props.pos[1] * gridDistY}
                   className={`spinner-tray ${this.props.anim ? this.props.anim : ""}`}/>
         );
     }
 }
 
+/**
+ * Loading page component
+ * Contents:
+ * - 'Shelfmaster' heading
+ * - Loading spinner & 'Loading...' text
+ * No props
+ */
 export class LoadingPage extends React.Component<any, LoadingPageState> {
+    // @ts-ignore stops TypeScript getting angry under the "strictPropertyInitialization" rule
+    // [https://stackoverflow.com/q/49699067/5094386]
+    traySwapInterval: NodeJS.Timeout;
 
+    /**
+     * Choose two trays to swap, and update the state to reflect this
+     */
     swapTrays() {
-        // configurable shelf dimensions: you'd need to add CSS classes and trays to reflect class and key changes
-        const shelfWidth = 4;
-        const shelfHeight = 3;
-
         // Decide what kind of swap to make
         const swapDir: boolean = Math.random() < 0.5; // axis: true => x, false => y
         let swaps = swapDir ? ["r", "l"] : ["d", "u"]; // start generating class names
-        const dist = Math.floor(Math.random() * ((swapDir ? shelfWidth : shelfHeight) - 1) + 1); // decide distance
-        console.log(dist);
+        const dist = Math.floor(Math.random() * ((swapDir ? gridCols : gridRows) - 1) + 1); // decide distance
         swaps = swaps.map(item => { // finish generating class names
             return `${item}${dist}`;
         });
@@ -41,8 +81,8 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
         // if swapping vertically
         if (swapDir) {
             // decide first tray
-            const row = Math.floor(Math.random() * shelfHeight);
-            const col = Math.floor(Math.random() * (shelfWidth - dist));
+            const row = Math.floor(Math.random() * gridRows);
+            const col = Math.floor(Math.random() * (gridCols - dist));
             startTray = `${col}${row}`;
 
             // find key of the tray at the other end of the swap
@@ -51,8 +91,8 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
         // otherwise, swapping horizontally
         else {
             // decide first tray
-            const col = Math.floor(Math.random() * shelfWidth);
-            const row = Math.floor(Math.random() * (shelfHeight - dist));
+            const col = Math.floor(Math.random() * gridCols);
+            const row = Math.floor(Math.random() * (gridRows - dist));
             startTray = `${col}${row}`;
 
             // find key of the tray at the other end of the swap
@@ -71,7 +111,11 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
 
     componentDidMount(): void {
         // when fully rendered, start swapping :D
-        setInterval(this.swapTrays.bind(this), 250);
+        this.traySwapInterval = setInterval(this.swapTrays.bind(this), 250);
+    }
+
+    componentWillUnmount(): void {
+        clearInterval(this.traySwapInterval);
     }
 
     render() {
@@ -84,17 +128,18 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
                     <svg id="spinner">
                         <g>
                             {
-                                Array(4).fill(0).map((_, i) => {
-                                    return Array(3).fill(0).map((_, j) => {
+                                Array(gridCols).fill(0).map((_, i) => {
+                                    return Array(gridRows).fill(0).map((_, j) => {
                                         let key = `${i}${j}`;
-                                        return <rect className="spinner-tray-slot" key={key} x={i * 40} y={j * 25}/>;
+                                        return <rect className="spinner-tray-slot" key={key} x={i * gridDistX}
+                                                     y={j * gridDistY}/>;
                                     });
                                 })
                             }
                         </g>
                         {
-                            Array(4).fill(0).map((_, i) => {
-                                return Array(3).fill(0).map((_, j) => {
+                            Array(gridCols).fill(0).map((_, i) => {
+                                return Array(gridRows).fill(0).map((_, j) => {
                                     let key = `${i}${j}`;
                                     return <SpinnerTray anim={this.state?.animation[key]} key={key} pos={[i, j]}/>;
                                 });

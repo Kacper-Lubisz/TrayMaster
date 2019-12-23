@@ -51,7 +51,6 @@ class App extends React.Component<any, AppState> {
                     } exact/>
                     <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
                     <Route path="/settings" component={() => <SettingsPage/>}/>
-                    <Route path="/loading" component={() => <LoadingPage/>}/>
                     <Route component={ErrorPage}/>
                 </Switch>
             </BrowserRouter>
