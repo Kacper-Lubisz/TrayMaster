@@ -4,7 +4,7 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
+import {Bay, Category, ExpiryRange, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
@@ -269,6 +269,20 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     }
 
     /**
+     * This method is called when an expiry is selected on the expiry keyboard
+     * @param expiry The expiry that is selected
+     */
+    expirySelected(expiry: ExpiryRange) {
+        this.state.selected.forEach((selected, tray) => {
+            if (selected) {
+                tray.expiry = expiry;
+            }
+        });
+        console.log(expiry);
+        this.forceUpdate();
+    }
+
+    /**
      * This method changes the current BottomPanel keyboard
      * @see BottomPanel
      * @param newKeyboard The new keyboard
@@ -328,6 +342,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
+                    expirySelect={this.expirySelected.bind(this)}
                     keyboardState={this.state.currentKeyboard}
                 />
             </div>

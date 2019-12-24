@@ -1,10 +1,11 @@
 import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {KeyboardName} from "./ShelfView";
+import {ExpiryRange} from "./core/MockWarehouse";
 
 export interface BottomPanelProps {
-    keyboardState: KeyboardName
-
+    keyboardState: KeyboardName;
+    expirySelect: (expiry: ExpiryRange) => void;
     categories: KeyboardButtonProps[];
 }
 
@@ -18,6 +19,21 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
     months: KeyboardButtonProps[];
     numpad: KeyboardButtonProps[];
     numpadR: KeyboardButtonProps[];
+    quartersTranslator: string[] = [
+        "Jan-Mar",
+        "Apr-Jun",
+        "Jul-Sep",
+        "Oct-Dec"
+    ];
+    monthsTranslator: string[] = [
+        "Jan", "Feb", "Mar",
+        "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep",
+        "Oct", "Nov", "Dec"
+    ];
+
+    // @ts-ignore
+    selectedYear: number;
 
     constructor(props: BottomPanelProps) {
         super(props);
@@ -27,37 +43,25 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         for (let i = 2019; i < 2027; i++) {
             this.years.push({
                 name: i.toString(), onClick: () => {
-                    alert(i);
+                    this.selectYear(i);
                 }
             });
         }
 
         this.quarters = [];
-        const quartersTranslator: string[] = [
-            "Jan-Mar",
-            "Apr-Jun",
-            "Jul-Sep",
-            "Oct-Dec"
-        ];
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 0; i < 4; i++) {
             this.quarters.push({
-                name: quartersTranslator[i - 1], onClick: () => {
-                    alert(i);
+                name: this.quartersTranslator[i], onClick: () => {
+                    this.selectQuarter(i);
                 }
             });
         }
 
         this.months = [];
-        const monthsTranslator: string[] = [
-            "Jan", "Feb", "Mar",
-            "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep",
-            "Oct", "Nov", "Dec"
-        ];
-        for (let i = 1; i <= 12; i++) {
+        for (let i = 0; i < 12; i++) {
             this.months.push({
-                name: monthsTranslator[i - 1], onClick: () => {
-                    alert(i);
+                name: this.monthsTranslator[i], onClick: () => {
+                    this.selectMonth(i);
                 }
             });
         }
@@ -96,6 +100,31 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         ];
     }
 
+    selectYear(year: number) {
+        this.selectedYear = year;
+        this.props.expirySelect({
+            from: new Date(year, 1).getTime(),
+            to: new Date(year + 1, 1).getTime(),
+            label: year.toString()
+        });
+    }
+
+    selectQuarter(quarter: number) {
+        this.props.expirySelect({
+            from: new Date(this.selectedYear, quarter * 4 + 1).getTime(),
+            to: new Date(this.selectedYear, (quarter + 1) * 4 + 1).getTime(),
+            label: `${this.quartersTranslator[quarter]} ${this.selectedYear.toString()}`
+        });
+    }
+
+    selectMonth(month: number) {
+        this.props.expirySelect({
+            from: new Date(this.selectedYear, month + 1).getTime(),
+            to: new Date(this.selectedYear, month + 2).getTime(),
+            label: `${this.monthsTranslator[month]} ${this.selectedYear.toString()}`
+        });
+    }
+
     chooseKeyboard() {
 
         if (this.props.keyboardState === "category") {
@@ -107,8 +136,8 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
             return <div className="keyboard-container">
                 <Keyboard id="exp-1" buttons={this.years} gridX={2}/>
                 <div className="vl"/>
-                <Keyboard id="exp-2" buttons={this.quarters} gridX={1}/>
-                <Keyboard id="exp-3" buttons={this.months} gridX={3}/>
+                <Keyboard id="exp-2" disabled={!this.selectedYear} buttons={this.quarters} gridX={1}/>
+                <Keyboard id="exp-3" disabled={!this.selectedYear} buttons={this.months} gridX={3}/>
             </div>;
 
         } else { // (this.props.keyboardState === "weight")

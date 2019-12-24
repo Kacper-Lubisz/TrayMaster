@@ -37,6 +37,14 @@
   &:active, &.key-btn-selected {
     background-color: #dddddd;
   }
+
+  &.key-btn-disabled {
+    color: #999999;
+
+    &:hover {
+      box-shadow: none;
+    }
+  }
 }
 
 // Keyboard instance

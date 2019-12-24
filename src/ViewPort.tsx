@@ -3,7 +3,7 @@ import "pepjs";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
-import {Shelf, Tray} from "./core/MockWarehouse";
+import {getExpiryColour, Shelf, Tray} from "./core/MockWarehouse";
 
 
 interface ViewPortProps {
@@ -295,7 +295,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                                     <div className="trayExpiry" style={{
-                                        backgroundColor: tray.expiry?.color
+                                        backgroundColor: tray.expiry ? getExpiryColour(tray.expiry) : ""
                                     }}>{tray.expiry?.label ?? "?"}</div>
 
                                     <div className="trayWeight">{tray.weight ?? "?"}kg</div>

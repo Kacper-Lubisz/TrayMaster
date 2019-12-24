@@ -8,18 +8,23 @@ export interface KeyboardButtonProps {
     /**
      * Name to show on the button
      */
-    name: string,
+    name: string;
 
     /**
      * Function to call when button is clicked
      * @param e
      */
-    onClick?: (e: React.MouseEvent) => void
+    onClick?: (e: React.MouseEvent) => void;
 
     /**
      * Whether the button should be visibly selected
      */
-    selected?: boolean
+    selected?: boolean;
+
+    /**
+     * Whether the button should be visibly disabled
+     */
+    disabled?: boolean;
 }
 
 /**
@@ -29,12 +34,14 @@ export interface KeyboardButtonProps {
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
-            <button className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
-                // if we've been given an onClick function, run it
-                if (this.props.onClick) {
-                    this.props.onClick(e);
-                }
-            }}>{this.props.name}</button>
+            <button className={`key-btn${this.props.selected ? " key-btn-selected" : ""}${this.props.disabled
+                                                                                          ? " key-btn-disabled" : ""}`}
+                    onClick={(e) => {
+                        // if we've been given an onClick function, run it
+                        if (this.props.onClick && !this.props.disabled) {
+                            this.props.onClick(e);
+                        }
+                    }}>{this.props.name}</button>
         );
     }
 }
@@ -47,17 +54,22 @@ interface KeyboardProps {
     /**
      * List of KeyboardButtonProps to give to child buttons
      */
-    buttons: KeyboardButtonProps[],
+    buttons: KeyboardButtonProps[];
 
     /**
      * Number of buttons to show in each horizontal row
      */
-    gridX: number,
+    gridX: number;
 
     /**
      * Id to give parent HTML element
      */
-    id?: string
+    id?: string;
+
+    /**
+     * Whether to grey out the keyboard
+     */
+    disabled?: boolean;
 }
 
 /**
@@ -81,7 +93,8 @@ export class Keyboard extends React.Component<KeyboardProps> {
             return (<div key={r} className="kb-row">
                 {  // Generate the buttons in this row
                     Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
-                        return <KeyboardButton key={c} {...this.props.buttons[pastButtons + c]}/>;
+                        return <KeyboardButton disabled={this.props.disabled}
+                                               key={c} {...this.props.buttons[pastButtons + c]}/>;
                     })
                 }
             </div>);

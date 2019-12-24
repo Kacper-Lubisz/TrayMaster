@@ -62,7 +62,7 @@ function getSaturation(days: number) {
  * @param range {ExpiryRange} - the expiry range to return a colour for
  * @return string - the 7-digit hex value to use for that expiry range
  */
-function getExpiryColour(range: ExpiryRange) {
+export function getExpiryColour(range: ExpiryRange) {
     // get a dayjs date corresponding to the from property of the range, to use later
     const djsDate: Dayjs = dayjs(range.from);
 
@@ -860,7 +860,6 @@ export interface ExpiryRange {
     from: number;
     to: number;
     label: string;
-    color: string;
 }
 
 
