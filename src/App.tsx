@@ -8,6 +8,7 @@ import {ErrorPage} from "./ErrorPage";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
 import {Warehouse} from "./core/MockWarehouse";
+import {LoadingPage} from "./Loading";
 
 interface AppState {
     warehouse: Warehouse
@@ -42,19 +43,12 @@ class App extends React.Component<any, AppState> {
     }
 
     render() {
-        return (
-            //Declare the paths for all screens
+        return this.state === null ? <LoadingPage/> : (
             <BrowserRouter>
                 <Switch>
-                    <Route path="/" component={() => {
-                        if (this.state === null) {
-                            return <div>Loading</div>;
-                            // todo add a loading screen
-                            // fixme this loading screen could surround the entire router
-                        } else {
-                            return <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>;
-                        }
-                    }} exact/>
+                    <Route path="/" component={() =>
+                        <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>
+                    } exact/>
                     <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
                     <Route path="/settings" component={() => <SettingsPage/>}/>
                     <Route component={ErrorPage}/>
