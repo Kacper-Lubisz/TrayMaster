@@ -1,3 +1,7 @@
+import "dayjs";
+import dayjs, {Dayjs} from "dayjs";
+import {hslToHex} from "./hslToHex";
+
 /*
 Warehouse
 >   Settings
@@ -28,44 +32,161 @@ const colours = [
     {label: "Black", hex: "#000000"}
 ];
 
-const expires = [
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
-        color: "#FF0"
-    },
-    {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Feb 2020",
-        color: "#0ff"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020",
-        color: "#00f"
-    },
-    {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020",
-        color: "#F0f"
-    },
+/**
+ * Period to use for a complete cycle around the hue colour wheel
+ * Using 8 currently because that's the number on the expiry keyboard (and what common food lasts longer than 8 years??)
+ */
+const YEAR_PERIOD = 8;
+
+/**
+ * Takes in the length of an expiry range in days (1-366 inclusive) and returns a saturation value to use
+ * Used inside getExpiryColour
+ * @see getExpiryColour
+ * @param days - the length of an expiry range in days
+ * @return number - the saturation to use for that range
+ */
+function getSaturation(days: number) {
+    if (days <= 0) return 1;        // not a valid range - TODO: decide whether to return 1 or 0 here
+    //if (days <= 20) return 1;       // less than a month  TODO: also decide whether we should throw errors for bad nos
+    if (days <= 40) return 1;     // month
+    if (days <= 100) return 0.75;    // quarter
+    if (days <= 183) return 0.6;   // 6 months
+    if (days <= 366) return 0.5;    // year
+    return 0;                       // more than a year
+}
+
+/**
+ * Takes in an ExpiryRange object and returns a hex colour to use for that range
+ * Hue depends on the start time of the expiry range in an 8 year cycle
+ * Saturation depends on the length of the range (more precision = more intense colour)
+ * @param range {ExpiryRange} - the expiry range to return a colour for
+ * @return string - the 7-digit hex value to use for that expiry range
+ */
+function getExpiryColour(range: ExpiryRange) {
+    // get a dayjs date corresponding to the from property of the range, to use later
+    const djsDate: Dayjs = dayjs(range.from);
+
+    // Year modulo YEAR_PERIOD
+    const modYear: number = djsDate.year() % YEAR_PERIOD;
+
+    // Ratio of the way through the month
+    const ratioMonth: number = (djsDate.date() - 1) / djsDate.date(-1).date();
+
+    // Ratio of the way through the year
+    const ratioYear: number = ((djsDate.month() - 1) + ratioMonth) / 12;
+
+    // Ratio of the way through the period
+    const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
+
+    // get saturation from difference between from and to and return hex value
+    const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
+    return hslToHex(ratioPeriod * 360, saturation, 1);
+}
+
+let expires = [
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2021, 1).getTime(),
         label: "2020",
-        color: "#FF0000"
+        color: ""
     },
     {
         from: new Date(2021, 1).getTime(),
         to: new Date(2022, 1).getTime(),
         label: "2021",
-        color: "#0f0"
+        color: ""
+    },
+    {
+        from: new Date(2022, 1).getTime(),
+        to: new Date(2023, 1).getTime(),
+        label: "2022",
+        color: ""
+    },
+    {
+        from: new Date(2023, 1).getTime(),
+        to: new Date(2024, 1).getTime(),
+        label: "2023",
+        color: ""
+    },
+    {
+        from: new Date(2024, 1).getTime(),
+        to: new Date(2025, 1).getTime(),
+        label: "2024",
+        color: ""
+    },
+    {
+        from: new Date(2025, 1).getTime(),
+        to: new Date(2026, 1).getTime(),
+        label: "2025",
+        color: ""
+    },
+    {
+        from: new Date(2026, 1).getTime(),
+        to: new Date(2027, 1).getTime(),
+        label: "2026",
+        color: ""
+    },
+    {
+        from: new Date(2027, 1).getTime(),
+        to: new Date(2028, 1).getTime(),
+        label: "2027",
+        color: ""
+    },
+    {
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 4).getTime(),
+        label: "Jan-Mar 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 4).getTime(),
+        to: new Date(2020, 7).getTime(),
+        label: "Apr-Jun 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 7).getTime(),
+        to: new Date(2020, 10).getTime(),
+        label: "Jul-Sep 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 10).getTime(),
+        to: new Date(2021, 1).getTime(),
+        label: "Oct-Dec 2020",
+        color: ""
+    },
+    {
+        from: new Date(2020, 2).getTime(),
+        to: new Date(2020, 3).getTime(),
+        label: "Feb 2020",
+        color: ""
+    },
+    {
+        from: new Date(2024, 11).getTime(),
+        to: new Date(2024, 12).getTime(),
+        label: "Nov 2022",
+        color: ""
+    },
+    {
+        from: new Date(2024, 5).getTime(),
+        to: new Date(2024, 6).getTime(),
+        label: "May 2024",
+        color: ""
+    },
+    {
+        from: new Date(2026, 8).getTime(),
+        to: new Date(2026, 9).getTime(),
+        label: "August 2026",
+        color: ""
     },
 ];
+// fixme this is a bit of a janky solution: I wrote it as a stopgap until we start dynamically generating expiry ranges
+// fixme        rather than requiring an explicit list.
+expires = expires.map((exp) => {
+    exp.color = getExpiryColour(exp);
+    return exp;
+});
 
 
 /**
