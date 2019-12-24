@@ -33,6 +33,7 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         "Oct", "Nov", "Dec"
     ];
 
+    // TODO: these really should go into component state
     // @ts-ignore
     selectedYear: number | undefined;
     // @ts-ignore
@@ -106,7 +107,6 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
     }
 
     selectYear(year: number) {
-        this.selectedYear = year;
         this.props.expirySelected({
             from: new Date(year, 0).getTime(),
             to: new Date(year + 1, 0).getTime(),
@@ -140,9 +140,12 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
             return <Keyboard id="cat-keyboard" disabled={this.disabled} buttons={this.props.categories} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
+            // update selectedYear if we need it
             this.selectedYear = this.disabled ? undefined : (this.currentTray?.expiry?.from
                                                              ? new Date(this.currentTray?.expiry?.from).getFullYear()
                                                              : undefined);
+
+            // set the button corresponding to selectedYear to be visibly selected
             for (let i = 0; i < this.years.length; i++) {
                 this.years[i].selected = this.years[i].name === this.selectedYear?.toString();
             }
@@ -165,7 +168,8 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
     }
 
     render() {
-        this.disabled = !this.props.selected;
+        // TODO: this should really go into component state I think
+        this.disabled = !this.props.selected.length;
         if (this.props.selected.length === 1) {
             this.currentTray = this.props.selected[0];
         }
