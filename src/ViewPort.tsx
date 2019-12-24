@@ -1,4 +1,5 @@
 import React from "react";
+// noinspection
 import "pepjs";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";

@@ -63,10 +63,26 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         return this.state.selected.get(tray);
     }
 
+    public areAnyTraysSelected() {
+        const currSelected = Array.from(this.state.selected.entries())
+                                  .filter(([_, value]) => value);
+        return !!currSelected.length;
+    }
+
     public areMultipleTraysSelected() {
         const currSelected = Array.from(this.state.selected.entries())
                                   .filter(([_, value]) => value);
         return currSelected.length > 1;
+    }
+
+    public getSelectedAsList() {
+        let filtered: Tray[] = [];
+        for (let i of this.state.selected.keys()) {
+            if (this.state.selected.get(i)) {
+                filtered.push(i);
+            }
+        }
+        return filtered;
     }
 
     /**
@@ -278,7 +294,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 tray.expiry = expiry;
             }
         });
-        console.log(expiry);
         this.forceUpdate();
     }
 
@@ -342,8 +357,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
-                    expirySelect={this.expirySelected.bind(this)}
+                    expirySelected={this.expirySelected.bind(this)}
                     keyboardState={this.state.currentKeyboard}
+                    selected={this.getSelectedAsList()}
                 />
             </div>
         );

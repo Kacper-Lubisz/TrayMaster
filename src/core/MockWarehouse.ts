@@ -70,10 +70,10 @@ export function getExpiryColour(range: ExpiryRange) {
     const modYear: number = djsDate.year() % YEAR_PERIOD;
 
     // Ratio of the way through the month
-    const ratioMonth: number = (djsDate.date() - 1) / djsDate.date(-1).date();
+    const ratioMonth: number = (djsDate.date()) / djsDate.date(-1).date();
 
     // Ratio of the way through the year
-    const ratioYear: number = ((djsDate.month() - 1) + ratioMonth) / 12;
+    const ratioYear: number = ((djsDate.month()) + ratioMonth) / 12;
 
     // Ratio of the way through the period
     const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
@@ -85,98 +85,98 @@ export function getExpiryColour(range: ExpiryRange) {
 
 let expires = [
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2021, 0).getTime(),
         label: "2020",
         color: ""
     },
     {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
+        from: new Date(2021, 0).getTime(),
+        to: new Date(2022, 0).getTime(),
         label: "2021",
         color: ""
     },
     {
-        from: new Date(2022, 1).getTime(),
-        to: new Date(2023, 1).getTime(),
+        from: new Date(2022, 0).getTime(),
+        to: new Date(2023, 0).getTime(),
         label: "2022",
         color: ""
     },
     {
-        from: new Date(2023, 1).getTime(),
-        to: new Date(2024, 1).getTime(),
+        from: new Date(2023, 0).getTime(),
+        to: new Date(2024, 0).getTime(),
         label: "2023",
         color: ""
     },
     {
-        from: new Date(2024, 1).getTime(),
-        to: new Date(2025, 1).getTime(),
+        from: new Date(2024, 0).getTime(),
+        to: new Date(2025, 0).getTime(),
         label: "2024",
         color: ""
     },
     {
-        from: new Date(2025, 1).getTime(),
-        to: new Date(2026, 1).getTime(),
+        from: new Date(2025, 0).getTime(),
+        to: new Date(2026, 0).getTime(),
         label: "2025",
         color: ""
     },
     {
-        from: new Date(2026, 1).getTime(),
-        to: new Date(2027, 1).getTime(),
+        from: new Date(2026, 0).getTime(),
+        to: new Date(2027, 0).getTime(),
         label: "2026",
         color: ""
     },
     {
-        from: new Date(2027, 1).getTime(),
-        to: new Date(2028, 1).getTime(),
+        from: new Date(2027, 0).getTime(),
+        to: new Date(2028, 0).getTime(),
         label: "2027",
         color: ""
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2020, 3).getTime(),
         label: "Jan-Mar 2020",
         color: ""
     },
     {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
+        from: new Date(2020, 3).getTime(),
+        to: new Date(2020, 6).getTime(),
         label: "Apr-Jun 2020",
         color: ""
     },
     {
-        from: new Date(2020, 7).getTime(),
-        to: new Date(2020, 10).getTime(),
+        from: new Date(2020, 6).getTime(),
+        to: new Date(2020, 9).getTime(),
         label: "Jul-Sep 2020",
         color: ""
     },
     {
-        from: new Date(2020, 10).getTime(),
-        to: new Date(2021, 1).getTime(),
+        from: new Date(2020, 9).getTime(),
+        to: new Date(2021, 0).getTime(),
         label: "Oct-Dec 2020",
         color: ""
     },
     {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 2).getTime(),
         label: "Feb 2020",
         color: ""
     },
     {
-        from: new Date(2024, 11).getTime(),
-        to: new Date(2024, 12).getTime(),
+        from: new Date(2024, 10).getTime(),
+        to: new Date(2024, 11).getTime(),
         label: "Nov 2022",
         color: ""
     },
     {
-        from: new Date(2024, 5).getTime(),
-        to: new Date(2024, 6).getTime(),
+        from: new Date(2024, 4).getTime(),
+        to: new Date(2024, 5).getTime(),
         label: "May 2024",
         color: ""
     },
     {
-        from: new Date(2026, 8).getTime(),
-        to: new Date(2026, 9).getTime(),
+        from: new Date(2026, 7).getTime(),
+        to: new Date(2026, 8).getTime(),
         label: "August 2026",
         color: ""
     },
