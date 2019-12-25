@@ -14,7 +14,7 @@ export interface BottomPanelProps {
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
  * @see BottomPanelPage
  */
-export class BottomPanel extends React.Component<BottomPanelProps, any> {
+export class BottomPanel extends React.Component<BottomPanelProps> {
     years: KeyboardButtonProps[];
     quarters: KeyboardButtonProps[];
     months: KeyboardButtonProps[];
@@ -33,13 +33,7 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         "Oct", "Nov", "Dec"
     ];
 
-    // TODO: these really should go into component state
-    // @ts-ignore
-    selectedYear: number | undefined;
-    // @ts-ignore
-    disabled: boolean;
-    // @ts-ignore
-    currentTray: Tray | undefined;
+    selectedYear: number | undefined = undefined;
 
     constructor(props: BottomPanelProps) {
         super(props);
@@ -107,6 +101,7 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
     }
 
     selectYear(year: number) {
+        this.selectedYear = year;
         this.props.expirySelected({
             from: new Date(year, 0).getTime(),
             to: new Date(year + 1, 0).getTime(),
@@ -135,15 +130,14 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         }
     }
 
-    chooseKeyboard() {
+    chooseKeyboard(disabled: boolean, currentTray?: Tray) {
         if (this.props.keyboardState === "category") {
-            return <Keyboard id="cat-keyboard" disabled={this.disabled} buttons={this.props.categories} gridX={8}/>;
+            return <Keyboard id="cat-keyboard" disabled={disabled} buttons={this.props.categories} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
-            // update selectedYear if we need it
-            this.selectedYear = this.disabled ? undefined : (this.currentTray?.expiry?.from
-                                                             ? new Date(this.currentTray?.expiry?.from).getFullYear()
-                                                             : undefined);
+            // update selectedYear: don't need to worry about disabled as currentTray will be undefined if disabled
+            this.selectedYear = currentTray?.expiry?.from ? new Date(currentTray?.expiry?.from).getFullYear()
+                                                          : undefined;
 
             // set the button corresponding to selectedYear to be visibly selected
             for (let i = 0; i < this.years.length; i++) {
@@ -151,7 +145,7 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
             }
 
             return <div className="keyboard-container">
-                <Keyboard id="exp-1" disabled={this.disabled} buttons={this.years} gridX={2}/>
+                <Keyboard id="exp-1" disabled={disabled} buttons={this.years} gridX={2}/>
                 <div className="vl"/>
                 <Keyboard id="exp-2" disabled={!this.selectedYear} buttons={this.quarters} gridX={1}/>
                 <Keyboard id="exp-3" disabled={!this.selectedYear} buttons={this.months} gridX={3}/>
@@ -160,23 +154,22 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         } else { // (this.props.keyboardState === "weight")
 
             return <div className="keyboard-container">
-                <Keyboard id="weight-numpad" disabled={this.disabled} buttons={this.numpad} gridX={3}/>
-                <Keyboard id="numpadR" disabled={this.disabled} buttons={this.numpadR} gridX={1}/>
+                <Keyboard id="weight-numpad" disabled={disabled} buttons={this.numpad} gridX={3}/>
+                <Keyboard id="numpadR" disabled={disabled} buttons={this.numpadR} gridX={1}/>
             </div>;
 
         }
     }
 
     render() {
-        // TODO: this should really go into component state I think
-        this.disabled = !this.props.selectedTrays.length;
-        if (this.props.selectedTrays.length === 1) {
-            this.currentTray = this.props.selectedTrays[0];
-        }
+        const currentTray: Tray | undefined = this.props.selectedTrays.length === 1 ? this.props.selectedTrays[0]
+                                                                                    : undefined;
+        const disabled: boolean = !this.props.selectedTrays.length;
+
         // return DOM elements using button structures
         return (
             <div id="bottom">
-                {this.chooseKeyboard()}
+                {this.chooseKeyboard(disabled, currentTray)}
             </div>
         );
     }
