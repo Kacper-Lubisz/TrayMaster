@@ -29,13 +29,18 @@
   // HOVER AND ACTIVE VISUAL EFFECTS
   transition: box-shadow ease 0.5s;
 
-  &:hover {
+  &:hover:enabled {
     box-shadow: 0 0 20px -10px #000000;
   }
 
   // When the button is pressed or reflects the selected tray, darken its background
-  &:active, &.key-btn-selected {
+  &:active:enabled, &.key-btn-selected {
     background-color: #dddddd;
+  }
+
+  // If the button is disabled, change the text color to be lightened-out
+  &:disabled {
+    color: #989898;
   }
 }
 

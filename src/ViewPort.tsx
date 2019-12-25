@@ -11,7 +11,7 @@ interface ViewPortProps {
     selected: Map<Tray, boolean>;
     setSelected: (newMap: Map<Tray, boolean>, callback?: ((() => void) | undefined)) => void;
     isTraySelected: ((tray: Tray) => boolean | undefined);
-    areMultipleTraysSelected: () => boolean;
+    selectedTrays: Tray[];
 }
 
 /**
@@ -165,16 +165,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     onTrayClick(tray: Tray, e: React.PointerEvent<HTMLDivElement>) {
 
-        const currSelected = Array.from(this.props.selected.entries())
-                                  .filter(([_, value]) => value);
-
         // Shallow clone the selected map from props, which we will mutate
         let newSelectedMap = new Map(this.props.selected);
 
         // If there's only one tray selected, and it's not the clicked-on tray
         // then deselect that previously selected tray first, before toggling this clicked-on tray as normal
-        if (currSelected.length === 1 && currSelected[0][0] !== tray) {
-            newSelectedMap.set(currSelected[0][0], false);
+        if (this.props.selectedTrays.length === 1 && this.props.selectedTrays[0] !== tray) {
+            newSelectedMap.set(this.props.selectedTrays[0], false);
         }
 
         // Toggle the tray being clicked on
@@ -275,7 +272,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             {column.trays.map((tray, trayIndex) =>
 
                                 <div
-                                    className={`tray${(this.props.areMultipleTraysSelected() || this.state.longPress?.isHappening)
+                                    className={`tray${(this.props.selectedTrays.length > 1 || this.state.longPress?.isHappening)
                                                       ? " multipleSelect"
                                                       : ""}${
                                         this.props.isTraySelected(tray) ? " selected" : ""}`}

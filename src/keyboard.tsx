@@ -1,4 +1,6 @@
 import React from "react";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 
 /**
  * The properties that get passed into KeyboardButton components
@@ -9,7 +11,7 @@ export interface KeyboardButtonProps {
      * Name to show on the button
      */
     name: string,
-
+    icon?: IconDefinition,
     /**
      * Function to call when button is clicked
      * @param e
@@ -20,6 +22,11 @@ export interface KeyboardButtonProps {
      * Whether the button should be visibly selected
      */
     selected?: boolean
+
+    /**
+     * Whether the button is disabled
+     */
+    disabled?: boolean
 }
 
 /**
@@ -29,12 +36,17 @@ export interface KeyboardButtonProps {
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
-            <button className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
-                // if we've been given an onClick function, run it
-                if (this.props.onClick) {
+            <button disabled={this.props.disabled}
+                    className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
+                // if button isn't disabled, and we've been given an onClick function, run it
+                if (!this.props.disabled && this.props.onClick) {
                     this.props.onClick(e);
+                    // This prevents the blue/orange outline that Chrome adds to buttons after clicking
+                    // It's better to blur (defocus) element after clicking rather than use CSS to hide the outline
+                    // for accessibility reasons, because users who "tab" around the buttons need the outline
+                    e.currentTarget.blur();
                 }
-            }}>{this.props.name}</button>
+            }}>{this.props.icon ? <FontAwesomeIcon icon={this.props.icon}/> : this.props.name}</button>
         );
     }
 }

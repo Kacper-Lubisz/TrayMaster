@@ -38,6 +38,7 @@ interface ShelfViewState {
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
     selected: Map<Tray, boolean>;
+    draftWeight?: string;
 }
 
 export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
@@ -49,6 +50,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
+            draftWeight: undefined
         };
     }
 
@@ -63,10 +65,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         return this.state.selected.get(tray);
     }
 
-    public areMultipleTraysSelected() {
-        const currSelected = Array.from(this.state.selected.entries())
-                                  .filter(([_, value]) => value);
-        return currSelected.length > 1;
+    getSelectedTrays(): Tray[] {
+        return Array.from(this.state.selected.entries())
+                    .filter(([_, value]) => value).map(([a, _]) => a);
     }
 
     /**
@@ -260,11 +261,30 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
-        this.state.selected.forEach((selected, tray) => {
-            if (selected) {
-                tray.category = category;
-            }
+        for (let tray of this.getSelectedTrays()) {
+            tray.category = category;
+        }
+        this.forceUpdate();
+    }
+
+    /**
+     * Updates state's draftWeight. Called by typing on the weight keyboard
+     * @param newDraftWeight
+     */
+    setDraftWeight(newDraftWeight?: string) {
+        this.setState({
+            ...this.state,
+            draftWeight: newDraftWeight
         });
+    }
+
+    /**
+     * Applies the draftWeight to the selected trays. Called when Enter is clicked on the weight keyboard
+     */
+    applyDraftWeight() {
+        for (let tray of this.getSelectedTrays()) {
+            tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
+        }
         this.forceUpdate();
     }
 
@@ -276,7 +296,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     switchKeyboard(newKeyboard: KeyboardName) {
         this.setState({
             ...this.state,
-            currentKeyboard: newKeyboard
+            currentKeyboard: newKeyboard,
+            draftWeight: undefined
         });
     }
 
@@ -301,7 +322,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         locationString={this.state.currentShelf.toString()}/>
                 <ViewPort selected={this.state.selected} setSelected={this.setSelected.bind(this)}
                           isTraySelected={this.isTraySelected.bind(this)}
-                          areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
+                          selectedTrays={this.getSelectedTrays()}
                           shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons
@@ -328,6 +349,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
+                    selectedTrays={this.getSelectedTrays()}
+                    draftWeight={this.state.draftWeight}
+                    setDraftWeight={this.setDraftWeight.bind(this)}
+                    applyDraftWeight={this.applyDraftWeight.bind(this)}
                     keyboardState={this.state.currentKeyboard}
                 />
             </div>
