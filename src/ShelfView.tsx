@@ -63,16 +63,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         return this.state.selected.get(tray);
     }
 
-    public areAnyTraysSelected() {
-        const currSelected = Array.from(this.state.selected.entries())
-                                  .filter(([_, value]) => value);
-        return !!currSelected.length;
-    }
-
-    public areMultipleTraysSelected() {
-        const currSelected = Array.from(this.state.selected.entries())
-                                  .filter(([_, value]) => value);
-        return currSelected.length > 1;
+    getSelectedTrays(): Tray[] {
+        return Array.from(this.state.selected.entries())
+                    .filter(([_, value]) => value).map(([a, _]) => a);
     }
 
     public getSelectedAsList() {
@@ -276,10 +269,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
-        this.state.selected.forEach((selected, tray) => {
-            if (selected) {
-                tray.category = category;
-            }
+        for (let tray of this.getSelectedTrays()) {
+            tray.category = category;
+        }
         });
         this.forceUpdate();
     }
@@ -330,7 +322,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         locationString={this.state.currentShelf.toString()}/>
                 <ViewPort selected={this.state.selected} setSelected={this.setSelected.bind(this)}
                           isTraySelected={this.isTraySelected.bind(this)}
-                          areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
+                          selectedTrays={this.getSelectedTrays()}
                           shelf={this.state.currentShelf}/>
                 <SideBar
                     buttons={[ // Generate sidebar buttons

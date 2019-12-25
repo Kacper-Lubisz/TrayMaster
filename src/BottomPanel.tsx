@@ -7,7 +7,7 @@ export interface BottomPanelProps {
     keyboardState: KeyboardName;
     expirySelected: (expiry: ExpiryRange) => void;
     categories: KeyboardButtonProps[];
-    selected: Tray[];
+    selectedTrays: Tray[];
 }
 
 /**
