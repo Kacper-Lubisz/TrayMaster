@@ -132,6 +132,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
     chooseKeyboard(disabled: boolean, currentTray?: Tray) {
         if (this.props.keyboardState === "category") {
+            let categoryButtons: KeyboardButtonProps[] = this.props.categories;
+            for (let i = 0; i < categoryButtons.length; i++) {
+                categoryButtons[i].selected = categoryButtons[i].name === (currentTray?.category?.shortName || currentTray?.category?.name);
+            }
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={this.props.categories} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
