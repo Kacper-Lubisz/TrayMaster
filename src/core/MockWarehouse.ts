@@ -176,9 +176,8 @@ export class Warehouse implements UpperLayer {
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.categories = await Warehouse.loadCategories();
-        // fixme this needs to be in the correct order to work
         warehouse.zones = await Zone.loadZones(warehouse);
-        warehouse.isDeepLoaded = false;
+        warehouse.isDeepLoaded = true;
         return warehouse;
     }
 
@@ -286,7 +285,7 @@ export class Zone implements UpperLayer {
         for (let i = 0; i < colours.length; i++) {
             const zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
-            zone.isDeepLoaded = false;
+            zone.isDeepLoaded = true;
             zones.push(zone);
         }
         return zones;
@@ -395,7 +394,7 @@ export class Bay implements UpperLayer {
         for (let i = 0; i < 3; i++) {
             const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
-            bay.isDeepLoaded = false;
+            bay.isDeepLoaded = true;
             bays.push(bay);
         }
         return bays;
@@ -507,6 +506,7 @@ export class Shelf implements UpperLayer {
         for (let i = 0; i < 3; i++) {
             const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
+            shelf.isDeepLoaded = true;
             shelves.push(shelf);
         }
         return shelves;
@@ -641,6 +641,7 @@ export class Column implements UpperLayer {
 
             const column: Column = new Column(generateRandomId(), i, shelf, size, maxHeight);
             column.trays = await Tray.loadTrays(column);
+            column.isDeepLoaded = true;
             columns.push(column);
         }
         return columns;
@@ -797,11 +798,12 @@ export class Tray {
 export interface ExpiryRange {
     from: number;
     to: number;
-    label: string | string[];
+    label: string;
     color: string;
 }
 
 
 export interface Category {
     name: string;
+    shortName?: string;
 }

@@ -9,6 +9,7 @@ import {ErrorPage} from "./ErrorPage";
 import {Settings, SettingsManager} from "./core/MockSettings";
 import {SearchQuery, Warehouse} from "./core/MockWarehouse";
 import {SearchPage} from "./SearchPage";
+import {LoadingPage} from "./Loading";
 
 interface AppState {
     warehouse: Warehouse
@@ -49,29 +50,31 @@ class App extends React.Component<any, AppState> {
 
     render() {
         // todo add a loading screen
-        return this.state === null ? <div>Loading</div> : <BrowserRouter> {/*Declare the paths for all screens*/}
-            <Switch>
-                <Route path="/" component={() =>
-                    <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>
-                } exact/>
-                <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
-                <Route path="/settings" component={() => <SettingsPage/>}/>
-                <Route path="/search" component={() =>
-                    <SearchPage
-                        warehouse={this.state?.warehouse}
-                        settings={this.state?.settings}
-                        query={this.state?.searchQuery}
-                        setQuery={(query => {
-                            this.setState({
-                                ...this.state,
-                                searchQuery: query
-                            });
-                        })}
-                    />
-                }/>
-                <Route component={ErrorPage}/>
-            </Switch>
-        </BrowserRouter>;
+        return this.state === null ? <LoadingPage/> : (
+            <BrowserRouter>
+                <Switch>
+                    <Route path="/" component={() =>
+                        <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>
+                    } exact/>
+                    <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
+                    <Route path="/settings" component={() => <SettingsPage/>}/>
+                    <Route path="/search" component={() =>
+                        <SearchPage
+                            warehouse={this.state?.warehouse}
+                            settings={this.state?.settings}
+                            query={this.state?.searchQuery}
+                            setQuery={(query => {
+                                this.setState({
+                                    ...this.state,
+                                    searchQuery: query
+                                });
+                            })}
+                        />
+                    }/>
+                    <Route component={ErrorPage}/>
+                </Switch>
+            </BrowserRouter>
+        );
     }
 
 }

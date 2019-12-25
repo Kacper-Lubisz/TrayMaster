@@ -1,5 +1,8 @@
 // VIEWPORT STYLING
 
+// Import system-wide variables: we need to know $accent-colour here
+@import "variables";
+
 // Shelf
 #shelf {
   // Layout
@@ -50,12 +53,13 @@
       // Relative positioning: required to allow us to give children position: absolute;
       position: relative;
 
+
       // When we're in multiple select mode
       &.multipleSelect {
         // Round the corners
         border-radius: 10px;
 
-        > svg {
+        > svg.tray-tickbox {
           // Show the tickboxes
           visibility: visible;
         }
@@ -87,10 +91,12 @@
       > * {
         // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
         position: absolute;
+        // Make all children elements (inside tray) transparent to pointer events (so they bubble to the tray itself)
+        pointer-events: none;
       }
 
       // Tickboxes
-      > svg {
+      > svg.tray-tickbox {
         // Layout
         margin: 5px 0;
         width: 10%;
@@ -98,8 +104,18 @@
         top: 0;
         left: 0;
 
-        // Hide by default; will be shown when in multiple select mode
+        // Grey unselected by default
+        // Needed because now just using tickSolid (better not to switch icons to avoid flickering)
+        color: #cacaca;
+
+        // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
         visibility: hidden;
+
+        &.tick-selected {
+          color: $accent-colour;
+          visibility: visible;
+        }
+
       }
 
       // Tray category: bottom left
@@ -111,7 +127,7 @@
         text-align: left;
 
         // Truncate long categories: TODO make this work properly on all screen & tray sizes
-        width: 80%;
+        width: 60%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -121,8 +137,14 @@
       > div.trayExpiry {
         bottom: 0;
         right: 0;
-        font-size: 25px;
+        font-size: 20px;
         padding: 0 5px;
+
+        // Break lines when it gets too wide
+        width: 30%;
+        text-align: center;
+        word-wrap: break-word;
+
         background-color: #aaa; // this is the default colour when there is no expiry specified
       }
 
@@ -130,7 +152,7 @@
       > div.trayWeight {
         top: 0;
         right: 0;
-        font-size: 15px;
+        font-size: 20px;
         margin: 2px 5px;
       }
 

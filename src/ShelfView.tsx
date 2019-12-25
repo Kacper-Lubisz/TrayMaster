@@ -1,13 +1,23 @@
 import React from "react";
 import {TopBar} from "./TopBar";
 import {SideBar} from "./SideBar";
-import {ViewPort} from "./ViewPort";
+import {TraySpace, ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
 import {Bay, Category, Column, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 import {SearchPage} from "./SearchPage";
+
+/**
+ * Proper modulo function (gives a non-negative remainder as per mathematical definition)
+ * @param dividend - the number that is being divided
+ * @param divisor - the number to divide by
+ * @returns the non-negative remainder
+ */
+function properMod(dividend: number, divisor: number): number {
+    return ((dividend % divisor) + divisor) % divisor;
+}
 
 /**
  * Defines possible keyboard names
@@ -17,7 +27,7 @@ export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
 /**
  * The directions in which you can navigate
  */
-type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next"
+type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next" | "previous"
 
 
 interface ShelfViewProps {
@@ -26,10 +36,9 @@ interface ShelfViewProps {
 }
 
 interface ShelfViewState {
-    // todo raise viewport selection state out into ShelfView
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
-    selected: Map<Tray, boolean>;
+    selected: Map<Tray | TraySpace, boolean>;
     isEditShelf: boolean;
 }
 
@@ -44,6 +53,23 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             currentShelf: this.props.warehouse.shelves[0],
             isEditShelf: false
         };
+    }
+
+    public setSelected(newMap: Map<Tray | TraySpace, boolean>, callback?: ((() => void) | undefined)) {
+        this.setState({
+            ...this.state,
+            selected: newMap
+        }, callback);
+    }
+
+    public isTraySelected(tray: Tray | TraySpace) {
+        return this.state.selected.get(tray);
+    }
+
+    public areMultipleTraysSelected() {
+        const currSelected = Array.from(this.state.selected.entries())
+                                  .filter(([_, value]) => value);
+        return currSelected.length > 1;
     }
 
     /**
@@ -93,6 +119,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         if (shelf instanceof Shelf) {
             this.setState({
                 ...this.state,
+                selected: new Map(),
                 currentShelf: shelf
             });
             return;
@@ -113,6 +140,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
             this.setState({
                 ...this.state,
+                selected: new Map(),
                 currentShelf: currentBay.shelves[newShelfIndex]
             });
 
@@ -131,34 +159,50 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             );
             this.setState({
                 ...this.state,
+                selected: new Map(),
                 currentShelf: currentZone.bays[newBayIndex].shelves[newShelfIndex]
             });
 
-        } else if (shelf === "next") {
+        } else if (shelf === "next" || shelf === "previous") { // cyclic, inc/dec shelf -> bay -> zone
+            const increment = shelf === "next" ? 1
+                                               : -1;
 
-            if (shelfIndex + 1 !== currentBay.shelves.length) {// increment shelfIndex
+            if (shelfIndex + increment !== currentBay.shelves.length &&
+                shelfIndex + increment !== -1) {// increment shelfIndex
 
-                const newShelfIndex = shelfIndex + 1;
+                const newShelfIndex = shelfIndex + increment;
                 this.setState({
                     ...this.state,
+                    selected: new Map(),
                     currentShelf: currentBay.shelves[newShelfIndex]
                 });
-            } else if (bayIndex + 1 !== currentZone.bays.length) { // increment bayIndex
+            } else if (bayIndex + increment !== currentZone.bays.length
+                && bayIndex + increment !== -1) { // increment bayIndex
 
-                const newBayIndex = bayIndex + 1;
+                const newBay = currentZone.bays[bayIndex + increment];
+                const newShelfIndex = shelf === "next" ? 0
+                                                       : newBay.shelves.length - 1;
+
                 this.setState({
                     ...this.state,
-                    currentShelf: currentZone.bays[newBayIndex].shelves[0]
+                    selected: new Map(),
+                    currentShelf: newBay.shelves[newShelfIndex]
                     // fixme ensure that this bay has shelves
                     // the best solution would be to store the bay and have the shelf view display a message saying:
                     // "this bay doesn't have any shelves yet"
                 });
             } else { // increment zone
 
-                const newZoneIndex = (zoneIndex + 1) % warehouse.zones.length;
+                const newZone = warehouse.zones[properMod(zoneIndex + increment, warehouse.zones.length)];
+                const newBay = newZone.bays[shelf === "next" ? 0
+                                                             : newZone.bays.length - 1];
+                const newShelf = newBay.shelves[shelf === "next" ? 0
+                                                                 : newBay.shelves.length - 1];
+
                 this.setState({
                     ...this.state,
-                    currentShelf: warehouse.zones[newZoneIndex].bays[0].shelves[0]
+                    selected: new Map(),
+                    currentShelf: newShelf
                     // fixme ensure that this zone has bays and this bay has shelves
                 });
             }
@@ -177,7 +221,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         const possibleDirections: ShelfMoveDirection[] = [];
 
         // this could potentially be slow
-        if (warehouse.shelves.length > 1) possibleDirections.push("next");
+        if (warehouse.shelves.length > 1) possibleDirections.push("next", "previous");
         if (shelfIndex + 1 !== bay.shelves.length) possibleDirections.push("up");
         if (shelfIndex - 1 !== -1) possibleDirections.push("down");
         if (bayIndex + 1 !== zone.bays.length) possibleDirections.push("right");
@@ -194,7 +238,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     categorySelected(category: Category) {
         this.state.selected.forEach((selected, tray) => {
             if (selected) {
-                tray.category = category;
+                if (tray instanceof Tray)
+                    tray.category = category;
+                else
+                    throw Error("Unimplemented tray space set category");
             }
         });
         this.forceUpdate();
@@ -256,9 +303,14 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     makeSearch() {
 
+        // the lack of type inference here is nasty
         const categories = Array.from(this.state.selected)
-                                .filter(([_, selected]) => selected)
-                                .map(([tray, _]) => tray.category);
+                                .filter(([tray, selected]) => selected && tray instanceof Tray)
+                                .map(([tray, _]) => {
+                                    if (tray instanceof Tray)
+                                        return tray.category;
+                                    else return undefined; // this case should never happen, silly type inference
+                                });
         const distinctCategories = Array.from(new Set(categories));
 
         SearchPage.openSearch({categories: distinctCategories, sortBy: "expiry"});
@@ -268,9 +320,14 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     render() {
         return (
             <div id="shelfView">
-                <TopBar locationString={this.state.currentShelf.toString()}/>
+                <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
+                        locationString={this.state.currentShelf.toString()}/>
                 <ViewPort
                     selected={this.state.selected}
+                    setSelected={this.setSelected.bind(this)}
+                    isTraySelected={this.isTraySelected.bind(this)}
+                    areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
+
                     shelf={this.state.currentShelf}
                     isShelfEdit={this.state.isEditShelf}
                 />
@@ -285,6 +342,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         {name: "Search", onClick: this.makeSearch.bind(this)},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)},
+                        {name: "Previous", onClick: this.changeShelf.bind(this, "previous")},
                         {name: "Next", onClick: this.changeShelf.bind(this, "next")},
                     ]}
                     keyboards={[
@@ -299,7 +357,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 <BottomPanel
                     categories={this.props.warehouse.categories.map((category) => {
                         return {
-                            name: category.name,
+                            name: category.shortName ?? category.name,
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
