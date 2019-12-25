@@ -68,16 +68,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     .filter(([_, value]) => value).map(([a, _]) => a);
     }
 
-    public getSelectedAsList() {
-        let filtered: Tray[] = [];
-        for (let i of this.state.selected.keys()) {
-            if (this.state.selected.get(i)) {
-                filtered.push(i);
-            }
-        }
-        return filtered;
-    }
-
     /**
      * This method returns all the parents of a shelf and the indices of all of them within each other
      * @param shelf The shelf in question
@@ -272,7 +262,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         for (let tray of this.getSelectedTrays()) {
             tray.category = category;
         }
-        });
         this.forceUpdate();
     }
 
@@ -351,7 +340,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     })}
                     expirySelected={this.expirySelected.bind(this)}
                     keyboardState={this.state.currentKeyboard}
-                    selected={this.getSelectedAsList()}
+                    selectedTrays={this.getSelectedTrays()}
                 />
             </div>
         );

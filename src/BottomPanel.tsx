@@ -169,9 +169,9 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
 
     render() {
         // TODO: this should really go into component state I think
-        this.disabled = !this.props.selected.length;
-        if (this.props.selected.length === 1) {
-            this.currentTray = this.props.selected[0];
+        this.disabled = !this.props.selectedTrays.length;
+        if (this.props.selectedTrays.length === 1) {
+            this.currentTray = this.props.selectedTrays[0];
         }
         // return DOM elements using button structures
         return (
