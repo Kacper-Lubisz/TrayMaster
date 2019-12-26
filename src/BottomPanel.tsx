@@ -36,7 +36,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     /**
      * Currently selected year
      */
-    selectedYear: number | undefined = undefined;
+    selectedYear: number | null = null;
 
     constructor(props: BottomPanelProps) {
         super(props);
@@ -162,20 +162,32 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={this.props.categories} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
+
+            let commonYear: number | null = 0;
+            for (let i of this.props.selectedTrays) {
+                let currentExpiry = i.expiry?.from ? new Date(i.expiry.from).getFullYear() : undefined;
+                if (commonYear === 0 && currentExpiry) {
+                    commonYear = currentExpiry;
+                }
+                if (commonYear && currentExpiry && commonYear !== currentExpiry) {
+                    commonYear = null;
+                    break;
+                }
+            }
+
             // update selectedYear: don't need to worry about disabled as currentTray will be undefined if disabled
-            this.selectedYear = currentTray?.expiry?.from ? new Date(currentTray?.expiry?.from).getFullYear()
-                                                          : undefined;
+            this.selectedYear = commonYear;
 
             // set the button corresponding to selectedYear to be visibly selected
             for (let i = 0; i < this.years.length; i++) {
-                this.years[i].selected = this.years[i].name === this.selectedYear?.toString();
+                this.years[i].selected = this.years[i].name === commonYear?.toString();
             }
 
             return <div className="keyboard-container">
                 <Keyboard id="exp-1" disabled={disabled} buttons={this.years} gridX={2}/>
                 <div className="vl"/>
-                <Keyboard id="exp-2" disabled={!this.selectedYear} buttons={this.quarters} gridX={1}/>
-                <Keyboard id="exp-3" disabled={!this.selectedYear} buttons={this.months} gridX={3}/>
+                <Keyboard id="exp-2" disabled={!commonYear} buttons={this.quarters} gridX={1}/>
+                <Keyboard id="exp-3" disabled={!commonYear} buttons={this.months} gridX={3}/>
             </div>;
 
         } else { // (this.props.keyboardState === "weight")
