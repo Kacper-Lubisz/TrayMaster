@@ -20,6 +20,12 @@ const cats = [
     "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
 ];
 
+const sizes: ColumnSize[] = [
+    {label: "small", sizeRatio: 1.5},
+    {label: "normal", sizeRatio: 2.5},
+    {label: "big", sizeRatio: 3.5},
+];
+
 const colours = [
     {label: "Red", hex: "#FF0000"},
     {label: "Green", hex: "#00FF00"},
@@ -107,6 +113,7 @@ export class Warehouse implements UpperLayer {
     id: string;
     name: string;
 
+    columnSizes: ColumnSize[] = [];
     categories: Category[] = [];
     zones: Zone[] = [];
 
@@ -170,6 +177,18 @@ export class Warehouse implements UpperLayer {
     }
 
     /**
+     * Load column sizes.
+     * @async
+     * @returns A promise which resolves to the list of column sizes in the warehouse
+     */
+    public static async loadColumnSizes(): Promise<ColumnSize[]> {
+        const columnSizes: ColumnSize[] = [];
+        for (let i = 0; i < sizes.length; i++)
+            columnSizes.push({...sizes[i]});
+        return columnSizes;
+    }
+
+    /**
      * Load a whole warehouse corresponding to a given ID
      * @async
      * @param id - Database ID of the warehouse to load
@@ -178,6 +197,7 @@ export class Warehouse implements UpperLayer {
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.categories = await Warehouse.loadCategories();
+        warehouse.columnSizes = await Warehouse.loadColumnSizes();
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.isDeepLoaded = true;
         return warehouse;
@@ -637,16 +657,13 @@ export class Column implements UpperLayer {
         const columns: Column[] = [];
 
         const colNumber = shelf.index % 2 === 0 ? 4 : 2;
-        const columnsSizes: ColumnSize[] = [
-            {label: "small", sizeRatio: 1.5},
-            {label: "normal", sizeRatio: 2.5},
-            {label: "big", sizeRatio: 3.5},
-        ];
 
         for (let i = 0; i < colNumber; i++) {
-            const size: ColumnSize = columnsSizes[Math.floor(Math.random() * columnsSizes.length)];
+            const sizes = shelf.parentWarehouse?.columnSizes!!;
+            const size: ColumnSize = sizes[Math.floor(Math.random() * sizes.length)];
             const maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
-                                                    : 2;
+                                                    : Math.random() < 0.5 ? 2
+                                                                          : 10;
 
             const column: Column = new Column(generateRandomId(), i, shelf, size, maxHeight);
             column.trays = await Tray.loadTrays(column);

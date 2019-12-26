@@ -297,11 +297,26 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param changeType Either increment or decrement
      */
     changeColumnHeight(column: Column, changeType: "inc" | "dec") {
-        let change = changeType === "inc" ? 1
-                                          : -1;
+        const change = changeType === "inc" ? 1
+                                            : -1;
         column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
         this.traySpaces.delete(column);
         this.forceUpdate();
+    }
+
+    /**
+     * This method returns the possible changes to the current column max height for a particular column
+     * @param column The column in question
+     * @return an object map of possible inputs to the boolean which determines if they are possible
+     */
+    possibleChangeColumnHeight(column: Column): { inc: boolean, dec: boolean } {
+        // todo decide if there ought to be max max height
+        if (column.maxHeight) {
+            return {inc: true, dec: column.maxHeight !== 1};
+        } else {
+
+            return {inc: true, dec: true};
+        }
     }
 
     /**
@@ -310,20 +325,34 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param changeType Either increase or decrease
      */
     changeColumnSize(column: Column, changeType: "inc" | "dec") {
-        if (changeType === "inc") { //todo implement the database here
-            if (column.size?.label === "small") {
-                column.size = {label: "normal", sizeRatio: 2.5};
-            } else if (column.size?.label === "normal") {
-                column.size = {label: "big", sizeRatio: 3.5};
-            }
-        } else {
-            if (column.size?.label === "big") {
-                column.size = {label: "normal", sizeRatio: 2.5};
-            } else if (column.size?.label === "normal") {
-                column.size = {label: "small", sizeRatio: 1.5};
-            }
-        }
+        const change = changeType === "inc" ? 1
+                                            : -1;
+
+        const columnSizes = column.parentWarehouse?.columnSizes!!;
+        const medianIndex = Math.floor(columnSizes.length / 2);
+
+        const currentIndex = columnSizes.indexOf(column.size ?? columnSizes[medianIndex]);
+
+        const newIndex = Math.min(Math.max(change + currentIndex, 0), columnSizes.length - 1);
+        column.size = columnSizes[newIndex];
+
         this.forceUpdate();
+    }
+
+    /**
+     * This method returns the possible changes to the current column size for a particular column
+     * @param column The column in question
+     * @return an object map of possible inputs to the boolean which determines if they are possible
+     */
+    possibleChangeColumnSize(column: Column): { inc: boolean, dec: boolean } {
+
+        const columnSizes = column.parentWarehouse?.columnSizes!!;
+        if (column.size) {
+            const currentIndex = columnSizes.indexOf(column.size);
+            return {inc: currentIndex !== columnSizes.length - 1, dec: currentIndex !== 0};
+        } else {
+            return {inc: true, dec: true};
+        }
     }
 
     /**
@@ -346,6 +375,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param order The index of the column
      */
     renderColumn(column: Column, order: number) {
+        const columnChanges = this.possibleChangeColumnSize(column);
+        const heightChange = this.possibleChangeColumnHeight(column);
+
         return this.props.isShelfEdit ? <div
             style={{
                 order: order,
@@ -360,23 +392,35 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
             <div id="sizeControls">
                 <h1>Tray Size:</h1>
-                <button onClick={this.changeColumnSize.bind(this, column, "inc")}>
+                <button
+                    disabled={!columnChanges.inc}
+                    onClick={this.changeColumnSize.bind(this, column, "inc")}
+                >
                     <FontAwesomeIcon icon={plus}/>
                 </button>
 
                 <div>{column.size?.label ?? "?"}</div>
-                <button onClick={this.changeColumnSize.bind(this, column, "dec")}>
+                <button
+                    disabled={!columnChanges.dec}
+                    onClick={this.changeColumnSize.bind(this, column, "dec")}
+                >
                     <FontAwesomeIcon icon={minus}/>
                 </button>
             </div>
 
             <div id="heightControls">
                 <h1>Max Height:</h1>
-                <button onClick={this.changeColumnHeight.bind(this, column, "inc")}>
+                <button
+                    disabled={!heightChange.inc}
+                    onClick={this.changeColumnHeight.bind(this, column, "inc")}
+                >
                     <FontAwesomeIcon icon={plus}/>
                 </button>
                 <div>{column.maxHeight ?? "?"}</div>
-                <button onClick={this.changeColumnHeight.bind(this, column, "dec")}>
+                <button
+                    disabled={!heightChange.dec}
+                    onClick={this.changeColumnHeight.bind(this, column, "dec")}
+                >
                     <FontAwesomeIcon icon={minus}/>
                 </button>
             </div>

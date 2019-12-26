@@ -246,6 +246,15 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     updateSelectedTrays(
         update: (tray: Tray) => void,
         fillSpaces: boolean = true,
+        spaceFillBuilder: (index: number, column: Column) => Tray
+            = (index, column) => Tray.create(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            index,
+            column
+        )
     ) {
 
         const traySpaceMap = new Map<Column, { trays: Tray[], spaces: TraySpace[] }>();
@@ -296,11 +305,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             //todo decide if this behaviour is staying
                         }
 
-                        const newTray = Tray.create(
-                            undefined, undefined, undefined, undefined,
-                            space.index,
-                            column
-                        );
+                        const newTray = spaceFillBuilder.call(undefined, space.index, column);
                         column.trays.push(newTray);
                         //fixme this operation feels super illegal, placeInColumn doesn't do this, it probably should
 
@@ -361,7 +366,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             [],
             this.state.currentShelf.columns.length,
             this.state.currentShelf,
-            {label: "normal", sizeRatio: 2.5},
+            this.props.warehouse.columnSizes[1], //fixme set a default
             3
         ));
         this.forceUpdate();
