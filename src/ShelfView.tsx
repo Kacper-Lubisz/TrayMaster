@@ -297,7 +297,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         this.setState({
             ...this.state,
             currentKeyboard: newKeyboard,
-            draftWeight: undefined
+            draftWeight: "0"
         });
     }
 

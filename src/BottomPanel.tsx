@@ -77,19 +77,24 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         if (key === "Enter") {
             this.props.applyDraftWeight();
         } else {
-            let newDraftWeight;
+            let newDraftWeight: string | undefined = "";
             if (key === "Clear") {
                 newDraftWeight = "";
             } else if (key === "Backspace") {
                 newDraftWeight = this.props.draftWeight?.slice(0, -1);
             } else {
                 // Must be a number or decimal point, just append
-                newDraftWeight = `${this.props.draftWeight ?? ""}${key}`;
+                // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals with overwriting the default 0 value too
+                if (this.props.draftWeight === "0" && key !== ".") {
+                    newDraftWeight = `${key}`;
+                } else {
+                    newDraftWeight = `${this.props.draftWeight ?? ""}${key}`;
+                }
             }
 
             if (newDraftWeight === "") {
                 this.props.setDraftWeight(undefined);
-            } else if (!isNaN(Number(newDraftWeight))) {
+            } else if (!isNaN(Number(newDraftWeight)) && (newDraftWeight ?? "").length <= 6) {
                 this.props.setDraftWeight(newDraftWeight);
             }
         }
@@ -156,8 +161,7 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
                 <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
                 <div id="numpadR">
                     <div id="draftWeight">
-                        {/* fixme cap the number of digits that can go in draftWeight so things don't break*/}
-                        {`${this.props.draftWeight === undefined ? "0" : this.props.draftWeight} kg`}
+                        {`${this.props.draftWeight === undefined ? "?" : this.props.draftWeight} kg`}
                     </div>
                     <div id="weight-numpad-side">
                         <Keyboard buttons={numpadR} gridX={1}/>
