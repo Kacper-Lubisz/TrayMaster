@@ -110,6 +110,8 @@ export class Warehouse implements UpperLayer {
     categories: Category[] = [];
     zones: Zone[] = [];
 
+    // todo rename column size to tray size, load tray sizes
+
     /**
      * @param id firebase - The database ID of the warehouse
      * @param name - The name of the warehouse
@@ -559,7 +561,10 @@ export class Shelf implements UpperLayer {
     //#endregion
 }
 
-type ColumnSize = "small" | "normal" | "big"
+interface ColumnSize {
+    label: string,
+    sizeRatio: number
+}
 
 export class Column implements UpperLayer {
     isDeepLoaded: boolean = false;
@@ -632,7 +637,11 @@ export class Column implements UpperLayer {
         const columns: Column[] = [];
 
         const colNumber = shelf.index % 2 === 0 ? 4 : 2;
-        const columnsSizes: ColumnSize[] = ["small", "normal", "big"];
+        const columnsSizes: ColumnSize[] = [
+            {label: "small", sizeRatio: 1.5},
+            {label: "normal", sizeRatio: 2.5},
+            {label: "big", sizeRatio: 3.5},
+        ];
 
         for (let i = 0; i < colNumber; i++) {
             const size: ColumnSize = columnsSizes[Math.floor(Math.random() * columnsSizes.length)];

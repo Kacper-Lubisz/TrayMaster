@@ -3,7 +3,12 @@ import "pepjs";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
-import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
+import {
+    faCheckCircle as tickLine,
+    faMinusSquare as minus,
+    faPlusSquare as plus,
+    faTrashAlt as trash
+} from "@fortawesome/free-regular-svg-icons";
 import {Column, Shelf, Tray} from "./core/MockWarehouse";
 import classNames from "classnames/bind";
 
@@ -48,6 +53,10 @@ const LONG_PRESS_TIMEOUT = 300;
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
+    /**
+     * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
+     * different object would be different keys of the selection map
+     */
     private traySpaces: Map<Column, TraySpace[]> = new Map();
 
     constructor(props: ViewPortProps) {
@@ -282,68 +291,100 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         );
     }
 
+    /**
+     * This is the listener for incrementing/decrementing the max height of a column
+     * @param column The column to inc/dec
+     * @param changeType Either increment or decrement
+     */
+    changeColumnHeight(column: Column, changeType: "inc" | "dec") {
+        let change = changeType === "inc" ? 1
+                                          : -1;
+        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
+        this.traySpaces.delete(column);
+        this.forceUpdate();
+    }
+
+    /**
+     * This is the listener for increasing/decreasing the width of a column
+     * @param column The column to inc/dec
+     * @param changeType Either increase or decrease
+     */
+    changeColumnSize(column: Column, changeType: "inc" | "dec") {
+        if (changeType === "inc") { //todo implement the database here
+            if (column.size?.label === "small") {
+                column.size = {label: "normal", sizeRatio: 2.5};
+            } else if (column.size?.label === "normal") {
+                column.size = {label: "big", sizeRatio: 3.5};
+            }
+        } else {
+            if (column.size?.label === "big") {
+                column.size = {label: "normal", sizeRatio: 2.5};
+            } else if (column.size?.label === "normal") {
+                column.size = {label: "small", sizeRatio: 1.5};
+            }
+        }
+        this.forceUpdate();
+    }
+
+    /**
+     * The listener for removing a column
+     * @param column The column to remove
+     */
+    removeColumn(column: Column) {
+        const shelf: Shelf | undefined = column.parentShelf;
+        if (shelf) {
+            const index = shelf.columns.indexOf(column);
+            shelf.columns.splice(index, 1);
+        } else throw Error("Shelf undefined");
+
+        this.forceUpdate();
+    }
+
+    /**
+     * This method renters a column.  It can either render it in or out of shelf edit mode depending on the props.
+     * @param column The column to draw
+     * @param order The index of the column
+     */
     renderColumn(column: Column, order: number) {
         return this.props.isShelfEdit ? <div
             style={{
                 order: order,
-                flexGrow: column.size === "small" ? 2 :
-                          column.size === "normal" ? 3
-                                                   : 4
+                flexGrow: column.size?.sizeRatio ?? 1
             }}
             className="column"
             key={order}
         >
-            <button onClick={() => {
-                const shelf: Shelf | undefined = column.parentShelf;
-                if (shelf) {
-                    const index = shelf.columns.indexOf(column);
-                    shelf.columns.splice(index, 1);
-                } else {
-                    throw Error("Shelf undefined");
-                }
-                this.forceUpdate();
-            }}>Remove
+            <button onClick={this.removeColumn.bind(this, column)}> {/*todo revise these icon*/}
+                <FontAwesomeIcon icon={trash}/>
             </button>
 
-            <div>
-                <button onClick={() => {
-                    if (column.size === "small") {
-                        column.size = "normal";
-                    } else if (column.size === "normal") {
-                        column.size = "big";
-                    }
-                    this.forceUpdate();
-                }}>{"←→"}</button>
+            <div id="sizeControls">
+                <h1>Tray Size:</h1>
+                <button onClick={this.changeColumnSize.bind(this, column, "inc")}>
+                    <FontAwesomeIcon icon={plus}/>
+                </button>
 
-                <div id="columnSize">{column.size ?? "?"}</div>
-                <button onClick={() => {
-                    if (column.size === "big") {
-                        column.size = "normal";
-                    } else if (column.size === "normal") {
-                        column.size = "small";
-                    }
-                    this.forceUpdate();
-                }}>{"→←"}</button>
+                <div>{column.size?.label ?? "?"}</div>
+                <button onClick={this.changeColumnSize.bind(this, column, "dec")}>
+                    <FontAwesomeIcon icon={minus}/>
+                </button>
             </div>
 
-            <button onClick={() => {
-                column.maxHeight = 1 + (column.maxHeight ?? 3);
-                this.traySpaces.delete(column);
-                this.forceUpdate();
-            }}>{"↑"}</button>
-            <div id="columnHeight">{column.maxHeight ?? "?"}</div>
-            <button onClick={() => {
-                column.maxHeight = -1 + (column.maxHeight ?? 3);
-                this.traySpaces.delete(column);
-                this.forceUpdate();
-            }}>{"↓"}</button>
+            <div id="heightControls">
+                <h1>Max Height:</h1>
+                <button onClick={this.changeColumnHeight.bind(this, column, "inc")}>
+                    <FontAwesomeIcon icon={plus}/>
+                </button>
+                <div>{column.maxHeight ?? "?"}</div>
+                <button onClick={this.changeColumnHeight.bind(this, column, "dec")}>
+                    <FontAwesomeIcon icon={minus}/>
+                </button>
+            </div>
 
         </div> : <div
                    style={{
                        order: order,
-                       flexGrow: column.size === "small" ? 2 :
-                                 column.size === "normal" ? 3
-                                                          : 4
+                       flexGrow: column.size?.sizeRatio ?? 1
                    }}
                    className="column"
                    key={order}
@@ -381,7 +422,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             <div className="trayCustomField" key={4}>{tray.customField ?? ""}</div>
                         ]}
                         {!(tray instanceof Tray) && [
-                            index === column.trays.length && <p key={1}>Tray Space!!! {tray.index}</p>
+                            index === column.trays.length && <p key={1}>EMPTY TRAY {tray.index}</p>
                         ]}
 
                     </div>
@@ -389,6 +430,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                </div>;
     }
 
+    /**
+     * This method clears the tray spaces, selections and longPress if the shelf that is being displayed is changed.
+     * @inheritDoc
+     */
     componentDidUpdate(prevProps: Readonly<ViewPortProps>, prevState: Readonly<ViewPortState>, snapshot?: any): void {
         if (this.props.shelf !== prevProps.shelf) {
             this.traySpaces.clear();
@@ -399,9 +444,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }
     }
 
+    /**
+     * This method pads the tray arrays of a column with TraySpaces such that the the length of the returned array is
+     * the max height of the column.  If the column has an undefined max height, it is padded with one empty space.
+     * This method stores the tray spaces that are added in the traySpaces field such that the same TraySpace object is
+     * always returned.  The same object being returned is important if it is going to be used as th key of a map.     *
+     * @param column The column to pad
+     * @return The padded array.
+     */
     padWithTraySpaces(column: Column): (Tray | TraySpace)[] {
 
-        const missingTrays = column.maxHeight ? column.maxHeight - column.trays.length
+        const missingTrays = column.maxHeight ? Math.max(0, column.maxHeight - column.trays.length)
                                               : 1;
 
         const existing: TraySpace[] | undefined = this.traySpaces.get(column);

@@ -3,6 +3,11 @@
 // Import system-wide variables: we need to know $accent-colour here
 @import "variables";
 
+#sizeControls, #heightControls { // todo fixme revise this style
+  width: 100%;
+  display: inline;
+}
+
 // Shelf
 #shelf {
   // Layout
@@ -11,8 +16,8 @@
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: stretch;
-  margin: 0 1%;
-  height: 80%;
+  margin: .5% .5%;
+  height: 98%;
 
   // Disable text selection: makes clicking and dragging feel less janky
   user-select: none;
@@ -34,6 +39,10 @@
     border: 1px solid white;
     text-align: center;
     background-color: #eee;
+
+    .tray:last-child {
+      margin: 0;
+    }
 
     .tray {
       // Layout

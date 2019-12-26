@@ -55,6 +55,11 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         };
     }
 
+    /**
+     * This is a callback which is callable by child components and sets the current selection
+     * @param newMap The map of trays to their selection
+     * @param callback A callback to call after setting the selection
+     */
     public setSelected(newMap: Map<Tray | TraySpace, boolean>, callback?: ((() => void) | undefined)) {
         this.setState({
             ...this.state,
@@ -62,13 +67,20 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         }, callback);
     }
 
+    /**
+     * Returns if a tray is selected
+     * @param tray A tray or tray space to be tested
+     */
     public isTraySelected(tray: Tray | TraySpace) {
         return this.state.selected.get(tray);
     }
 
+    /**
+     * Returns whether the there are multiple selected trays
+     */
     public areMultipleTraysSelected() {
         const currSelected = Array.from(this.state.selected.entries())
-                                  .filter(([_, value]) => value);
+                                  .filter(([_, selected]) => selected);
         return currSelected.length > 1;
     }
 
@@ -315,26 +327,48 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         // throw Error("Unimplemented method stub");
     }
 
+    /**
+     * This method adds a new column to the current shelf and is called when the add column button is pressed.
+     */
     addColumn() {
         this.state.currentShelf.columns.push(Column.create(
             [],
             this.state.currentShelf.columns.length,
             this.state.currentShelf,
-            "normal",
+            {label: "normal", sizeRatio: 2.5},
             3
         ));
         this.forceUpdate();
     }
 
     /**
-     * This method exists edit shelf mode
+     * This method is called when edit shelf mode is exited and the changes are not rolled back
      */
-    exitEditShelf() {
+    finaliseEditShelf() {
+
+        this.state.currentShelf.columns.forEach(column => { // remove trays over max height
+            if (column.maxHeight) {
+                const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
+                column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed =>
+                    this.state.selected.delete(removed)
+                );
+
+            }
+        });
+
         this.setState({
             ...this.state,
             isEditShelf: !this.state.isEditShelf
         });
-        //todo
+    }
+
+    /**
+     * This method is called when edit shelf mode is exited and the changes **are** rolled back
+     */
+    discardEditShelf() {
+
+        //todo unimplemented
+        this.finaliseEditShelf();
     }
 
 
@@ -345,22 +379,26 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         throw Error("Unimplemented method stub");
     }
 
+    /**
+     * This method removes all the trays that are currently selected
+     */
     clearTrays() {
         const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
 
         const reindexColumns = new Set<Column>();
         this.state.selected.forEach((selected, tray) => {
+            if (selected) {
+                newSelectedMap.set(tray, false);
+                if (tray instanceof Tray) {
+                    const column = tray.parentColumn;
+                    if (!column) throw Error("Tray has no parent column");
 
-            newSelectedMap.set(tray, false);
-            if (tray instanceof Tray) {
-                const column = tray.parentColumn;
-                if (!column) throw Error("Tray has no parent column");
+                    const trayIndex = column.trays.indexOf(tray);
+                    column.trays.splice(trayIndex, 1);
 
-                const trayIndex = column.trays.indexOf(tray);
-                column.trays.splice(trayIndex, 1);
+                    reindexColumns.add(column);
 
-                reindexColumns.add(column);
-
+                }
             }
         });
         reindexColumns.forEach((column) => {
@@ -370,6 +408,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         this.setSelected(newSelectedMap);
     }
 
+    /**
+     * This method builds a search query composed of the selected categories by expiry order and then opens the search
+     * page with it open
+     */
     makeSearch() {
 
         // the lack of type inference here is nasty
@@ -403,8 +445,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 <SideBar
                     buttons={this.state.isEditShelf ? [
                         {name: "Add Column", onClick: this.addColumn.bind(this)},
-                        {name: "Cancel", onClick: this.exitEditShelf.bind(this)},
-                        {name: "Save", onClick: this.exitEditShelf.bind(this)},
+                        {name: "Cancel", onClick: this.discardEditShelf.bind(this)},
+                        {name: "Save", onClick: this.finaliseEditShelf.bind(this)},
                     ] : [ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
                         {name: "Back", onClick: () => alert("Back")},
@@ -421,6 +463,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         {name: "weight", icon: faWeightHanging}
                     ]}
                     keyboardSwitcher={this.switchKeyboard.bind(this)}
+                    showKeyboardSwitcher={!this.state.isEditShelf}
                     currentKeyboard={this.state.currentKeyboard}
                 />
 
