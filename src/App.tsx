@@ -5,12 +5,14 @@ import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
-import {MockWarehouse} from "./core/WarehouseModel/Mock/MockWarehouse";
-import {Settings} from "./core/Settings/Settings";
+
 import {SettingsManager} from "./core/Settings/MockSettings";
+import {Settings} from "./core/Settings/Settings";
+import {Warehouse} from "./core/WarehouseModel/MockWarehouseModel";
+import {LoadingPage} from "./Loading";
 
 interface AppState {
-    warehouse: MockWarehouse
+    warehouse: Warehouse
     settings: Settings
 }
 
@@ -21,7 +23,7 @@ class App extends React.Component<any, AppState> {
 
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
-            MockWarehouse.loadWarehouse("ABCD")
+            Warehouse.loadWarehouse("ABCD")
         ]);
 
         loadPromise.then((result) => {
@@ -42,19 +44,12 @@ class App extends React.Component<any, AppState> {
     }
 
     render() {
-        return (
-            //Declare the paths for all screens
+        return this.state === null ? <LoadingPage/> : (
             <BrowserRouter>
                 <Switch>
-                    <Route path="/" component={() => {
-                        if (this.state === null) {
-                            return <div>Loading</div>;
-                            // todo add a loading screen
-                            // fixme this loading screen could surround the entire router
-                        } else {
-                            return <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>;
-                        }
-                    }} exact/>
+                    <Route path="/" component={() =>
+                        <ShelfView settings={this.state.settings} warehouse={this.state.warehouse}/>
+                    } exact/>
                     <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
                     <Route path="/settings" component={() => <SettingsPage/>}/>
                     <Route component={ErrorPage}/>

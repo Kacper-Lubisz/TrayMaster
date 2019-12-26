@@ -51,6 +51,7 @@
       // Relative positioning: required to allow us to give children position: absolute;
       position: relative;
 
+
       // When we're in multiple select mode
       &.multipleSelect {
         // Round the corners
@@ -72,6 +73,8 @@
       > * {
         // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
         position: absolute;
+        // Make all children elements (inside tray) transparent to pointer events (so they bubble to the tray itself)
+        pointer-events: none;
       }
 
       // Tickboxes
@@ -83,12 +86,18 @@
         top: 0;
         left: 0;
 
-        // Hide by default; will be shown when in multiple select mode
+        // Grey unselected by default
+        // Needed because now just using tickSolid (better not to switch icons to avoid flickering)
+        color: #cacaca;
+
+        // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
         visibility: hidden;
 
         &.tick-selected {
           color: $accent-colour;
+          visibility: visible;
         }
+
       }
 
       // Tray category: bottom left
