@@ -243,64 +243,90 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     }
 
+    updateSelectedTrays(
+        update: (tray: Tray) => void,
+        fillSpaces: boolean = true,
+    ) {
+
+        const traySpaceMap = new Map<Column, { trays: Tray[], spaces: TraySpace[] }>();
+        // the selected trays (and spaces) are grouped by column for ordering
+
+        this.state.selected.forEach((selected, tray) => {
+            if (selected) {
+                // fixme remove !! operator once it is unnecessary
+                const parentColumn = tray instanceof Tray ? tray.parentColumn!! : tray.column;
+                const columnObject = traySpaceMap.get(parentColumn);
+                if (columnObject) {
+                    if (tray instanceof Tray) {
+                        columnObject.trays.push(tray);
+                    } else {
+                        columnObject.spaces.push(tray);
+                    }
+                } else {
+                    if (tray instanceof Tray) {
+                        traySpaceMap.set(parentColumn, {
+                            trays: [tray],
+                            spaces: []
+                        });
+                    } else {
+                        traySpaceMap.set(parentColumn, {
+                            trays: [],
+                            spaces: [tray]
+                        });
+                    }
+                }
+            }
+        });
+        // this whole thing could be rewritten to iterate over the columns and trays of the current shelf.  This would
+        // be awkward because a column has no concept of tray spaces.
+        // todo move tray spaces into the warehouse model
+
+        if (traySpaceMap.size !== 0) { // if selection isn't empty
+            const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
+
+            traySpaceMap.forEach((trays, column) => {
+                trays.trays.sort((a, b) => a.index - b.index);
+                trays.trays.forEach(update);
+
+                if (fillSpaces) {
+                    trays.spaces.sort((a, b) => a.index - b.index);
+                    trays.spaces.forEach(space => {
+                        if (space.index !== space.column.trays.length) {
+                            throw Error("Can't place a tray in the air!");
+                            //todo decide if this behaviour is staying
+                        }
+
+                        const newTray = Tray.create(
+                            undefined, undefined, undefined, undefined,
+                            space.index,
+                            column
+                        );
+                        column.trays.push(newTray);
+                        //fixme this operation feels super illegal, placeInColumn doesn't do this, it probably should
+
+                        newSelectedMap.delete(space);
+                        newSelectedMap.set(newTray, true);
+
+                        update.call(null, newTray);
+                    });
+                }
+            });
+
+            this.setSelected(newSelectedMap);
+        }
+
+    }
+
     /**
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
 
-        const traySpaceMap = new Map<Column, TraySpace[]>();
-        // the selected tray spaces need to be grouped and processed after ordered (by index)
+        this.updateSelectedTrays((tray) => {
+            tray.category = category;
+        }, true);
 
-        this.state.selected.forEach((selected, tray) => {
-            if (selected) {
-                if (tray instanceof Tray) {
-                    tray.category = category;
-                } else {
-                    const column = traySpaceMap.get(tray.column);
-                    if (column) {
-                        column.push(tray);
-                    } else {
-                        traySpaceMap.set(tray.column, [tray]);
-                    }
-                }
-            }
-        });
-
-        if (traySpaceMap.size !== 0) {
-            const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
-
-            traySpaceMap.forEach((trays, column) => {
-                const sortedTrays = trays.sort((a, b) => a.index - b.index);
-
-                sortedTrays.forEach(space => {
-                    if (space.index !== space.column.trays.length) {
-                        throw Error("Can't place a tray in the air!");
-                    }
-
-                    const newTray = Tray.create(
-                        category,
-                        undefined,
-                        undefined,
-                        undefined,
-                        space.index,
-                        column
-                    );
-                    column.trays.push(newTray);
-
-                    newSelectedMap.delete(space);
-                    newSelectedMap.set(newTray, true);
-
-                    //fixme this operation feels super illegal, placeInColumn doesn't do this, it probably should
-                });
-            });
-
-            this.setSelected(newSelectedMap);
-
-        }
-
-
-        this.forceUpdate();
     }
 
     /**
@@ -323,7 +349,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             ...this.state,
             isEditShelf: !this.state.isEditShelf
         });
-        //todo
+        // todo
         // throw Error("Unimplemented method stub");
     }
 

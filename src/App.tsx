@@ -49,7 +49,6 @@ class App extends React.Component<any, AppState> {
     }
 
     render() {
-        // todo add a loading screen
         return this.state === null ? <LoadingPage/> : (
             <BrowserRouter>
                 <Switch>
