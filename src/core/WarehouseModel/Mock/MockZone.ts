@@ -4,7 +4,7 @@ import {MockBay} from "./MockBay";
 import {MockShelf} from "./MockShelf";
 import {MockColumn} from "./MockColumn";
 import {MockTray} from "./MockTray";
-import {Utils} from "../../Utils";
+
 
 const colours = [
     {label: "Red", hex: "#FF0000"},
@@ -14,10 +14,10 @@ const colours = [
     {label: "Black", hex: "#000000"}
 ];
 
+
 export class MockZone implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     name: string;
     color: string;
 
@@ -25,13 +25,11 @@ export class MockZone implements UpperLayer {
     bays: MockBay[] = [];
 
     /**
-     * @param id - The database ID for the zone
      * @param name - The name of the zone
      * @param color - The hex colour of the zone
      * @param parentWarehouse - The (nullable) parent warehouse
      */
-    private constructor(id: string, name: string, color: string, parentWarehouse?: MockWarehouse) {
-        this.id = id;
+    private constructor(name: string, color: string, parentWarehouse?: MockWarehouse) {
         this.name = name;
         this.color = color;
 
@@ -47,7 +45,7 @@ export class MockZone implements UpperLayer {
      * @returns The newly created zone
      */
     public static create(bays: MockBay[], name?: string, color?: string, parentWarehouse?: MockWarehouse): MockZone {
-        const zone: MockZone = new MockZone(Utils.generateRandomId(), name ?? "", color ?? "#000000", parentWarehouse);
+        const zone: MockZone = new MockZone(name ?? "", color ?? "#000000", parentWarehouse);
         zone.bays = bays;
         for (let i = 0; i < zone.bays.length; i++)
             zone.bays[i].placeInZone(i, zone);
@@ -73,7 +71,7 @@ export class MockZone implements UpperLayer {
     public static async loadZones(warehouse: MockWarehouse): Promise<MockZone[]> {
         const zones: MockZone[] = [];
         for (let i = 0; i < colours.length; i++) {
-            const zone: MockZone = new MockZone(Utils.generateRandomId(), colours[i].label, colours[i].hex, warehouse);
+            const zone: MockZone = new MockZone(colours[i].label, colours[i].hex, warehouse);
             zone.bays = await MockBay.loadBays(zone);
             zone.isDeepLoaded = true;
             zones.push(zone);
@@ -90,7 +88,7 @@ export class MockZone implements UpperLayer {
     public static async loadFlatZones(warehouse: MockWarehouse): Promise<MockZone[]> {
         const zones: MockZone[] = [];
         for (let i = 0; i < colours.length; i++)
-            zones.push(new MockZone(Utils.generateRandomId(), colours[i].label, colours[i].hex, warehouse));
+            zones.push(new MockZone(colours[i].label, colours[i].hex, warehouse));
         return zones;
     }
 

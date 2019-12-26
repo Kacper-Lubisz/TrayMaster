@@ -4,24 +4,23 @@ import {OnlineBay} from "./OnlineBay";
 import {OnlineZone} from "./OnlineZone";
 import {OnlineWarehouse} from "./OnlineWarehouse";
 import {OnlineTray} from "./OnlineTray";
-import {Utils} from "../../Utils";
+import {OnlineLayer} from "./OnlineLayer";
 
-export class OnlineColumn implements UpperLayer {
+export class OnlineColumn extends OnlineLayer implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     index: number;
 
     parentShelf?: OnlineShelf;
     trays: OnlineTray[] = [];
 
     /**
-     * @param id - The database ID of the column
+     * @param location - The database location of the column
      * @param index - The (ordered) index of the column within the shelf
      * @param parentShelf - The (nullable) parent shelf
      */
-    private constructor(id: string, index: number, parentShelf?: OnlineShelf) {
-        this.id = id;
+    private constructor(location: string, index: number, parentShelf?: OnlineShelf) {
+        super(location);
         this.index = index;
 
         this.parentShelf = parentShelf;
@@ -35,7 +34,7 @@ export class OnlineColumn implements UpperLayer {
      * @returns The newly created column
      */
     public static create(trays: OnlineTray[], index?: number, parentShelf?: OnlineShelf): OnlineColumn {
-        const column: OnlineColumn = new OnlineColumn(Utils.generateRandomId(), index ?? -1, parentShelf);
+        const column: OnlineColumn = new OnlineColumn("", index ?? -1, parentShelf);
         column.trays = trays;
         for (let i = 0; i < column.trays.length; i++)
             column.trays[i].placeInColumn(i, column);
@@ -52,6 +51,10 @@ export class OnlineColumn implements UpperLayer {
         this.parentShelf = parentShelf;
     }
 
+    public async saveLayer(): Promise<void> {
+
+    }
+
     /**
      * Load all columns within a given column
      * @async
@@ -61,7 +64,7 @@ export class OnlineColumn implements UpperLayer {
     public static async loadColumns(shelf: OnlineShelf): Promise<OnlineColumn[]> {
         const columns: OnlineColumn[] = [];
         for (let i = 0; i < 4; i++) {
-            const column: OnlineColumn = new OnlineColumn(Utils.generateRandomId(), i, shelf);
+            const column: OnlineColumn = new OnlineColumn("", i, shelf);
             column.trays = await OnlineTray.loadTrays(column);
             column.isDeepLoaded = true;
             columns.push(column);
@@ -78,7 +81,7 @@ export class OnlineColumn implements UpperLayer {
     public static async loadFlatColumns(shelf: OnlineShelf): Promise<OnlineColumn[]> {
         const columns: OnlineColumn[] = [];
         for (let i = 0; i < 4; i++)
-            columns.push(new OnlineColumn(Utils.generateRandomId(), i, shelf));
+            columns.push(new OnlineColumn("", i, shelf));
         return columns;
     }
 

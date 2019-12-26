@@ -4,12 +4,11 @@ import {OnlineZone} from "./OnlineZone";
 import {OnlineWarehouse} from "./OnlineWarehouse";
 import {OnlineColumn} from "./OnlineColumn";
 import {OnlineTray} from "./OnlineTray";
-import {Utils} from "../../Utils";
+import {OnlineLayer} from "./OnlineLayer";
 
-export class OnlineShelf implements UpperLayer {
+export class OnlineShelf extends OnlineLayer implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     name: string;
     index: number;
 
@@ -17,13 +16,13 @@ export class OnlineShelf implements UpperLayer {
     columns: OnlineColumn[] = [];
 
     /**
-     * @param id - The database ID for the shelf
+     * @param location - The database location for the shelf
      * @param name - The name of the shelf
      * @param index - The (ordered) index of the shelf within the bay
      * @param parentBay - The (nullable) parent bay
      */
-    private constructor(id: string, name: string, index: number, parentBay?: OnlineBay) {
-        this.id = id;
+    private constructor(location: string, name: string, index: number, parentBay?: OnlineBay) {
+        super(location);
         this.name = name;
         this.index = index;
 
@@ -39,7 +38,7 @@ export class OnlineShelf implements UpperLayer {
      * @returns The newly created shelf
      */
     public static create(columns: OnlineColumn[], name?: string, index?: number, parentBay?: OnlineBay): OnlineShelf {
-        const shelf: OnlineShelf = new OnlineShelf(Utils.generateRandomId(), name ?? "", index ?? -1);
+        const shelf: OnlineShelf = new OnlineShelf("", name ?? "", index ?? -1);
         shelf.columns = columns;
         for (let i = 0; i < shelf.columns.length; i++)
             shelf.columns[i].placeInShelf(i, shelf);
@@ -58,6 +57,10 @@ export class OnlineShelf implements UpperLayer {
         this.name = name ?? this.name;
     }
 
+    public async saveLayer(): Promise<void> {
+
+    }
+
     /**
      * Load all shelves within a given bay
      * @async
@@ -67,7 +70,7 @@ export class OnlineShelf implements UpperLayer {
     public static async loadShelves(bay: OnlineBay): Promise<OnlineShelf[]> {
         const shelves: OnlineShelf[] = [];
         for (let i = 0; i < 3; i++) {
-            const shelf: OnlineShelf = new OnlineShelf(Utils.generateRandomId(), `${i + 1}`, i, bay);
+            const shelf: OnlineShelf = new OnlineShelf("", `${i + 1}`, i, bay);
             shelf.columns = await OnlineColumn.loadColumns(shelf);
             shelf.isDeepLoaded = true;
             shelves.push(shelf);
@@ -89,7 +92,7 @@ export class OnlineShelf implements UpperLayer {
     public static async loadFlatShelves(bay: OnlineBay): Promise<OnlineShelf[]> {
         const shelves: OnlineShelf[] = [];
         for (let i = 0; i < 3; i++)
-            shelves.push(new OnlineShelf(Utils.generateRandomId(), `${i + 1}`, i, bay));
+            shelves.push(new OnlineShelf("", `${i + 1}`, i, bay));
         return shelves;
     }
 

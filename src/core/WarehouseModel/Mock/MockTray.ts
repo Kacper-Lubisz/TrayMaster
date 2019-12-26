@@ -3,9 +3,9 @@ import {MockShelf} from "./MockShelf";
 import {MockBay} from "./MockBay";
 import {MockZone} from "./MockZone";
 import {MockWarehouse} from "./MockWarehouse";
-import {Category} from "../Category";
+import {MockCategory} from "./MockCategory";
 import {ExpiryRange} from "../ExpiryRange";
-import {Utils} from "../../Utils";
+
 
 const expires: ExpiryRange[] = [
     {
@@ -46,19 +46,18 @@ const expires: ExpiryRange[] = [
     },
 ];
 
+
 export class MockTray {
-    id: string;
     index: number;
 
     customField?: string;
-    category?: Category;
+    category?: MockCategory;
     expiry?: ExpiryRange;
     weight?: number;
 
     parentColumn?: MockColumn;
 
     /**
-     * @param id - The database ID of the tray
      * @param index - The index of the tray within the column
      * @param category - The tray's (nullable) category
      * @param expiryRange - The tray's (nullable) expiry range
@@ -67,10 +66,9 @@ export class MockTray {
      * @param parentColumn - The (nullable) parent column
      */
     private constructor(
-        id: string, index: number, category?: Category, expiryRange?: ExpiryRange,
+        index: number, category?: MockCategory, expiryRange?: ExpiryRange,
         weight?: number, customField?: string, parentColumn?: MockColumn
     ) {
-        this.id = id;
         this.index = index;
 
         this.category = category;
@@ -90,10 +88,10 @@ export class MockTray {
      * @param parentColumn - The (nullable) parent column
      */
     public static create(
-        category?: Category, expiryRange?: ExpiryRange, weight?: number,
+        category?: MockCategory, expiryRange?: ExpiryRange, weight?: number,
         customField?: string, index?: number, parentColumn?: MockColumn
     ): MockTray {
-        return new MockTray(Utils.generateRandomId(), index ?? -1, category, expiryRange, weight, customField, parentColumn);
+        return new MockTray(index ?? -1, category, expiryRange, weight, customField, parentColumn);
     }
 
     /**
@@ -115,11 +113,9 @@ export class MockTray {
     public static async loadTrays(column: MockColumn): Promise<MockTray[]> {
         const trays: MockTray[] = [];
         for (let i = 0; i < 3; i++) {
-            const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
+            const categories: MockCategory[] = column?.parentWarehouse?.categories ?? [{name: ""}];
             trays.push(new MockTray(
-                Utils.generateRandomId(),
-                i,
-                categories[Math.floor(categories.length * Math.random())],
+                i, categories[Math.floor(categories.length * Math.random())],
                 expires[Math.floor(expires.length * Math.random())],
                 Number((15 * Math.random()).toFixed(2)),
                 Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,

@@ -4,12 +4,11 @@ import {MockZone} from "./MockZone";
 import {MockWarehouse} from "./MockWarehouse";
 import {MockColumn} from "./MockColumn";
 import {MockTray} from "./MockTray";
-import {Utils} from "../../Utils";
+
 
 export class MockShelf implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     name: string;
     index: number;
 
@@ -17,13 +16,11 @@ export class MockShelf implements UpperLayer {
     columns: MockColumn[] = [];
 
     /**
-     * @param id - The database ID for the shelf
      * @param name - The name of the shelf
      * @param index - The (ordered) index of the shelf within the bay
      * @param parentBay - The (nullable) parent bay
      */
-    private constructor(id: string, name: string, index: number, parentBay?: MockBay) {
-        this.id = id;
+    private constructor(name: string, index: number, parentBay?: MockBay) {
         this.name = name;
         this.index = index;
 
@@ -39,7 +36,7 @@ export class MockShelf implements UpperLayer {
      * @returns The newly created shelf
      */
     public static create(columns: MockColumn[], name?: string, index?: number, parentBay?: MockBay): MockShelf {
-        const shelf: MockShelf = new MockShelf(Utils.generateRandomId(), name ?? "", index ?? -1);
+        const shelf: MockShelf = new MockShelf(name ?? "", index ?? -1);
         shelf.columns = columns;
         for (let i = 0; i < shelf.columns.length; i++)
             shelf.columns[i].placeInShelf(i, shelf);
@@ -67,7 +64,7 @@ export class MockShelf implements UpperLayer {
     public static async loadShelves(bay: MockBay): Promise<MockShelf[]> {
         const shelves: MockShelf[] = [];
         for (let i = 0; i < 3; i++) {
-            const shelf: MockShelf = new MockShelf(Utils.generateRandomId(), `${i + 1}`, i, bay);
+            const shelf: MockShelf = new MockShelf(`${i + 1}`, i, bay);
             shelf.columns = await MockColumn.loadColumns(shelf);
             shelf.isDeepLoaded = true;
             shelves.push(shelf);
@@ -89,7 +86,7 @@ export class MockShelf implements UpperLayer {
     public static async loadFlatShelves(bay: MockBay): Promise<MockShelf[]> {
         const shelves: MockShelf[] = [];
         for (let i = 0; i < 3; i++)
-            shelves.push(new MockShelf(Utils.generateRandomId(), `${i + 1}`, i, bay));
+            shelves.push(new MockShelf(`${i + 1}`, i, bay));
         return shelves;
     }
 

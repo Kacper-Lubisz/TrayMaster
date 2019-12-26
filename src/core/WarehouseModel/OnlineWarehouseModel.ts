@@ -4,5 +4,6 @@ import {OnlineBay as Bay} from "./Firebase/OnlineBay";
 import {OnlineShelf as Shelf} from "./Firebase/OnlineShelf";
 import {OnlineColumn as Column} from "./Firebase/OnlineColumn";
 import {OnlineTray as Tray} from "./Firebase/OnlineTray";
+import {OnlineCategory as Category} from "./Firebase/OnlineCategory";
 
-export {Warehouse, Zone, Bay, Shelf, Column, Tray};
+export {Warehouse, Zone, Bay, Shelf, Column, Tray, Category};

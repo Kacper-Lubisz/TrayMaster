@@ -4,13 +4,11 @@ import {MockWarehouse} from "./MockWarehouse";
 import {MockShelf} from "./MockShelf";
 import {MockColumn} from "./MockColumn";
 import {MockTray} from "./MockTray";
-import {Utils} from "../../Utils";
 
 
 export class MockBay implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     name: string;
     index: number;
 
@@ -18,13 +16,11 @@ export class MockBay implements UpperLayer {
     shelves: MockShelf[] = [];
 
     /**
-     * @param id - The database ID for the bay
      * @param name - The name of the bay
      * @param index - The (ordered) index of the bay within the zone
      * @param parentZone - The (nullable) parent zone
      */
-    private constructor(id: string, name: string, index: number, parentZone?: MockZone) {
-        this.id = id;
+    private constructor(name: string, index: number, parentZone?: MockZone) {
         this.name = name;
         this.index = index;
 
@@ -40,7 +36,7 @@ export class MockBay implements UpperLayer {
      * @returns The newly created bay
      */
     public static create(shelves: MockShelf[], name?: string, index?: number, parentZone?: MockZone): MockBay {
-        const bay: MockBay = new MockBay(Utils.generateRandomId(), name ?? "", index ?? -1, parentZone);
+        const bay: MockBay = new MockBay(name ?? "", index ?? -1, parentZone);
         bay.shelves = shelves;
         for (let i = 0; i < bay.shelves.length; i++)
             bay.shelves[i].placeInBay(i, bay);
@@ -68,7 +64,7 @@ export class MockBay implements UpperLayer {
     public static async loadBays(zone: MockZone): Promise<MockBay[]> {
         const bays: MockBay[] = [];
         for (let i = 0; i < 3; i++) {
-            const bay: MockBay = new MockBay(Utils.generateRandomId(), String.fromCharCode(i + 65), i, zone);
+            const bay: MockBay = new MockBay(String.fromCharCode(i + 65), i, zone);
             bay.shelves = await MockShelf.loadShelves(bay);
             bay.isDeepLoaded = true;
             bays.push(bay);
@@ -85,7 +81,7 @@ export class MockBay implements UpperLayer {
     public static async loadFlatBays(zone: MockZone): Promise<MockBay[]> {
         const bays: MockBay[] = [];
         for (let i = 0; i < 3; i++)
-            bays.push(new MockBay(Utils.generateRandomId(), String.fromCharCode(i + 65), i, zone));
+            bays.push(new MockBay(String.fromCharCode(i + 65), i, zone));
         return bays;
     }
 

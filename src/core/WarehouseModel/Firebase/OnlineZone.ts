@@ -4,20 +4,12 @@ import {OnlineBay} from "./OnlineBay";
 import {OnlineShelf} from "./OnlineShelf";
 import {OnlineColumn} from "./OnlineColumn";
 import {OnlineTray} from "./OnlineTray";
-import {Utils} from "../../Utils";
+import {OnlineLayer} from "./OnlineLayer";
 
-const colours = [
-    {label: "Red", hex: "#FF0000"},
-    {label: "Green", hex: "#00FF00"},
-    {label: "Blue", hex: "#0000FF"},
-    {label: "White", hex: "#FFFFFF"},
-    {label: "Black", hex: "#000000"}
-];
 
-export class OnlineZone implements UpperLayer {
+export class OnlineZone extends OnlineLayer implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     name: string;
     color: string;
 
@@ -25,13 +17,13 @@ export class OnlineZone implements UpperLayer {
     bays: OnlineBay[] = [];
 
     /**
-     * @param id - The database ID for the zone
+     * @param path - The database path for the zone
      * @param name - The name of the zone
      * @param color - The hex colour of the zone
      * @param parentWarehouse - The (nullable) parent warehouse
      */
-    private constructor(id: string, name: string, color: string, parentWarehouse?: OnlineWarehouse) {
-        this.id = id;
+    private constructor(path: string, name: string, color: string, parentWarehouse?: OnlineWarehouse) {
+        super(path);
         this.name = name;
         this.color = color;
 
@@ -47,7 +39,7 @@ export class OnlineZone implements UpperLayer {
      * @returns The newly created zone
      */
     public static create(bays: OnlineBay[], name?: string, color?: string, parentWarehouse?: OnlineWarehouse): OnlineZone {
-        const zone: OnlineZone = new OnlineZone(Utils.generateRandomId(), name ?? "", color ?? "#000000", parentWarehouse);
+        const zone: OnlineZone = new OnlineZone("", name ?? "", color ?? "#000000", parentWarehouse);
         zone.bays = bays;
         for (let i = 0; i < zone.bays.length; i++)
             zone.bays[i].placeInZone(i, zone);
@@ -64,6 +56,10 @@ export class OnlineZone implements UpperLayer {
         this.name = name ?? this.name;
     }
 
+    public async saveLayer(): Promise<void> {
+
+    }
+
     /**
      * Load all zones within a given warehouse
      * @async
@@ -72,12 +68,7 @@ export class OnlineZone implements UpperLayer {
      */
     public static async loadZones(warehouse: OnlineWarehouse): Promise<OnlineZone[]> {
         const zones: OnlineZone[] = [];
-        for (let i = 0; i < colours.length; i++) {
-            const zone: OnlineZone = new OnlineZone(Utils.generateRandomId(), colours[i].label, colours[i].hex, warehouse);
-            zone.bays = await OnlineBay.loadBays(zone);
-            zone.isDeepLoaded = true;
-            zones.push(zone);
-        }
+
         return zones;
     }
 
@@ -89,8 +80,7 @@ export class OnlineZone implements UpperLayer {
      */
     public static async loadFlatZones(warehouse: OnlineWarehouse): Promise<OnlineZone[]> {
         const zones: OnlineZone[] = [];
-        for (let i = 0; i < colours.length; i++)
-            zones.push(new OnlineZone(Utils.generateRandomId(), colours[i].label, colours[i].hex, warehouse));
+
         return zones;
     }
 

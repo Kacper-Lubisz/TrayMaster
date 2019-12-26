@@ -5,9 +5,8 @@ import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
-import {Bay, Shelf, Tray, Warehouse, Zone} from "./core/WarehouseModel/MockWarehouseModel";
+import {Bay, Shelf, Tray, Warehouse, Zone, Category} from "./core/WarehouseModel/MockWarehouseModel";
 import {Settings} from "./core/Settings/Settings";
-import {Category} from "./core/WarehouseModel/Category";
 
 /**
  * Proper modulo function (gives a non-negative remainder as per mathematical definition)

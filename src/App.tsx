@@ -5,10 +5,9 @@ import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
-
-import {SettingsManager} from "./core/Settings/MockSettings";
-import {Settings} from "./core/Settings/Settings";
 import {Warehouse} from "./core/WarehouseModel/MockWarehouseModel";
+import {Settings} from "./core/Settings/Settings";
+import {SettingsManager} from "./core/Settings/MockSettings";
 import {LoadingPage} from "./Loading";
 
 interface AppState {
@@ -23,7 +22,7 @@ class App extends React.Component<any, AppState> {
 
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
-            Warehouse.loadWarehouse("ABCD")
+            Warehouse.loadWarehouse()
         ]);
 
         loadPromise.then((result) => {

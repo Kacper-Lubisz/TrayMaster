@@ -4,24 +4,21 @@ import {MockBay} from "./MockBay";
 import {MockZone} from "./MockZone";
 import {MockWarehouse} from "./MockWarehouse";
 import {MockTray} from "./MockTray";
-import {Utils} from "../../Utils";
+
 
 export class MockColumn implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     index: number;
 
     parentShelf?: MockShelf;
     trays: MockTray[] = [];
 
     /**
-     * @param id - The database ID of the column
      * @param index - The (ordered) index of the column within the shelf
      * @param parentShelf - The (nullable) parent shelf
      */
-    private constructor(id: string, index: number, parentShelf?: MockShelf) {
-        this.id = id;
+    private constructor(index: number, parentShelf?: MockShelf) {
         this.index = index;
 
         this.parentShelf = parentShelf;
@@ -35,7 +32,7 @@ export class MockColumn implements UpperLayer {
      * @returns The newly created column
      */
     public static create(trays: MockTray[], index?: number, parentShelf?: MockShelf): MockColumn {
-        const column: MockColumn = new MockColumn(Utils.generateRandomId(), index ?? -1, parentShelf);
+        const column: MockColumn = new MockColumn(index ?? -1, parentShelf);
         column.trays = trays;
         for (let i = 0; i < column.trays.length; i++)
             column.trays[i].placeInColumn(i, column);
@@ -61,7 +58,7 @@ export class MockColumn implements UpperLayer {
     public static async loadColumns(shelf: MockShelf): Promise<MockColumn[]> {
         const columns: MockColumn[] = [];
         for (let i = 0; i < 4; i++) {
-            const column: MockColumn = new MockColumn(Utils.generateRandomId(), i, shelf);
+            const column: MockColumn = new MockColumn(i, shelf);
             column.trays = await MockTray.loadTrays(column);
             column.isDeepLoaded = true;
             columns.push(column);
@@ -78,7 +75,7 @@ export class MockColumn implements UpperLayer {
     public static async loadFlatColumns(shelf: MockShelf): Promise<MockColumn[]> {
         const columns: MockColumn[] = [];
         for (let i = 0; i < 4; i++)
-            columns.push(new MockColumn(Utils.generateRandomId(), i, shelf));
+            columns.push(new MockColumn(i, shelf));
         return columns;
     }
 

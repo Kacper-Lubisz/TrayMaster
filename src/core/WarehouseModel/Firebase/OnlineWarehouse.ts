@@ -4,31 +4,25 @@ import {OnlineBay} from "./OnlineBay";
 import {OnlineShelf} from "./OnlineShelf";
 import {OnlineColumn} from "./OnlineColumn";
 import {OnlineTray} from "./OnlineTray";
-import {Category} from "../Category";
-import {Utils} from "../../Utils";
+import DatabaseObject from "./DatabaseObject";
+import {OnlineLayer} from "./OnlineLayer";
+import {OnlineCategory} from "./OnlineCategory";
 
-const cats = [
-    "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
-    "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
-    "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
-    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
-];
 
-export class OnlineWarehouse implements UpperLayer {
+export class OnlineWarehouse extends OnlineLayer implements UpperLayer {
     isDeepLoaded: boolean = false;
 
-    id: string;
     name: string;
 
-    categories: Category[] = [];
+    categories: OnlineCategory[] = [];
     zones: OnlineZone[] = [];
 
     /**
-     * @param id firebase - The database ID of the warehouse
+     * @param location firebase - The database path of the warehouse
      * @param name - The name of the warehouse
      */
-    private constructor(id: string, name: string) {
-        this.id = id;
+    private constructor(location: string, name: string) {
+        super(location);
         this.name = name;
     }
 
@@ -39,48 +33,39 @@ export class OnlineWarehouse implements UpperLayer {
      * @returns The newly created warehouse
      */
     public static create(zones: OnlineZone[], name?: string): OnlineWarehouse {
-        const warehouse: OnlineWarehouse = new OnlineWarehouse(Utils.generateRandomId(), name ?? "");
+        const warehouse: OnlineWarehouse = new OnlineWarehouse("", name ?? "");
         warehouse.zones = zones;
         for (let i = 0; i < warehouse.zones.length; i++)
             warehouse.zones[i].placeInWarehouse(warehouse);
         return warehouse;
     }
 
-    /**
-     * Load tray categories.
-     * @async
-     * @returns A promise which resolves to the list of categories in the warehouse
-     */
-    public static async loadCategories(): Promise<Category[]> {
-        const categories: Category[] = [];
-        for (let i = 0; i < cats.length; i++)
-            categories.push({name: cats[i]});
-        return categories;
+    public async saveLayer(): Promise<void> {
+
     }
 
     /**
      * Load a whole warehouse corresponding to a given ID
      * @async
-     * @param id - Database ID of the warehouse to load
+     * @param path - Database path of the warehouse to load
      * @returns A promise which resolves to the fully loaded warehouse
      */
-    public static async loadWarehouse(id: string): Promise<OnlineWarehouse> {
-        const warehouse: OnlineWarehouse = new OnlineWarehouse(id, `Warehouse ${Math.random()}`);
+    public static async loadWarehouse(path: string): Promise<OnlineWarehouse> {
+        const warehouse: OnlineWarehouse = await DatabaseObject.loadObject<OnlineWarehouse>(path);
+        warehouse.categories = await OnlineCategory.loadCategories(warehouse.getChildPath("categories"));
         warehouse.zones = await OnlineZone.loadZones(warehouse);
-        warehouse.categories = await OnlineWarehouse.loadCategories();
-        warehouse.isDeepLoaded = true;
         return warehouse;
     }
 
     /**
      * Load a warehouse (without any zones) by ID
      * @async
-     * @param id
+     * @param path - Database path of the warehouse to load
      * @returns A promise which resolves to the flat warehouse
      */
-    public static async loadFlatWarehouse(id: string): Promise<OnlineWarehouse> {
-        const warehouse: OnlineWarehouse = new OnlineWarehouse(id, `Warehouse ${Math.random()}`);
-        warehouse.categories = await OnlineWarehouse.loadCategories();
+    public static async loadFlatWarehouse(path: string): Promise<OnlineWarehouse> {
+        const warehouse: OnlineWarehouse = await DatabaseObject.loadObject<OnlineWarehouse>(path);
+        warehouse.categories = await OnlineCategory.loadCategories(warehouse.getChildPath("categories"));
         return warehouse;
     }
 
@@ -110,6 +95,5 @@ export class OnlineWarehouse implements UpperLayer {
     get trays(): OnlineTray[] {
         return this.columns.flatMap(column => column.trays);
     }
-
     //#endregion
 }

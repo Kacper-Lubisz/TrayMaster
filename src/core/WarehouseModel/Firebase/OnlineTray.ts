@@ -3,51 +3,12 @@ import {OnlineShelf} from "./OnlineShelf";
 import {OnlineBay} from "./OnlineBay";
 import {OnlineZone} from "./OnlineZone";
 import {OnlineWarehouse} from "./OnlineWarehouse";
-import {Category} from "../Category";
 import {ExpiryRange} from "../ExpiryRange";
-import {Utils} from "../../Utils";
+import {OnlineLayer} from "./OnlineLayer";
+import {Category} from "../OnlineWarehouseModel";
 
-const expires: ExpiryRange[] = [
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
-        color: "#FF0"
-    },
-    {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Feb 2020",
-        color: "#0ff"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020",
-        color: "#00f"
-    },
-    {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020",
-        color: "#F0f"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
-        label: "2020",
-        color: "#FF0000"
-    },
-    {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
-        label: "2021",
-        color: "#0f0"
-    },
-];
 
-export class OnlineTray {
-    id: string;
+export class OnlineTray extends OnlineLayer {
     index: number;
 
     customField?: string;
@@ -58,7 +19,7 @@ export class OnlineTray {
     parentColumn?: OnlineColumn;
 
     /**
-     * @param id - The database ID of the tray
+     * @param location - The database location of the tray
      * @param index - The index of the tray within the column
      * @param category - The tray's (nullable) category
      * @param expiryRange - The tray's (nullable) expiry range
@@ -67,10 +28,10 @@ export class OnlineTray {
      * @param parentColumn - The (nullable) parent column
      */
     private constructor(
-        id: string, index: number, category?: Category, expiryRange?: ExpiryRange,
+        location: string, index: number, category?: Category, expiryRange?: ExpiryRange,
         weight?: number, customField?: string, parentColumn?: OnlineColumn
     ) {
-        this.id = id;
+        super(location);
         this.index = index;
 
         this.category = category;
@@ -93,7 +54,7 @@ export class OnlineTray {
         category?: Category, expiryRange?: ExpiryRange, weight?: number,
         customField?: string, index?: number, parentColumn?: OnlineColumn
     ): OnlineTray {
-        return new OnlineTray(Utils.generateRandomId(), index ?? -1, category, expiryRange, weight, customField, parentColumn);
+        return new OnlineTray("", index ?? -1, category, expiryRange, weight, customField, parentColumn);
     }
 
     /**
@@ -106,6 +67,10 @@ export class OnlineTray {
         this.parentColumn = parentColumn;
     }
 
+    public async saveLayer(): Promise<void> {
+
+    }
+
     /**
      * Load all trays within a given column
      * @async
@@ -114,18 +79,7 @@ export class OnlineTray {
      */
     public static async loadTrays(column: OnlineColumn): Promise<OnlineTray[]> {
         const trays: OnlineTray[] = [];
-        for (let i = 0; i < 3; i++) {
-            const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
-            trays.push(new OnlineTray(
-                Utils.generateRandomId(),
-                i,
-                categories[Math.floor(categories.length * Math.random())],
-                expires[Math.floor(expires.length * Math.random())],
-                Number((15 * Math.random()).toFixed(2)),
-                Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
-                column
-            ));
-        }
+
         return trays;
     }
 

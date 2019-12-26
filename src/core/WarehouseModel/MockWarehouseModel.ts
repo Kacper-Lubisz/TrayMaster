@@ -4,5 +4,6 @@ import {MockBay as Bay} from "./Mock/MockBay";
 import {MockShelf as Shelf} from "./Mock/MockShelf";
 import {MockColumn as Column} from "./Mock/MockColumn";
 import {MockTray as Tray} from "./Mock/MockTray";
+import {MockCategory as Category} from "./Mock/MockCategory";
 
-export {Warehouse, Zone, Bay, Shelf, Column, Tray};
+export {Warehouse, Zone, Bay, Shelf, Column, Tray, Category};
