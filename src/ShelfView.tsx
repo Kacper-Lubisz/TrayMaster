@@ -236,14 +236,58 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
+
+        const traySpaceMap = new Map<Column, TraySpace[]>();
+        // the selected tray spaces need to be grouped and processed after ordered (by index)
+
         this.state.selected.forEach((selected, tray) => {
             if (selected) {
-                if (tray instanceof Tray)
+                if (tray instanceof Tray) {
                     tray.category = category;
-                else
-                    throw Error("Unimplemented tray space set category");
+                } else {
+                    const column = traySpaceMap.get(tray.column);
+                    if (column) {
+                        column.push(tray);
+                    } else {
+                        traySpaceMap.set(tray.column, [tray]);
+                    }
+                }
             }
         });
+
+        if (traySpaceMap.size !== 0) {
+            const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
+
+            traySpaceMap.forEach((trays, column) => {
+                const sortedTrays = trays.sort((a, b) => a.index - b.index);
+
+                sortedTrays.forEach(space => {
+                    if (space.index !== space.column.trays.length) {
+                        throw Error("Can't place a tray in the air!");
+                    }
+
+                    const newTray = Tray.create(
+                        category,
+                        undefined,
+                        undefined,
+                        undefined,
+                        space.index,
+                        column
+                    );
+                    column.trays.push(newTray);
+
+                    newSelectedMap.delete(space);
+                    newSelectedMap.set(newTray, true);
+
+                    //fixme this operation feels super illegal, placeInColumn doesn't do this, it probably should
+                });
+            });
+
+            this.setSelected(newSelectedMap);
+
+        }
+
+
         this.forceUpdate();
     }
 
@@ -301,6 +345,31 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         throw Error("Unimplemented method stub");
     }
 
+    clearTrays() {
+        const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
+
+        const reindexColumns = new Set<Column>();
+        this.state.selected.forEach((selected, tray) => {
+
+            newSelectedMap.set(tray, false);
+            if (tray instanceof Tray) {
+                const column = tray.parentColumn;
+                if (!column) throw Error("Tray has no parent column");
+
+                const trayIndex = column.trays.indexOf(tray);
+                column.trays.splice(trayIndex, 1);
+
+                reindexColumns.add(column);
+
+            }
+        });
+        reindexColumns.forEach((column) => {
+            column.trays.forEach((tray, index) => tray.index = index);
+        });
+
+        this.setSelected(newSelectedMap);
+    }
+
     makeSearch() {
 
         // the lack of type inference here is nasty
@@ -340,6 +409,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         {name: "Settings", onClick: () => alert("Settings")},
                         {name: "Back", onClick: () => alert("Back")},
                         {name: "Search", onClick: this.makeSearch.bind(this)},
+                        {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)},
                         {name: "Previous", onClick: this.changeShelf.bind(this, "previous")},

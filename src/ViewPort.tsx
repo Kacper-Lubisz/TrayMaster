@@ -401,15 +401,37 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     padWithTraySpaces(column: Column): (Tray | TraySpace)[] {
 
-        const existing = this.traySpaces.get(column);
+        const missingTrays = column.maxHeight ? column.maxHeight - column.trays.length
+                                              : 1;
+
+        const existing: TraySpace[] | undefined = this.traySpaces.get(column);
         if (existing) {
-            return (column.trays as (Tray | TraySpace)[]).concat(existing);
+
+            if (existing.length === missingTrays) {
+
+                return (column.trays as (Tray | TraySpace)[]).concat(existing);
+
+            } else if (existing.length > missingTrays) { // there are too many missing trays
+
+                const newSpaces = existing.filter(space => space.index >= column.trays.length);
+
+                this.traySpaces.set(column, newSpaces);
+                return (column.trays as (Tray | TraySpace)[]).concat(newSpaces);
+            } else { // there are not enough tray spaces
+
+                const traysToAdd = missingTrays - existing.length;
+                const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
+                        return {column: column, index: column.trays.length + index};
+                    }
+                ).concat(existing);
+
+                this.traySpaces.set(column, newSpaces);
+                return (column.trays as (Tray | TraySpace)[]).concat(newSpaces);
+            }
+
         } else { // build tray spaces
 
-            const addSpaces = column.maxHeight ? column.maxHeight - column.trays.length
-                                               : 1;
-
-            const newSpaces = Array(addSpaces).fill(0).map((_, index) => {
+            const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
                     return {column: column, index: column.trays.length + index};
                 }
             );
