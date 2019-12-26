@@ -77,14 +77,15 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         if (key === "Enter") {
             this.props.applyDraftWeight();
         } else {
-            let newDraftWeight: string | undefined = "";
+            let newDraftWeight: string | undefined;
             if (key === "Clear") {
                 newDraftWeight = "";
             } else if (key === "Backspace") {
                 newDraftWeight = this.props.draftWeight?.slice(0, -1);
             } else {
                 // Must be a number or decimal point, just append
-                // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals with overwriting the default 0 value too
+                // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals
+                // with overwriting the default 0 value too
                 if (this.props.draftWeight === "0" && key !== ".") {
                     newDraftWeight = `${key}`;
                 } else {
