@@ -152,11 +152,16 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
                 }
             ];
 
-            return <div id="keyboard-outer" style={{justifyContent: "center", height: "100%"}}>
-                <div id="draftWeight">{this.props.draftWeight === undefined ? "?" : this.props.draftWeight}</div>
-                <div className="keyboard-container">
-                    <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
-                    <Keyboard id="numpadR" buttons={numpadR} gridX={1}/>
+            return <div className="keyboard-container">
+                <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
+                <div id="numpadR">
+                    <div id="draftWeight">
+                        {/* fixme cap the number of digits that can go in draftWeight so things don't break*/}
+                        {`${this.props.draftWeight === undefined ? "0" : this.props.draftWeight} kg`}
+                    </div>
+                    <div id="weight-numpad-side">
+                        <Keyboard buttons={numpadR} gridX={1}/>
+                    </div>
                 </div>
             </div>;
 
