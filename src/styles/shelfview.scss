@@ -70,42 +70,53 @@
   }
 }
 
+// bottom keyboards
 #bottom {
   padding: 5px;
 
+  // universal keyboard container
+  // centres keyboards that don't take up the full width
   .keyboard-container {
     display: flex;
     justify-content: center;
 
     height: 100%;
 
+    // divs directly inside .keyboard-container
     > div {
+      // A small horizontal margin
       margin: 0 10px;
     }
 
+    // expiry keyboard: years
     #exp-1 {
       width: 20%;
     }
 
+    // expiry keyboard: quarters
     #exp-2 {
       width: 15%;
     }
 
+    // expiry keyboard: months
     #exp-3 {
       width: 20%;
     }
 
+    // weight keyboard: main numpad
     #weight-numpad {
       width: 30%;
     }
 
+    // weight keyboard: side section (with backspace, enter etc0
     #numpadR {
       width: 10%;
     }
-  }
-}
 
-.vl {
-  width: 0;
-  border-left: 1px solid black;
+    // vertical divider: used to separate keyboards where necessary
+    .vl {
+      width: 0;
+      border-left: 1px solid black;
+    }
+  }
 }

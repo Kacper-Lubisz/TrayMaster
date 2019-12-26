@@ -33,6 +33,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         "Oct", "Nov", "Dec"
     ];
 
+    /**
+     * Currently selected year
+     */
     selectedYear: number | undefined = undefined;
 
     constructor(props: BottomPanelProps) {
@@ -100,6 +103,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         ];
     }
 
+    /**
+     * Called when a year button is pressed
+     * Sets selectedYear and current tray expiry to that year
+     * @param year - number representing the current year
+     */
     selectYear(year: number) {
         this.selectedYear = year;
         this.props.expirySelected({
@@ -109,6 +117,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         });
     }
 
+    /**
+     * Called when a quarter button is pressed
+     * Sets current tray expiry to that quarter in selectedYear
+     * @param quarter - number in [0-3] inclusive representing the current quarter
+     */
     selectQuarter(quarter: number) {
         if (this.selectedYear) {
             this.props.expirySelected({
@@ -120,6 +133,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         }
     }
 
+    /**
+     * Called when a month button is pressed
+     * Sets current tray expiry to that month in selectedYear
+     * @param month - number in [0-11] inclusive representing the current quarter
+     */
     selectMonth(month: number) {
         if (this.selectedYear) {
             this.props.expirySelected({
@@ -130,6 +148,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         }
     }
 
+    /**
+     * Return different keyboards depending on keyboardState
+     * @param disabled whether the keyboard is disabled (ie no trays are selected)
+     * @param currentTray the current tray, if there's only one tray
+     */
     chooseKeyboard(disabled: boolean, currentTray?: Tray) {
         if (this.props.keyboardState === "category") {
             let categoryButtons: KeyboardButtonProps[] = this.props.categories;
@@ -165,16 +188,17 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     render() {
         const currentTray: Tray | undefined = this.props.selectedTrays.length === 1 ? this.props.selectedTrays[0]
                                                                                     : undefined;
         const disabled: boolean = !this.props.selectedTrays.length;
 
         // return DOM elements using button structures
-        return (
-            <div id="bottom">
-                {this.chooseKeyboard(disabled, currentTray)}
-            </div>
-        );
+        return <div id="bottom">
+            {this.chooseKeyboard(disabled, currentTray)}
+        </div>;
     }
 }
