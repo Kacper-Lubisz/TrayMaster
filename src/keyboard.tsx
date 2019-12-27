@@ -9,18 +9,18 @@ export interface KeyboardButtonProps {
     /**
      * Name to show on the button
      */
-    name: string,
+    name: string;
 
     /**
      * Function to call when button is clicked
      * @param e
      */
-    onClick?: (e: React.MouseEvent) => void
+    onClick?: (e: React.MouseEvent) => void;
 
     /**
      * Whether the button should be visibly selected
      */
-    selected?: boolean
+    selected?: boolean;
 }
 
 /**
@@ -50,17 +50,17 @@ interface KeyboardProps {
     /**
      * List of KeyboardButtonProps to give to child buttons
      */
-    buttons: KeyboardButtonProps[],
+    buttons: KeyboardButtonProps[];
 
     /**
      * Number of buttons to show in each horizontal row
      */
-    gridX: number,
+    gridX: number;
 
     /**
      * Id to give parent HTML element
      */
-    id?: string
+    id?: string;
 }
 
 /**

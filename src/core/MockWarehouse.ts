@@ -582,8 +582,8 @@ export class Shelf implements UpperLayer {
 }
 
 interface ColumnSize {
-    label: string,
-    sizeRatio: number
+    label: string;
+    sizeRatio: number;
 }
 
 export class Column implements UpperLayer {

@@ -3,7 +3,7 @@ import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {KeyboardName} from "./ShelfView";
 
 export interface BottomPanelProps {
-    keyboardState: KeyboardName
+    keyboardState: KeyboardName;
 
     categories: KeyboardButtonProps[];
 }

@@ -31,12 +31,12 @@ type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next" | "previous"
 
 
 interface ShelfViewProps {
-    warehouse: Warehouse
-    settings: Settings
+    warehouse: Warehouse;
+    settings: Settings;
 }
 
 interface ShelfViewState {
-    currentKeyboard: KeyboardName
+    currentKeyboard: KeyboardName;
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
     selected: Map<Tray | TraySpace, boolean>;
     isEditShelf: boolean;

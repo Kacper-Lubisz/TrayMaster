@@ -3,14 +3,14 @@ import {SearchQuery, Tray, Warehouse} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 
 interface SearchPageProps {
-    warehouse: Warehouse,
-    settings: Settings,
-    query?: SearchQuery
+    warehouse: Warehouse;
+    settings: Settings;
+    query?: SearchQuery;
     setQuery: (query: SearchQuery) => void;
 }
 
 interface SearchPageState {
-    results?: Tray[]
+    results?: Tray[];
 }
 
 export class SearchPage extends React.Component<SearchPageProps, SearchPageState> {

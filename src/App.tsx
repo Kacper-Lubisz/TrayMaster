@@ -12,9 +12,9 @@ import {SearchPage} from "./SearchPage";
 import {LoadingPage} from "./Loading";
 
 interface AppState {
-    warehouse: Warehouse
-    settings: Settings
-    searchQuery?: SearchQuery
+    warehouse: Warehouse;
+    settings: Settings;
+    searchQuery?: SearchQuery;
 }
 
 class App extends React.Component<any, AppState> {

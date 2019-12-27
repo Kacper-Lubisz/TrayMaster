@@ -6,7 +6,7 @@ import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-
 
 interface MainMenuProps {
     //Number of items about to expire, needs to be fetched from database in this file
-    expiryAmount: number
+    expiryAmount: number;
 }
 
 export class MainMenu extends React.Component<MainMenuProps, any> {

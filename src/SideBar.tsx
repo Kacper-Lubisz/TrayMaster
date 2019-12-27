@@ -15,7 +15,7 @@ interface SideBarProps {
      * Function passed in from parent to call when keyboard needs to be switched
      * @param name - name of keyboard to switch to
      */
-    keyboardSwitcher: (name: KeyboardName) => void
+    keyboardSwitcher: (name: KeyboardName) => void;
 
     /**
      * List of buttons for the keyboard part of the side panel
@@ -25,7 +25,7 @@ interface SideBarProps {
     /**
      * List of button keyboard switches
      */
-    keyboards: KeyboardSwitch[]
+    keyboards: KeyboardSwitch[];
 
     /**
      * The current keyboard, used for highlighting the active
@@ -43,8 +43,8 @@ interface SideBarProps {
  * This interface represents each individual keyboard switcher button
  */
 interface KeyboardSwitch {
-    icon: IconDefinition,
-    name: KeyboardName
+    icon: IconDefinition;
+    name: KeyboardName;
 }
 
 /**
@@ -54,17 +54,17 @@ interface KeyboardSwitchBtnProps {
     /**
      * Whether the button is active (ie whether it should be blue)
      */
-    active: boolean,
+    active: boolean;
 
     /**
      * Function to call when the button is clicked
      */
-    onClick: any,
+    onClick: any;
 
     /**
      * Icon to show on the button
      */
-    icon: IconDefinition
+    icon: IconDefinition;
 }
 
 /**
