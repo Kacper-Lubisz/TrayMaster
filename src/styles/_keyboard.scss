@@ -35,6 +35,8 @@
   &:active:enabled, &.key-btn-selected {
     background-color: #dddddd;
   }
+
+  // If the button is disabled, grey it out and don't give any visual feedback
   &:disabled {
     color: #989898;
     cursor: default;

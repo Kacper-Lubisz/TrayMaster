@@ -278,7 +278,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                     backgroundColor: bg,
                                     color: getTextColourForBackground(bg)
                                 };
-
                                 return <div
                                     className={`tray${(this.props.selectedTrays.length > 1 || this.state.longPress?.isHappening)
                                                       ? " multipleSelect"

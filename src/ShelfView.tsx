@@ -38,6 +38,7 @@ interface ShelfViewState {
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
     selected: Map<Tray, boolean>;
+    draftWeight?: string;
 }
 
 export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
@@ -49,6 +50,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
+            draftWeight: undefined
         };
     }
 
@@ -277,6 +279,27 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     }
 
     /**
+     * Updates state's draftWeight. Called by typing on the weight keyboard
+     * @param newDraftWeight
+     */
+    setDraftWeight(newDraftWeight?: string) {
+        this.setState({
+            ...this.state,
+            draftWeight: newDraftWeight
+        });
+    }
+
+    /**
+     * Applies the draftWeight to the selected trays. Called when Enter is clicked on the weight keyboard
+     */
+    applyDraftWeight() {
+        for (let tray of this.getSelectedTrays()) {
+            tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
+        }
+        this.forceUpdate();
+    }
+
+    /**
      * This method changes the current BottomPanel keyboard
      * @see BottomPanel
      * @param newKeyboard The new keyboard
@@ -284,7 +307,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     switchKeyboard(newKeyboard: KeyboardName) {
         this.setState({
             ...this.state,
-            currentKeyboard: newKeyboard
+            currentKeyboard: newKeyboard,
+            draftWeight: "0"
         });
     }
 
@@ -337,6 +361,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         };
                     })}
                     expirySelected={this.onExpirySelected.bind(this)}
+                    draftWeight={this.state.draftWeight}
+                    setDraftWeight={this.setDraftWeight.bind(this)}
+                    applyDraftWeight={this.applyDraftWeight.bind(this)}
                     keyboardState={this.state.currentKeyboard}
                     selectedTrays={this.getSelectedTrays()}
                 />

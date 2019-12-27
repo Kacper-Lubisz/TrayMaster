@@ -110,7 +110,21 @@
 
     // weight keyboard: side section (with backspace, enter etc0
     #numpadR {
+      height: 100%;
       width: 10%;
+      display: flex;
+      flex-direction: column;
+
+      #draftWeight {
+        text-align: right;
+        font-size: 30px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      #weight-numpad-side {
+        flex-grow: 1;
+      }
     }
 
     // vertical divider: used to separate keyboards where necessary

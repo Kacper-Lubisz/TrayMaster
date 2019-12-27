@@ -2,12 +2,16 @@ import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {KeyboardName} from "./ShelfView";
 import {ExpiryRange, Tray} from "./core/MockWarehouse";
+import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 
 export interface BottomPanelProps {
     keyboardState: KeyboardName;
     expirySelected: (expiry: ExpiryRange) => void;
     categories: KeyboardButtonProps[];
     selectedTrays: Tray[];
+    draftWeight?: string;
+    setDraftWeight: (newDraftWeight?: string) => void;
+    applyDraftWeight: () => void;
 }
 
 /**
@@ -41,7 +45,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     constructor(props: BottomPanelProps) {
         super(props);
 
-        // GENERATE KEYBOARD BUTTON STRUCTURES
+        // Expiry keyboard structure
         this.years = [];
         for (let i = 2019; i < 2027; i++) {
             this.years.push({
@@ -68,39 +72,39 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 }
             });
         }
-        this.numpad = [];
-        for (let i = 9; i >= 0; i--) {
-            this.numpad.push({
-                name: i.toString(), onClick: () => {
-                    alert(i);
+    }
+
+    /**
+     * Handles key presses clicked in the weight keyboard, by updating draftWeight in ShelfView
+     * @param key
+     */
+    weightKeyHandler(key: "Enter" | "Clear" | "Backspace" | number | ".") {
+
+        if (key === "Enter") {
+            this.props.applyDraftWeight();
+        } else {
+            let newDraftWeight: string | undefined;
+            if (key === "Clear") {
+                newDraftWeight = "";
+            } else if (key === "Backspace") {
+                newDraftWeight = this.props.draftWeight?.slice(0, -1);
+            } else {
+                // Must be a number or decimal point, just append
+                // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals
+                // with overwriting the default 0 value too
+                if (this.props.draftWeight === "0" && key !== ".") {
+                    newDraftWeight = `${key}`;
+                } else {
+                    newDraftWeight = `${this.props.draftWeight ?? ""}${key}`;
                 }
-            });
+            }
+
+            if (newDraftWeight === "") {
+                this.props.setDraftWeight(undefined);
+            } else if (!isNaN(Number(newDraftWeight)) && (newDraftWeight ?? "").length <= 6) {
+                this.props.setDraftWeight(newDraftWeight);
+            }
         }
-        this.numpad.push({
-            name: ".", onClick: () => {
-                alert("Max is our favourite scrum master");
-            }
-        });
-        this.numpadR = [
-            {
-                name: "Back",
-                onClick: () => {
-                    alert("Back");
-                }
-            },
-            {
-                name: "Clear",
-                onClick: () => {
-                    alert("Clear");
-                }
-            },
-            {
-                name: "Enter",
-                onClick: () => {
-                    alert("Enter");
-                }
-            }
-        ];
     }
 
     /**
@@ -205,9 +209,56 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else { // (this.props.keyboardState === "weight")
 
+            // Weight numpad structure
+            let numpad = [];
+            for (let i = 9; i >= 0; i--) {
+                numpad.push({
+                    name: i.toString(), onClick: () => {
+                        this.weightKeyHandler(i);
+                    }
+                });
+            }
+            numpad.push({
+                name: ".", onClick: () => {
+                    this.weightKeyHandler(".");
+                }
+            });
+
+            let numpadR = [
+                {
+                    name: "Backspace",
+                    icon: faBackspace,
+                    disabled: (this.props.draftWeight ?? "").length === 0,
+                    onClick: () => {
+                        this.weightKeyHandler("Backspace");
+                    }
+                },
+                {
+                    name: "Clear",
+                    disabled: (this.props.draftWeight ?? "").length === 0,
+                    onClick: () => {
+                        this.weightKeyHandler("Clear");
+                    }
+                },
+                {
+                    name: "Enter",
+                    disabled: this.props.selectedTrays.length === 0,
+                    onClick: () => {
+                        this.weightKeyHandler("Enter");
+                    }
+                }
+            ];
+
             return <div className="keyboard-container">
-                <Keyboard id="weight-numpad" disabled={disabled} buttons={this.numpad} gridX={3}/>
-                <Keyboard id="numpadR" disabled={disabled} buttons={this.numpadR} gridX={1}/>
+                <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
+                <div id="numpadR">
+                    <div id="draftWeight">
+                        {`${this.props.draftWeight === undefined ? "?" : this.props.draftWeight} kg`}
+                    </div>
+                    <div id="weight-numpad-side">
+                        <Keyboard buttons={numpadR} gridX={1}/>
+                    </div>
+                </div>
             </div>;
 
         }
