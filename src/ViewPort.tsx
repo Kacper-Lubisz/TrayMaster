@@ -393,7 +393,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     <FontAwesomeIcon icon={plus}/>
                 </button>
 
-                <div>{column.size?.label ?? "?"}</div>
+                <div>{stringToTitleCase(column.size?.label ?? "?")}</div>
                 <button
                     disabled={!columnChanges.dec}
                     onClick={this.changeColumnSize.bind(this, column, "dec")}
@@ -529,4 +529,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }
 
     }
+}
+
+function stringToTitleCase(string: string): string {
+    return string.charAt(0).toUpperCase() + string.substring(1).toLowerCase();
 }
