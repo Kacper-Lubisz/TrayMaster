@@ -1,12 +1,22 @@
 import React from "react";
-import {TopBar} from "./TopBar";
 import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
 import {Bay, Category, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
-import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
+import {
+    faArrowDown as downArrow,
+    faArrowLeft as leftArrow,
+    faArrowRight as rightArrow,
+    faArrowUp as upArrow,
+    faClock,
+    faHome,
+    faTimes as cross,
+    faWeightHanging
+} from "@fortawesome/free-solid-svg-icons";
+import Popup from "reactjs-popup";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 /**
  * Proper modulo function (gives a non-negative remainder as per mathematical definition)
@@ -38,6 +48,7 @@ interface ShelfViewState {
     currentKeyboard: KeyboardName
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
     selected: Map<Tray, boolean>;
+    isNavModalOpen: boolean;
 }
 
 export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
@@ -49,6 +60,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
+            isNavModalOpen: true
         };
     }
 
@@ -291,14 +303,25 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method opens the navigation popover which allows for navigating between shelves
      */
     openNavigator() {
-        throw Error("Unimplemented method stub");
+        this.setState({
+            ...this.state,
+            isNavModalOpen: true
+        });
+    }
+
+    /**
+     * This method closes the navigation popover which allows for navigating between shelves
+     */
+    closeNavigator() {
+        this.setState({
+            ...this.state,
+            isNavModalOpen: false
+        });
     }
 
     render() {
         return (
             <div id="shelfView">
-                <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
-                        locationString={this.state.currentShelf.toString()}/>
                 <ViewPort selected={this.state.selected} setSelected={this.setSelected.bind(this)}
                           isTraySelected={this.isTraySelected.bind(this)}
                           areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
@@ -320,7 +343,68 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     keyboardSwitcher={this.switchKeyboard.bind(this)}
                     currentKeyboard={this.state.currentKeyboard}
                 />
+                <Popup
+                    open={this.state.isNavModalOpen}
+                    closeOnDocumentClick
+                    onClose={this.closeNavigator.bind(this)}
+                >
+                    <div className="modal">
+                        <FontAwesomeIcon onClick={this.closeNavigator.bind(this)} icon={cross}/>
+                        <p> Zones drop-down: {this.state.currentShelf.parentZone?.name} </p>
+                        <div style={{display: "grid"}}>
+                            <p style={{
+                                backgroundColor: this.state.currentShelf.parentZone?.color,
+                                gridRow: 2,
+                                gridColumn: 2,
+                                margin: 0,
+                                color: getTextColourForBackground(
+                                    this.state.currentShelf.parentZone?.color ?? "#ffffff"
+                                )
+                            }}>{this.state.currentShelf.toString()}</p>
 
+                            <button onClick={this.changeShelf.bind(this, "up")} style={{
+                                gridRow: 1,
+                                gridColumn: 2,
+                            }}>
+                                <FontAwesomeIcon icon={upArrow}/>
+                            </button>
+                            <button onClick={this.changeShelf.bind(this, "down")} style={{
+                                gridRow: 3,
+                                gridColumn: 2,
+                            }}>
+                                <FontAwesomeIcon icon={downArrow}/>
+                            </button>
+                            <button onClick={this.changeShelf.bind(this, "left")} style={{
+                                gridRow: 2,
+                                gridColumn: 1,
+                            }}>
+                                <FontAwesomeIcon icon={leftArrow}/>
+                            </button>
+                            <button onClick={this.changeShelf.bind(this, "right")} style={{
+                                gridRow: 2,
+                                gridColumn: 3,
+                            }}>
+                                <FontAwesomeIcon icon={rightArrow}/>
+                            </button>
+                        </div>
+                        <div style={{display: "grid"}}>
+                            <button
+                                onClick={this.changeShelf.bind(this, "previous")}
+                                style={{
+                                    gridRow: 4,
+                                    gridColumn: 1,
+                                }}>Previous<FontAwesomeIcon icon={leftArrow}/>
+                            </button>
+                            <button
+                                onClick={this.changeShelf.bind(this, "next")}
+                                style={{
+                                    gridRow: 4,
+                                    gridColumn: 2,
+                                }}>Next<FontAwesomeIcon icon={rightArrow}/>
+                            </button>
+                        </div>
+                    </div>
+                </Popup>
                 <BottomPanel
                     categories={this.props.warehouse.categories.map((category) => {
                         return {
@@ -335,4 +419,24 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     }
 
+}
+
+/**
+ * Returns whether white or black text is best given a background colour
+ * Sources: https://stackoverflow.com/a/5624139 - hex to RGB
+ *          https://stackoverflow.com/a/3943023 - decide what colour to use
+ * @param hex - the background colour, in shorthand or full hex
+ */
+export function getTextColourForBackground(hex: string) {
+    // This expands shorthand hex colours to full hex e.g. #DEF to #DDEEFF
+    const fullHex = hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => `#${r}${r}${g}${g}${b}${b}`);
+
+    // This implements the W3C accessibility guidelines for maintaining text contrast
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex)?.slice(1, 4).map((x) => {
+        let normalised = parseInt(x, 16) / 255;
+        return (normalised <= 0.03928) ? (normalised / 12.92) : (((normalised + 0.055) / 1.055) ** 2.4);
+    }) ?? [1, 1, 1];
+    const luminance = 0.2126 * result[0] + 0.7152 * result[1] + 0.0722 * result[2];
+
+    return (luminance > 0.1791) ? "#000000" : "#ffffff";
 }

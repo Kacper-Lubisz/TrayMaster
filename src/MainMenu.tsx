@@ -15,7 +15,6 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
         return (
             //Links are buttons
             //When all are implemented they should not all say "/SettingsPage"
-
             <div className="main-menu">
                 <div className="menu-header">
                     <h1>Shelfmaster</h1>
