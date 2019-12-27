@@ -1,6 +1,6 @@
 import "dayjs";
 import dayjs, {Dayjs} from "dayjs";
-import {hslToHex} from "./hslToHex";
+import {hslToHex} from "../utils/hslToHex";
 
 /*
 Warehouse
