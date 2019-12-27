@@ -22,6 +22,13 @@
   // Disable text selection: makes clicking and dragging feel less janky
   user-select: none;
 
+  // Shelf itself should not have any pointer events (let its parent handle them)
+  pointer-events: none;
+  // But all of its children (except column) should have their pointer events
+  > *:not(.column) {
+    pointer-events: auto;
+  }
+
   // Columns
   .column {
     // Layout
@@ -42,6 +49,11 @@
 
     .tray:last-child {
       margin: 0;
+    }
+
+    // Children of column should have all of their pointer events
+    > * {
+      pointer-events: auto;
     }
 
     .tray {

@@ -275,7 +275,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     render() {
         return (
-            <div id="viewPort" touch-action="none" onPointerLeave={this.onDragSelectEnd.bind(this)}>
+            <div id="viewPort" touch-action="none" onPointerUp={this.onDragSelectEnd.bind(this)}
+                 onPointerLeave={this.onDragSelectEnd.bind(this)}>
+                {/* DO NOT attach any touch/onClick/pointer stuff to #shelf, it won't receive them */}
                 <div id="shelf">
                     {this.props.shelf.columns.map((column, columnIndex) =>
                         this.renderColumn(column, columnIndex)
@@ -372,6 +374,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const columnChanges = this.getPossibleSizeChanges(column);
         const heightChange = this.getPossibleHeightChanges(column);
 
+        {/* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
+        }
         return this.props.isShelfEdit ? <div
             style={{
                 order: order,
