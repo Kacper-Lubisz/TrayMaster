@@ -1,13 +1,12 @@
 import React from "react";
 import {TopBar} from "./TopBar";
 import {SideBar} from "./SideBar";
-import {TraySpace, ViewPort} from "./ViewPort";
+import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, Column, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
+import {Bay, Category, Column, Shelf, Tray, TraySpace, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
-import {SearchPage} from "./SearchPage";
 
 /**
  * Proper modulo function (gives a non-negative remainder as per mathematical definition)
@@ -243,10 +242,22 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     }
 
-    updateSelectedTrays(
+    /**
+     * This method is used for running a function on each selected tray or tray space.  The method optionally (based on
+     * `fillsSpaces`, by default true) replaces selected tray spaces for trays such that they can also be processed.
+     * The method also takes a parameter to determine what sort of trays the selected spaces should be filled with, by
+     * default a tray with appropriate indices and parent column.
+     *
+     * @param update The method which is called on all trays (and optionally on all trays newly made by filling
+     * selected spaces)
+     * @param fillSpaces Whether tray spaces should be filled before update is called on all trays
+     * @param fillTray A function which creates the new trays to fill selected spaces with in the case fillSpaces is
+     *     true
+     */
+    forEachSelectedTrays(
         update: (tray: Tray) => void,
         fillSpaces: boolean = true,
-        spaceFillBuilder: (index: number, column: Column) => Tray
+        fillTray: (index: number, column: Column) => Tray
             = (index, column) => Tray.create(
             undefined,
             undefined,
@@ -305,7 +316,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             //todo decide if this behaviour is staying
                         }
 
-                        const newTray = spaceFillBuilder.call(undefined, space.index, column);
+                        const newTray = fillTray.call(undefined, space.index, column);
                         column.trays.push(newTray);
                         //fixme this operation feels super illegal, placeInColumn doesn't do this, it probably should
 
@@ -328,7 +339,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      */
     categorySelected(category: Category) {
 
-        this.updateSelectedTrays((tray) => {
+        this.forEachSelectedTrays((tray) => {
             tray.category = category;
         }, true);
 
@@ -439,26 +450,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         this.setSelected(newSelectedMap);
     }
 
-    /**
-     * This method builds a search query composed of the selected categories by expiry order and then opens the search
-     * page with it open
-     */
-    makeSearch() {
-
-        // the lack of type inference here is nasty
-        const categories = Array.from(this.state.selected)
-                                .filter(([tray, selected]) => selected && tray instanceof Tray)
-                                .map(([tray, _]) => {
-                                    if (tray instanceof Tray)
-                                        return tray.category;
-                                    else return undefined; // this case should never happen, silly type inference
-                                });
-        const distinctCategories = Array.from(new Set(categories));
-
-        SearchPage.openSearch({categories: distinctCategories, sortBy: "expiry"});
-
-    }
-
     render() {
         return (
             <div id="shelfView">
@@ -481,7 +472,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     ] : [ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
                         {name: "Back", onClick: () => alert("Back")},
-                        {name: "Search", onClick: this.makeSearch.bind(this)},
                         {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)},

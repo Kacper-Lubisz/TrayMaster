@@ -96,17 +96,6 @@ interface UpperLayer {
     loadNextLayer(): Promise<void>;
 }
 
-
-/**
- * Objects of this interface represent all possible search queries that can be performed by the search page.
- * The predicate for a tray t that this query represents is
- * (t.category in categories) and //todo agree and finish this
- */
-export interface SearchQuery {
-    categories: (Category | undefined)[]
-    sortBy: "expiry"
-}
-
 export class Warehouse implements UpperLayer {
     isDeepLoaded: boolean = false;
 
@@ -126,28 +115,6 @@ export class Warehouse implements UpperLayer {
     private constructor(id: string, name: string) {
         this.id = id;
         this.name = name;
-    }
-
-    // todo
-    async traySearch(query: SearchQuery): Promise<Tray[]> {
-
-        // this is an example implementation
-        return this.trays.filter((tray) =>
-            query.categories.includes(tray.category)
-        ).sort((a, b) => {
-            if (query.sortBy === "expiry") {
-                if (a.expiry === undefined) {
-                    return -1;
-                } else if (b.expiry === undefined) {
-                    return 1;
-                } else {
-                    return a.expiry.from < b.expiry.from ? -1 : 1;
-                }
-            } else {
-                return 0;
-            }
-        });
-
     }
 
     /**
@@ -712,6 +679,13 @@ export class Column implements UpperLayer {
     //#endregion
 }
 
+
+export interface TraySpace {
+    column: Column;
+    index: number;
+}
+
+export type TrayCell = Tray | TraySpace;
 
 export class Tray {
     id: string;

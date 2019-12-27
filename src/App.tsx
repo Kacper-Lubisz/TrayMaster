@@ -7,14 +7,12 @@ import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
-import {SearchQuery, Warehouse} from "./core/MockWarehouse";
-import {SearchPage} from "./SearchPage";
+import {Warehouse} from "./core/MockWarehouse";
 import {LoadingPage} from "./Loading";
 
 interface AppState {
     warehouse: Warehouse;
     settings: Settings;
-    searchQuery?: SearchQuery;
 }
 
 class App extends React.Component<any, AppState> {
@@ -35,10 +33,6 @@ class App extends React.Component<any, AppState> {
             this.setState({
                 warehouse: warehouse,
                 settings: settings,
-                searchQuery: {
-                    categories: [warehouse.categories[Math.floor(Math.random() * warehouse.categories.length)]],
-                    sortBy: "expiry"
-                }
             });
 
         }).catch(() => {
@@ -57,19 +51,6 @@ class App extends React.Component<any, AppState> {
                     } exact/>
                     <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
                     <Route path="/settings" component={() => <SettingsPage/>}/>
-                    <Route path="/search" component={() =>
-                        <SearchPage
-                            warehouse={this.state?.warehouse}
-                            settings={this.state?.settings}
-                            query={this.state?.searchQuery}
-                            setQuery={(query => {
-                                this.setState({
-                                    ...this.state,
-                                    searchQuery: query
-                                });
-                            })}
-                        />
-                    }/>
                     <Route component={ErrorPage}/>
                 </Switch>
             </BrowserRouter>
