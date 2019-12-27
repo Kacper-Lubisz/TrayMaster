@@ -22,8 +22,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     years: KeyboardButtonProps[];
     quarters: KeyboardButtonProps[];
     months: KeyboardButtonProps[];
-    numpad: KeyboardButtonProps[];
-    numpadR: KeyboardButtonProps[];
     quartersTranslator: string[] = [
         "Jan-Mar",
         "Apr-Jun",
