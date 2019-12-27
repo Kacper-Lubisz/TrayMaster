@@ -258,7 +258,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
-    categorySelected(category: Category) {
+    onCategorySelected(category: Category) {
         for (let tray of this.getSelectedTrays()) {
             tray.category = category;
         }
@@ -269,12 +269,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when an expiry is selected on the expiry keyboard
      * @param expiry The expiry that is selected
      */
-    expirySelected(expiry: ExpiryRange) {
-        this.state.selected.forEach((selected, tray) => {
-            if (selected) {
-                tray.expiry = expiry;
-            }
-        });
+    onExpirySelected(expiry: ExpiryRange) {
+        for (let tray of this.getSelectedTrays()) {
+            tray.expiry = expiry;
+        }
         this.forceUpdate();
     }
 
@@ -335,10 +333,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     categories={this.props.warehouse.categories.map((category) => {
                         return {
                             name: category.shortName ?? category.name,
-                            onClick: this.categorySelected.bind(this, category)
+                            onClick: this.onCategorySelected.bind(this, category)
                         };
                     })}
-                    expirySelected={this.expirySelected.bind(this)}
+                    expirySelected={this.onExpirySelected.bind(this)}
                     keyboardState={this.state.currentKeyboard}
                     selectedTrays={this.getSelectedTrays()}
                 />
