@@ -3,6 +3,19 @@
 // Import system-wide variables: we need to know $accent-colour here
 @import "variables";
 
+
+.shelf {
+  align-content: center;
+  margin: auto auto;
+  width: 100px;
+  height: 100px;
+}
+
+.currentShelf {
+  width: 80px;
+  height: 80px;
+}
+
 // Shelf
 #shelf {
   // Layout
