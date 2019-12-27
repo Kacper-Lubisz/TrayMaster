@@ -155,9 +155,22 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     chooseKeyboard(disabled: boolean, currentTray?: Tray) {
         if (this.props.keyboardState === "category") {
+
+            let commonCat: string | null = "";
+            for (let i of this.props.selectedTrays) {
+                let currentCat = i.category?.shortName || i.category?.name;
+                if (commonCat === "" && currentCat) {
+                    commonCat = currentCat;
+                }
+                if (commonCat && currentCat && commonCat !== currentCat) {
+                    commonCat = null;
+                    break;
+                }
+            }
+
             let categoryButtons: KeyboardButtonProps[] = this.props.categories;
             for (let i = 0; i < categoryButtons.length; i++) {
-                categoryButtons[i].selected = categoryButtons[i].name === (currentTray?.category?.shortName || currentTray?.category?.name);
+                categoryButtons[i].selected = categoryButtons[i].name === commonCat;
             }
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={this.props.categories} gridX={8}/>;
 
