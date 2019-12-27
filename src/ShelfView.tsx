@@ -350,7 +350,13 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 >
                     <div className="modal">
                         <FontAwesomeIcon onClick={this.closeNavigator.bind(this)} icon={cross}/>
-                        <p> Zones drop-down: {this.state.currentShelf.parentZone?.name} </p>
+                        <div>
+                            Zones:<select name={"zones"}>
+                            {this.props.warehouse.zones.map(zone =>
+                                <option value={zone.name}>{zone.name}</option>
+                            )}
+                        </select>
+                        </div>
                         <div style={{display: "grid"}}>
                             <p style={{
                                 backgroundColor: this.state.currentShelf.parentZone?.color,
