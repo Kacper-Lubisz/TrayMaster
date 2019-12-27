@@ -135,7 +135,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             if (a.columnIndex > b.columnIndex) return 1;
 
             if (a.trayIndex < b.trayIndex) return 1;
-            if (a.trayIndex > b.trayIndex) return 0;
+            if (a.trayIndex > b.trayIndex) return -1;
 
             return 0;
         })).map(it => it.tray);
