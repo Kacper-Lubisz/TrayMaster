@@ -4,7 +4,7 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, Column, Shelf, Tray, TraySpace, Warehouse, Zone} from "./core/MockWarehouse";
+import {Bay, Category, Column, Shelf, Tray, TrayCell, TraySpace, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
@@ -36,7 +36,7 @@ interface ShelfViewProps {
 interface ShelfViewState {
     currentKeyboard: KeyboardName;
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
-    selected: Map<Tray | TraySpace, boolean>;
+    selected: Map<TrayCell, boolean>;
     isEditShelf: boolean;
 }
 
@@ -58,7 +58,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param newMap The map of trays to their selection
      * @param callback A callback to call after setting the selection
      */
-    public setSelected(newMap: Map<Tray | TraySpace, boolean>, callback?: ((() => void) | undefined)) {
+    public setSelected(newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)) {
         this.setState({
             ...this.state,
             selected: newMap
@@ -69,7 +69,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * Returns if a tray is selected
      * @param tray A tray or tray space to be tested
      */
-    public isTraySelected(tray: Tray | TraySpace) {
+    public isTraySelected(tray: TrayCell) {
         return this.state.selected.get(tray);
     }
 
