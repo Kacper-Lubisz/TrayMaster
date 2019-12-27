@@ -482,7 +482,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method pads the tray arrays of a column with TraySpaces such that the the length of the returned array is
      * the max height of the column.  If the column has an undefined max height, it is padded with one empty space.
      * This method stores the tray spaces that are added in the traySpaces field such that the same TraySpace object is
-     * always returned.  The same object being returned is important if it is going to be used as th key of a map.     *
+     * always returned.  The same object being returned is important if it is going to be used as the key of a map.
      * @param column The column to pad
      * @return The padded array.
      */

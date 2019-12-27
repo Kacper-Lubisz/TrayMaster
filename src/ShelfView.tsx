@@ -28,7 +28,6 @@ export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
  */
 type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next" | "previous"
 
-
 interface ShelfViewProps {
     warehouse: Warehouse;
     settings: Settings;

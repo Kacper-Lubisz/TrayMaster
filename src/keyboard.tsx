@@ -6,20 +6,13 @@ import classNames from "classnames";
  * @see KeyboardButton
  */
 export interface KeyboardButtonProps {
-    /**
-     * Name to show on the button
-     */
+    /** Name to show on the button */
     name: string;
 
-    /**
-     * Function to call when button is clicked
-     * @param e
-     */
+    /** Function to call when button is clicked */
     onClick?: (e: React.MouseEvent) => void;
 
-    /**
-     * Whether the button should be visibly selected
-     */
+    /** Whether the button should be visibly selected */
     selected?: boolean;
 }
 
