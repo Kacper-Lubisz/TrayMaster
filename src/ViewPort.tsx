@@ -374,8 +374,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const columnChanges = this.getPossibleSizeChanges(column);
         const heightChange = this.getPossibleHeightChanges(column);
 
-        {/* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
-        }
+        /* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
         return this.props.isShelfEdit ? <div
             style={{
                 order: order,
