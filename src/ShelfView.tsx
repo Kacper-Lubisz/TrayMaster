@@ -69,7 +69,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * Returns if a tray is selected
      * @param tray A tray or tray space to be tested
      */
-    public isTraySelected(tray: TrayCell) {
+    public isTrayCellSelected(tray: TrayCell) {
         return this.state.selected.get(tray);
     }
 
@@ -448,7 +448,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 <ViewPort
                     selected={this.state.selected}
                     setSelected={this.setSelected.bind(this)}
-                    isTraySelected={this.isTraySelected.bind(this)}
+                    isTraySelected={this.isTrayCellSelected.bind(this)}
                     areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
 
                     shelf={this.state.currentShelf}
