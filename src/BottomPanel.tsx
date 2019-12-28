@@ -3,7 +3,7 @@ import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {KeyboardName} from "./ShelfView";
 
 export interface BottomPanelProps {
-    keyboardState: KeyboardName
+    keyboardState: KeyboardName;
 
     categories: KeyboardButtonProps[];
 }
@@ -111,14 +111,17 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
                 <Keyboard id="exp-3" buttons={this.months} gridX={3}/>
             </div>;
 
-        } else { // (this.props.keyboardState === "weight")
+        } else if (this.props.keyboardState === "weight") {
 
             return <div className="keyboard-container">
                 <Keyboard id="weight-numpad" buttons={this.numpad} gridX={3}/>
                 <Keyboard id="numpadR" buttons={this.numpadR} gridX={1}/>
             </div>;
 
+        } else { // edit shelf
+            return <div>Add some presets in here</div>;
         }
+
     }
 
     render() {

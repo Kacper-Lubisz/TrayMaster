@@ -21,30 +21,39 @@ $animationProps: 0.2s ease;
   &.d1 {
     animation: d1 $animationProps;
   }
+
   &.d2 {
     animation: d2 $animationProps;
   }
+
   &.u1 {
     animation: u1 $animationProps;
   }
+
   &.u2 {
     animation: u2 $animationProps;
   }
+
   &.r1 {
     animation: r1 $animationProps;
   }
+
   &.r2 {
     animation: r2 $animationProps;
   }
+
   &.r3 {
     animation: r3 $animationProps;
   }
+
   &.l1 {
     animation: l1 $animationProps;
   }
+
   &.l2 {
     animation: l2 $animationProps;
   }
+
   &.l3 {
     animation: l3 $animationProps;
   }
