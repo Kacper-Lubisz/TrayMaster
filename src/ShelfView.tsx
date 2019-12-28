@@ -263,9 +263,12 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     // }
 
     /**
-     * Adds update to event queue.
-     * @param fillSpaces
-     * @param ignoreAirSpaces
+     * This method returns a list of selected trays.  The method has the option to fill selected tray spaces with new
+     * empty trays.  The method has an option to ignore selected spaces which are in the air.  The method ensures that
+     * replaced spaces are deselected and new trays are selected, this causes setState to be called and thus causes a
+     * repaint to follow after the triggering handler is finished.
+     * @param fillSpaces If spaces are to be filled
+     * @param ignoreAirSpaces If air trays are to be ignored
      */
     getSelectedTrays(
         fillSpaces: boolean,
@@ -331,6 +334,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.category = category;
         });
+        this.forceUpdate();
         // this updates because get selected Trays causes an update after the click event is handled
 
     }
