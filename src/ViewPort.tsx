@@ -3,11 +3,13 @@ import "pepjs";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
-import {Shelf, Tray} from "./core/MockWarehouse";
+import {Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 
+
+export type ViewPortLocation = Shelf | Zone | Warehouse;
 
 interface ViewPortProps {
-    shelf: Shelf;
+    current: ViewPortLocation;
     selected: Map<Tray, boolean>;
     setSelected: (newMap: Map<Tray, boolean>, callback?: ((() => void) | undefined)) => void;
     isTraySelected: ((tray: Tray) => boolean | undefined);
@@ -52,8 +54,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when a dragging event is started.  This event is started when the timeout which is started
      * inside onTrayPointerDown succeeds.  This timeout could fail iff the pointer leaves the tray or if the pointer is
      * released before the timeout finishes.
+     * @param shelf The current shelf that is being displayed
      */
-    onDragSelectStart() {
+    onDragSelectStart(shelf: Shelf) {
         // Shallow clone the selected map from props, which we will save
         const selectedBefore = new Map(this.props.selected);
 
@@ -66,7 +69,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 selectedBefore: selectedBefore,
             },
         }, () => {
-            this.updateDragSelectionTo(this.state.longPress?.dragFrom!!);
+            this.updateDragSelectionTo(shelf, this.state.longPress?.dragFrom!!);
         });
     }
 
@@ -74,9 +77,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called to update the state of the drag event.  It is called when the pointer enters a new tray
      * while the viewport is in dragging mode.  This method sets the selection state based on the selection state from
      * when the drag started (longPress.selectedBefore).
+     * @param shelf The current shelf that is being displayed
      * @param to The tray that the pointer just entered, which triggered this listener
      */
-    updateDragSelectionTo(to: Tray) {
+    updateDragSelectionTo(shelf: Shelf, to: Tray) {
 
         // Shallow clone what was previously selected, which we will mutate
         let newSelectedMap = new Map(this.state.longPress?.selectedBefore ?? new Map<Tray, boolean>());
@@ -98,7 +102,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
         // After they have been sorted into any order, anything between the from and to trays is then marked as selected
-        const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
+        const trayOrdered = shelf.columns.flatMap((column, columnIndex) =>
             column.trays.map((tray: Tray, trayIndex) => {
                 if (tray === from) {
                     boundIndices.from.column = columnIndex;
@@ -185,14 +189,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     /**
      * This method is called when the pointer is pressed over a tray, it begins the timeout which controls dragging
+     * @param shelf The current shelf that is being displayed
      * @param tray The tray on which the pointer is pressed
      * @param e The react pointer event that triggered this call
      */
-    onTrayPointerDown(tray: Tray, e: React.PointerEvent<HTMLDivElement>) {
+    onTrayPointerDown(shelf: Shelf, tray: Tray, e: React.PointerEvent<HTMLDivElement>) {
         e.currentTarget.releasePointerCapture(e.pointerId);
         const timeout: number = window.setTimeout(() => { // await hold time
             if (this.state.longPress) { // not interrupted
-                this.onDragSelectStart();
+                this.onDragSelectStart(shelf);
             }
         }, LONG_PRESS_TIMEOUT);
 
@@ -250,11 +255,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     /**
      * This method is called when the pointer enters the DOM element which represents a particular tray
+     * @param shelf The current shelf that is being displayed
      * @param tray The tray over which the pointer entered
      */
-    onTrayPointerEnter(tray: Tray) {
+    onTrayPointerEnter(shelf: Shelf, tray: Tray) {
         if (this.state.longPress?.isHappening) {
-            this.updateDragSelectionTo(tray);
+            this.updateDragSelectionTo(shelf, tray);
         }
     }
 
@@ -263,48 +269,62 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     render() {
 
-        return (
-            <div id="viewPort" touch-action="none" onPointerLeave={this.onDragSelectEnd.bind(this)}>
-                <div id="shelf">
-                    {this.props.shelf.columns.map((column, columnIndex) =>
-                        <div
-                            style={{order: columnIndex}}
-                            className="column"
-                            key={columnIndex}
-                        >
-                            {column.trays.map((tray, trayIndex) =>
+        if (this.props.current instanceof Warehouse) {
+            return <>
+                <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
+                <p>todo add a button to go to settings or wherever this can be changed</p>
+            </>;
+        }
+        if (this.props.current instanceof Zone) {
+            return <>
+                <h1>Current zone {this.props.current.toString()} has no bays</h1>
+                <p>todo add a button to go to settings or wherever this can be changed</p>
+            </>;
+        } else {
+            const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
+            return (
+                <div id="viewPort" touch-action="none" onPointerLeave={this.onDragSelectEnd.bind(this)}>
+                    <div id="shelf">
+                        {this.props.current.columns.map((column, columnIndex) =>
+                            <div
+                                style={{order: columnIndex}}
+                                className="column"
+                                key={columnIndex}
+                            >
+                                {column.trays.map((tray, trayIndex) =>
 
-                                <div
-                                    className={`tray${(this.props.areMultipleTraysSelected() || this.state.longPress?.isHappening)
-                                                      ? " multipleSelect"
-                                                      : ""}${
-                                        this.props.isTraySelected(tray) ? " selected" : ""}`}
+                                    <div
+                                        className={`tray${(this.props.areMultipleTraysSelected() || this.state.longPress?.isHappening)
+                                                          ? " multipleSelect"
+                                                          : ""}${
+                                            this.props.isTraySelected(tray) ? " selected" : ""}`}
 
-                                    // onClick={this.onTrayClick.bind(this, tray)}
-                                    onPointerDown={this.onTrayPointerDown.bind(this, tray)}
-                                    onPointerEnter={this.onTrayPointerEnter.bind(this, tray)}
-                                    onPointerLeave={this.onTrayPointerLeave.bind(this)}
-                                    onPointerUp={this.onTrayPointerUp.bind(this, tray)}
-                                    key={trayIndex}
-                                >
-                                    <FontAwesomeIcon
-                                        className={`tray-tickbox ${this.props.isTraySelected(tray)
-                                                                   ? "tick-selected"
-                                                                   : ""}`}
-                                        icon={tickSolid}/>
-                                    <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
+                                        // onClick={this.onTrayClick.bind(this, tray)}
+                                        onPointerDown={this.onTrayPointerDown.bind(this, shelf, tray)}
+                                        onPointerEnter={this.onTrayPointerEnter.bind(this, shelf, tray)}
+                                        onPointerLeave={this.onTrayPointerLeave.bind(this)}
+                                        onPointerUp={this.onTrayPointerUp.bind(this, tray)}
+                                        key={trayIndex}
+                                    >
+                                        <FontAwesomeIcon
+                                            className={`tray-tickbox ${this.props.isTraySelected(tray)
+                                                                       ? "tick-selected"
+                                                                       : ""}`}
+                                            icon={tickSolid}/>
+                                        <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
-                                    <div className="trayExpiry" style={{
-                                        backgroundColor: tray.expiry?.color
-                                    }}>{tray.expiry?.label ?? "?"}</div>
+                                        <div className="trayExpiry" style={{
+                                            backgroundColor: tray.expiry?.color
+                                        }}>{tray.expiry?.label ?? "?"}</div>
 
-                                    <div className="trayWeight">{tray.weight ?? "?"}kg</div>
+                                        <div className="trayWeight">{tray.weight ?? "?"}kg</div>
 
-                                    <div className="trayCustomField">{tray.customField ?? ""}</div>
-                                </div>)}
-                        </div>)
-                    }</div>
-            </div>
-        );
+                                        <div className="trayCustomField">{tray.customField ?? ""}</div>
+                                    </div>)}
+                            </div>)
+                        }</div>
+                </div>
+            );
+        }
     }
 }

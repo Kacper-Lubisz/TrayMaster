@@ -20,13 +20,21 @@ const cats = [
     "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
 ];
 
-const colours = [
+const colours: { label: string, hex: string }[] = [
     {label: "Red", hex: "#FF0000"},
     {label: "Green", hex: "#00FF00"},
     {label: "Blue", hex: "#0000FF"},
     {label: "White", hex: "#FFFFFF"},
-    {label: "Black", hex: "#000000"}
-];
+    {label: "Black", hex: "#000000"},
+    {label: "Yellow", hex: "#ffff00"},
+    {label: "Cyan", hex: "#00ffff"},
+    {label: "Magenta", hex: "#ff00ff"}
+].concat(Array(20).fill(0).map(_ => {
+    return {
+        label: "Generated",
+        hex: `#${Math.floor(Math.random() * 255 * 255 * 255).toString(16)}`
+    };
+}));
 
 const expires = [
     {
@@ -250,8 +258,15 @@ export class Zone implements UpperLayer {
      */
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
-        for (let i = 0; i < colours.length; i++) {
-            const zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
+
+        let zoneNumber = Math.random() < 0.2 ? 0 : 10;
+
+        for (let i = 0; i < zoneNumber; i++) {
+
+            const colorIndex = Math.floor(Math.random() * colours.length);
+            const color = colours.splice(colorIndex, 1)[0];
+
+            const zone: Zone = new Zone(generateRandomId(), color.label, color.hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
             zone.isDeepLoaded = true;
             zones.push(zone);
@@ -359,7 +374,9 @@ export class Bay implements UpperLayer {
      */
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < 3; i++) {
+        let bayNumber = Math.floor(Math.random() * 6);
+
+        for (let i = 0; i < bayNumber; i++) {
             const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
             bay.isDeepLoaded = true;
@@ -471,7 +488,8 @@ export class Shelf implements UpperLayer {
      */
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < 3; i++) {
+        let shelfNumber = Math.random() * 5 + 1;
+        for (let i = 0; i < shelfNumber; i++) {
             const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
             shelf.isDeepLoaded = true;

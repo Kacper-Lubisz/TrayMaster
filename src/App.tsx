@@ -4,15 +4,22 @@ import {BrowserRouter, Route, Switch} from "react-router-dom";
 import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
-import {ErrorPage} from "./ErrorPage";
+import {PageNotFoundPage} from "./PageNotFoundPage";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
 import {Warehouse} from "./core/MockWarehouse";
 import {LoadingPage} from "./Loading";
+import Popup from "reactjs-popup";
+
+interface Dialog {
+    title?: string;
+
+}
 
 interface AppState {
-    warehouse: Warehouse
-    settings: Settings
+    warehouse: Warehouse;
+    settings: Settings;
+    dialog?: Dialog | null;
 }
 
 class App extends React.Component<any, AppState> {
@@ -30,9 +37,12 @@ class App extends React.Component<any, AppState> {
             console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
             console.log(`Warehouse Loaded: ${warehouse}`);
 
-            this.setState({
-                warehouse: warehouse,
-                settings: settings
+            this.setState(state => {
+                return {
+                    ...state,
+                    warehouse: warehouse,
+                    settings: settings,
+                };
             });
 
         }).catch(() => {
@@ -43,7 +53,7 @@ class App extends React.Component<any, AppState> {
     }
 
     render() {
-        return this.state === null ? <LoadingPage/> : (
+        return <> {this.state === null ? <LoadingPage/> : (
             <BrowserRouter>
                 <Switch>
                     <Route path="/" component={() =>
@@ -51,10 +61,24 @@ class App extends React.Component<any, AppState> {
                     } exact/>
                     <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
                     <Route path="/settings" component={() => <SettingsPage/>}/>
-                    <Route component={ErrorPage}/>
+                    <Route component={PageNotFoundPage}/>
                 </Switch>
-            </BrowserRouter>
-        );
+            </BrowserRouter>)}
+            <Popup
+                open={!!(this.state?.dialog ?? false)} //double negate because of falsy magic
+                closeOnDocumentClick
+                onClose={this.closeDialog.bind(this)}
+            >
+                <h1>Some shit</h1>
+            </Popup>
+        </>;
+
+    }
+
+    closeDialog() {
+        this.setState((state) => {
+            return {...state, dialog: null};
+        });
     }
 
 }
