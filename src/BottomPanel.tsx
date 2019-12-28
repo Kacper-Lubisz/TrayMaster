@@ -1,13 +1,14 @@
 import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {KeyboardName} from "./ShelfView";
-import {ExpiryRange, Tray} from "./core/MockWarehouse";
+import {Category, ExpiryRange, Tray} from "./core/MockWarehouse";
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 
 export interface BottomPanelProps {
     keyboardState: KeyboardName;
+    categorySelected: (category: Category) => void;
     expirySelected: (expiry: ExpiryRange) => void;
-    categories: KeyboardButtonProps[];
+    categories: Category[];
     selectedTrays: Tray[];
     draftWeight?: string;
     setDraftWeight: (newDraftWeight?: string) => void;
@@ -38,7 +39,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     /**
      * Currently selected year
      */
-    selectedYear: number | null = null;
+    selectedYear: number | undefined;
 
     constructor(props: BottomPanelProps) {
         super(props);
@@ -160,37 +161,27 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     chooseKeyboard(disabled: boolean, currentTray?: Tray) {
         if (this.props.keyboardState === "category") {
 
-            let commonCat: string | null = "";
-            for (let i of this.props.selectedTrays) {
-                let currentCat = i.category?.shortName || i.category?.name;
-                if (commonCat === "" && currentCat) {
-                    commonCat = currentCat;
-                }
-                if (commonCat && currentCat && commonCat !== currentCat) {
-                    commonCat = null;
-                    break;
-                }
-            }
+            const firstCat = this.props.categories.find(i => i !== undefined);
+            const commonCat = firstCat === undefined ? undefined
+                                                     : this.props.categories.every(item => item === undefined || item === firstCat)
+                                                       ? firstCat : null;
 
-            let categoryButtons: KeyboardButtonProps[] = this.props.categories;
-            for (let i = 0; i < categoryButtons.length; i++) {
-                categoryButtons[i].selected = categoryButtons[i].name === commonCat;
-            }
-            return <Keyboard id="cat-keyboard" disabled={disabled} buttons={this.props.categories} gridX={8}/>;
+            const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
+                return {
+                    name: cat.shortName ?? cat.name,
+                    onClick: this.props.categorySelected(cat), // fixme this is broken
+                    selected: cat === commonCat
+                };
+            });
+            return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
 
-            let commonYear: number | null = 0;
-            for (let i of this.props.selectedTrays) {
-                let currentExpiry = i.expiry?.from ? new Date(i.expiry.from).getFullYear() : undefined;
-                if (commonYear === 0 && currentExpiry) {
-                    commonYear = currentExpiry;
-                }
-                if (commonYear && currentExpiry && commonYear !== currentExpiry) {
-                    commonYear = null;
-                    break;
-                }
-            }
+            const firstExp = this.props.selectedTrays.find(i => i.expiry !== undefined)?.expiry?.from;
+            const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
+            const commonYear = firstYear === undefined ? undefined
+                                                       : this.props.selectedTrays.every(item => item.expiry?.from === undefined || new Date(item.expiry?.from).getFullYear() === firstYear)
+                                                         ? firstYear : undefined;
 
             // update selectedYear: don't need to worry about disabled as currentTray will be undefined if disabled
             this.selectedYear = commonYear;
