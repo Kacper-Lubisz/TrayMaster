@@ -1,5 +1,5 @@
 import {MockWarehouse} from "./MockWarehouse";
-import {UpperLayer} from "../UpperLayer";
+import {MockUpperLayer} from "./MockUpperLayer";
 import {MockBay} from "./MockBay";
 import {MockShelf} from "./MockShelf";
 import {MockColumn} from "./MockColumn";
@@ -15,7 +15,7 @@ const colours = [
 ];
 
 
-export class MockZone implements UpperLayer {
+export class MockZone implements MockUpperLayer {
     isDeepLoaded: boolean = false;
 
     name: string;

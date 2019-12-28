@@ -1,4 +1,4 @@
-import {UpperLayer} from "../UpperLayer";
+import {MockUpperLayer} from "./MockUpperLayer";
 import {MockBay} from "./MockBay";
 import {MockZone} from "./MockZone";
 import {MockWarehouse} from "./MockWarehouse";
@@ -6,7 +6,7 @@ import {MockColumn} from "./MockColumn";
 import {MockTray} from "./MockTray";
 
 
-export class MockShelf implements UpperLayer {
+export class MockShelf implements MockUpperLayer {
     isDeepLoaded: boolean = false;
 
     name: string;

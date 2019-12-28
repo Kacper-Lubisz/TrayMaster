@@ -1,17 +1,13 @@
 import {OnlineZone} from "./OnlineZone";
-import {UpperLayer} from "../UpperLayer";
+import {OnlineUpperLayer} from "./OnlineUpperLayer";
 import {OnlineBay} from "./OnlineBay";
 import {OnlineShelf} from "./OnlineShelf";
 import {OnlineColumn} from "./OnlineColumn";
 import {OnlineTray} from "./OnlineTray";
-import DatabaseObject from "./DatabaseObject";
-import {OnlineLayer} from "./OnlineLayer";
 import {OnlineCategory} from "./OnlineCategory";
 
 
-export class OnlineWarehouse extends OnlineLayer implements UpperLayer {
-    isDeepLoaded: boolean = false;
-
+export class OnlineWarehouse extends OnlineUpperLayer  {
     name: string;
 
     categories: OnlineCategory[] = [];
@@ -51,8 +47,8 @@ export class OnlineWarehouse extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to the fully loaded warehouse
      */
     public static async loadWarehouse(path: string): Promise<OnlineWarehouse> {
-        const warehouse: OnlineWarehouse = await DatabaseObject.loadObject<OnlineWarehouse>(path);
-        warehouse.categories = await OnlineCategory.loadCategories(warehouse.getChildPath("categories"));
+        const warehouse: OnlineWarehouse = await this.loadObject<OnlineWarehouse>(path);
+        warehouse.categories = await OnlineCategory.loadCategories(warehouse);
         warehouse.zones = await OnlineZone.loadZones(warehouse);
         return warehouse;
     }
@@ -64,8 +60,8 @@ export class OnlineWarehouse extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to the flat warehouse
      */
     public static async loadFlatWarehouse(path: string): Promise<OnlineWarehouse> {
-        const warehouse: OnlineWarehouse = await DatabaseObject.loadObject<OnlineWarehouse>(path);
-        warehouse.categories = await OnlineCategory.loadCategories(warehouse.getChildPath("categories"));
+        const warehouse: OnlineWarehouse = await this.loadObject<OnlineWarehouse>(path);
+        warehouse.categories = await OnlineCategory.loadCategories(warehouse);
         return warehouse;
     }
 

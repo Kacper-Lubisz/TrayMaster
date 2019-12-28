@@ -1,15 +1,12 @@
 import {OnlineWarehouse} from "./OnlineWarehouse";
-import {UpperLayer} from "../UpperLayer";
+import {OnlineUpperLayer} from "./OnlineUpperLayer";
 import {OnlineBay} from "./OnlineBay";
 import {OnlineShelf} from "./OnlineShelf";
 import {OnlineColumn} from "./OnlineColumn";
 import {OnlineTray} from "./OnlineTray";
-import {OnlineLayer} from "./OnlineLayer";
 
 
-export class OnlineZone extends OnlineLayer implements UpperLayer {
-    isDeepLoaded: boolean = false;
-
+export class OnlineZone extends OnlineUpperLayer {
     name: string;
     color: string;
 
@@ -38,7 +35,8 @@ export class OnlineZone extends OnlineLayer implements UpperLayer {
      * @param parentWarehouse - The warehouse the zone belongs to
      * @returns The newly created zone
      */
-    public static create(bays: OnlineBay[], name?: string, color?: string, parentWarehouse?: OnlineWarehouse): OnlineZone {
+    public static create(
+        bays: OnlineBay[], name?: string, color?: string, parentWarehouse?: OnlineWarehouse): OnlineZone {
         const zone: OnlineZone = new OnlineZone("", name ?? "", color ?? "#000000", parentWarehouse);
         zone.bays = bays;
         for (let i = 0; i < zone.bays.length; i++)
@@ -49,11 +47,9 @@ export class OnlineZone extends OnlineLayer implements UpperLayer {
     /**
      * Place the zone within a warehouse
      * @param parentWarehouse - The warehouse the zone is being added to
-     * @param name - The name of the zone
      */
-    public placeInWarehouse(parentWarehouse: OnlineWarehouse, name?: string) {
+    public placeInWarehouse(parentWarehouse: OnlineWarehouse) {
         this.parentWarehouse = parentWarehouse;
-        this.name = name ?? this.name;
     }
 
     public async saveLayer(): Promise<void> {
@@ -67,8 +63,11 @@ export class OnlineZone extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to all loaded zones within the warehouse
      */
     public static async loadZones(warehouse: OnlineWarehouse): Promise<OnlineZone[]> {
-        const zones: OnlineZone[] = [];
-
+        const zones: OnlineZone[] = await this.loadChildObjects<OnlineZone, OnlineWarehouse>(warehouse, "zones", "name");
+        for (let zone of zones) {
+            zone.bays = await OnlineBay.loadBays(zone);
+            zone.isDeepLoaded = true;
+        }
         return zones;
     }
 
@@ -79,9 +78,7 @@ export class OnlineZone extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to the flat zones list
      */
     public static async loadFlatZones(warehouse: OnlineWarehouse): Promise<OnlineZone[]> {
-        const zones: OnlineZone[] = [];
-
-        return zones;
+        return await this.loadChildObjects<OnlineZone, OnlineWarehouse>(warehouse, "zones", "name");
     }
 
     /**

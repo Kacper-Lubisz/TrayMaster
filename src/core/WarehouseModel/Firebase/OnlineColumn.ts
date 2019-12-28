@@ -1,12 +1,12 @@
-import {UpperLayer} from "../UpperLayer";
+import {OnlineUpperLayer} from "./OnlineUpperLayer";
 import {OnlineShelf} from "./OnlineShelf";
 import {OnlineBay} from "./OnlineBay";
 import {OnlineZone} from "./OnlineZone";
 import {OnlineWarehouse} from "./OnlineWarehouse";
 import {OnlineTray} from "./OnlineTray";
-import {OnlineLayer} from "./OnlineLayer";
 
-export class OnlineColumn extends OnlineLayer implements UpperLayer {
+
+export class OnlineColumn extends OnlineUpperLayer {
     isDeepLoaded: boolean = false;
 
     index: number;
@@ -62,12 +62,10 @@ export class OnlineColumn extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to all columns within the shelf
      */
     public static async loadColumns(shelf: OnlineShelf): Promise<OnlineColumn[]> {
-        const columns: OnlineColumn[] = [];
-        for (let i = 0; i < 4; i++) {
-            const column: OnlineColumn = new OnlineColumn("", i, shelf);
+        const columns: OnlineColumn[] = await this.loadChildObjects<OnlineColumn, OnlineShelf>(shelf, "columns", "index");
+        for (let column of columns) {
             column.trays = await OnlineTray.loadTrays(column);
             column.isDeepLoaded = true;
-            columns.push(column);
         }
         return columns;
     }
@@ -79,10 +77,7 @@ export class OnlineColumn extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to the flat column list
      */
     public static async loadFlatColumns(shelf: OnlineShelf): Promise<OnlineColumn[]> {
-        const columns: OnlineColumn[] = [];
-        for (let i = 0; i < 4; i++)
-            columns.push(new OnlineColumn("", i, shelf));
-        return columns;
+        return await this.loadChildObjects<OnlineColumn, OnlineShelf>(shelf, "columns", "index");
     }
 
     /**

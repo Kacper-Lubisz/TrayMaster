@@ -3,7 +3,7 @@ import {OnlineShelf} from "./OnlineShelf";
 import {OnlineBay} from "./OnlineBay";
 import {OnlineZone} from "./OnlineZone";
 import {OnlineWarehouse} from "./OnlineWarehouse";
-import {ExpiryRange} from "../ExpiryRange";
+import {OnlineExpiryRange} from "./OnlineExpiryRange";
 import {OnlineLayer} from "./OnlineLayer";
 import {Category} from "../OnlineWarehouseModel";
 
@@ -13,7 +13,7 @@ export class OnlineTray extends OnlineLayer {
 
     customField?: string;
     category?: Category;
-    expiry?: ExpiryRange;
+    expiry?: OnlineExpiryRange;
     weight?: number;
 
     parentColumn?: OnlineColumn;
@@ -28,7 +28,7 @@ export class OnlineTray extends OnlineLayer {
      * @param parentColumn - The (nullable) parent column
      */
     private constructor(
-        location: string, index: number, category?: Category, expiryRange?: ExpiryRange,
+        location: string, index: number, category?: Category, expiryRange?: OnlineExpiryRange,
         weight?: number, customField?: string, parentColumn?: OnlineColumn
     ) {
         super(location);
@@ -51,7 +51,7 @@ export class OnlineTray extends OnlineLayer {
      * @param parentColumn - The (nullable) parent column
      */
     public static create(
-        category?: Category, expiryRange?: ExpiryRange, weight?: number,
+        category?: Category, expiryRange?: OnlineExpiryRange, weight?: number,
         customField?: string, index?: number, parentColumn?: OnlineColumn
     ): OnlineTray {
         return new OnlineTray("", index ?? -1, category, expiryRange, weight, customField, parentColumn);
@@ -78,9 +78,7 @@ export class OnlineTray extends OnlineLayer {
      * @returns A promise which resolves to all trays within the column
      */
     public static async loadTrays(column: OnlineColumn): Promise<OnlineTray[]> {
-        const trays: OnlineTray[] = [];
-
-        return trays;
+        return await this.loadChildObjects<OnlineTray, OnlineColumn>(column, "columns", "index");
     }
 
     //#region Parent Getters

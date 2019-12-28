@@ -1,6 +1,7 @@
 import * as firebase from "firebase/app";
 import "firebase/firestore";
 import * as path from "path";
+import {OnlineUpperLayer} from "./OnlineUpperLayer";
 
 
 const firebaseConfig = { // firebase config
@@ -51,8 +52,10 @@ export default abstract class DatabaseObject {
         return layerInstance;
     }
 
-    static async loadObjects<T extends DatabaseObject>(collectionLocation: string, orderField: string): Promise<T[]> {
-        return (await db.collection(collectionLocation).orderBy(orderField).get()).docs.map(snapshot => {
+    static async loadChildObjects<T extends DatabaseObject, P extends DatabaseObject>
+    (parent: P, collectionName: string, orderField: string): Promise<T[]> {
+        return (await db.collection(`${parent.path}/${collectionName}`)
+                        .get()).docs.map(snapshot => {
             const dbObj: T = snapshot.data() as T;
             dbObj.path = snapshot.ref.path;
             return dbObj;

@@ -4,10 +4,10 @@ import {MockBay} from "./MockBay";
 import {MockZone} from "./MockZone";
 import {MockWarehouse} from "./MockWarehouse";
 import {MockCategory} from "./MockCategory";
-import {ExpiryRange} from "../ExpiryRange";
+import {MockExpiryRange} from "./MockExpiryRange";
 
 
-const expires: ExpiryRange[] = [
+const expires: MockExpiryRange[] = [
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2020, 2).getTime(),
@@ -52,7 +52,7 @@ export class MockTray {
 
     customField?: string;
     category?: MockCategory;
-    expiry?: ExpiryRange;
+    expiry?: MockExpiryRange;
     weight?: number;
 
     parentColumn?: MockColumn;
@@ -66,7 +66,7 @@ export class MockTray {
      * @param parentColumn - The (nullable) parent column
      */
     private constructor(
-        index: number, category?: MockCategory, expiryRange?: ExpiryRange,
+        index: number, category?: MockCategory, expiryRange?: MockExpiryRange,
         weight?: number, customField?: string, parentColumn?: MockColumn
     ) {
         this.index = index;
@@ -88,7 +88,7 @@ export class MockTray {
      * @param parentColumn - The (nullable) parent column
      */
     public static create(
-        category?: MockCategory, expiryRange?: ExpiryRange, weight?: number,
+        category?: MockCategory, expiryRange?: MockExpiryRange, weight?: number,
         customField?: string, index?: number, parentColumn?: MockColumn
     ): MockTray {
         return new MockTray(index ?? -1, category, expiryRange, weight, customField, parentColumn);

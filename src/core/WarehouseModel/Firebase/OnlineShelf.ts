@@ -1,12 +1,12 @@
-import {UpperLayer} from "../UpperLayer";
+import {OnlineUpperLayer} from "./OnlineUpperLayer";
 import {OnlineBay} from "./OnlineBay";
 import {OnlineZone} from "./OnlineZone";
 import {OnlineWarehouse} from "./OnlineWarehouse";
 import {OnlineColumn} from "./OnlineColumn";
 import {OnlineTray} from "./OnlineTray";
-import {OnlineLayer} from "./OnlineLayer";
 
-export class OnlineShelf extends OnlineLayer implements UpperLayer {
+
+export class OnlineShelf extends OnlineUpperLayer {
     isDeepLoaded: boolean = false;
 
     name: string;
@@ -68,19 +68,12 @@ export class OnlineShelf extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to all loaded shelves within the bay
      */
     public static async loadShelves(bay: OnlineBay): Promise<OnlineShelf[]> {
-        const shelves: OnlineShelf[] = [];
-        for (let i = 0; i < 3; i++) {
-            const shelf: OnlineShelf = new OnlineShelf("", `${i + 1}`, i, bay);
+        const shelves: OnlineShelf[] = await this.loadChildObjects<OnlineShelf, OnlineBay>(bay, "shelves", "index");
+        for (let shelf of shelves) {
             shelf.columns = await OnlineColumn.loadColumns(shelf);
             shelf.isDeepLoaded = true;
-            shelves.push(shelf);
         }
         return shelves;
-    }
-
-    public toString(): string {
-        return `${this.parentZone?.name} ${this.parentBay?.name}${this.name}`;
-        // todo decide and implement this shelf toString
     }
 
     /**
@@ -90,10 +83,7 @@ export class OnlineShelf extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to the flat shelf list
      */
     public static async loadFlatShelves(bay: OnlineBay): Promise<OnlineShelf[]> {
-        const shelves: OnlineShelf[] = [];
-        for (let i = 0; i < 3; i++)
-            shelves.push(new OnlineShelf("", `${i + 1}`, i, bay));
-        return shelves;
+        return await this.loadChildObjects<OnlineShelf, OnlineBay>(bay, "shelves", "index");
     }
 
     /**
@@ -104,6 +94,11 @@ export class OnlineShelf extends OnlineLayer implements UpperLayer {
         if (!this.isDeepLoaded)
             this.columns = await OnlineColumn.loadFlatColumns(this);
         this.isDeepLoaded = true;
+    }
+
+    public toString(): string {
+        return `${this.parentZone?.name} ${this.parentBay?.name}${this.name}`;
+        // todo decide and implement this shelf toString
     }
 
     //#region Children Getters

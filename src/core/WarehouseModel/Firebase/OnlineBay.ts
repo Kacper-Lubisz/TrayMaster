@@ -1,13 +1,12 @@
-import {UpperLayer} from "../UpperLayer";
+import {OnlineUpperLayer} from "./OnlineUpperLayer";
 import {OnlineZone} from "./OnlineZone";
 import {OnlineWarehouse} from "./OnlineWarehouse";
 import {OnlineShelf} from "./OnlineShelf";
 import {OnlineColumn} from "./OnlineColumn";
 import {OnlineTray} from "./OnlineTray";
-import {OnlineLayer} from "./OnlineLayer";
 
 
-export class OnlineBay extends OnlineLayer implements UpperLayer {
+export class OnlineBay extends OnlineUpperLayer {
     isDeepLoaded: boolean = false;
 
     name: string;
@@ -50,12 +49,10 @@ export class OnlineBay extends OnlineLayer implements UpperLayer {
      * Place the bay within a zone
      * @param index - The index of the bay within the zone
      * @param parentZone - The zone the bay is being added to
-     * @param name - The name of the bay
      */
-    public placeInZone(index: number, parentZone: OnlineZone, name?: string) {
+    public placeInZone(index: number, parentZone: OnlineZone) {
         this.index = index;
         this.parentZone = parentZone;
-        this.name = name ?? this.name;
     }
 
     public async saveLayer(): Promise<void> {
@@ -69,12 +66,10 @@ export class OnlineBay extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to all loaded bays within the zone
      */
     public static async loadBays(zone: OnlineZone): Promise<OnlineBay[]> {
-        const bays: OnlineBay[] = [];
-        for (let i = 0; i < 3; i++) {
-            const bay: OnlineBay = new OnlineBay("", String.fromCharCode(i + 65), i, zone);
+        const bays: OnlineBay[] = await this.loadChildObjects<OnlineBay, OnlineZone>(zone, "bays", "index");
+        for (let bay of bays) {
             bay.shelves = await OnlineShelf.loadShelves(bay);
             bay.isDeepLoaded = true;
-            bays.push(bay);
         }
         return bays;
     }
@@ -86,10 +81,7 @@ export class OnlineBay extends OnlineLayer implements UpperLayer {
      * @returns A promise which resolves to the flat bays list
      */
     public static async loadFlatBays(zone: OnlineZone): Promise<OnlineBay[]> {
-        const bays: OnlineBay[] = [];
-        for (let i = 0; i < 3; i++)
-            bays.push(new OnlineBay("", String.fromCharCode(i + 65), i, zone));
-        return bays;
+        return await this.loadChildObjects<OnlineBay, OnlineZone>(zone, "bays", "index");
     }
 
     /**

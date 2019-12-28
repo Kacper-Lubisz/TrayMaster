@@ -1,4 +1,5 @@
 import DatabaseObject from "./DatabaseObject";
+import {OnlineWarehouse} from "./OnlineWarehouse";
 
 
 export class OnlineCategory extends DatabaseObject {
@@ -16,7 +17,7 @@ export class OnlineCategory extends DatabaseObject {
      * @async
      * @returns A promise which resolves to the list of categories in the warehouse
      */
-    public static async loadCategories(path: string): Promise<OnlineCategory[]> {
-        return await DatabaseObject.loadObjects<OnlineCategory>(path, "name");
+    public static async loadCategories(warehouse: OnlineWarehouse): Promise<OnlineCategory[]> {
+        return await DatabaseObject.loadChildObjects<OnlineCategory, OnlineWarehouse>(warehouse, "categories", "name");
     }
 }
