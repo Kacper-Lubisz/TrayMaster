@@ -466,20 +466,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             })}
                             icon={tickSolid}/>
 
-                        {tray instanceof Tray && [
-                            <div className="trayCategory" key={1}>{tray.category?.name ?? "Mixed"}</div>,
+                        {tray instanceof Tray && <>
+                            <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
-                            <div className="trayExpiry" key={2} style={{
+                            <div className="trayExpiry" style={{
                                 backgroundColor: tray.expiry?.color
-                            }}>{tray.expiry?.label ?? "?"}</div>,
+                            }}>{tray.expiry?.label ?? "?"}</div>
 
-                            <div className="trayWeight" key={3}>{tray.weight ?? "?"}kg</div>,
-
-                            <div className="trayCustomField" key={4}>{tray.customField ?? ""}</div>
-                        ]}
-                        {!(tray instanceof Tray) && [
-                            index === column.trays.length && <p key={1}>EMPTY TRAY {tray.index}</p>
-                        ]}
+                            <div className="trayWeight">{tray.weight ?? "?"}kg</div>
+                            <div className="trayCustomField">{tray.customField ?? ""}</div>
+                        </>}
+                        {!(tray instanceof Tray) && index === column.trays.length && <>
+                            <p>EMPTY TRAY {tray.index}</p>
+                        </>}
 
                     </div>
             ))}

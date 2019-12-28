@@ -599,6 +599,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
         return <Popup
             open={this.state.isNavModalOpen}
+            position='right center'
             closeOnDocumentClick
             onClose={this.closeNavigator.bind(this)}
         >
