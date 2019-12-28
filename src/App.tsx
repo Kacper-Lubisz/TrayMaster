@@ -67,12 +67,15 @@ class App extends React.Component<any, AppState> {
                     <Switch>
                         <Route path="/" component={() =>
                             <ShelfView // for some reason the type inference isn't working here
+                                openDialog={this.openDialog.bind(this)}
                                 settings={this.state.loaded!!.settings}
                                 warehouse={this.state.loaded!!.warehouse}
                             />
                         } exact/>
-                        <Route path="/menu" component={() => <MainMenu expiryAmount={5}/>}/>
-                        <Route path="/settings" component={() => <SettingsPage/>}/>
+                        <Route path="/menu"
+                               component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
+                        <Route path="/settings"
+                               component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
                         <Route component={PageNotFoundPage}/>
                     </Switch>
                 </BrowserRouter>)}
@@ -89,10 +92,12 @@ class App extends React.Component<any, AppState> {
                     this.state?.dialog?.message
                 }</p>}
 
-                {this.state?.dialog?.buttons !== undefined && <div style={{float: "right"}} id={"popupButtons"}>{
+                {this.state?.dialog?.buttons !== undefined &&
+                <div style={{float: "right"}} id={"popupButtons"}>{
                     this.state?.dialog?.buttons.map((button, index) =>
                         <button key={index} {...button.buttonProps}>{button.name}</button>
-                    )}</div>}
+                    )}
+                </div>}
 
             </>
             </Popup>

@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Popup from "reactjs-popup";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {StandardDialog} from "./App";
 
 /**
  * Proper modulo function (gives a non-negative remainder as per mathematical definition)
@@ -39,6 +40,7 @@ export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
 type ShelfMoveDirection = "left" | "right" | "up" | "down" | "nextTray" | "previousTray" | "nextZone" | "previousZone"
 
 interface ShelfViewProps {
+    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
     warehouse: Warehouse;
     settings: Settings;
 }
@@ -557,6 +559,12 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         // enabled = possibleMoveDirections.previousTray
                         {name: "Next", onClick: this.changeView.bind(this, "nextTray")},
                         // enabled = possibleMoveDirections.nextTray
+
+                        // { This code adds a button which opens a test dialog
+                        //     name: "Test Dialog", onClick: this.props.openDialog.bind(undefined,
+                        //         App.buildErrorDialog("this is a big test", true)
+                        //     )
+                        // }
                     ]}
                     keyboards={[
                         {name: "category", icon: faHome},

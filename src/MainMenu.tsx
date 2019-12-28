@@ -3,8 +3,10 @@ import {Link} from "react-router-dom";
 import "./styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {StandardDialog} from "./App";
 
 interface MainMenuProps {
+    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
     //Number of items about to expire, needs to be fetched from database in this file
     expiryAmount: number;
 }
