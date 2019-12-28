@@ -37,7 +37,16 @@ export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
 /**
  * The directions in which you can navigate
  */
-type ShelfMoveDirection = "left" | "right" | "up" | "down" | "nextTray" | "previousTray" | "nextZone" | "previousZone"
+type ShelfMoveDirection =
+    "left"
+    | "right"
+    | "up"
+    | "down"
+    | "next"
+    | "nextTray"
+    | "previousTray"
+    | "nextZone"
+    | "previousZone"
 
 interface ShelfViewProps {
     openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
@@ -149,9 +158,17 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 currentView: direction
             });
             return;
-        }
+        } else if (direction === "next") { // decide if next zone or tray
 
-        if (this.state.currentView instanceof Warehouse) {
+            if (this.state.currentView instanceof Zone) {
+                this.changeView("nextZone");
+            } else if (this.state.currentView instanceof Shelf) {
+                this.changeView("nextTray");
+            } else {
+                throw Error("Can't change view in direction 'next' when looking at a warehouse");
+            }
+
+        } else if (this.state.currentView instanceof Warehouse) {
             throw Error("Trying to navigate an empty warehouse");
             // this can't be navigated and ought not to happen
         } else if (this.state.currentView instanceof Zone && (
@@ -533,6 +550,14 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     render() {
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
+
+        const zoneColor: string = (this.state.currentView instanceof Zone ? this.state.currentView.color
+                                                                          : this.state.currentView instanceof Shelf
+                                                                            ? this.state.currentView.parentZone?.color
+                                                                            : undefined) ?? "#ffffff";
+
+        const locationString = this.state.currentView.toString();
+
         return (
             <div id="shelfView">
                 <ViewPort
@@ -545,19 +570,21 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     isShelfEdit={this.state.isEditShelf}
                 />
                 <SideBar
+                    zoneColor={zoneColor}
+                    locationString={locationString}
+
                     buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
                         {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
                         {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                     ] : [ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
-                        {name: "Back", onClick: () => alert("Back")},
+                        {name: "Home", onClick: () => alert("Home")},
                         {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a warehouse
-                        {name: "Previous", onClick: this.changeView.bind(this, "previousTray")},
                         // enabled = possibleMoveDirections.previousTray
-                        {name: "Next", onClick: this.changeView.bind(this, "nextTray")},
+                        {name: "Next", onClick: this.changeView.bind(this, "next")},
                         // enabled = possibleMoveDirections.nextTray
 
                         // { This code adds a button which opens a test dialog

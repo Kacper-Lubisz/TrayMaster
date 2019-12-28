@@ -332,6 +332,11 @@ export class Zone implements UpperLayer {
     }
 
     //#endregion
+
+    toString(): string {
+        return this.name;
+    }
+
 }
 
 

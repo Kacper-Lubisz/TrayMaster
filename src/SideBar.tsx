@@ -2,7 +2,7 @@ import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {KeyboardName} from "./ShelfView";
+import {getTextColourForBackground, KeyboardName} from "./ShelfView";
 import classNames from "classnames";
 
 
@@ -17,26 +17,19 @@ interface SideBarProps {
      */
     keyboardSwitcher: (name: KeyboardName) => void;
 
-    /**
-     * List of buttons for the keyboard part of the side panel
-     */
+    /** List of buttons for the keyboard part of the side panel */
     buttons: KeyboardButtonProps[];
-
-    /**
-     * List of button keyboard switches
-     */
+    /** List of button keyboard switches */
     keyboards: KeyboardSwitch[];
-
-    /**
-     * The current keyboard, used for highlighting the active
-     */
+    /** The current keyboard, used for highlighting the active */
     currentKeyboard: KeyboardName
-
-    /**
-     * If the keyboardSwitcher should be displayed
-     */
+    /** If the keyboardSwitcher should be displayed */
     showKeyboardSwitcher: boolean
 
+    /** This string is to describe the current location */
+    locationString: string;
+    /** This color is the color of the current zone */
+    zoneColor: string;
 }
 
 /**
@@ -91,6 +84,16 @@ export class SideBar extends React.Component<SideBarProps> {
     render() {
         return (
             <div id="sideBar">
+
+                <div
+                    style={{
+                        backgroundColor: this.props.zoneColor,
+                        color: getTextColourForBackground(this.props.zoneColor)
+                    }}
+                >
+                    <h2>{this.props.locationString}</h2>
+                </div>
+
                 <Keyboard buttons={this.props.buttons} gridX={1}/>
 
                 {this.props.showKeyboardSwitcher && <div id="kb-switcher">
