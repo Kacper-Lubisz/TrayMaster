@@ -169,7 +169,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
                 return {
                     name: cat.shortName ?? cat.name,
-                    onClick: this.props.categorySelected(cat), // fixme this is broken
+                    onClick: this.props.categorySelected.bind(undefined, cat),
                     selected: cat === commonCat
                 };
             });
