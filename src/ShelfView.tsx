@@ -666,7 +666,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     zone?.bays.flatMap((bay, bayIndex) =>
                         bay.shelves.map((shelf, shelfIndex) =>
                             <div
-                                key={bayIndex.toString() + shelfIndex}
+                                key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
                                 style={{
                                     gridColumn: bayIndex + 1,
                                     gridRow: maxBaySize - shelfIndex + 1,
