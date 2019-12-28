@@ -34,8 +34,8 @@ class App extends React.Component<any, AppState> {
 
         loadPromise.then((result) => {
             const [settings, warehouse] = result;
-            console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
-            console.log(`Warehouse Loaded: ${warehouse}`);
+            console.log(`Settings Loaded:`, settings);
+            console.log(`Warehouse Loaded:`, warehouse);
 
             this.setState(state => {
                 return {
@@ -46,7 +46,7 @@ class App extends React.Component<any, AppState> {
             });
 
         }).catch(() => {
-            console.error("Failed to load the warehouse of the settings");
+            console.error("Failed to load the warehouse or the settings");
             // todo present error message
         });
 

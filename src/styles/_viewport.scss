@@ -4,7 +4,7 @@
 @import "variables";
 
 
-.shelf {
+.shelf { //todo this belongs in a separate nav-popup file
   align-content: center;
   margin: auto auto;
   width: 100px;
@@ -16,6 +16,11 @@
   height: 80px;
 }
 
+#sizeControls, #heightControls { // todo fixme revise this style
+  width: 100%;
+  display: inline;
+}
+
 // Shelf
 #shelf {
   // Layout
@@ -24,27 +29,45 @@
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: stretch;
-  margin: 0 1%;
-  height: 80%;
+  margin: .5% .5%;
+  height: 98%;
 
   // Disable text selection: makes clicking and dragging feel less janky
   user-select: none;
+
+  // Shelf itself should not have any pointer events (let its parent handle them)
+  pointer-events: none;
+  // But all of its children (except column) should have their pointer events
+  > *:not(.column) {
+    pointer-events: auto;
+  }
 
   // Columns
   .column {
     // Layout
     flex: auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     flex-wrap: nowrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: flex-end;
     padding: 5px;
+
+    transition: flex-grow 0.5s ease;
 
     // Styling
     border: 1px solid white;
     text-align: center;
     background-color: #eee;
+
+    .tray:last-child {
+      margin: 0;
+    }
+
+    // Children of column should have all of their pointer events
+    > * {
+      pointer-events: auto;
+    }
 
     .tray {
       // Layout
@@ -80,6 +103,22 @@
       &.selected {
         box-shadow: inset 0 0 18px -10px #000000;
         z-index: 1; // TODO: is there any reason for this?
+      }
+
+      // The first empty space a tray can take above
+      &.traySpace.firstTraySpace { //todo this needs to be completely restyled
+        background-color: #00000011;
+        border-color: #888;
+      }
+
+      &.traySpace {
+        background-color: #00000011;
+        border-color: #8880;
+      }
+
+      &.traySpace.selected { //todo this needs to be completely restyled
+        background-color: #00000011;
+        border-color: #888;
       }
 
       // Everything inside a tray

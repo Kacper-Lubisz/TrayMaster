@@ -20,6 +20,12 @@ const cats = [
     "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
 ];
 
+const sizes: ColumnSize[] = [
+    {label: "small", sizeRatio: 1.5},
+    {label: "normal", sizeRatio: 2.5},
+    {label: "big", sizeRatio: 3.5},
+];
+
 const colours: { label: string, hex: string }[] = [
     {label: "Red", hex: "#FF0000"},
     {label: "Green", hex: "#00FF00"},
@@ -36,7 +42,7 @@ const colours: { label: string, hex: string }[] = [
     };
 }));
 
-const expires = [
+const expires: ExpiryRange[] = [
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2020, 2).getTime(),
@@ -98,15 +104,17 @@ interface UpperLayer {
     loadNextLayer(): Promise<void>;
 }
 
-
 export class Warehouse implements UpperLayer {
     isDeepLoaded: boolean = false;
 
     id: string;
     name: string;
 
+    columnSizes: ColumnSize[] = [];
     categories: Category[] = [];
     zones: Zone[] = [];
+
+    // todo rename column size to tray size, load tray sizes
 
     /**
      * @param id firebase - The database ID of the warehouse
@@ -144,6 +152,18 @@ export class Warehouse implements UpperLayer {
     }
 
     /**
+     * Load column sizes.
+     * @async
+     * @returns A promise which resolves to the list of column sizes in the warehouse
+     */
+    public static async loadColumnSizes(): Promise<ColumnSize[]> {
+        const columnSizes: ColumnSize[] = [];
+        for (let i = 0; i < sizes.length; i++)
+            columnSizes.push({...sizes[i]});
+        return columnSizes;
+    }
+
+    /**
      * Load a whole warehouse corresponding to a given ID
      * @async
      * @param id - Database ID of the warehouse to load
@@ -152,6 +172,7 @@ export class Warehouse implements UpperLayer {
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.categories = await Warehouse.loadCategories();
+        warehouse.columnSizes = await Warehouse.loadColumnSizes();
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.isDeepLoaded = true;
         return warehouse;
@@ -545,12 +566,26 @@ export class Shelf implements UpperLayer {
     //#endregion
 }
 
+interface ColumnSize {
+    label: string;
+    sizeRatio: number;
+}
 
 export class Column implements UpperLayer {
+
+    /**
+     * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
+     * different object would be different keys of the selection map
+     */
+    private static traySpaces: Map<Column, TraySpace[]> = new Map();
+
     isDeepLoaded: boolean = false;
 
     id: string;
     index: number;
+
+    size?: ColumnSize;
+    maxHeight?: number;
 
     parentShelf?: Shelf;
     trays: Tray[] = [];
@@ -559,10 +594,14 @@ export class Column implements UpperLayer {
      * @param id - The database ID of the column
      * @param index - The (ordered) index of the column within the shelf
      * @param parentShelf - The (nullable) parent shelf
+     * @param size - The size of the tray
+     * @param maxHeight - The maximum number of trays that can be placed in this column
      */
-    private constructor(id: string, index: number, parentShelf?: Shelf) {
+    private constructor(id: string, index: number, parentShelf?: Shelf, size?: ColumnSize, maxHeight?: number) {
         this.id = id;
         this.index = index;
+        this.size = size;
+        this.maxHeight = maxHeight;
 
         this.parentShelf = parentShelf;
     }
@@ -572,10 +611,18 @@ export class Column implements UpperLayer {
      * @param trays - The trays to put in the column
      * @param index - The index of the column within its shelf
      * @param parentShelf - The shelf the column belongs to
+     * @param size - The column size
+     * @param maxHeight - The max number of trays that can go in this column
      * @returns The newly created column
      */
-    public static create(trays: Tray[], index?: number, parentShelf?: Shelf): Column {
-        const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf);
+    public static create(
+        trays: Tray[],
+        index?: number,
+        parentShelf?: Shelf,
+        size?: ColumnSize,
+        maxHeight?: number
+    ): Column {
+        const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf, size, maxHeight);
         column.trays = trays;
         for (let i = 0; i < column.trays.length; i++)
             column.trays[i].placeInColumn(i, column);
@@ -600,8 +647,17 @@ export class Column implements UpperLayer {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 4; i++) {
-            const column: Column = new Column(generateRandomId(), i, shelf);
+
+        const colNumber = shelf.index % 2 === 0 ? 4 : 2;
+
+        for (let i = 0; i < colNumber; i++) {
+            const sizes = shelf.parentWarehouse?.columnSizes!!;
+            const size: ColumnSize = sizes[Math.floor(Math.random() * sizes.length)];
+            const maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
+                                                    : Math.random() < 0.5 ? 2
+                                                                          : 10;
+
+            const column: Column = new Column(generateRandomId(), i, shelf, size, maxHeight);
             column.trays = await Tray.loadTrays(column);
             column.isDeepLoaded = true;
             columns.push(column);
@@ -646,8 +702,81 @@ export class Column implements UpperLayer {
     }
 
     //#endregion
+
+    /**
+     * This method pads the tray arrays of a column with TraySpaces such that the the length of the returned array is
+     * the max height of the column.  If the column has an undefined max height, it is padded with the specified value.
+     * This method stores the tray spaces that are added in the traySpaces field such that the same TraySpace object is
+     * always returned.  The same object being returned is important if it is going to be used as the key of a map.
+     * @param ifNoMaxHeight The padding to add if maxHeight is empty
+     * @return The padded array.
+     */
+    getPaddedTrays(ifNoMaxHeight: number = 1): TrayCell[] {
+
+        const missingTrays = this.maxHeight ? Math.max(0, this.maxHeight - this.trays.length)
+                                            : 1;
+
+        const existing: TraySpace[] | undefined = Column.traySpaces.get(this);
+        if (existing) {
+
+            if (existing.length === missingTrays) {
+
+                return (this.trays as TrayCell[]).concat(existing);
+
+            } else if (existing.length > missingTrays) { // there are too many missing trays
+
+                const newSpaces = existing.filter(space => space.index >= this.trays.length);
+
+                Column.traySpaces.set(this, newSpaces);
+                return (this.trays as TrayCell[]).concat(newSpaces);
+            } else { // there are not enough tray spaces
+
+                const traysToAdd = missingTrays - existing.length;
+                const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
+                        return ({column: this, index: this.trays.length + index} as TraySpace);
+                    }
+                ).concat(existing);
+
+                Column.traySpaces.set(this, newSpaces);
+                return (this.trays as TrayCell[]).concat(newSpaces);
+            }
+
+        } else { // build tray spaces
+
+            const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
+                    return {column: this, index: this.trays.length + index};
+                }
+            );
+            Column.traySpaces.set(this, newSpaces);
+
+            return (this.trays as TrayCell[]).concat(newSpaces);
+
+        }
+
+    }
+
+
+    /**
+     * This method clears the padded spaces, this can be used to reset empty spaces or otherwise to clear up memory
+     * which will no longer be used.  If a column is passed then only that column is purged otherwise all columns are.
+     */
+    static purgePaddedSpaces(column?: Column) {
+        if (column) {
+            Column.traySpaces.delete(column);
+        } else {
+            Column.traySpaces.clear();
+        }
+    }
+
 }
 
+
+export interface TraySpace {
+    column: Column;
+    index: number;
+}
+
+export type TrayCell = Tray | TraySpace;
 
 export class Tray {
     id: string;
@@ -717,8 +846,12 @@ export class Tray {
      */
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
-        for (let i = 0; i < 3; i++) {
-            const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
+        const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
+
+        const height = Math.random() > 0.5 ? column.maxHeight ?? 3
+                                           : Math.min(3, column.maxHeight ?? 3);
+
+        for (let i = 0; i < height; i++) {
             trays.push(new Tray(
                 generateRandomId(),
                 i,
