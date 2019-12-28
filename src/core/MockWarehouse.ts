@@ -554,6 +554,13 @@ interface ColumnSize {
 }
 
 export class Column implements UpperLayer {
+
+    /**
+     * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
+     * different object would be different keys of the selection map
+     */
+    private static traySpaces: Map<Column, TraySpace[]> = new Map();
+
     isDeepLoaded: boolean = false;
 
     id: string;
@@ -677,6 +684,72 @@ export class Column implements UpperLayer {
     }
 
     //#endregion
+
+    /**
+     * This method pads the tray arrays of a column with TraySpaces such that the the length of the returned array is
+     * the max height of the column.  If the column has an undefined max height, it is padded with the specified value.
+     * This method stores the tray spaces that are added in the traySpaces field such that the same TraySpace object is
+     * always returned.  The same object being returned is important if it is going to be used as the key of a map.
+     * @param ifNoMaxHeight The padding to add if maxHeight is empty
+     * @return The padded array.
+     */
+    getPaddedTrays(ifNoMaxHeight: number = 1): TrayCell[] {
+
+        const missingTrays = this.maxHeight ? Math.max(0, this.maxHeight - this.trays.length)
+                                            : 1;
+
+        const existing: TraySpace[] | undefined = Column.traySpaces.get(this);
+        if (existing) {
+
+            if (existing.length === missingTrays) {
+
+                return (this.trays as TrayCell[]).concat(existing);
+
+            } else if (existing.length > missingTrays) { // there are too many missing trays
+
+                const newSpaces = existing.filter(space => space.index >= this.trays.length);
+
+                Column.traySpaces.set(this, newSpaces);
+                return (this.trays as TrayCell[]).concat(newSpaces);
+            } else { // there are not enough tray spaces
+
+                const traysToAdd = missingTrays - existing.length;
+                const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
+                        return ({column: this, index: this.trays.length + index} as TraySpace);
+                    }
+                ).concat(existing);
+
+                Column.traySpaces.set(this, newSpaces);
+                return (this.trays as TrayCell[]).concat(newSpaces);
+            }
+
+        } else { // build tray spaces
+
+            const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
+                    return {column: this, index: this.trays.length + index};
+                }
+            );
+            Column.traySpaces.set(this, newSpaces);
+
+            return (this.trays as TrayCell[]).concat(newSpaces);
+
+        }
+
+    }
+
+
+    /**
+     * This method clears the padded spaces, this can be used to reset empty spaces or otherwise to clear up memory
+     * which will no longer be used.  If a column is passed then only that column is purged otherwise all columns are.
+     */
+    static purgePaddedSpaces(column?: Column) {
+        if (column) {
+            Column.traySpaces.delete(column);
+        } else {
+            Column.traySpaces.clear();
+        }
+    }
+
 }
 
 

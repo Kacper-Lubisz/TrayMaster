@@ -241,95 +241,85 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     }
 
+    // getSelectedAirSpaces(): TraySpace[] {
+    //
+    //     const selectedCells = this.state.currentShelf.columns
+    //                               .flatMap(column => column.getPaddedTrays())
+    //                               .filter(cell => this.state.selected.get(cell));
+    //
+    //     const {
+    //         trays, spaces
+    //     } = this.splitCells(selectedCells);
+    //
+    //
+    //     return spaces.reduce((acc, space) => { // should already be sorted
+    //         // this reduce filters away any floating trays
+    //         if (space.index === acc[0] + space.column.trays.length) {
+    //             acc[1].push(space);
+    //         }
+    //         return acc;
+    //     }, [0, []] as [number, TraySpace[]])[1];
+    //
+    // }
+
     /**
-     * This method is used for running a function on each selected tray or tray space.  The method optionally (based on
-     * `fillsSpaces`, by default true) replaces selected tray spaces for trays such that they can also be processed.
-     * The method also takes a parameter to determine what sort of trays the selected spaces should be filled with, by
-     * default a tray with appropriate indices and parent column.
-     *
-     * @param update The method which is called on all trays (and optionally on all trays newly made by filling
-     * selected spaces)
-     * @param fillSpaces Whether tray spaces should be filled before update is called on all trays
-     * @param fillTray A function which creates the new trays to fill selected spaces with in the case fillSpaces is
-     *     true
+     * Adds update to event queue.
+     * @param fillSpaces
+     * @param ignoreAirSpaces
      */
-    forEachSelectedTrays(
-        update: (tray: Tray) => void,
-        fillSpaces: boolean = true,
-        fillTray: (index: number, column: Column) => Tray
-            = (index, column) => Tray.create(
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            index,
-            column
-        )
-    ) {
+    getSelectedTrays(
+        fillSpaces: boolean,
+        ignoreAirSpaces: boolean
+    ): Tray[] {
 
-        const traySpaceMap = new Map<Column, { trays: Tray[], spaces: TraySpace[] }>();
-        // the selected trays (and spaces) are grouped by column for ordering
+        const selectedCells = this.state.currentShelf.columns
+                                  .flatMap(column => column.getPaddedTrays())
+                                  .filter(cell => this.state.selected.get(cell));
 
-        this.state.selected.forEach((selected, tray) => {
-            if (selected) {
-                // fixme remove !! operator once it is unnecessary
-                const parentColumn = tray instanceof Tray ? tray.parentColumn!! : tray.column;
-                const columnObject = traySpaceMap.get(parentColumn);
-                if (columnObject) {
-                    if (tray instanceof Tray) {
-                        columnObject.trays.push(tray);
-                    } else {
-                        columnObject.spaces.push(tray);
-                    }
+        const {
+            trays, spaces
+        } = this.splitCells(selectedCells);
+
+        if (fillSpaces) {
+            const newSelection = new Map(this.state.selected);
+            const newTrays = spaces.map(space => {
+                if (!ignoreAirSpaces || space.index === space.column.trays.length) {
+                    let newTray = Tray.create(
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        space.index,
+                        space.column);
+                    space.column.trays.push(newTray);
+                    newSelection.set(newTray, true);
+                    newSelection.delete(space);
+                    return newTray;
                 } else {
-                    if (tray instanceof Tray) {
-                        traySpaceMap.set(parentColumn, {
-                            trays: [tray],
-                            spaces: []
-                        });
-                    } else {
-                        traySpaceMap.set(parentColumn, {
-                            trays: [],
-                            spaces: [tray]
-                        });
-                    }
+                    return undefined;
                 }
-            }
-        });
-        // this whole thing could be rewritten to iterate over the columns and trays of the current shelf.  This would
-        // be awkward because a column has no concept of tray spaces.
-        // todo move tray spaces into the warehouse model
+            }).filter(tray => tray) as Tray[];
 
-        if (traySpaceMap.size !== 0) { // if selection isn't empty
-            const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
-
-            traySpaceMap.forEach((trays, column) => {
-                trays.trays.sort((a, b) => a.index - b.index);
-                trays.trays.forEach(update);
-
-                if (fillSpaces) {
-                    trays.spaces.sort((a, b) => a.index - b.index);
-                    trays.spaces.forEach(space => {
-                        if (space.index !== space.column.trays.length) {
-                            throw Error("Can't place a tray in the air!");
-                            //todo decide if this behaviour is staying
-                        }
-
-                        const newTray = fillTray.call(undefined, space.index, column);
-                        column.trays.push(newTray);
-                        //fixme this operation feels super illegal, placeInColumn doesn't do this, it probably should
-
-                        newSelectedMap.delete(space);
-                        newSelectedMap.set(newTray, true);
-
-                        update.call(null, newTray);
-                    });
-                }
-            });
-
-            this.setSelected(newSelectedMap);
+            this.setSelected(newSelection);
+            return trays.concat(newTrays);
+        } else {
+            return trays;
         }
+    }
 
+    /**
+     * This splits a list of TrayCells into a list of trays and spaces
+     * @param selectedCells The list to split
+     */
+    private splitCells(selectedCells: TrayCell[]): { trays: Tray[], spaces: TraySpace[] } {
+        return selectedCells.reduce((acc, cell) => {
+            if (cell instanceof Tray) {
+                acc.trays.push(cell);
+            } else {
+                acc.spaces.push(cell);
+            }
+            return acc;
+        }, {trays: [] as Tray[], spaces: [] as TraySpace[]});
     }
 
     /**
@@ -338,9 +328,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      */
     categorySelected(category: Category) {
 
-        this.forEachSelectedTrays((tray) => {
+        this.getSelectedTrays(true, true).forEach((tray) => {
             tray.category = category;
-        }, true);
+        });
+        // this updates because get selected Trays causes an update after the click event is handled
 
     }
 

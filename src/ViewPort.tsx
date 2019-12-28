@@ -8,7 +8,7 @@ import {
     faPlusSquare as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, TraySpace} from "./core/MockWarehouse";
+import {Column, Shelf, Tray, TrayCell} from "./core/MockWarehouse";
 import classNames from "classnames/bind";
 
 interface ViewPortProps {
@@ -46,12 +46,6 @@ const LONG_PRESS_TIMEOUT = 300;
  * This class crates and manages the behavior of the viewport
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
-
-    /**
-     * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
-     * different object would be different keys of the selection map
-     */
-    private traySpaces: Map<Column, TraySpace[]> = new Map();
 
     constructor(props: ViewPortProps) {
         super(props);
@@ -111,7 +105,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
         // After they have been sorted into any order, anything between the from and to trays is then marked as selected
         const trayOrdered = this.props.shelf.columns.flatMap((column, columnIndex) =>
-            this.padWithTraySpaces(column).map((tray: TrayCell, trayIndex) => {
+            column.getPaddedTrays().map((tray: TrayCell, trayIndex) => {
                 if (tray === from) {
                     boundIndices.from.column = columnIndex;
                     boundIndices.from.tray = trayIndex;
@@ -296,7 +290,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const change = changeType === "inc" ? 1
                                             : -1;
         column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
-        this.traySpaces.delete(column);
+        Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
 
@@ -371,8 +365,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param order The index of the column
      */
     renderColumn(column: Column, order: number) {
-        const columnChanges = this.getPossibleSizeChanges(column);
-        const heightChange = this.getPossibleHeightChanges(column);
+        const possibleColumnChanges = this.getPossibleSizeChanges(column);
+        const possibleHeightChange = this.getPossibleHeightChanges(column);
 
         /* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
         return this.props.isShelfEdit ? <div
@@ -390,7 +384,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             <div id="sizeControls">
                 <h1>Tray Size:</h1>
                 <button
-                    disabled={!columnChanges.inc}
+                    disabled={!possibleColumnChanges.inc}
                     onClick={this.changeColumnSize.bind(this, column, "inc")}
                 >
                     <FontAwesomeIcon icon={plus}/>
@@ -398,7 +392,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                 <div>{stringToTitleCase(column.size?.label ?? "?")}</div>
                 <button
-                    disabled={!columnChanges.dec}
+                    disabled={!possibleColumnChanges.dec}
                     onClick={this.changeColumnSize.bind(this, column, "dec")}
                 >
                     <FontAwesomeIcon icon={minus}/>
@@ -408,14 +402,14 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             <div id="heightControls">
                 <h1>Max Height:</h1>
                 <button
-                    disabled={!heightChange.inc}
+                    disabled={!possibleHeightChange.inc}
                     onClick={this.changeColumnHeight.bind(this, column, "inc")}
                 >
                     <FontAwesomeIcon icon={plus}/>
                 </button>
                 <div>{column.maxHeight ?? "?"}</div>
                 <button
-                    disabled={!heightChange.dec}
+                    disabled={!possibleHeightChange.dec}
                     onClick={this.changeColumnHeight.bind(this, column, "dec")}
                 >
                     <FontAwesomeIcon icon={minus}/>
@@ -430,7 +424,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                    className="column"
                    key={order}
                >{
-            this.padWithTraySpaces(column).map(((tray, index) =>
+            column.getPaddedTrays(1).map(((tray, index) =>
                     <div
                         className={classNames("tray", {
                             "multipleSelect": this.props.areMultipleTraysSelected() || this.state.longPress?.isHappening,
@@ -477,61 +471,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     componentDidUpdate(prevProps: Readonly<ViewPortProps>, prevState: Readonly<ViewPortState>, snapshot?: any): void {
         if (this.props.shelf !== prevProps.shelf) {
-            this.traySpaces.clear();
+            Column.purgePaddedSpaces();
         }
     }
 
-    /**
-     * This method pads the tray arrays of a column with TraySpaces such that the the length of the returned array is
-     * the max height of the column.  If the column has an undefined max height, it is padded with one empty space.
-     * This method stores the tray spaces that are added in the traySpaces field such that the same TraySpace object is
-     * always returned.  The same object being returned is important if it is going to be used as the key of a map.
-     * @param column The column to pad
-     * @return The padded array.
-     */
-    padWithTraySpaces(column: Column): TrayCell[] {
 
-        const missingTrays = column.maxHeight ? Math.max(0, column.maxHeight - column.trays.length)
-                                              : 1;
-
-        const existing: TraySpace[] | undefined = this.traySpaces.get(column);
-        if (existing) {
-
-            if (existing.length === missingTrays) {
-
-                return (column.trays as TrayCell[]).concat(existing);
-
-            } else if (existing.length > missingTrays) { // there are too many missing trays
-
-                const newSpaces = existing.filter(space => space.index >= column.trays.length);
-
-                this.traySpaces.set(column, newSpaces);
-                return (column.trays as TrayCell[]).concat(newSpaces);
-            } else { // there are not enough tray spaces
-
-                const traysToAdd = missingTrays - existing.length;
-                const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
-                        return {column: column, index: column.trays.length + index};
-                    }
-                ).concat(existing);
-
-                this.traySpaces.set(column, newSpaces);
-                return (column.trays as TrayCell[]).concat(newSpaces);
-            }
-
-        } else { // build tray spaces
-
-            const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
-                    return {column: column, index: column.trays.length + index};
-                }
-            );
-            this.traySpaces.set(column, newSpaces);
-
-            return (column.trays as TrayCell[]).concat(newSpaces);
-
-        }
-
-    }
 }
 
 function stringToTitleCase(string: string): string {
