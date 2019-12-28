@@ -1,7 +1,11 @@
 // BOTH OF THESE FUNCTIONS WERE TAKEN FROM THE GIVEN SOURCES AND ADAPTED TO FIT THE NEEDS OF THIS PROJECT
 
 // SOURCE: https://campushippo.com/lessons/how-to-convert-rgb-colors-to-hexadecimal-with-javascript-78219fdb
-function rgbToHex(rgb) {
+/**
+ * Converts a single member of an rgb(x, x, x) colour value into two hex digits
+ * @param rgb - one of the three r, g, b, values constituting a colour
+ */
+function rgbToHex(rgb: number) {
     let hex = Number(rgb).toString(16);
     if (hex.length < 2) {
         hex = `0${hex}`;
@@ -19,7 +23,7 @@ function rgbToHex(rgb) {
  * @param   l       The lightness, in [0-1]
  * @return  string  The hex code corresponding to the given HSL value
  */
-export function hslToHex(h, s, l) {
+export function hslToHex(h: number, s: number, l: number): string {
     let hprime = h / 60;
     const c = l * s;
     const x = c * (1 - Math.abs(hprime % 2 - 1));
@@ -53,17 +57,17 @@ export function hslToHex(h, s, l) {
     if (hprime >= 4 && hprime < 5) {
         r = x;
         g = 0;
-        b = c
+        b = c;
     }
     if (hprime >= 5 && hprime < 6) {
         r = c;
         g = 0;
-        b = x
+        b = x;
     }
 
-    r = Math.round((r + m) * 255);
-    g = Math.round((g + m) * 255);
-    b = Math.round((b + m) * 255);
+    r = Math.round(((r ? r : 0) + m) * 255);
+    g = Math.round(((g ? g : 0) + m) * 255);
+    b = Math.round(((b ? b : 0) + m) * 255);
 
     return `#${[r, g, b].map(rgbToHex).join("")}`;
 }

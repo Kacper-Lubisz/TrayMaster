@@ -86,106 +86,84 @@ let expires = [
     {
         from: new Date(2020, 0).getTime(),
         to: new Date(2021, 0).getTime(),
-        label: "2020",
-        color: ""
+        label: "2020"
     },
     {
         from: new Date(2021, 0).getTime(),
         to: new Date(2022, 0).getTime(),
-        label: "2021",
-        color: ""
+        label: "2021"
     },
     {
         from: new Date(2022, 0).getTime(),
         to: new Date(2023, 0).getTime(),
-        label: "2022",
-        color: ""
+        label: "2022"
     },
     {
         from: new Date(2023, 0).getTime(),
         to: new Date(2024, 0).getTime(),
-        label: "2023",
-        color: ""
+        label: "2023"
     },
     {
         from: new Date(2024, 0).getTime(),
         to: new Date(2025, 0).getTime(),
-        label: "2024",
-        color: ""
+        label: "2024"
     },
     {
         from: new Date(2025, 0).getTime(),
         to: new Date(2026, 0).getTime(),
-        label: "2025",
-        color: ""
+        label: "2025"
     },
     {
         from: new Date(2026, 0).getTime(),
         to: new Date(2027, 0).getTime(),
-        label: "2026",
-        color: ""
+        label: "2026"
     },
     {
         from: new Date(2027, 0).getTime(),
         to: new Date(2028, 0).getTime(),
-        label: "2027",
-        color: ""
+        label: "2027"
     },
     {
         from: new Date(2020, 0).getTime(),
         to: new Date(2020, 3).getTime(),
-        label: "Jan-Mar 2020",
-        color: ""
+        label: "Jan-Mar 2020"
     },
     {
         from: new Date(2020, 3).getTime(),
         to: new Date(2020, 6).getTime(),
-        label: "Apr-Jun 2020",
-        color: ""
+        label: "Apr-Jun 2020"
     },
     {
         from: new Date(2020, 6).getTime(),
         to: new Date(2020, 9).getTime(),
-        label: "Jul-Sep 2020",
-        color: ""
+        label: "Jul-Sep 2020"
     },
     {
         from: new Date(2020, 9).getTime(),
         to: new Date(2021, 0).getTime(),
-        label: "Oct-Dec 2020",
-        color: ""
+        label: "Oct-Dec 2020"
     },
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2020, 2).getTime(),
-        label: "Feb 2020",
-        color: ""
+        label: "Feb 2020"
     },
     {
         from: new Date(2024, 10).getTime(),
         to: new Date(2024, 11).getTime(),
-        label: "Nov 2022",
-        color: ""
+        label: "Nov 2022"
     },
     {
         from: new Date(2024, 4).getTime(),
         to: new Date(2024, 5).getTime(),
-        label: "May 2024",
-        color: ""
+        label: "May 2024"
     },
     {
         from: new Date(2026, 7).getTime(),
         to: new Date(2026, 8).getTime(),
-        label: "August 2026",
-        color: ""
+        label: "August 2026"
     },
 ];
-// fixme this is a bit of a janky solution: I wrote it as a stopgap until we start dynamically generating expiry ranges
-// fixme        rather than requiring an explicit list.
-expires = expires.map((exp) => {
-    exp.color = getExpiryColour(exp);
-    return exp;
-});
 
 
 /**

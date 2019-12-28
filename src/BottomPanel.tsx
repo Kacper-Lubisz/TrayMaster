@@ -45,7 +45,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         // Expiry keyboard structure
         this.years = [];
-        for (let i = 2019; i < 2027; i++) {
+        // TODO: consider applying database settings to this
+        const thisYear = new Date().getFullYear();
+        for (let i = thisYear; i < thisYear + 8; i++) {
             this.years.push({
                 name: i.toString(), onClick: () => {
                     this.selectYear(i);
