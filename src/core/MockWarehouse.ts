@@ -1,5 +1,3 @@
-import dayjs, {Dayjs} from "dayjs";
-import {hslToHex} from "../utils/hslToHex";
 
 /*
 Warehouse
@@ -32,141 +30,6 @@ const colours = [
 ];
 
 /**
- * Period to use for a complete cycle around the hue colour wheel
- * Using 8 currently because that's the number on the expiry keyboard (and what common food lasts longer than 8 years??)
- */
-const YEAR_PERIOD = 8;
-
-/**
- * Takes in the length of an expiry range in days (1-366 inclusive) and returns a saturation value to use
- * Used inside getExpiryColour
- * @see getExpiryColour
- * @param days - the length of an expiry range in days
- * @return number - the saturation to use for that range
- */
-function getSaturation(days: number) {
-    if (days <= 0) return 1;        // not a valid range - TODO: decide whether to return 1 or 0 here
-    //if (days <= 20) return 1;       // less than a month  TODO: also decide whether we should throw errors for bad nos
-    if (days <= 40) return 1;     // month
-    if (days <= 100) return 0.75;    // quarter
-    if (days <= 183) return 0.6;   // 6 months
-    if (days <= 366) return 0.5;    // year
-    return 0;                       // more than a year
-}
-
-/**
- * Takes in an ExpiryRange object and returns a hex colour to use for that range
- * Hue depends on the start time of the expiry range in an 8 year cycle
- * Saturation depends on the length of the range (more precision = more intense colour)
- * @param range {ExpiryRange} - the expiry range to return a colour for
- * @return string - the 7-digit hex value to use for that expiry range
- */
-export function getExpiryColour(range: ExpiryRange) {
-    // get a dayjs date corresponding to the from property of the range, to use later
-    const djsDate: Dayjs = dayjs(range.from);
-
-    // Year modulo YEAR_PERIOD
-    const modYear: number = djsDate.year() % YEAR_PERIOD;
-
-    // Ratio of the way through the month
-    const ratioMonth: number = (djsDate.date()) / djsDate.date(-1).date();
-
-    // Ratio of the way through the year
-    const ratioYear: number = ((djsDate.month()) + ratioMonth) / 12;
-
-    // Ratio of the way through the period
-    const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
-
-    // get saturation from difference between from and to and return hex value
-    const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
-    return hslToHex(ratioPeriod * 360, saturation, 1);
-}
-
-let expires = [
-    {
-        from: new Date(2020, 0).getTime(),
-        to: new Date(2021, 0).getTime(),
-        label: "2020"
-    },
-    {
-        from: new Date(2021, 0).getTime(),
-        to: new Date(2022, 0).getTime(),
-        label: "2021"
-    },
-    {
-        from: new Date(2022, 0).getTime(),
-        to: new Date(2023, 0).getTime(),
-        label: "2022"
-    },
-    {
-        from: new Date(2023, 0).getTime(),
-        to: new Date(2024, 0).getTime(),
-        label: "2023"
-    },
-    {
-        from: new Date(2024, 0).getTime(),
-        to: new Date(2025, 0).getTime(),
-        label: "2024"
-    },
-    {
-        from: new Date(2025, 0).getTime(),
-        to: new Date(2026, 0).getTime(),
-        label: "2025"
-    },
-    {
-        from: new Date(2026, 0).getTime(),
-        to: new Date(2027, 0).getTime(),
-        label: "2026"
-    },
-    {
-        from: new Date(2027, 0).getTime(),
-        to: new Date(2028, 0).getTime(),
-        label: "2027"
-    },
-    {
-        from: new Date(2020, 0).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Jan-Mar 2020"
-    },
-    {
-        from: new Date(2020, 3).getTime(),
-        to: new Date(2020, 6).getTime(),
-        label: "Apr-Jun 2020"
-    },
-    {
-        from: new Date(2020, 6).getTime(),
-        to: new Date(2020, 9).getTime(),
-        label: "Jul-Sep 2020"
-    },
-    {
-        from: new Date(2020, 9).getTime(),
-        to: new Date(2021, 0).getTime(),
-        label: "Oct-Dec 2020"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Feb 2020"
-    },
-    {
-        from: new Date(2024, 10).getTime(),
-        to: new Date(2024, 11).getTime(),
-        label: "Nov 2022"
-    },
-    {
-        from: new Date(2024, 4).getTime(),
-        to: new Date(2024, 5).getTime(),
-        label: "May 2024"
-    },
-    {
-        from: new Date(2026, 7).getTime(),
-        to: new Date(2026, 8).getTime(),
-        label: "August 2026"
-    },
-];
-
-
-/**
  * Generate a pseudorandom firebase ID
  * @returns string - A randomly generated ID
  */
@@ -176,6 +39,60 @@ export function generateRandomId(): string {
     for (let i = 0; i < 20; i++)
         id += chars[Math.floor(chars.length * Math.random())];
     return id;
+}
+
+
+const thisYear = new Date().getFullYear();
+const quarters = [
+    "Jan-Mar",
+    "Apr-Jun",
+    "Jul-Sep",
+    "Oct-Dec"
+];
+const months = [
+    "Jan", "Feb", "Mar",
+    "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep",
+    "Oct", "Nov", "Dec"
+];
+
+function generateRandomExpiry(): ExpiryRange {
+    // choose year in the next 8 years
+    const year = thisYear + Math.floor(Math.random() * 8);
+    type ExpiryType = "year" | "quarter" | "month";
+
+    // choose length of expiry
+    const expiryLength: ExpiryType = ["year", "quarter", "month"][Math.floor(Math.random() * 3)] as ExpiryType;
+
+    // choose which quarter or month of the current year we're on
+    const startIndex = {
+        "year": 0,
+        "quarter": Math.floor(Math.random() * 4),
+        "month": Math.floor(Math.random() * 12)
+    }[expiryLength];
+
+    // generate start and Date()s
+    const start = new Date(year, {
+        "year": startIndex,
+        "quarter": startIndex * 3,
+        "month": startIndex
+    }[expiryLength]);
+    const end = {
+        "year": new Date(year + 1, 0),
+        "quarter": new Date(startIndex === 3 ? year + 1 : year, ((startIndex + 1) * 3) % 12),
+        "month": new Date(startIndex === 11 ? year + 1 : year, (startIndex + 1) % 12)
+    }[expiryLength];
+
+    // return expiry range
+    return {
+        from: start.getTime(),
+        to: end.getTime(),
+        label: {
+            "year": year.toString(),
+            "quarter": `${quarters[startIndex]} ${year}`,
+            "month": `${months[startIndex]} ${year}`
+        }[expiryLength]
+    };
 }
 
 /**
@@ -803,7 +720,7 @@ export class Tray {
                 generateRandomId(),
                 i,
                 categories[Math.floor(categories.length * Math.random())],
-                expires[Math.floor(expires.length * Math.random())],
+                generateRandomExpiry(),
                 Number((15 * Math.random()).toFixed(2)),
                 Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
                 column

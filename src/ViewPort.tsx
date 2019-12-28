@@ -4,8 +4,9 @@ import "pepjs";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
-import {getExpiryColour, Shelf, Tray} from "./core/MockWarehouse";
+import {Shelf, Tray} from "./core/MockWarehouse";
 import {getTextColourForBackground} from "./utils/getTextColourForBackground";
+import {getExpiryColour} from "./utils/getExpiryColour";
 
 
 interface ViewPortProps {

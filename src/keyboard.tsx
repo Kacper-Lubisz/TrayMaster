@@ -7,25 +7,19 @@ import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
  * @see KeyboardButton
  */
 export interface KeyboardButtonProps {
-    /**
-     * Name to show on the button
-     */
+    /** Name to show on the button */
     name: string,
+
+    /** Icon to use: replaces name */
     icon?: IconDefinition,
-    /**
-     * Function to call when button is clicked
-     * @param e
-     */
+
+    /** Function to call when button is clicked */
     onClick?: (e: React.MouseEvent) => void;
 
-    /**
-     * Whether the button should be visibly selected
-     */
+    /** Whether the button should be visibly selected */
     selected?: boolean;
 
-    /**
-     * Whether the button should be visibly disabled
-     */
+    /**  Whether the button should be disabled */
     disabled?: boolean;
 }
 
@@ -56,29 +50,21 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
  * @see Keyboard
  */
 interface KeyboardProps {
-    /**
-     * List of KeyboardButtonProps to give to child buttons
-     */
+    /** List of KeyboardButtonProps to give to child buttons */
     buttons: KeyboardButtonProps[];
 
-    /**
-     * Number of buttons to show in each horizontal row
-     */
+    /** Number of buttons to show in each horizontal row */
     gridX: number;
 
-    /**
-     * Id to give parent HTML element
-     */
+    /** Id to give parent HTML element */
     id?: string;
 
-    /**
-     * Whether to grey out the keyboard
-     */
+    /** Whether to grey out the keyboard */
     disabled?: boolean;
 }
 
 /**
- * Keyboard component: returns a full-width keyboard with the given buttons, grid width and height
+ * Keyboard component: returns a full-width keyboard with the given buttons and grid width
  * @see KeyboardProps
  */
 export class Keyboard extends React.Component<KeyboardProps> {
