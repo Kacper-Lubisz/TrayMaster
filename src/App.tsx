@@ -11,8 +11,8 @@ import {Warehouse} from "./core/MockWarehouse";
 import {LoadingPage} from "./Loading";
 
 interface AppState {
-    warehouse: Warehouse
-    settings: Settings
+    warehouse: Warehouse;
+    settings: Settings;
 }
 
 class App extends React.Component<any, AppState> {
@@ -27,16 +27,16 @@ class App extends React.Component<any, AppState> {
 
         loadPromise.then((result) => {
             const [settings, warehouse] = result;
-            console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
-            console.log(`Warehouse Loaded: ${warehouse}`);
+            console.log(`Settings Loaded:`, settings);
+            console.log(`Warehouse Loaded:`, warehouse);
 
             this.setState({
                 warehouse: warehouse,
-                settings: settings
+                settings: settings,
             });
 
         }).catch(() => {
-            console.error("Failed to load the warehouse of the settings");
+            console.error("Failed to load the warehouse or the settings");
             // todo present error message
         });
 

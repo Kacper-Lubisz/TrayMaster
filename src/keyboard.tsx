@@ -1,4 +1,5 @@
 import React from "react";
+import classNames from "classnames";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 
@@ -8,10 +9,10 @@ import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
  */
 export interface KeyboardButtonProps {
     /** Name to show on the button */
-    name: string,
+    name: string;
 
     /** Icon to use: replaces name */
-    icon?: IconDefinition,
+    icon?: IconDefinition;
 
     /** Function to call when button is clicked */
     onClick?: (e: React.MouseEvent) => void;
@@ -31,7 +32,9 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
             <button disabled={this.props.disabled}
-                    className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
+                    className=className={classNames("key-btn", {
+                "key-btn-selected": this.props.selected
+            })} onClick={(e) => {
                 // if button isn't disabled, and we've been given an onClick function, run it
                 if (!this.props.disabled && this.props.onClick) {
                     this.props.onClick(e);

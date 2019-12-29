@@ -197,7 +197,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 <Keyboard id="exp-3" disabled={!commonYear} buttons={this.months} gridX={3}/>
             </div>;
 
-        } else { // (this.props.keyboardState === "weight")
+        } else if (this.props.keyboardState === "weight") {
 
             // Weight numpad structure
             let numpad = [];
@@ -251,7 +251,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 </div>
             </div>;
 
+        } else { // edit shelf
+            return <div>Add some presets in here</div>;
         }
+
     }
 
     /**

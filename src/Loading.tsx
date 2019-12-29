@@ -15,12 +15,12 @@ interface SpinnerTrayProps {
     /**
      * Co-ordinates inside the SVG in pixels, from top left, in the format [x, y]
      */
-    pos: [number, number],
+    pos: [number, number];
 
     /**
      * Animation class to give to the returned SVG rect
      */
-    anim?: string
+    anim?: string;
 }
 
 /**
@@ -34,7 +34,7 @@ interface LoadingPageState {
      *     [tray2Key]: [animationClass2]
      * }
      */
-    animation?: any
+    animation?: any;
 }
 
 /**

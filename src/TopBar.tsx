@@ -2,8 +2,8 @@ import React from "react";
 import {getTextColourForBackground} from "./utils/getTextColourForBackground";
 
 interface TopBarProps {
-    locationString: string,
-    zoneColour?: string
+    locationString: string;
+    zoneColour?: string;
 }
 
 export class TopBar extends React.Component<TopBarProps> {
