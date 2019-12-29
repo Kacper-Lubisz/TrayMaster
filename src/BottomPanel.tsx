@@ -1,14 +1,14 @@
 import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {KeyboardName} from "./ShelfView";
+import {Category, ExpiryRange, Tray} from "./core/MockWarehouse";
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
-import {Tray} from "./core/MockWarehouse";
 
 export interface BottomPanelProps {
-    keyboardState: KeyboardName
-
-    categories: KeyboardButtonProps[];
-
+    keyboardState: KeyboardName;
+    categorySelected: (category: Category) => void;
+    expirySelected: (expiry: ExpiryRange) => void;
+    categories: Category[];
     selectedTrays: Tray[];
     draftWeight?: string;
     setDraftWeight: (newDraftWeight?: string) => void;
@@ -19,50 +19,57 @@ export interface BottomPanelProps {
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
  * @see BottomPanelPage
  */
-export class BottomPanel extends React.Component<BottomPanelProps, any> {
+export class BottomPanel extends React.Component<BottomPanelProps> {
     years: KeyboardButtonProps[];
     quarters: KeyboardButtonProps[];
     months: KeyboardButtonProps[];
+    quartersTranslator: string[] = [
+        "Jan-Mar",
+        "Apr-Jun",
+        "Jul-Sep",
+        "Oct-Dec"
+    ];
+    monthsTranslator: string[] = [
+        "Jan", "Feb", "Mar",
+        "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep",
+        "Oct", "Nov", "Dec"
+    ];
+
+    /**
+     * Currently selected year
+     */
+    selectedYear: number | undefined;
 
     constructor(props: BottomPanelProps) {
         super(props);
 
         // Expiry keyboard structure
         this.years = [];
-        for (let i = 2019; i < 2027; i++) {
+        // TODO: consider applying database settings to this
+        const thisYear = new Date().getFullYear();
+        for (let i = thisYear; i < thisYear + 8; i++) {
             this.years.push({
                 name: i.toString(), onClick: () => {
-                    alert(i);
+                    this.selectYear(i);
                 }
             });
         }
 
         this.quarters = [];
-        const quartersTranslator: string[] = [
-            "Jan-Mar",
-            "Apr-Jun",
-            "Jul-Sep",
-            "Oct-Dec"
-        ];
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 0; i < 4; i++) {
             this.quarters.push({
-                name: quartersTranslator[i - 1], onClick: () => {
-                    alert(i);
+                name: this.quartersTranslator[i], onClick: () => {
+                    this.selectQuarter(i);
                 }
             });
         }
 
         this.months = [];
-        const monthsTranslator: string[] = [
-            "Jan", "Feb", "Mar",
-            "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep",
-            "Oct", "Nov", "Dec"
-        ];
-        for (let i = 1; i <= 12; i++) {
+        for (let i = 0; i < 12; i++) {
             this.months.push({
-                name: monthsTranslator[i - 1], onClick: () => {
-                    alert(i);
+                name: this.monthsTranslator[i], onClick: () => {
+                    this.selectMonth(i);
                 }
             });
         }
@@ -101,19 +108,94 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         }
     }
 
-    chooseKeyboard() {
+    /**
+     * Called when a year button is pressed
+     * Sets selectedYear and current tray expiry to that year
+     * @param year - number representing the current year
+     */
+    selectYear(year: number) {
+        this.selectedYear = year;
+        this.props.expirySelected({
+            from: new Date(year, 0).getTime(),
+            to: new Date(year + 1, 0).getTime(),
+            label: year.toString()
+        });
+    }
 
+    /**
+     * Called when a quarter button is pressed
+     * Sets current tray expiry to that quarter in selectedYear
+     * @param quarter - number in [0-3] inclusive representing the current quarter
+     */
+    selectQuarter(quarter: number) {
+        if (this.selectedYear) {
+            this.props.expirySelected({
+                from: new Date(this.selectedYear, quarter * 3).getTime(),
+                to: new Date(quarter === 3 ? this.selectedYear + 1
+                                           : this.selectedYear, (quarter + 1) * 3 % 4).getTime(),
+                label: `${this.quartersTranslator[quarter]} ${this.selectedYear.toString()}`
+            });
+        }
+    }
+
+    /**
+     * Called when a month button is pressed
+     * Sets current tray expiry to that month in selectedYear
+     * @param month - number in [0-11] inclusive representing the current quarter
+     */
+    selectMonth(month: number) {
+        if (this.selectedYear) {
+            this.props.expirySelected({
+                from: new Date(this.selectedYear, month).getTime(),
+                to: new Date(month === 11 ? this.selectedYear + 1 : this.selectedYear, (month + 1) % 12).getTime(),
+                label: `${this.monthsTranslator[month]} ${this.selectedYear.toString()}`
+            });
+        }
+    }
+
+    /**
+     * Return different keyboards depending on keyboardState
+     * @param disabled whether the keyboard is disabled (ie no trays are selected)
+     * @param currentTray the current tray, if there's only one tray
+     */
+    chooseKeyboard(disabled: boolean, currentTray?: Tray) {
         if (this.props.keyboardState === "category") {
 
-            return <Keyboard id="cat-keyboard" buttons={this.props.categories} gridX={8}/>;
+            const firstCat = this.props.categories.find(i => i !== undefined);
+            const commonCat = firstCat === undefined ? undefined
+                                                     : this.props.categories.every(item => item === undefined || item === firstCat)
+                                                       ? firstCat : null;
+
+            const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
+                return {
+                    name: cat.shortName ?? cat.name,
+                    onClick: this.props.categorySelected.bind(undefined, cat),
+                    selected: cat === commonCat
+                };
+            });
+            return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
 
+            const firstExp = this.props.selectedTrays.find(i => i.expiry !== undefined)?.expiry?.from;
+            const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
+            const commonYear = firstYear === undefined ? undefined
+                                                       : this.props.selectedTrays.every(item => item.expiry?.from === undefined || new Date(item.expiry?.from).getFullYear() === firstYear)
+                                                         ? firstYear : undefined;
+
+            // update selectedYear: don't need to worry about disabled as currentTray will be undefined if disabled
+            this.selectedYear = commonYear;
+
+            // set the button corresponding to selectedYear to be visibly selected
+            for (let i = 0; i < this.years.length; i++) {
+                this.years[i].selected = this.years[i].name === commonYear?.toString();
+            }
+
             return <div className="keyboard-container">
-                <Keyboard id="exp-1" buttons={this.years} gridX={2}/>
+                <Keyboard id="exp-1" disabled={disabled} buttons={this.years} gridX={2}/>
                 <div className="vl"/>
-                <Keyboard id="exp-2" buttons={this.quarters} gridX={1}/>
-                <Keyboard id="exp-3" buttons={this.months} gridX={3}/>
+                <Keyboard id="exp-2" disabled={!commonYear} buttons={this.quarters} gridX={1}/>
+                <Keyboard id="exp-3" disabled={!commonYear} buttons={this.months} gridX={3}/>
             </div>;
 
         } else { // (this.props.keyboardState === "weight")
@@ -173,12 +255,17 @@ export class BottomPanel extends React.Component<BottomPanelProps, any> {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     render() {
+        const currentTray: Tray | undefined = this.props.selectedTrays.length === 1 ? this.props.selectedTrays[0]
+                                                                                    : undefined;
+        const disabled: boolean = !this.props.selectedTrays.length;
+
         // return DOM elements using button structures
-        return (
-            <div id="bottom">
-                {this.chooseKeyboard()}
-            </div>
-        );
+        return <div id="bottom">
+            {this.chooseKeyboard(disabled, currentTray)}
+        </div>;
     }
 }

@@ -4,7 +4,7 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
+import {Bay, Category, ExpiryRange, Shelf, Tray, Warehouse, Zone} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
@@ -260,9 +260,20 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
-    categorySelected(category: Category) {
+    onCategorySelected(category: Category) {
         for (let tray of this.getSelectedTrays()) {
             tray.category = category;
+        }
+        this.forceUpdate();
+    }
+
+    /**
+     * This method is called when an expiry is selected on the expiry keyboard
+     * @param expiry The expiry that is selected
+     */
+    onExpirySelected(expiry: ExpiryRange) {
+        for (let tray of this.getSelectedTrays()) {
+            tray.expiry = expiry;
         }
         this.forceUpdate();
     }
@@ -343,17 +354,14 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 />
 
                 <BottomPanel
-                    categories={this.props.warehouse.categories.map((category) => {
-                        return {
-                            name: category.shortName ?? category.name,
-                            onClick: this.categorySelected.bind(this, category)
-                        };
-                    })}
-                    selectedTrays={this.getSelectedTrays()}
+                    categories={this.props.warehouse.categories}
+                    categorySelected={this.onCategorySelected.bind(this)}
+                    expirySelected={this.onExpirySelected.bind(this)}
                     draftWeight={this.state.draftWeight}
                     setDraftWeight={this.setDraftWeight.bind(this)}
                     applyDraftWeight={this.applyDraftWeight.bind(this)}
                     keyboardState={this.state.currentKeyboard}
+                    selectedTrays={this.getSelectedTrays()}
                 />
             </div>
         );

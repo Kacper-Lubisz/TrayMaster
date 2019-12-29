@@ -1,9 +1,12 @@
 import React from "react";
+// noinspection
 import "pepjs";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
 import {Shelf, Tray} from "./core/MockWarehouse";
+import {getTextColourForBackground} from "./utils/getTextColourForBackground";
+import {getExpiryColour} from "./utils/getExpiryColour";
 
 
 interface ViewPortProps {
@@ -269,9 +272,14 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             className="column"
                             key={columnIndex}
                         >
-                            {column.trays.map((tray, trayIndex) =>
+                            {column.trays.map((tray, trayIndex) => {
 
-                                <div
+                                const bg = tray.expiry ? getExpiryColour(tray.expiry) : "";
+                                const expiryStyles = {
+                                    backgroundColor: bg,
+                                    color: getTextColourForBackground(bg)
+                                };
+                                return <div
                                     className={`tray${(this.props.selectedTrays.length > 1 || this.state.longPress?.isHappening)
                                                       ? " multipleSelect"
                                                       : ""}${
@@ -291,16 +299,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                         icon={tickSolid}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
-                                    <div className="trayExpiry" style={{
-                                        backgroundColor: tray.expiry?.color
-                                    }}>{tray.expiry?.label ?? "?"}</div>
+                                    <div className="trayExpiry" style={expiryStyles}>{tray.expiry?.label ?? "?"}</div>
 
                                     <div className="trayWeight">{tray.weight ?? "?"}kg</div>
 
                                     <div className="trayCustomField">{tray.customField ?? ""}</div>
-                                </div>)}
-                        </div>)
-                    }</div>
+                                </div>;
+                            })}
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }

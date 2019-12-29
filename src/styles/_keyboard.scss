@@ -13,9 +13,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
-  // Undecided - TODO: decide whether button text should be uppercase
-  //text-transform: uppercase;
+  cursor: pointer;
 
   border: 1px solid #aaaaaa;
   margin: 3px 5px;
@@ -38,9 +36,10 @@
     background-color: #dddddd;
   }
 
-  // If the button is disabled, change the text color to be lightened-out
+  // If the button is disabled, grey it out and don't give any visual feedback
   &:disabled {
     color: #989898;
+    cursor: default;
   }
 }
 
