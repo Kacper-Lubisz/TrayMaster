@@ -280,8 +280,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
                 <p>todo add a button to go to settings or wherever this can be changed</p>
             </>;
-        }
-        if (this.props.current instanceof Zone) {
+        } else if (this.props.current instanceof Zone) {
             return <>
                 <h1>Current zone {this.props.current.toString()} has no bays</h1>
                 <p>todo add a button to go to settings or wherever this can be changed</p>

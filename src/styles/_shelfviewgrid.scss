@@ -17,8 +17,10 @@
   grid-template-columns: 10fr 2fr;
   grid-template-rows: 10fr 6fr;
 
+  // these values specify what sectors of the grid each component takes up
+
   #viewPort {
-    // middle left sector
+    // top left sector
     grid-column-start: 1;
     grid-column-end: 2;
     grid-row-start: 1;
@@ -26,7 +28,7 @@
   }
 
   #sideBar {
-    // top 2 rows on the right
+    // top right sector
     grid-column-start: 2;
     grid-column-end: 3;
     grid-row-start: 1;

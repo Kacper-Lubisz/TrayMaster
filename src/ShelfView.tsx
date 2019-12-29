@@ -43,12 +43,16 @@ type ShelfMoveDirection =
     | "up"
     | "down"
     | "next"
-    | "nextTray"
-    | "previousTray"
+    | "nextShelf"
+    | "previousShelf"
     | "nextZone"
     | "previousZone"
 
 interface ShelfViewProps {
+    /**
+     * This function allows for opening new dialogs.
+     * @param dialog A dialog builder function which takes the function that closes the dialog.
+     */
     openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
     warehouse: Warehouse;
     settings: Settings;
@@ -145,25 +149,26 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     /**
      * This method changes the current shelf that is displayed in shelf view.  The shelf can be changed to a specific
-     * shelf or can derive a new shelf from the current shelf and a direction.  The method does nothing if the direction
-     * can't be moved in.
+     * shelf or can derive a new shelf from the current shelf and a direction.  The method throws an error if the
+     * direction can't be moved in.  If moving to another zone the method will choose the first shelf or otherwise
+     * set the view to the zone itself (if no shelves available)
      * @param direction The shelf to move to or otherwise the direction in which to move.
      */
     changeView(direction: ShelfMoveDirection | Shelf) {
 
-        if (direction instanceof Shelf) {
+        if (direction instanceof Shelf) { // to specific shelf
             this.setState({
                 ...this.state,
                 selected: new Map(),
                 currentView: direction
             });
             return;
-        } else if (direction === "next") { // decide if next zone or tray
+        } else if (direction === "next") { // decide if next zone or shelf
 
             if (this.state.currentView instanceof Zone) {
                 this.changeView("nextZone");
             } else if (this.state.currentView instanceof Shelf) {
-                this.changeView("nextTray");
+                this.changeView("nextShelf");
             } else {
                 throw Error("Can't change view in direction 'next' when looking at a warehouse");
             }
@@ -171,15 +176,16 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         } else if (this.state.currentView instanceof Warehouse) {
             throw Error("Trying to navigate an empty warehouse");
             // this can't be navigated and ought not to happen
+
         } else if (this.state.currentView instanceof Zone && (
             direction === "left" || direction === "right" ||
             direction === "up" || direction === "down" ||
-            direction === "nextTray" || direction === "previousTray"
+            direction === "nextShelf" || direction === "previousShelf"
         )) {
             throw Error("These move directions are not possible when the current view is a Zone");
 
-        } else if (this.state.currentView instanceof Zone) {
-            const increment = direction === "nextZone" ? 1 : -1;
+        } else if (this.state.currentView instanceof Zone) { // if we're moving from a zone
+            const increment = direction === "nextZone" ? 1 : -1; // only nextZone or previousZone possible
 
             const zoneIndex = this.props.warehouse.zones.indexOf(this.state.currentView);
             const newZoneIndex = properMod(zoneIndex + increment, this.props.warehouse.zones.length);
@@ -201,16 +207,17 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
                 });
             }
-        } else { // shelf
+        } else { // moving from a shelf
             const {
                 warehouse, zone: currentZone, bay: currentBay,
                 zoneIndex, bayIndex, shelfIndex,
             } = ShelfView.currentShelfParentsAndIndices(this.state.currentView);
 
             if (direction === "up" || direction === "down") { // vertical
-                const isUp = direction === "up";
 
-                const newShelfIndex: number = shelfIndex + (isUp ? 1 : -1);
+                const increment = direction === "up" ? 1 : -1;
+                const newShelfIndex: number = shelfIndex + increment;
+
                 if (newShelfIndex < 0 || newShelfIndex >= currentBay.shelves.length) {
                     return;
                 }
@@ -222,9 +229,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 });
 
             } else if (direction === "left" || direction === "right") { // horizontal
-                const isRight = direction === "right";
 
-                const newBayIndex: number = bayIndex + (isRight ? 1 : -1);
+                const increment = direction === "right" ? 1 : -1;
+                const newBayIndex: number = bayIndex + increment;
+
                 if (newBayIndex < 0 || newBayIndex >= currentZone.bays.length) {
                     return;
                 }
@@ -240,10 +248,10 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     currentView: currentZone.bays[newBayIndex].shelves[newShelfIndex]
                 });
 
-            } else if (direction === "nextTray" || direction === "previousTray" ||
+            } else if (direction === "nextShelf" || direction === "previousShelf" ||
                 direction === "nextZone" || direction === "previousZone") { // cyclic, inc/dec shelf -> bay -> zone
 
-                const increment = direction === "nextTray" || direction === "nextZone" ? 1 : -1;
+                const increment = direction === "nextShelf" || direction === "nextZone" ? 1 : -1;
                 const isZone = direction === "nextZone" || direction === "previousZone";
 
                 if (shelfIndex + increment !== currentBay.shelves.length &&
@@ -259,8 +267,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     && bayIndex + increment !== -1 && !isZone) { // increment bayIndex
 
                     const newBay = currentZone.bays[bayIndex + increment];
-                    const newShelfIndex = direction === "nextTray" ? 0
-                                                                   : newBay.shelves.length - 1;
+                    const newShelfIndex = direction === "nextShelf" ? 0
+                                                                    : newBay.shelves.length - 1;
 
                     this.setState({
                         ...this.state,
@@ -323,8 +331,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             ["right", bayIndex + 1 !== zone.bays.length],
             ["up", shelfIndex + 1 !== bay.shelves.length],
             ["down", shelfIndex - 1 !== -1],
-            ["nextTray", warehouse.shelves.length > 1],
-            ["previousTray", warehouse.shelves.length > 1],
+            ["nextShelf", warehouse.shelves.length > 1],
+            ["previousShelf", warehouse.shelves.length > 1],
             ["nextZone", warehouse.zones.length > 1],
             ["previousZone", warehouse.zones.length > 1],
         ]);
@@ -558,68 +566,76 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
         const locationString = this.state.currentView.toString();
 
-        return (
-            <div id="shelfView">
-                <ViewPort
-                    selected={this.state.selected}
-                    setSelected={this.setSelected.bind(this)}
-                    isTraySelected={this.isTrayCellSelected.bind(this)}
-                    areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
+        return (<>
+                <div id="shelfView">
+                    <ViewPort
+                        selected={this.state.selected}
+                        setSelected={this.setSelected.bind(this)}
+                        isTraySelected={this.isTrayCellSelected.bind(this)}
+                        areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
 
-                    current={this.state.currentView}
-                    isShelfEdit={this.state.isEditShelf}
-                />
-                <SideBar
-                    zoneColor={zoneColor}
-                    locationString={locationString}
+                        current={this.state.currentView}
+                        isShelfEdit={this.state.isEditShelf}
+                    />
+                    <SideBar
+                        zoneColor={zoneColor}
+                        locationString={locationString}
 
-                    buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
-                        {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
-                        {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
-                        {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
-                    ] : [ // Generate sidebar buttons
-                        {name: "Settings", onClick: () => alert("Settings")},
-                        {name: "Home", onClick: () => alert("Home")},
-                        {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
-                        {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
-                        {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a warehouse
-                        // enabled = possibleMoveDirections.previousTray
-                        {name: "Next", onClick: this.changeView.bind(this, "next")},
-                        // enabled = possibleMoveDirections.nextTray
+                        buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
+                            {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
+                            {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
+                            {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
+                        ] : [ // Generate sidebar buttons
+                            {name: "Settings", onClick: () => alert("Settings")},
+                            {name: "Home", onClick: () => alert("Home")},
+                            {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
+                            {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
+                            {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a
+                                                                                         // warehouse
+                            // enabled = possibleMoveDirections.previousTray
+                            {name: "Next", onClick: this.changeView.bind(this, "next")},
+                            // enabled = possibleMoveDirections.nextTray
 
-                        // { This code adds a button which opens a test dialog
-                        //     name: "Test Dialog", onClick: this.props.openDialog.bind(undefined,
-                        //         App.buildErrorDialog("this is a big test", true)
-                        //     )
-                        // }
-                    ]}
-                    keyboards={[
-                        {name: "category", icon: faHome},
-                        {name: "expiry", icon: faClock},
-                        {name: "weight", icon: faWeightHanging}
-                    ]}
-                    keyboardSwitcher={this.switchKeyboard.bind(this)}
-                    showKeyboardSwitcher={!this.state.isEditShelf}
-                    currentKeyboard={this.state.currentKeyboard}
-                />
+                            // { This code adds a button which opens a test dialog
+                            //     name: "Test Dialog", onClick: this.props.openDialog.bind(undefined,
+                            //         App.buildErrorDialog("this is a big test", true)
+                            //     )
+                            // }
+                        ]}
+                        keyboards={[
+                            {name: "category", icon: faHome},
+                            {name: "expiry", icon: faClock},
+                            {name: "weight", icon: faWeightHanging}
+                        ]}
+                        keyboardSwitcher={this.switchKeyboard.bind(this)}
+                        showKeyboardSwitcher={!this.state.isEditShelf}
+                        currentKeyboard={this.state.currentKeyboard}
+                    />
+                    <BottomPanel
+                        categories={this.props.warehouse.categories.map((category) => {
+                            return {
+                                name: category.shortName ?? category.name,
+                                onClick: this.categorySelected.bind(this, category)
+                            };
+                        })}
+                        keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
+                        //fixme move this edit state to change current keyboard
+                    />
+
+                </div>
                 {!(this.state.currentView instanceof Warehouse) &&
                 this.renderNavigationPopup(this.state.currentView, possibleMoveDirections)
                 }
-                <BottomPanel
-                    categories={this.props.warehouse.categories.map((category) => {
-                        return {
-                            name: category.shortName ?? category.name,
-                            onClick: this.categorySelected.bind(this, category)
-                        };
-                    })}
-                    keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
-                    //fixme move this edit state to change current keyboard
-                />
-            </div>
+            </>
         );
 
     }
 
+    /**
+     * This method draws creates the elements of the navigation popup
+     * @param currentView The current vie wof the shelf view, limited to Zone or Shelf
+     * @param possibleMoveDirections The possible directions in which the current view can be moved.
+     */
     private renderNavigationPopup(currentView: Zone | Shelf, possibleMoveDirections: Map<ShelfMoveDirection, boolean>) {
 
         // todo fixme this whooole thing needs a restyle 😉
@@ -641,8 +657,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             <div className="modal">
                 <FontAwesomeIcon onClick={this.closeNavigator.bind(this)} icon={cross}/>
 
-                <div id="zoneSelector" style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr"}}
-                >
+                {/* Top zone selector */}
+                <div id="zoneSelector" style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr"}}>
                     <button
                         id="previousZone"
                         onClick={this.changeView.bind(this, "previousZone")}
@@ -657,44 +673,34 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     >Next <FontAwesomeIcon icon={rightArrow}/>
                     </button>
                 </div>
-                {zone?.bays.length === 0 ? <>
+
+                {/* Grid of shelves in zone */}
+                {zone?.bays.length === 0 ? <> //todo fixme this needs a complete redesign
                     <h1>This zone has no bays</h1>
-                </> : <div style={{ //todo fixme this needs a complete redesign
-                    display: "grid",
-                    gridGap: 5,
-                }}>{
+                </> : <div style={{display: "grid", gridGap: 5,}}>{
                     zone?.bays.flatMap((bay, bayIndex) =>
                         bay.shelves.map((shelf, shelfIndex) =>
-                            <div
-                                key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
-                                style={{
-                                    gridColumn: bayIndex + 1,
-                                    gridRow: maxBaySize - shelfIndex + 1,
-                                }}
+                            <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
+                                 style={{gridColumn: bayIndex + 1, gridRow: maxBaySize - shelfIndex + 1,}}
                             >
                                 <div
                                     style={{
                                         backgroundColor: zone?.color,
-                                        color: getTextColourForBackground(
-                                            zone?.color ?? "#ffffff"
-                                        )
+                                        color: getTextColourForBackground(zone?.color ?? "#ffffff")
                                     }}
                                     className={`shelf ${this.state.currentView === shelf ? "currentShelf" : ""}`}
                                     onClick={this.changeView.bind(this, shelf)}
-                                >
-
-                                    {bay.name} {shelf.name}
-                                </div>
+                                >{bay.name} {shelf.name}</div>
                             </div>
                         ))
                 }</div>}
 
-                <div
-                    id="arrowArea"
-                    style={{
-                        display: "grid",
-                    }}>
-                    {this.state.currentView instanceof Shelf ?
+                {/* Arrow grid */}
+                <div id="arrowArea"
+                     style={{
+                         display: "grid",
+                     }}>
+                    {this.state.currentView instanceof Shelf ? // centre label
                      <p
                          id="arrowAreaLabel"
                          style={{
@@ -709,62 +715,59 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                      >{this.state.currentView.toString()}</p> : undefined
                     }
 
-                    <button
-                        id="trayUp"
-                        disabled={!possibleMoveDirections.get("up")}
-                        onClick={this.changeView.bind(this, "up")}
-                        style={{
-                            gridRow: 1,
-                            gridColumn: 2,
-                        }}
+                    <button id="trayUp"
+                            disabled={!possibleMoveDirections.get("up")}
+                            onClick={this.changeView.bind(this, "up")}
+                            style={{
+                                gridRow: 1,
+                                gridColumn: 2,
+                            }}
                     ><FontAwesomeIcon icon={upArrow}/></button>
-                    <button
-                        id="trayDown"
-                        onClick={this.changeView.bind(this, "down")}
-                        style={{
-                            gridRow: 3,
-                            gridColumn: 2,
-                        }}
-                        disabled={!possibleMoveDirections.get("down")}
+                    <button id="trayDown"
+                            onClick={this.changeView.bind(this, "down")}
+                            style={{
+                                gridRow: 3,
+                                gridColumn: 2,
+                            }}
+                            disabled={!possibleMoveDirections.get("down")}
                     ><FontAwesomeIcon icon={downArrow}/></button>
-                    <button
-                        id="trayLeft"
-                        onClick={this.changeView.bind(this, "left")}
-                        style={{
-                            gridRow: 2,
-                            gridColumn: 1,
-                        }}
-                        disabled={!possibleMoveDirections.get("left")}
+                    <button id="trayLeft"
+                            onClick={this.changeView.bind(this, "left")}
+                            style={{
+                                gridRow: 2,
+                                gridColumn: 1,
+                            }}
+                            disabled={!possibleMoveDirections.get("left")}
                     ><FontAwesomeIcon icon={leftArrow}/></button>
-                    <button
-                        id="trayRight"
-                        onClick={this.changeView.bind(this, "right")}
-                        style={{
-                            gridRow: 2,
-                            gridColumn: 3,
-                        }}
-                        disabled={!possibleMoveDirections.get("right")}
+                    <button id="trayRight"
+                            onClick={this.changeView.bind(this, "right")}
+                            style={{
+                                gridRow: 2,
+                                gridColumn: 3,
+                            }}
+                            disabled={!possibleMoveDirections.get("right")}
                     ><FontAwesomeIcon icon={rightArrow}/></button>
                 </div>
+
+
+                {/* Next and previous shelf buttons */}
                 <div id="nextPrevious" style={{display: "grid"}}>
-                    <button
-                        id="previous"
-                        onClick={this.changeView.bind(this, "previousTray")}
-                        style={{
-                            gridRow: 4,
-                            gridColumn: 1,
-                        }}
-                        disabled={!possibleMoveDirections.get("previousTray")}
+                    <button id="previous"
+                            onClick={this.changeView.bind(this, "previousShelf")}
+                            style={{
+                                gridRow: 4,
+                                gridColumn: 1,
+                            }}
+                            disabled={!possibleMoveDirections.get("previousShelf")}
                     ><FontAwesomeIcon icon={leftArrow}/> Previous
                     </button>
-                    <button
-                        id="next"
-                        onClick={this.changeView.bind(this, "nextTray")}
-                        style={{
-                            gridRow: 4,
-                            gridColumn: 2,
-                        }}
-                        disabled={!possibleMoveDirections.get("nextTray")}
+                    <button id="next"
+                            onClick={this.changeView.bind(this, "nextShelf")}
+                            style={{
+                                gridRow: 4,
+                                gridColumn: 2,
+                            }}
+                            disabled={!possibleMoveDirections.get("nextShelf")}
                     >Next <FontAwesomeIcon icon={rightArrow}/>
                     </button>
                 </div>

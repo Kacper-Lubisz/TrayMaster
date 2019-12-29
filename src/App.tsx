@@ -13,7 +13,7 @@ import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawes
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 
 /**
- * This interface exits because these are never null together
+ * This interface exists because these are never null together
  */
 interface LoadedContent {
     warehouse: Warehouse;
@@ -83,8 +83,9 @@ class App extends React.Component<any, AppState> {
                 open={!!(this.state?.dialog ?? false)} //double negate because of falsy magic
                 closeOnDocumentClick={false}
                 onClose={this.closeDialog.bind(this)}
-            ><> {/*empty tag because for some reason Popup redefines the child type and makes it incompatible with the
-                possibly missing stuff*/}
+            ><> {/*empty tag because for some reason Popup overrides the type of the child props.  Making it so that a
+            boolean can't be a child, which is otherwise usually legal.  Boolean because the conditionals may evaluate
+            to a boolean or an Element*/}
                 {this.state?.dialog?.title !== undefined && <h1>
                     <FontAwesomeIcon {...this.state.dialog?.iconProps}/> {this.state?.dialog?.title}
                 </h1>}
@@ -105,6 +106,11 @@ class App extends React.Component<any, AppState> {
 
     }
 
+    /**
+     * This method opens a dialog.  The dialog is passed as a function which generates the dialog given a function which
+     * will close the dialog.  Only one dialog can be open at a time.
+     * @param dialog The dialog to be displayed
+     */
     public openDialog(dialog: ((close: () => void) => StandardDialog)) {
         this.setState((state) => {
             return {
@@ -114,12 +120,20 @@ class App extends React.Component<any, AppState> {
         });
     }
 
+    /**
+     * This method closes the currently open dialog, if none is open then it does nothing.
+     */
     public closeDialog() {
         this.setState((state) => {
             return {...state, dialog: null};
         });
     }
 
+    /**
+     * This method builds a dialog function for a standard error message.
+     * @param message The body of the dialog
+     * @param forceReload If the dialog forces the page to be reloaded
+     */
     static buildErrorDialog(message: string, forceReload: boolean): (close: () => void) => StandardDialog {
         return (close: () => void) => {
             return {
@@ -149,11 +163,17 @@ class App extends React.Component<any, AppState> {
 
 }
 
+/**
+ * This is the interface to represent the buttons of a dialog
+ */
 export interface DialogButton {
     name: string
     buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>
 }
 
+/**
+ * This interface represents all possible dialogs that can be displayed
+ */
 export interface StandardDialog {
     title?: string;
     iconProps: FontAwesomeIconProps;
