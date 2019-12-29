@@ -8,10 +8,7 @@
 @import "./keyboard";
 // Import viewport styling
 @import "./viewport";
-
-.isEditShelf {
-  @import "./shelfedit";
-}
+@import "./shelfedit";
 
 #topBar {
   background-color: #cccccc;
@@ -36,6 +33,7 @@
   padding: 5px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
 
   #side-keyboard-container {
     width: 100%;

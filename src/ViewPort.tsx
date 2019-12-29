@@ -4,8 +4,8 @@ import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle as tickSolid,
-    faMinusSquare as minus,
-    faPlusSquare as plus,
+    faMinus as minus,
+    faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
 import {Column, Shelf, Tray, TrayCell} from "./core/MockWarehouse";
@@ -415,46 +415,50 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                     </div>
             ))}
-            <div className="edit-shelf-column">
-                <button onClick={this.removeColumn.bind(this, column)}> {/*todo revise these icon*/}
+            {this.props.isShelfEdit ? <div className="edit-shelf-column">
+                <button className="colDeleteBtn"
+                        onClick={this.removeColumn.bind(this, column)}> {/*todo revise these icons*/}
                     <FontAwesomeIcon icon={trash}/>
                 </button>
 
-                <div id="sizeControls">
-                    <h3>Tray Width:</h3>
-                    <button
-                        disabled={!possibleColumnChanges.inc}
-                        onClick={this.changeColumnSize.bind(this, column, "inc")}
-                    >
-                        <FontAwesomeIcon icon={plus}/>
-                    </button>
-
-                    <div>{stringToTitleCase(column.size?.label ?? "?")}</div>
-                    <button
-                        disabled={!possibleColumnChanges.dec}
-                        onClick={this.changeColumnSize.bind(this, column, "dec")}
-                    >
-                        <FontAwesomeIcon icon={minus}/>
-                    </button>
+                <div className="colHeight">
+                    <div className="colControlHeader">Height in Trays:</div>
+                    <div className="colHeightControls">
+                        <button
+                            disabled={!possibleHeightChange.inc}
+                            onClick={this.changeColumnHeight.bind(this, column, "inc")}
+                        >
+                            <FontAwesomeIcon icon={plus}/>
+                        </button>
+                        <div className="colHeightValue">{column.maxHeight ?? "?"}</div>
+                        <button
+                            disabled={!possibleHeightChange.dec}
+                            onClick={this.changeColumnHeight.bind(this, column, "dec")}
+                        >
+                            <FontAwesomeIcon icon={minus}/>
+                        </button>
+                    </div>
                 </div>
 
-                <div id="heightControls">
-                    <h1>Max Height:</h1>
-                    <button
-                        disabled={!possibleHeightChange.inc}
-                        onClick={this.changeColumnHeight.bind(this, column, "inc")}
-                    >
-                        <FontAwesomeIcon icon={plus}/>
-                    </button>
-                    <div>{column.maxHeight ?? "?"}</div>
-                    <button
-                        disabled={!possibleHeightChange.dec}
-                        onClick={this.changeColumnHeight.bind(this, column, "dec")}
-                    >
-                        <FontAwesomeIcon icon={minus}/>
-                    </button>
+                <div className="colWidth">
+                    <div className="colControlHeader">Tray Width: <span
+                        className="colWidthValue">{stringToTitleCase(column.size?.label ?? "?")}</span></div>
+                    <div className="colWidthControls">
+                        <button
+                            disabled={!possibleColumnChanges.dec}
+                            onClick={this.changeColumnSize.bind(this, column, "dec")}
+                        >
+                            <FontAwesomeIcon icon={minus}/>
+                        </button>
+                        <button
+                            disabled={!possibleColumnChanges.inc}
+                            onClick={this.changeColumnSize.bind(this, column, "inc")}
+                        >
+                            <FontAwesomeIcon icon={plus}/>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </div> : ""}
         </div>;
     }
 

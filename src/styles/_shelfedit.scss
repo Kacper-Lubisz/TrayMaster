@@ -1,15 +1,106 @@
-#sideBar {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+.edit-shelf-column {
+  visibility: hidden;
+  z-index: 10;
+  background-color: #eeeeeedd;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 
-  #side-keyboard-container {
-    height: 50%;
+  .colDeleteBtn {
+    top: 10px;
+    right: 10px;
+
+    height: 5vh;
+    width: 5vh;
+
+
+  }
+
+  .colControlHeader {
+    font-size: 16px;
+    margin: 0 5% 10px 5%;
+  }
+
+  button {
+    cursor: pointer;
+
+    > svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  > * {
+    position: absolute;
+  }
+
+  > div {
+    width: 100%;
+    left: 50%;
+  }
+
+  .colHeight {
+    top: 40%;
+    transform: translate(-50%, -50%);
+
+    .colControlHeader {
+      font-size: 20px;
+    }
+
+    .colHeightValue {
+      font-weight: bold;
+      font-size: 36px;
+    }
+
+    .colHeightControls {
+
+      > button {
+        height: 7vh;
+        width: 9vh;
+
+        &:last-child {
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+
+  .colWidth {
+    bottom: 0;
+    transform: translate(-50%, 0);
+
+    .colWidthValue {
+      font-weight: bold;
+    }
+
+    .colWidthControls {
+      width: 100%;
+
+      > button {
+        width: 43%;
+        height: 7vh;
+
+        &:first-child {
+          margin: 0 2% 15px 5%;
+        }
+
+        &:last-child {
+          margin: 0 5% 15px 2%;
+        }
+      }
+    }
   }
 }
 
-#viewPort {
-  .edit-shelf-column {
-    opacity: 1;
+.isEditShelf {
+  #sideBar #side-keyboard-container {
+    height: 50%;
+  }
+
+
+  #viewPort .edit-shelf-column {
+    visibility: visible;
   }
 }
