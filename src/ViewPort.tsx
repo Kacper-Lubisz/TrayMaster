@@ -274,11 +274,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         >
                             {column.trays.map((tray, trayIndex) => {
 
-                                const bg = tray.expiry ? getExpiryColour(tray.expiry) : "";
-                                const expiryStyles = {
-                                    backgroundColor: bg,
-                                    color: getTextColourForBackground(bg)
-                                };
                                 return <div
                                     className={`tray${(this.props.selectedTrays.length > 1 || this.state.longPress?.isHappening)
                                                       ? " multipleSelect"
@@ -299,7 +294,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                                         icon={tickSolid}/>
                                     <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
-                                    <div className="trayExpiry" style={expiryStyles}>{tray.expiry?.label ?? "?"}</div>
+                                    <div className="trayExpiry" style={(() => {
+                                        const bg = tray.expiry ? getExpiryColour(tray.expiry) : "";
+                                        return {
+                                            backgroundColor: bg,
+                                            color: getTextColourForBackground(bg)
+                                        };
+                                    })()}>{tray.expiry?.label ?? "?"}</div>
 
                                     <div className="trayWeight">{tray.weight ?? "?"}kg</div>
 

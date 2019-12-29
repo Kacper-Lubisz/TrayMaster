@@ -156,9 +156,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     /**
      * Return different keyboards depending on keyboardState
      * @param disabled whether the keyboard is disabled (ie no trays are selected)
-     * @param currentTray the current tray, if there's only one tray
      */
-    chooseKeyboard(disabled: boolean, currentTray?: Tray) {
+    chooseKeyboard(disabled: boolean) {
         if (this.props.keyboardState === "category") {
 
             const firstCat = this.props.categories.find(i => i !== undefined);
@@ -169,7 +168,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
                 return {
                     name: cat.shortName ?? cat.name,
-                    onClick: this.props.categorySelected.bind(undefined, cat),
+                    onClick: () => this.props.categorySelected(cat),
                     selected: cat === commonCat
                 };
             });
@@ -259,13 +258,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * @inheritDoc
      */
     render() {
-        const currentTray: Tray | undefined = this.props.selectedTrays.length === 1 ? this.props.selectedTrays[0]
-                                                                                    : undefined;
-        const disabled: boolean = !this.props.selectedTrays.length;
 
         // return DOM elements using button structures
         return <div id="bottom">
-            {this.chooseKeyboard(disabled, currentTray)}
+            {this.chooseKeyboard(!this.props.selectedTrays.length)}
         </div>;
     }
 }
