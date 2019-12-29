@@ -1,7 +1,7 @@
 // VIEWPORT STYLING
 
 // Import system-wide variables: we need to know $accent-colour here
-@import "variables";
+@import "./variables";
 
 #sizeControls, #heightControls { // todo fixme revise this style
   width: 100%;
@@ -39,7 +39,7 @@
     justify-content: flex-start;
     align-items: flex-end;
     padding: 5px;
-    position: relative;
+    position: relative; // needed to allow us to position shelf edit columns absolutely inside .column
 
     transition: flex-grow 0.5s ease;
 

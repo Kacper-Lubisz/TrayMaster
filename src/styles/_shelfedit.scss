@@ -1,3 +1,4 @@
+// Content that appears above columns when in edit shelf mode
 .edit-shelf-column {
   visibility: hidden;
   z-index: 10;
@@ -8,21 +9,22 @@
   bottom: 0;
   left: 0;
 
+  // Column delete button (top left)
   .colDeleteBtn {
     top: 10px;
     right: 10px;
 
     height: 5vh;
     width: 5vh;
-
-
   }
 
+  // Titles for each control (eg 'Tray Width:')
   .colControlHeader {
     font-size: 16px;
     margin: 0 5% 10px 5%;
   }
 
+  // All shelf edit buttons
   button {
     cursor: pointer;
 
@@ -32,60 +34,76 @@
     }
   }
 
+  // All children of .edit-shelf-column
   > * {
     position: absolute;
   }
 
+  // All divs that are direct children of .edit-shelf-column
+  // (In this case, the container divs for the two controls)
   > div {
     width: 100%;
     left: 50%;
   }
 
+  // Container for column height controls and title
   .colHeight {
     top: 40%;
     transform: translate(-50%, -50%);
 
+    // 'Height in Trays:' text
     .colControlHeader {
       font-size: 20px;
     }
 
+    // Numeric value representing maximum number of trays in the column
     .colHeightValue {
       font-weight: bold;
       font-size: 36px;
     }
 
+    // Container for controls
     .colHeightControls {
 
+      // Height control buttons
       > button {
         height: 7vh;
         width: 9vh;
 
+        // Last button
         &:last-child {
+          // Make up for the fact that numbers are typically displayed low in the line
           margin-top: 4px;
         }
       }
     }
   }
 
+  // Container for column width controls and title
   .colWidth {
     bottom: 0;
     transform: translate(-50%, 0);
 
+    // Make tray width text bold
     .colWidthValue {
       font-weight: bold;
     }
 
+    // Container for buttons
     .colWidthControls {
       width: 100%;
 
+      // Width buttons
       > button {
         width: 43%;
         height: 7vh;
 
+        // First one: smaller margin on the right
         &:first-child {
           margin: 0 2% 15px 5%;
         }
 
+        // Second one: smaller margin on the left
         &:last-child {
           margin: 0 5% 15px 2%;
         }

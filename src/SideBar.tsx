@@ -91,7 +91,7 @@ export class SideBar extends React.Component<SideBarProps> {
     render() {
         return (
             <div id="sideBar">
-                <div id="side-keyboard-container">
+                <div id="side-keyboard-container"> {/* Constrains sidebar keyboard(s) vertically when necessary*/}
                     <Keyboard buttons={this.props.buttons} gridX={1}/>
                 </div>
 
