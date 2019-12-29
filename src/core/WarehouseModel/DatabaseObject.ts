@@ -1,7 +1,6 @@
 import * as firebase from "firebase/app";
 import "firebase/firestore";
 import * as path from "path";
-import {OnlineUpperLayer} from "./OnlineUpperLayer";
 
 
 const firebaseConfig = { // firebase config

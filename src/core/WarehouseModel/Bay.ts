@@ -1,19 +1,19 @@
-import {OnlineUpperLayer} from "./OnlineUpperLayer";
-import {OnlineZone} from "./OnlineZone";
-import {OnlineWarehouse} from "./OnlineWarehouse";
-import {OnlineShelf} from "./OnlineShelf";
-import {OnlineColumn} from "./OnlineColumn";
-import {OnlineTray} from "./OnlineTray";
+import {UpperLayer} from "./UpperLayer";
+import {Zone} from "./Zone";
+import {Warehouse} from "./Warehouse";
+import {Shelf} from "./Shelf";
+import {Column} from "./Column";
+import {Tray} from "./Tray";
+import {ONLINE} from "../WarehouseModel";
+import {Utils} from "./Utils";
 
 
-export class OnlineBay extends OnlineUpperLayer {
-    isDeepLoaded: boolean = false;
-
+export class Bay extends UpperLayer {
     name: string;
     index: number;
 
-    parentZone?: OnlineZone;
-    shelves: OnlineShelf[] = [];
+    parentZone?: Zone;
+    shelves: Shelf[] = [];
 
     /**
      * @param location - The database location for the bay
@@ -21,7 +21,7 @@ export class OnlineBay extends OnlineUpperLayer {
      * @param index - The (ordered) index of the bay within the zone
      * @param parentZone - The (nullable) parent zone
      */
-    private constructor(location: string, name: string, index: number, parentZone?: OnlineZone) {
+    private constructor(location: string, name: string, index: number, parentZone?: Zone) {
         super(location);
         this.name = name;
         this.index = index;
@@ -37,8 +37,8 @@ export class OnlineBay extends OnlineUpperLayer {
      * @param parentZone - The zone the bay belongs to
      * @returns The newly created bay
      */
-    public static create(shelves: OnlineShelf[], name?: string, index?: number, parentZone?: OnlineZone): OnlineBay {
-        const bay: OnlineBay = new OnlineBay("", name ?? "", index ?? -1, parentZone);
+    public static create(shelves: Shelf[], name?: string, index?: number, parentZone?: Zone): Bay {
+        const bay: Bay = new Bay("", name ?? "", index ?? -1, parentZone);
         bay.shelves = shelves;
         for (let i = 0; i < bay.shelves.length; i++)
             bay.shelves[i].placeInBay(i, bay);
@@ -50,7 +50,7 @@ export class OnlineBay extends OnlineUpperLayer {
      * @param index - The index of the bay within the zone
      * @param parentZone - The zone the bay is being added to
      */
-    public placeInZone(index: number, parentZone: OnlineZone) {
+    public placeInZone(index: number, parentZone: Zone) {
         this.index = index;
         this.parentZone = parentZone;
     }
@@ -65,13 +65,24 @@ export class OnlineBay extends OnlineUpperLayer {
      * @param zone - The zone to load the bays for
      * @returns A promise which resolves to all loaded bays within the zone
      */
-    public static async loadBays(zone: OnlineZone): Promise<OnlineBay[]> {
-        const bays: OnlineBay[] = await this.loadChildObjects<OnlineBay, OnlineZone>(zone, "bays", "index");
-        for (let bay of bays) {
-            bay.shelves = await OnlineShelf.loadShelves(bay);
-            bay.isDeepLoaded = true;
+    public static async loadBays(zone: Zone): Promise<Bay[]> {
+        if (ONLINE) {
+            const bays: Bay[] = await this.loadChildObjects<Bay, Zone>(zone, "bays", "index");
+            for (let bay of bays) {
+                bay.shelves = await Shelf.loadShelves(bay);
+                bay.isDeepLoaded = true;
+            }
+            return bays;
+        } else {
+            const bays: Bay[] = [];
+            for (let i = 0; i < 3; i++) {
+                const bay: Bay = new Bay(Utils.generateRandomId(), String.fromCharCode(i + 65), i, zone);
+                bay.shelves = await Shelf.loadShelves(bay);
+                bay.isDeepLoaded = true;
+                bays.push(bay);
+            }
+            return bays;
         }
-        return bays;
     }
 
     /**
@@ -80,8 +91,15 @@ export class OnlineBay extends OnlineUpperLayer {
      * @param zone - The zone to load the bays for
      * @returns A promise which resolves to the flat bays list
      */
-    public static async loadFlatBays(zone: OnlineZone): Promise<OnlineBay[]> {
-        return await this.loadChildObjects<OnlineBay, OnlineZone>(zone, "bays", "index");
+    public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
+        if (ONLINE)
+            return await this.loadChildObjects<Bay, Zone>(zone, "bays", "index");
+        else {
+            const bays: Bay[] = [];
+            for (let i = 0; i < 3; i++)
+                bays.push(new Bay(Utils.generateRandomId(), String.fromCharCode(i + 65), i, zone));
+            return bays;
+        }
     }
 
     /**
@@ -90,23 +108,23 @@ export class OnlineBay extends OnlineUpperLayer {
      */
     public async loadNextLayer(): Promise<void> {
         if (!this.isDeepLoaded)
-            this.shelves = await OnlineShelf.loadFlatShelves(this);
+            this.shelves = await Shelf.loadFlatShelves(this);
         this.isDeepLoaded = true;
     }
 
     //#region Children Getters
-    get columns(): OnlineColumn[] {
+    get columns(): Column[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays(): OnlineTray[] {
+    get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 
     //#endregion
 
     //#region Parent Getters
-    get parentWarehouse(): OnlineWarehouse | undefined {
+    get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
     }
 

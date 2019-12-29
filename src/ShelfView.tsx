@@ -4,9 +4,9 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
+import {Bay, Category, Column, Shelf, Tray, TrayCell, TraySpace, Warehouse, Zone} from "./core/WarehouseModel";
+import {Settings} from "./core/Settings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
-import {Bay, Shelf, Tray, Warehouse, Zone, Category} from "./core/WarehouseModel/MockWarehouseModel";
-import {Settings} from "./core/Settings/Settings";
 
 /**
  * Proper modulo function (gives a non-negative remainder as per mathematical definition)
@@ -21,23 +21,23 @@ function properMod(dividend: number, divisor: number): number {
 /**
  * Defines possible keyboard names
  */
-export type KeyboardName = "category" | "expiry" | "weight";
+export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
 
 /**
  * The directions in which you can navigate
  */
 type ShelfMoveDirection = "left" | "right" | "up" | "down" | "next" | "previous"
 
-
 interface ShelfViewProps {
-    warehouse: Warehouse
-    settings: Settings
+    warehouse: Warehouse;
+    settings: Settings;
 }
 
 interface ShelfViewState {
-    currentKeyboard: KeyboardName
+    currentKeyboard: KeyboardName;
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
-    selected: Map<Tray, boolean>;
+    selected: Map<TrayCell, boolean>;
+    isEditShelf: boolean;
 }
 
 export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
@@ -49,23 +49,36 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
+            isEditShelf: false
         };
     }
 
-    public setSelected(newMap: Map<Tray, boolean>, callback?: ((() => void) | undefined)) {
+    /**
+     * This is a callback which is callable by child components and sets the current selection
+     * @param newMap The map of trays to their selection
+     * @param callback A callback to call after setting the selection
+     */
+    public setSelected(newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)) {
         this.setState({
             ...this.state,
             selected: newMap
         }, callback);
     }
 
-    public isTraySelected(tray: Tray) {
+    /**
+     * Returns if a tray is selected
+     * @param tray A tray or tray space to be tested
+     */
+    public isTrayCellSelected(tray: TrayCell) {
         return this.state.selected.get(tray);
     }
 
+    /**
+     * Returns whether the there are multiple selected trays
+     */
     public areMultipleTraysSelected() {
         const currSelected = Array.from(this.state.selected.entries())
-                                  .filter(([_, value]) => value);
+                                  .filter(([_, selected]) => selected);
         return currSelected.length > 1;
     }
 
@@ -160,69 +173,42 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 currentShelf: currentZone.bays[newBayIndex].shelves[newShelfIndex]
             });
 
-        } else if (shelf === "next") {
+        } else if (shelf === "next" || shelf === "previous") { // cyclic, inc/dec shelf -> bay -> zone
+            const increment = shelf === "next" ? 1
+                                               : -1;
 
-            if (shelfIndex + 1 !== currentBay.shelves.length) {// increment shelfIndex
+            if (shelfIndex + increment !== currentBay.shelves.length &&
+                shelfIndex + increment !== -1) {// increment shelfIndex
 
-                const newShelfIndex = shelfIndex + 1;
+                const newShelfIndex = shelfIndex + increment;
                 this.setState({
                     ...this.state,
                     selected: new Map(),
                     currentShelf: currentBay.shelves[newShelfIndex]
                 });
-            } else if (bayIndex + 1 !== currentZone.bays.length) { // increment bayIndex
+            } else if (bayIndex + increment !== currentZone.bays.length
+                && bayIndex + increment !== -1) { // increment bayIndex
 
-                const newBayIndex = bayIndex + 1;
+                const newBay = currentZone.bays[bayIndex + increment];
+                const newShelfIndex = shelf === "next" ? 0
+                                                       : newBay.shelves.length - 1;
+
                 this.setState({
                     ...this.state,
                     selected: new Map(),
-                    currentShelf: currentZone.bays[newBayIndex].shelves[0]
+                    currentShelf: newBay.shelves[newShelfIndex]
                     // fixme ensure that this bay has shelves
                     // the best solution would be to store the bay and have the shelf view display a message saying:
                     // "this bay doesn't have any shelves yet"
                 });
             } else { // increment zone
 
-                const newZoneIndex = (zoneIndex + 1) % warehouse.zones.length;
-                this.setState({
-                    ...this.state,
-                    selected: new Map(),
-                    currentShelf: warehouse.zones[newZoneIndex].bays[0].shelves[0]
-                    // fixme ensure that this zone has bays and this bay has shelves
-                });
-            }
-        } else if (shelf === "previous") {
+                const newZone = warehouse.zones[properMod(zoneIndex + increment, warehouse.zones.length)];
+                const newBay = newZone.bays[shelf === "next" ? 0
+                                                             : newZone.bays.length - 1];
+                const newShelf = newBay.shelves[shelf === "next" ? 0
+                                                                 : newBay.shelves.length - 1];
 
-            if (shelfIndex - 1 >= 0) {// decrement shelfIndex
-
-                const newShelfIndex = shelfIndex - 1;
-                const newShelf = currentBay.shelves[newShelfIndex];
-                this.setState({
-                    ...this.state,
-                    selected: new Map(),
-                    currentShelf: newShelf
-                });
-            } else if (bayIndex - 1 >= 0) { // decrement bayIndex
-
-                const newBayIndex = bayIndex - 1;
-                const newBay = currentZone.bays[newBayIndex];
-                // Go to last shelf in that bay
-                const newShelf = newBay.shelves[newBay.shelves.length - 1];
-                this.setState({
-                    ...this.state,
-                    selected: new Map(),
-                    currentShelf: newShelf
-                    // fixme ensure that this bay has shelves
-                    // the best solution would be to store the bay and have the shelf view display a message saying:
-                    // "this bay doesn't have any shelves yet"
-                });
-            } else { // decrement zone, looping back around if necessary
-                const newZoneIndex = properMod(zoneIndex - 1, warehouse.zones.length);
-                const newZone = warehouse.zones[newZoneIndex];
-                // Go to last bay in that zone
-                const newBay = newZone.bays[newZone.bays.length - 1];
-                // Go to last shelf in that bay
-                const newShelf = newBay.shelves[newBay.shelves.length - 1];
                 this.setState({
                     ...this.state,
                     selected: new Map(),
@@ -255,17 +241,102 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     }
 
+    // getSelectedAirSpaces(): TraySpace[] {
+    //
+    //     const selectedCells = this.state.currentShelf.columns
+    //                               .flatMap(column => column.getPaddedTrays())
+    //                               .filter(cell => this.state.selected.get(cell));
+    //
+    //     const {
+    //         trays, spaces
+    //     } = this.splitCells(selectedCells);
+    //
+    //
+    //     return spaces.reduce((acc, space) => { // should already be sorted
+    //         // this reduce filters away any floating trays
+    //         if (space.index === acc[0] + space.column.trays.length) {
+    //             acc[1].push(space);
+    //         }
+    //         return acc;
+    //     }, [0, []] as [number, TraySpace[]])[1];
+    //
+    // }
+
+    /**
+     * This method returns a list of selected trays.  The method has the option to fill selected tray spaces with new
+     * empty trays.  The method has an option to ignore selected spaces which are in the air.  The method ensures that
+     * replaced spaces are deselected and new trays are selected, this causes setState to be called and thus causes a
+     * repaint to follow after the triggering handler is finished.
+     * @param fillSpaces If spaces are to be filled
+     * @param ignoreAirSpaces If air trays are to be ignored
+     */
+    getSelectedTrays(
+        fillSpaces: boolean,
+        ignoreAirSpaces: boolean
+    ): Tray[] {
+
+        const selectedCells = this.state.currentShelf.columns
+                                  .flatMap(column => column.getPaddedTrays())
+                                  .filter(cell => this.state.selected.get(cell));
+
+        const {
+            trays, spaces
+        } = this.splitCells(selectedCells);
+
+        if (fillSpaces) {
+            const newSelection = new Map(this.state.selected);
+            const newTrays = spaces.map(space => {
+                if (!ignoreAirSpaces || space.index === space.column.trays.length) {
+                    let newTray = Tray.create(
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        space.index,
+                        space.column);
+                    space.column.trays.push(newTray);
+                    newSelection.set(newTray, true);
+                    newSelection.delete(space);
+                    return newTray;
+                } else {
+                    return undefined;
+                }
+            }).filter(tray => tray) as Tray[];
+
+            this.setSelected(newSelection);
+            return trays.concat(newTrays);
+        } else {
+            return trays;
+        }
+    }
+
+    /**
+     * This splits a list of TrayCells into a list of trays and spaces
+     * @param selectedCells The list to split
+     */
+    private splitCells(selectedCells: TrayCell[]): { trays: Tray[], spaces: TraySpace[] } {
+        return selectedCells.reduce((acc, cell) => {
+            if (cell instanceof Tray) {
+                acc.trays.push(cell);
+            } else {
+                acc.spaces.push(cell);
+            }
+            return acc;
+        }, {trays: [] as Tray[], spaces: [] as TraySpace[]});
+    }
+
     /**
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
     categorySelected(category: Category) {
-        this.state.selected.forEach((selected, tray) => {
-            if (selected) {
-                tray.category = category;
-            }
+
+        this.getSelectedTrays(true, true).forEach((tray) => {
+            tray.category = category;
         });
         this.forceUpdate();
+        // this updates because get selected Trays causes an update after the click event is handled
+
     }
 
     /**
@@ -284,8 +355,58 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method enters edit shelf mode
      */
     enterEditShelf() {
-        throw Error("Unimplemented method stub");
+        this.setState({
+            ...this.state,
+            isEditShelf: !this.state.isEditShelf
+        });
+        // todo
+        // throw Error("Unimplemented method stub");
     }
+
+    /**
+     * This method adds a new column to the current shelf and is called when the add column button is pressed.
+     */
+    addColumn() {
+        this.state.currentShelf.columns.push(Column.create(
+            [],
+            this.state.currentShelf.columns.length,
+            this.props.warehouse.traySizes[1], //fixme set a default
+            3,
+            this.state.currentShelf
+        ));
+        this.forceUpdate();
+    }
+
+    /**
+     * This method is called when edit shelf mode is exited and the changes are not rolled back
+     */
+    finaliseEditShelf() {
+
+        this.state.currentShelf.columns.forEach(column => { // remove trays over max height
+            if (column.maxHeight) {
+                const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
+                column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed =>
+                    this.state.selected.delete(removed)
+                );
+
+            }
+        });
+
+        this.setState({
+            ...this.state,
+            isEditShelf: !this.state.isEditShelf
+        });
+    }
+
+    /**
+     * This method is called when edit shelf mode is exited and the changes **are** rolled back
+     */
+    discardEditShelf() {
+
+        //todo unimplemented
+        this.finaliseEditShelf();
+    }
+
 
     /**
      * This method opens the navigation popover which allows for navigating between shelves
@@ -294,19 +415,58 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         throw Error("Unimplemented method stub");
     }
 
+    /**
+     * This method removes all the trays that are currently selected
+     */
+    clearTrays() {
+        const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
+
+        const reindexColumns = new Set<Column>();
+        this.state.selected.forEach((selected, tray) => {
+            if (selected) {
+                newSelectedMap.set(tray, false);
+                if (tray instanceof Tray) {
+                    const column = tray.parentColumn;
+                    if (!column) throw Error("Tray has no parent column");
+
+                    const trayIndex = column.trays.indexOf(tray);
+                    column.trays.splice(trayIndex, 1);
+
+                    reindexColumns.add(column);
+
+                }
+            }
+        });
+        reindexColumns.forEach((column) => {
+            column.trays.forEach((tray, index) => tray.index = index);
+        });
+
+        this.setSelected(newSelectedMap);
+    }
+
     render() {
         return (
             <div id="shelfView">
                 <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
                         locationString={this.state.currentShelf.toString()}/>
-                <ViewPort selected={this.state.selected} setSelected={this.setSelected.bind(this)}
-                          isTraySelected={this.isTraySelected.bind(this)}
-                          areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
-                          shelf={this.state.currentShelf}/>
+                <ViewPort
+                    selected={this.state.selected}
+                    setSelected={this.setSelected.bind(this)}
+                    isTraySelected={this.isTrayCellSelected.bind(this)}
+                    areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
+
+                    shelf={this.state.currentShelf}
+                    isShelfEdit={this.state.isEditShelf}
+                />
                 <SideBar
-                    buttons={[ // Generate sidebar buttons
+                    buttons={this.state.isEditShelf ? [
+                        {name: "Add Column", onClick: this.addColumn.bind(this)},
+                        {name: "Cancel", onClick: this.discardEditShelf.bind(this)},
+                        {name: "Save", onClick: this.finaliseEditShelf.bind(this)},
+                    ] : [ // Generate sidebar buttons
                         {name: "Settings", onClick: () => alert("Settings")},
                         {name: "Back", onClick: () => alert("Back")},
+                        {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)},
                         {name: "Previous", onClick: this.changeShelf.bind(this, "previous")},
@@ -318,6 +478,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         {name: "weight", icon: faWeightHanging}
                     ]}
                     keyboardSwitcher={this.switchKeyboard.bind(this)}
+                    showKeyboardSwitcher={!this.state.isEditShelf}
                     currentKeyboard={this.state.currentKeyboard}
                 />
 
@@ -328,7 +489,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             onClick: this.categorySelected.bind(this, category)
                         };
                     })}
-                    keyboardState={this.state.currentKeyboard}
+                    keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
+                    //fixme move this edit state to change current keyboard
                 />
             </div>
         );

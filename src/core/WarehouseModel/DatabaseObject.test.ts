@@ -1,4 +1,3 @@
-import React from "react";
 import DatabaseObject from "./DatabaseObject";
 
 class TestObj extends DatabaseObject {

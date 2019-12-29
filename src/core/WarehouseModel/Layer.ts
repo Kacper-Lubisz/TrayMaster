@@ -4,7 +4,7 @@ import DatabaseObject from "./DatabaseObject";
 /**
  * Represents a layer in the warehouse model
  */
-export abstract class OnlineLayer extends DatabaseObject {
+export abstract class Layer extends DatabaseObject {
     abstract saveLayer(): Promise<void>;
 
     protected constructor(path: string) {

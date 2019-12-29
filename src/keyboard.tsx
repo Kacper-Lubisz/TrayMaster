@@ -1,25 +1,19 @@
 import React from "react";
+import classNames from "classnames";
 
 /**
  * The properties that get passed into KeyboardButton components
  * @see KeyboardButton
  */
 export interface KeyboardButtonProps {
-    /**
-     * Name to show on the button
-     */
-    name: string,
+    /** Name to show on the button */
+    name: string;
 
-    /**
-     * Function to call when button is clicked
-     * @param e
-     */
-    onClick?: (e: React.MouseEvent) => void
+    /** Function to call when button is clicked */
+    onClick?: (e: React.MouseEvent) => void;
 
-    /**
-     * Whether the button should be visibly selected
-     */
-    selected?: boolean
+    /** Whether the button should be visibly selected */
+    selected?: boolean;
 }
 
 /**
@@ -29,7 +23,9 @@ export interface KeyboardButtonProps {
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
-            <button className={`key-btn${this.props.selected ? " key-btn-selected" : ""}`} onClick={(e) => {
+            <button className={classNames("key-btn", {
+                "key-btn-selected": this.props.selected
+            })} onClick={(e) => {
                 // if we've been given an onClick function, run it
                 if (this.props.onClick) {
                     this.props.onClick(e);
@@ -47,17 +43,17 @@ interface KeyboardProps {
     /**
      * List of KeyboardButtonProps to give to child buttons
      */
-    buttons: KeyboardButtonProps[],
+    buttons: KeyboardButtonProps[];
 
     /**
      * Number of buttons to show in each horizontal row
      */
-    gridX: number,
+    gridX: number;
 
     /**
      * Id to give parent HTML element
      */
-    id?: string
+    id?: string;
 }
 
 /**

@@ -1,4 +1,4 @@
-import {Settings} from "./Settings";
+import {Settings} from "../Settings";
 
 // TODO: Agree on which settings to be used
 

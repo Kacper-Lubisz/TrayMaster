@@ -5,14 +5,15 @@ import {ShelfView} from "./ShelfView";
 import {MainMenu} from "./MainMenu";
 import {SettingsPage} from "./SettingsPage";
 import {ErrorPage} from "./ErrorPage";
-import {Warehouse} from "./core/WarehouseModel/MockWarehouseModel";
-import {Settings} from "./core/Settings/Settings";
-import {SettingsManager} from "./core/Settings/MockSettings";
+
+import {Settings, SettingsManager} from "./core/Settings";
+import {Warehouse} from "./core/WarehouseModel";
 import {LoadingPage} from "./Loading";
+import {Utils} from "./core/WarehouseModel/Utils";
 
 interface AppState {
-    warehouse: Warehouse
-    settings: Settings
+    warehouse: Warehouse;
+    settings: Settings;
 }
 
 class App extends React.Component<any, AppState> {
@@ -22,24 +23,23 @@ class App extends React.Component<any, AppState> {
 
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
-            Warehouse.loadWarehouse()
+            Warehouse.loadWarehouse(Utils.generateRandomId())
         ]);
 
         loadPromise.then((result) => {
             const [settings, warehouse] = result;
-            console.log(`Settings Loaded:\n    sampleSetting: ${settings.sampleSetting}`);
-            console.log(`Warehouse Loaded:`);
-            console.log(warehouse);
+            console.log(`Settings Loaded:`, settings);
+            console.log(`Warehouse Loaded:`, warehouse);
 
             this.setState({
                 warehouse: warehouse,
-                settings: settings
+                settings: settings,
             });
 
-        }).catch(() => {
+        });/*.catch(() => {
             console.error("Failed to load the warehouse or the settings");
             // todo present error message
-        });
+        });*/
 
     }
 
