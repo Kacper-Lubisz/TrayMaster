@@ -49,7 +49,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
-            isEditShelf: false
+            isEditShelf: true
         };
     }
 
@@ -446,7 +446,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
 
     render() {
         return (
-            <div id="shelfView">
+            <div id="shelfView" className={this.state.isEditShelf ? "isEditShelf" : ""}>
                 <TopBar zoneColour={this.state.currentShelf.parentZone?.color}
                         locationString={this.state.currentShelf.toString()}/>
                 <ViewPort

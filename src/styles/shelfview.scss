@@ -9,6 +9,10 @@
 // Import viewport styling
 @import "./viewport";
 
+.isEditShelf {
+  @import "./shelfedit";
+}
+
 #topBar {
   background-color: #cccccc;
   font-size: 20px;

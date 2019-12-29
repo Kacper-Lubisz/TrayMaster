@@ -382,7 +382,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             </button>
 
             <div id="sizeControls">
-                <h1>Tray Size:</h1>
+                <h3>Tray Width:</h3>
                 <button
                     disabled={!possibleColumnChanges.inc}
                     onClick={this.changeColumnSize.bind(this, column, "inc")}
