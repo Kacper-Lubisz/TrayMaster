@@ -4,7 +4,18 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, ExpiryRange, Column, Shelf, Tray, TrayCell, TraySpace, Warehouse, Zone} from "./core/MockWarehouse";
+import {
+    Bay,
+    Category,
+    Column,
+    ExpiryRange,
+    Shelf,
+    Tray,
+    TrayCell,
+    TraySpace,
+    Warehouse,
+    Zone
+} from "./core/MockWarehouse";
 import {Settings} from "./core/MockSettings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
@@ -50,7 +61,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
-            draftWeight: undefined
+            draftWeight: undefined,
             isEditShelf: false
         };
     }
@@ -73,20 +84,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      */
     public isTrayCellSelected(tray: TrayCell) {
         return this.state.selected.get(tray);
-    }
-
-    //todo wgc resolve getselectedtray vs aremultipletrays vs kl method
-    /**
-     * Returns whether the there are multiple selected trays
-     */
-    public areMultipleTraysSelected() {
-        const currSelected = Array.from(this.state.selected.entries())
-                                  .filter(([_, selected]) => selected);
-        return currSelected.length > 1;
-
-    getSelectedTrays(): Tray[] {
-        return Array.from(this.state.selected.entries())
-                    .filter(([_, value]) => value).map(([a, _]) => a);
     }
 
     /**
@@ -270,6 +267,17 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     // }
 
     /**
+     * This provisionally gets all selected TrayCells _before they're converted to Trays_ and
+     * without any side effects or manipulating state. This is important for BottomPanel's keyboards to know the number
+     * of TrayCells selected, and for expiry keyboard to highlight active year, and for ViewPort to know whether still
+     * in multiselect. It simply returns all selected TrayCells, including air spaces.
+     */
+    getSelectedTrayCells(): TrayCell[] {
+        return Array.from(this.state.selected.entries())
+                    .filter(([_, value]) => value).map(([a, _]) => a);
+    }
+
+    /**
      * This method returns a list of selected trays.  The method has the option to fill selected tray spaces with new
      * empty trays.  The method has an option to ignore selected spaces which are in the air.  The method ensures that
      * replaced spaces are deselected and new trays are selected, this causes setState to be called and thus causes a
@@ -338,23 +346,24 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      */
     onCategorySelected(category: Category) {
 
-            this.getSelectedTrays(true, true).forEach((tray) => {
-                tray.category = category;
-            });
-            this.forceUpdate();
-            // this updates because get selected Trays causes an update after the click event is handled
+        this.getSelectedTrays(true, true).forEach((tray) => {
+            tray.category = category;
+        });
+        this.forceUpdate();
 
-        }
+    }
 
     /**
      * This method is called when an expiry is selected on the expiry keyboard
      * @param expiry The expiry that is selected
      */
     onExpirySelected(expiry: ExpiryRange) {
-        for (let tray of this.getSelectedTrays()) {
+
+        this.getSelectedTrays(true, true).forEach((tray) => {
             tray.expiry = expiry;
-        }
+        });
         this.forceUpdate();
+
     }
 
     /**
@@ -372,10 +381,12 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * Applies the draftWeight to the selected trays. Called when Enter is clicked on the weight keyboard
      */
     applyDraftWeight() {
-        for (let tray of this.getSelectedTrays()) {
+
+        this.getSelectedTrays(true, true).forEach((tray) => {
             tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
-        }
+        });
         this.forceUpdate();
+
     }
 
     /**
@@ -493,7 +504,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     selected={this.state.selected}
                     setSelected={this.setSelected.bind(this)}
                     isTraySelected={this.isTrayCellSelected.bind(this)}
-                    areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
+                    selectedTrayCells={this.getSelectedTrayCells()}
 
                     shelf={this.state.currentShelf}
                     isShelfEdit={this.state.isEditShelf}
@@ -526,7 +537,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     categories={this.props.warehouse.categories.map((category) => {
                         return {
                             name: category.shortName ?? category.name,
-                            onClick: this.categorySelected.bind(this, category)
+                            onClick: this.onCategorySelected.bind(this, category)
                         };
                     })}
                     categorySelected={this.onCategorySelected.bind(this)}
@@ -536,7 +547,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     applyDraftWeight={this.applyDraftWeight.bind(this)}
                     keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
                     //fixme move this edit state to change current keyboard
-                    selectedTrays={this.getSelectedTrays()}
+                    selectedTrayCells={this.getSelectedTrayCells()}
                 />
             </div>
         );

@@ -1,7 +1,7 @@
 import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {KeyboardName} from "./ShelfView";
-import {Category, ExpiryRange, Tray} from "./core/MockWarehouse";
+import {Category, ExpiryRange, Tray, TrayCell} from "./core/MockWarehouse";
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 
 export interface BottomPanelProps {
@@ -9,7 +9,7 @@ export interface BottomPanelProps {
     categorySelected: (category: Category) => void;
     expirySelected: (expiry: ExpiryRange) => void;
     categories: Category[];
-    selectedTrays: Tray[];
+    selectedTrayCells: TrayCell[];
     draftWeight?: string;
     setDraftWeight: (newDraftWeight?: string) => void;
     applyDraftWeight: () => void;
@@ -175,11 +175,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
+            // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
+            const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
 
-            const firstExp = this.props.selectedTrays.find(i => i.expiry !== undefined)?.expiry?.from;
+            const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
             const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
             const commonYear = firstYear === undefined ? undefined
-                                                       : this.props.selectedTrays.every(item => item.expiry?.from === undefined || new Date(item.expiry?.from).getFullYear() === firstYear)
+                                                       : traysOnly.every(item => item.expiry?.from === undefined || new Date(item.expiry?.from).getFullYear() === firstYear)
                                                          ? firstYear : undefined;
 
             // update selectedYear: don't need to worry about disabled as currentTray will be undefined if disabled
@@ -232,7 +234,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 },
                 {
                     name: "Enter",
-                    disabled: this.props.selectedTrays.length === 0,
+                    disabled: this.props.selectedTrayCells.length === 0,
                     onClick: () => {
                         this.weightKeyHandler("Enter");
                     }
@@ -264,7 +266,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         // return DOM elements using button structures
         return <div id="bottom">
-            {this.chooseKeyboard(!this.props.selectedTrays.length)}
+            {this.chooseKeyboard(!this.props.selectedTrayCells.length)}
         </div>;
     }
 }
