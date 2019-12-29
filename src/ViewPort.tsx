@@ -369,61 +369,14 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const possibleHeightChange = this.getPossibleHeightChanges(column);
 
         /* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
-        return this.props.isShelfEdit ? <div
+        return <div
             style={{
                 order: order,
                 flexGrow: column.size?.sizeRatio ?? 1
             }}
             className="column"
             key={order}
-        >
-            <button onClick={this.removeColumn.bind(this, column)}> {/*todo revise these icon*/}
-                <FontAwesomeIcon icon={trash}/>
-            </button>
-
-            <div id="sizeControls">
-                <h3>Tray Width:</h3>
-                <button
-                    disabled={!possibleColumnChanges.inc}
-                    onClick={this.changeColumnSize.bind(this, column, "inc")}
-                >
-                    <FontAwesomeIcon icon={plus}/>
-                </button>
-
-                <div>{stringToTitleCase(column.size?.label ?? "?")}</div>
-                <button
-                    disabled={!possibleColumnChanges.dec}
-                    onClick={this.changeColumnSize.bind(this, column, "dec")}
-                >
-                    <FontAwesomeIcon icon={minus}/>
-                </button>
-            </div>
-
-            <div id="heightControls">
-                <h1>Max Height:</h1>
-                <button
-                    disabled={!possibleHeightChange.inc}
-                    onClick={this.changeColumnHeight.bind(this, column, "inc")}
-                >
-                    <FontAwesomeIcon icon={plus}/>
-                </button>
-                <div>{column.maxHeight ?? "?"}</div>
-                <button
-                    disabled={!possibleHeightChange.dec}
-                    onClick={this.changeColumnHeight.bind(this, column, "dec")}
-                >
-                    <FontAwesomeIcon icon={minus}/>
-                </button>
-            </div>
-
-        </div> : <div
-                   style={{
-                       order: order,
-                       flexGrow: column.size?.sizeRatio ?? 1
-                   }}
-                   className="column"
-                   key={order}
-               >{
+        >{
             column.getPaddedTrays(1).map(((tray, index) =>
                     <div
                         className={classNames("tray", {
@@ -459,9 +412,50 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             index === column.trays.length && <p key={1}>EMPTY TRAY {tray.index}</p>
                         ]}
 
+
                     </div>
             ))}
-               </div>;
+            <div className="edit-shelf-column">
+                <button onClick={this.removeColumn.bind(this, column)}> {/*todo revise these icon*/}
+                    <FontAwesomeIcon icon={trash}/>
+                </button>
+
+                <div id="sizeControls">
+                    <h3>Tray Width:</h3>
+                    <button
+                        disabled={!possibleColumnChanges.inc}
+                        onClick={this.changeColumnSize.bind(this, column, "inc")}
+                    >
+                        <FontAwesomeIcon icon={plus}/>
+                    </button>
+
+                    <div>{stringToTitleCase(column.size?.label ?? "?")}</div>
+                    <button
+                        disabled={!possibleColumnChanges.dec}
+                        onClick={this.changeColumnSize.bind(this, column, "dec")}
+                    >
+                        <FontAwesomeIcon icon={minus}/>
+                    </button>
+                </div>
+
+                <div id="heightControls">
+                    <h1>Max Height:</h1>
+                    <button
+                        disabled={!possibleHeightChange.inc}
+                        onClick={this.changeColumnHeight.bind(this, column, "inc")}
+                    >
+                        <FontAwesomeIcon icon={plus}/>
+                    </button>
+                    <div>{column.maxHeight ?? "?"}</div>
+                    <button
+                        disabled={!possibleHeightChange.dec}
+                        onClick={this.changeColumnHeight.bind(this, column, "dec")}
+                    >
+                        <FontAwesomeIcon icon={minus}/>
+                    </button>
+                </div>
+            </div>
+        </div>;
     }
 
 

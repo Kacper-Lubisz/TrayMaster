@@ -4,7 +4,12 @@
   justify-content: flex-end;
 
   #side-keyboard-container {
-    width: 100%;
     height: 50%;
+  }
+}
+
+#viewPort {
+  .edit-shelf-column {
+    opacity: 1;
   }
 }

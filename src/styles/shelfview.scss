@@ -37,6 +37,11 @@
   display: flex;
   flex-direction: column;
 
+  #side-keyboard-container {
+    width: 100%;
+    height: 100%;
+  }
+
   // container for keyboard switch buttons
   #kb-switcher {
     // Define container layout

@@ -39,6 +39,7 @@
     justify-content: flex-start;
     align-items: flex-end;
     padding: 5px;
+    position: relative;
 
     transition: flex-grow 0.5s ease;
 
@@ -46,6 +47,17 @@
     border: 1px solid white;
     text-align: center;
     background-color: #eee;
+
+    > .edit-shelf-column {
+      background-color: #eeeeeedd;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transition: opacity 0.5s;
+      opacity: 0;
+    }
 
     .tray:last-child {
       margin: 0;
