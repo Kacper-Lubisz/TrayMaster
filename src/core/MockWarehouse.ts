@@ -39,7 +39,7 @@ const colours: { label: string, hex: string }[] = [
 ].concat(Array(20).fill(0).map(_ => {
     return {
         label: "Generated",
-        hex: `#${Math.floor(Math.random() * 255 * 255 * 255).toString(16)}`
+        hex: `#${Math.floor(Math.random() * 255 * 255).toString(16).padStart(6, "0")}`
     };
 }));
 
