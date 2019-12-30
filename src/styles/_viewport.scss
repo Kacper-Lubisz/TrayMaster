@@ -1,7 +1,20 @@
 // VIEWPORT STYLING
 
-// Import system-wide variables: we need to know $accent-colour here
+// Import system-wide variables: we need to know $accent-color here
 @import "variables";
+
+
+.shelf { //todo this belongs in a separate nav-popup file
+  align-content: center;
+  margin: auto auto;
+  width: 100px;
+  height: 100px;
+}
+
+.currentShelf {
+  width: 80px;
+  height: 80px;
+}
 
 #sizeControls, #heightControls { // todo fixme revise this style
   width: 100%;
@@ -133,7 +146,7 @@
         visibility: hidden;
 
         &.tick-selected {
-          color: $accent-colour;
+          color: $accent-color;
           visibility: visible;
         }
 
@@ -166,7 +179,7 @@
         text-align: center;
         word-wrap: break-word;
 
-        background-color: #aaa; // this is the default colour when there is no expiry specified
+        background-color: #aaa; // this is the default color when there is no expiry specified
       }
 
       // Tray weight: top right

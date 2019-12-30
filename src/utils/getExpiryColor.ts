@@ -3,15 +3,15 @@ import {ExpiryRange} from "../core/MockWarehouse";
 
 
 /**
- * Period to use for a complete cycle around the hue colour wheel
+ * Period to use for a complete cycle around the hue color wheel
  * Using 8 currently because that's the number on the expiry keyboard (and what common food lasts longer than 8 years??)
  */
 const YEAR_PERIOD = 8;
 
 // SOURCE: https://campushippo.com/lessons/how-to-convert-rgb-colors-to-hexadecimal-with-javascript-78219fdb
 /**
- * Converts a single member of an rgb(x, x, x) colour value into two hex digits
- * @param rgb - one of the three r, g, b, values constituting a colour
+ * Converts a single member of an rgb(x, x, x) color value into two hex digits
+ * @param rgb - one of the three r, g, b, values constituting a color
  */
 function rgbToHex(rgb: number) {
     let hex = Number(rgb).toString(16);
@@ -82,8 +82,8 @@ export function hslToHex(h: number, s: number, l: number): string {
 
 /**
  * Takes in the length of an expiry range in days (1-366 inclusive) and returns a saturation value to use
- * Used inside getExpiryColour
- * @see getExpiryColour
+ * Used inside getExpiryColor
+ * @see getExpiryColor
  * @param days - the length of an expiry range in days
  * @return number - the saturation to use for that range
  */
@@ -98,13 +98,13 @@ function getSaturation(days: number) {
 }
 
 /**
- * Takes in an ExpiryRange object and returns a hex colour to use for that range
+ * Takes in an ExpiryRange object and returns a hex color to use for that range
  * Hue depends on the start time of the expiry range in an 8 year cycle
- * Saturation depends on the length of the range (more precision = more intense colour)
- * @param range {ExpiryRange} - the expiry range to return a colour for
+ * Saturation depends on the length of the range (more precision = more intense color)
+ * @param range {ExpiryRange} - the expiry range to return a color for
  * @return string - the 7-digit hex value to use for that expiry range
  */
-export function getExpiryColour(range: ExpiryRange) {
+export function getExpiryColor(range: ExpiryRange) {
     // get a dayjs date corresponding to the from property of the range, to use later
     const djsDate: Dayjs = dayjs(range.from);
 

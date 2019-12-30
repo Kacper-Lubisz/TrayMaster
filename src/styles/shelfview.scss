@@ -1,6 +1,6 @@
 // MAIN SHELF VIEW STYLING
 
-// Import system-wide variables: we need to know $accent-colour here
+// Import system-wide variables: we need to know $accent-color here
 @import "./variables";
 // Import shelf view grid layout
 @import "./shelfviewgrid";
@@ -58,7 +58,7 @@
 
       // When active, appear blue
       &.active {
-        color: $accent-colour;
+        color: $accent-color;
       }
 
       // Set icon to fill containing button

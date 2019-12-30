@@ -1,11 +1,11 @@
 /**
- * Returns whether white or black text is best given a background colour
+ * Returns whether white or black text is best given a background color
  * Sources: https://stackoverflow.com/a/5624139 - hex to RGB
- *          https://stackoverflow.com/a/3943023 - decide what colour to use
- * @param hex - the background colour, in shorthand or full hex
+ *          https://stackoverflow.com/a/3943023 - decide what color to use
+ * @param hex - the background color, in shorthand or full hex
  */
-export function getTextColourForBackground(hex: string) {
-    // This expands shorthand hex colours to full hex e.g. #DEF to #DDEEFF
+export function getTextColorForBackground(hex: string) {
+    // This expands shorthand hex colors to full hex e.g. #DEF to #DDEEFF
     const fullHex = hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => `#${r}${r}${g}${g}${b}${b}`);
 
     // This implements the W3C accessibility guidelines for maintaining text contrast
