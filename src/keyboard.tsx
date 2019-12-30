@@ -11,7 +11,7 @@ export interface KeyboardButtonProps {
     /** Name to show on the button */
     name: string;
 
-    /** Icon to use: replaces name */
+    /** Icon to use - name still appears in tooltip */
     icon?: IconDefinition;
 
     /** Function to call when button is clicked */
@@ -43,7 +43,8 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
                     // for accessibility reasons, because users who "tab" around the buttons need the outline
                     e.currentTarget.blur();
                 }
-            }}>{this.props.icon ? <FontAwesomeIcon icon={this.props.icon}/> : this.props.name}</button>
+            }}>{this.props.icon ? <FontAwesomeIcon icon={this.props.icon} title={this.props.name}/>
+                                : this.props.name}</button>
         );
     }
 }
