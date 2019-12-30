@@ -425,47 +425,49 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                    className="column"
                    key={order}
                >{
-            column.getPaddedTrays(1).map(((tray, index) =>
-                    <div
-                        className={classNames("tray", {
-                            "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
-                            "selected": this.props.isTraySelected(tray),
-                            "firstTraySpace": index === column.trays.length,
-                            "traySpace": !(tray instanceof Tray)
+            column.getPaddedTrays(1).map(((tray, index) => {
+                let expiryStyle;
+                if (tray instanceof Tray) {
+                    const bg = tray.expiry ? getExpiryColour(tray.expiry) : "";
+                    expiryStyle = {
+                        backgroundColor: bg,
+                        color: getTextColourForBackground(bg)
+                    };
+                }
+                return <div
+                    className={classNames("tray", {
+                        "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
+                        "selected": this.props.isTraySelected(tray),
+                        "firstTraySpace": index === column.trays.length,
+                        "traySpace": !(tray instanceof Tray)
+                    })}
+                    onPointerDown={this.onTrayPointerDown.bind(this, tray)}
+                    onPointerEnter={this.onTrayPointerEnter.bind(this, tray)}
+                    onPointerLeave={this.onTrayPointerLeave.bind(this)}
+                    onPointerUp={this.onTrayPointerUp.bind(this, tray)}
+                    key={index}
+                >
+                    <FontAwesomeIcon
+                        className={classNames("tray-tickbox", {
+                            "tick-selected": this.props.isTraySelected(tray)
                         })}
-                        onPointerDown={this.onTrayPointerDown.bind(this, tray)}
-                        onPointerEnter={this.onTrayPointerEnter.bind(this, tray)}
-                        onPointerLeave={this.onTrayPointerLeave.bind(this)}
-                        onPointerUp={this.onTrayPointerUp.bind(this, tray)}
-                        key={index}
-                    >
-                        <FontAwesomeIcon
-                            className={classNames("tray-tickbox", {
-                                "tick-selected": this.props.isTraySelected(tray)
-                            })}
-                            icon={tickSolid}/>
+                        icon={tickSolid}/>
 
-                        {tray instanceof Tray && [
-                            <div className="trayCategory" key={1}>{tray.category?.name ?? "Mixed"}</div>,
+                    {tray instanceof Tray && [
+                        <div className="trayCategory" key={1}>{tray.category?.name ?? "Mixed"}</div>,
 
-                            <div className="trayExpiry" key={2} style={(() => {
-                                const bg = tray.expiry ? getExpiryColour(tray.expiry) : "";
-                                return {
-                                    backgroundColor: bg,
-                                    color: getTextColourForBackground(bg)
-                                };
-                            })()}>{tray.expiry?.label ?? "?"}</div>,
+                        <div className="trayExpiry" key={2} style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>,
 
-                            <div className="trayWeight" key={3}>{tray.weight ?? "?"}kg</div>,
+                        <div className="trayWeight" key={3}>{tray.weight ?? "?"}kg</div>,
 
-                            <div className="trayCustomField" key={4}>{tray.customField ?? ""}</div>
-                        ]}
-                        {!(tray instanceof Tray) && [
-                            index === column.trays.length && <p key={1}>EMPTY TRAY {tray.index}</p>
-                        ]}
+                        <div className="trayCustomField" key={4}>{tray.customField ?? ""}</div>
+                    ]}
+                    {!(tray instanceof Tray) && [
+                        index === column.trays.length && <p key={1}>EMPTY TRAY {tray.index}</p>
+                    ]}
 
-                    </div>
-            ))}
+                </div>;
+            }))}
                </div>;
     }
 

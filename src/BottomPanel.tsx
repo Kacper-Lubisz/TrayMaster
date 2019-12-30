@@ -15,6 +15,8 @@ export interface BottomPanelProps {
     applyDraftWeight: () => void;
 }
 
+type WeightKeyboardButton = "Enter" | "Clear" | "Backspace" | number | ".";
+
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
  * @see BottomPanelPage
@@ -79,7 +81,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Handles key presses clicked in the weight keyboard, by updating draftWeight in ShelfView
      * @param key
      */
-    weightKeyHandler(key: "Enter" | "Clear" | "Backspace" | number | ".") {
+    weightKeyHandler(key: WeightKeyboardButton) {
 
         if (key === "Enter") {
             this.props.applyDraftWeight();
@@ -141,7 +143,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     /**
      * Called when a month button is pressed
      * Sets current tray expiry to that month in selectedYear
-     * @param month - number in [0-11] inclusive representing the current quarter
+     * @param month - number in [0-11] inclusive representing the current month
      */
     selectMonth(month: number) {
         if (this.selectedYear) {
@@ -158,25 +160,26 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * @param disabled whether the keyboard is disabled (ie no trays are selected)
      */
     chooseKeyboard(disabled: boolean) {
+        // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
+        const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
+
         if (this.props.keyboardState === "category") {
 
-            const firstCat = this.props.categories.find(i => i !== undefined);
+            const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
             const commonCat = firstCat === undefined ? undefined
-                                                     : this.props.categories.every(item => item === undefined || item === firstCat)
+                                                     : traysOnly.every(item => item.category?.name === undefined || item.category?.name === firstCat)
                                                        ? firstCat : null;
 
             const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
                 return {
                     name: cat.shortName ?? cat.name,
                     onClick: () => this.props.categorySelected(cat),
-                    selected: cat === commonCat
+                    selected: cat.name === commonCat
                 };
             });
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
-            // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
-            const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
 
             const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
             const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
@@ -184,7 +187,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                                                        : traysOnly.every(item => item.expiry?.from === undefined || new Date(item.expiry?.from).getFullYear() === firstYear)
                                                          ? firstYear : undefined;
 
-            // update selectedYear: don't need to worry about disabled as currentTray will be undefined if disabled
+            // update object-level selectedYear
             this.selectedYear = commonYear;
 
             // set the button corresponding to selectedYear to be visibly selected
@@ -201,45 +204,31 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else if (this.props.keyboardState === "weight") {
 
-            // Weight numpad structure
-            let numpad = [];
-            for (let i = 9; i >= 0; i--) {
-                numpad.push({
-                    name: i.toString(), onClick: () => {
-                        this.weightKeyHandler(i);
-                    }
-                });
-            }
-            numpad.push({
-                name: ".", onClick: () => {
-                    this.weightKeyHandler(".");
+            // Create numpad for the digits and decimal point buttons
+            const numpad = (Array.from(Array(10).keys()) as WeightKeyboardButton[]).reverse().concat(["."]).map((a) => ({
+                name: a.toString(),
+                onClick: () => {
+                    this.weightKeyHandler(a);
                 }
-            });
+            }));
 
-            let numpadR = [
-                {
-                    name: "Backspace",
-                    icon: faBackspace,
-                    disabled: (this.props.draftWeight ?? "").length === 0,
-                    onClick: () => {
-                        this.weightKeyHandler("Backspace");
-                    }
-                },
-                {
-                    name: "Clear",
-                    disabled: (this.props.draftWeight ?? "").length === 0,
-                    onClick: () => {
-                        this.weightKeyHandler("Clear");
-                    }
-                },
-                {
-                    name: "Enter",
-                    disabled: this.props.selectedTrayCells.length === 0,
-                    onClick: () => {
-                        this.weightKeyHandler("Enter");
-                    }
+            // Create numpadSide for the side buttons
+            const numpadSide = (["Backspace", "Clear", "Enter"] as WeightKeyboardButton[]).map((a) => {
+                let shouldDisable = false;
+                if (a === "Backspace" || a === "Clear") {
+                    shouldDisable = (this.props.draftWeight ?? "").length === 0;
+                } else if (a === "Enter") {
+                    shouldDisable = this.props.selectedTrayCells.length === 0;
                 }
-            ];
+                return {
+                    name: a.toString(),
+                    icon: a === "Backspace" ? faBackspace : undefined,
+                    disabled: shouldDisable,
+                    onClick: () => {
+                        this.weightKeyHandler(a);
+                    }
+                };
+            });
 
             return <div className="keyboard-container">
                 <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
@@ -248,7 +237,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                         {`${this.props.draftWeight === undefined ? "?" : this.props.draftWeight} kg`}
                     </div>
                     <div id="weight-numpad-side">
-                        <Keyboard buttons={numpadR} gridX={1}/>
+                        <Keyboard buttons={numpadSide} gridX={1}/>
                     </div>
                 </div>
             </div>;
