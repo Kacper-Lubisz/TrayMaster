@@ -80,7 +80,7 @@ class App extends React.Component<any, AppState> {
                     </Switch>
                 </BrowserRouter>)}
             <Popup
-                open={!!(this.state?.dialog ?? false)} //double negate because of falsy magic
+                open={!!this.state?.dialog} //double negate because of falsy magic
                 closeOnDocumentClick={false}
                 onClose={this.closeDialog.bind(this)}
             ><> {/*empty tag because for some reason Popup overrides the type of the child props.  Making it so that a

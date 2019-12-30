@@ -2,8 +2,9 @@ import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {getTextColorForBackground, KeyboardName} from "./ShelfView";
+import {KeyboardName} from "./ShelfView";
 import classNames from "classnames";
+import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 
 
 /**
