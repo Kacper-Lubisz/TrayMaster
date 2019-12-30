@@ -1,7 +1,11 @@
 import * as firebase from "firebase/app";
 import "firebase/firestore";
-import * as path from "path";
+import "path";
+import Utils, {Queue} from "./Utils";
 
+type DocReference = firebase.firestore.DocumentReference;
+type DocSnapshot = firebase.firestore.DocumentSnapshot;
+type WriteBatch = firebase.firestore.WriteBatch;
 
 const firebaseConfig = { // firebase config
     apiKey: "AIzaSyDkJAZhs_4Q9urSppZPkUTwFOhIPFhJADM",
@@ -17,55 +21,105 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
 db.enablePersistence().then((err) => {
-    if (err !== undefined) console.log(err)
+    if (err !== undefined) console.log(err);
 });
+
+
+class DatabaseUpdates {
+    private readonly updates: Queue<[string, DatabaseObject<any>]> = new Queue<[string, DatabaseObject<any>]>();
+
+    public async addChange(objectDBPath: string, changedObject: DatabaseObject<any>): Promise<void> {
+        this.updates.enqueue([Utils.normalisePath(objectDBPath), changedObject]);
+        if (this.updates.length >= 250)
+            await this.commit();
+    }
+
+    public async commit(): Promise<void> {
+        const batch = db.batch();
+        while (!this.updates.empty) {
+            const change: [string, DatabaseObject<any>] | undefined = this.updates.dequeue();
+            if (change)
+                batch.set(db.doc(change[0]), change[1]);
+        }
+        await batch.commit();
+    }
+}
+
+
+export abstract class DatabaseWriter {
+    protected static readonly changes: DatabaseUpdates = new DatabaseUpdates();
+
+    public static async addChange(objectDBPath: string, changedObject: DatabaseObject<any>): Promise<void> {
+        await this.changes.addChange(objectDBPath, changedObject);
+    }
+
+    public static async forceSave() {
+        await this.changes.commit();
+    }
+}
 
 
 /**
  * Represents a document in the database as an object
  */
-export default abstract class DatabaseObject {
-    protected path: string;
+export default abstract class DatabaseObject<T> {
+    private fieldsChanged: boolean = false;
 
-    protected constructor(path: string) {
-        this.path = path;
+    protected colPath: string = "";
+    protected id: string = "";
+
+    protected fields: T;
+
+    protected constructor(defaultFields: T);
+    protected constructor(defaultFields: T, fullPath: string);
+    protected constructor(defaultFields: T, path: string, id: string);
+    protected constructor(defaultFields: T, path?: string, id?: string) {
+        this.init(path, id);
+        this.fields = defaultFields;
     }
 
-    // protected readonly id: () => string = (): string => this.location.split("/").pop() || "";
-    protected get id(): string {
-        return this.path.split("/").pop() || "";
+    protected get path(): string {
+        return Utils.normalisePath(Utils.joinPaths(this.colPath, this.id));
     }
 
-    protected set id(id: string) {
-        this.path = path.posix.join(this.path.split("/").slice(0, -1).join("/"), id);
+    protected init(path?: string, id?: string) {
+        this.colPath = path ? Utils.normalisePath(id === undefined ? Utils.getPath(path) : path) : "";
+        this.id = path ? id === undefined ? Utils.getID(path) : id : "";
     }
 
-    protected getChildPath(childId: string): string {
-        return path.posix.join(this.path, childId);
+    protected fieldChange(): void {
+        this.fieldsChanged = true;
     }
 
-    static async loadObject<T extends DatabaseObject>(documentLocation: string): Promise<T> {
-        const snapshot: firebase.firestore.DocumentSnapshot = await db.doc(documentLocation).get();
-        const layerInstance: T = snapshot.data() as T;
-        layerInstance.path = snapshot.ref.path;
-        return layerInstance;
+    protected get colName(): string {
+        return Utils.normalisePath(this.colPath).split("/").pop() || "";
     }
 
-    static async loadChildObjects<T extends DatabaseObject, P extends DatabaseObject>
+    static async loadObject<T extends DatabaseObject<TF>, TF>(documentLocation: string): Promise<T> {
+        const snapshot: DocSnapshot = await db.doc(documentLocation).get();
+        console.log(snapshot.ref.path);
+        const dbObj = {} as T;
+        dbObj.init(snapshot.ref.path);
+        dbObj.fields = snapshot.data() as TF;
+        return dbObj;
+    }
+
+    static async loadChildObjects<T extends DatabaseObject<TF>, TF, P extends DatabaseObject<any>>
     (parent: P, collectionName: string, orderField: string): Promise<T[]> {
-        return (await db.collection(`${parent.path}/${collectionName}`)
+        return (await db.collection(`${parent.colPath}/${collectionName}`)/*.orderBy(orderField)*/
                         .get()).docs.map(snapshot => {
-            const dbObj: T = snapshot.data() as T;
-            dbObj.path = snapshot.ref.path;
+            const dbObj = {} as T;
+            dbObj.init(snapshot.ref.path);
+            dbObj.fields = snapshot.data() as TF;
             return dbObj;
         });
     }
 
-    public async saveObject(): Promise<void> {
-        db.batch();
+    public async saveObj(): Promise<void> {
+        if (this.fieldsChanged)
+            this.save();
+        this.fieldsChanged = false;
     }
 
-    public async saveObjects(): Promise<void> {
-        db.batch();
-    }
+    protected abstract save(): Promise<void>;
 }

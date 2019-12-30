@@ -1,16 +1,20 @@
-import {UpperLayer} from "./UpperLayer";
+import {Layer} from "./Layer";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
 import {ONLINE} from "../WarehouseModel";
-import {Utils} from "./Utils";
+import Utils from "./Utils";
 
-
-export class Bay extends UpperLayer {
+interface BayFields {
     name: string;
     index: number;
+}
+
+
+export class Bay extends Layer<BayFields> {
+    isDeepLoaded: boolean = false;
 
     parentZone?: Zone;
     shelves: Shelf[] = [];
@@ -22,11 +26,26 @@ export class Bay extends UpperLayer {
      * @param parentZone - The (nullable) parent zone
      */
     private constructor(location: string, name: string, index: number, parentZone?: Zone) {
-        super(location);
-        this.name = name;
-        this.index = index;
-
+        super({name: name, index: index}, location);
         this.parentZone = parentZone;
+    }
+
+    public get name(): string {
+        return this.fields.name;
+    }
+
+    public get index(): number {
+        return this.fields.index;
+    }
+
+    public set name(name: string) {
+        this.fields.name = name;
+        this.fieldChange();
+    }
+
+    public set index(index: number) {
+        this.fields.index = index;
+        this.fieldChange();
     }
 
     /**
@@ -55,10 +74,6 @@ export class Bay extends UpperLayer {
         this.parentZone = parentZone;
     }
 
-    public async saveLayer(): Promise<void> {
-
-    }
-
     /**
      * Load all bays within a given zone
      * @async
@@ -67,7 +82,7 @@ export class Bay extends UpperLayer {
      */
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         if (ONLINE) {
-            const bays: Bay[] = await this.loadChildObjects<Bay, Zone>(zone, "bays", "index");
+            const bays: Bay[] = await this.loadChildObjects<Bay, BayFields, Zone>(zone, "bays", "index");
             for (let bay of bays) {
                 bay.shelves = await Shelf.loadShelves(bay);
                 bay.isDeepLoaded = true;
@@ -93,7 +108,7 @@ export class Bay extends UpperLayer {
      */
     public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
         if (ONLINE)
-            return await this.loadChildObjects<Bay, Zone>(zone, "bays", "index");
+            return await this.loadChildObjects<Bay, BayFields, Zone>(zone, "bays", "index");
         else {
             const bays: Bay[] = [];
             for (let i = 0; i < 3; i++)
@@ -106,7 +121,7 @@ export class Bay extends UpperLayer {
      * Load the shelves into the bay
      * @async
      */
-    public async loadNextLayer(): Promise<void> {
+    public async loadChildren(): Promise<void> {
         if (!this.isDeepLoaded)
             this.shelves = await Shelf.loadFlatShelves(this);
         this.isDeepLoaded = true;

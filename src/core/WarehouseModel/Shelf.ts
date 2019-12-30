@@ -1,16 +1,21 @@
-import {UpperLayer} from "./UpperLayer";
+import {Layer} from "./Layer";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
 import {ONLINE} from "../WarehouseModel";
-import {Utils} from "./Utils";
+import Utils from "./Utils";
 
 
-export class Shelf extends UpperLayer {
+interface ShelfFields {
     name: string;
     index: number;
+}
+
+
+export class Shelf extends Layer<ShelfFields> {
+    isDeepLoaded: boolean = false;
 
     parentBay?: Bay;
     columns: Column[] = [];
@@ -22,11 +27,26 @@ export class Shelf extends UpperLayer {
      * @param parentBay - The (nullable) parent bay
      */
     private constructor(location: string, name: string, index: number, parentBay?: Bay) {
-        super(location);
-        this.name = name;
-        this.index = index;
-
+        super({name: name, index: index}, location);
         this.parentBay = parentBay;
+    }
+
+    public get name(): string {
+        return this.fields.name;
+    }
+
+    public get index(): number {
+        return this.fields.index;
+    }
+
+    public set name(name: string) {
+        this.fields.name = name;
+        this.fieldChange();
+    }
+
+    public set index(index: number) {
+        this.fields.index = index;
+        this.fieldChange();
     }
 
     /**
@@ -69,7 +89,7 @@ export class Shelf extends UpperLayer {
      */
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         if (ONLINE) {
-            const shelves: Shelf[] = await this.loadChildObjects<Shelf, Bay>(bay, "shelves", "index");
+            const shelves: Shelf[] = await this.loadChildObjects<Shelf, ShelfFields, Bay>(bay, "shelves", "index");
             for (let shelf of shelves) {
                 shelf.columns = await Column.loadColumns(shelf);
                 shelf.isDeepLoaded = true;
@@ -95,7 +115,7 @@ export class Shelf extends UpperLayer {
      */
     public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
         if (ONLINE)
-            return await this.loadChildObjects<Shelf, Bay>(bay, "shelves", "index");
+            return await this.loadChildObjects<Shelf, ShelfFields, Bay>(bay, "shelves", "index");
         else {
             const shelves: Shelf[] = [];
             for (let i = 0; i < 3; i++)
@@ -108,7 +128,7 @@ export class Shelf extends UpperLayer {
      * Load the columns into the shelf
      * @async
      */
-    public async loadNextLayer(): Promise<void> {
+    public async loadChildren(): Promise<void> {
         if (!this.isDeepLoaded)
             this.columns = await Column.loadFlatColumns(this);
         this.isDeepLoaded = true;

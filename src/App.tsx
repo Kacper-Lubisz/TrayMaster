@@ -9,7 +9,7 @@ import {ErrorPage} from "./ErrorPage";
 import {Settings, SettingsManager} from "./core/Settings";
 import {Warehouse} from "./core/WarehouseModel";
 import {LoadingPage} from "./Loading";
-import {Utils} from "./core/WarehouseModel/Utils";
+import Utils from "./core/WarehouseModel/Utils";
 
 interface AppState {
     warehouse: Warehouse;
@@ -23,7 +23,7 @@ class App extends React.Component<any, AppState> {
 
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
-            Warehouse.loadWarehouse(Utils.generateRandomId())
+            Warehouse.loadWarehouse(`warehouses/${Utils.generateRandomId()}`)
         ]);
 
         loadPromise.then((result) => {

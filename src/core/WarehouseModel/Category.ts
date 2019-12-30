@@ -1,6 +1,6 @@
-import DatabaseObject from "./DatabaseObject";
+import DatabaseObject, {DatabaseWriter} from "./DatabaseObject";
 import {Warehouse} from "./Warehouse";
-import {Utils} from "./Utils";
+import Utils from "./Utils";
 import {ONLINE} from "../WarehouseModel";
 
 const cats = [
@@ -11,14 +11,37 @@ const cats = [
 ];
 
 
-export class Category extends DatabaseObject {
+interface CategoryFields {
     name: string;
     shortName?: string;
+}
 
+
+export class Category extends DatabaseObject<CategoryFields> {
     private constructor(path: string, name: string, shortName: string) {
-        super(path);
-        this.name = name;
-        this.shortName = shortName;
+        super({name: name, shortName: shortName}, path);
+    }
+
+    public get name(): string {
+        return this.fields.name;
+    }
+
+    public get shortName(): string | undefined {
+        return this.fields.shortName;
+    }
+
+    public set name(name: string) {
+        this.fields.name = name;
+        this.fieldChange();
+    }
+
+    public set shortName(shortName: string | undefined) {
+        this.fields.shortName = shortName;
+        this.fieldChange();
+    }
+
+    public async save(): Promise<void> {
+        await DatabaseWriter.addChange(this.path, this);
     }
 
     /**
@@ -28,7 +51,7 @@ export class Category extends DatabaseObject {
      */
     public static async loadCategories(warehouse: Warehouse): Promise<Category[]> {
         if (ONLINE)
-            return await DatabaseObject.loadChildObjects<Category, Warehouse>(warehouse, "categories", "name");
+            return await DatabaseObject.loadChildObjects<Category, CategoryFields, Warehouse>(warehouse, "categories", "name");
         else {
             const categories: Category[] = [];
             for (let i = 0; i < cats.length; i++)

@@ -1,11 +1,11 @@
 import {Warehouse} from "./Warehouse";
-import {UpperLayer} from "./UpperLayer";
+import {Layer} from "./Layer";
 import {Bay} from "./Bay";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
 import {ONLINE} from "../WarehouseModel";
-import {Utils} from "./Utils";
+import Utils from "./Utils";
 
 const colours = [
     {label: "Red", hex: "#FF0000"},
@@ -16,25 +16,45 @@ const colours = [
 ];
 
 
-export class Zone extends UpperLayer {
+interface ZoneFields {
     name: string;
     color: string;
+}
+
+
+export class Zone extends Layer<ZoneFields> {
+    isDeepLoaded: boolean = false;
 
     parentWarehouse?: Warehouse;
     bays: Bay[] = [];
 
     /**
-     * @param path - The database path for the zone
+     * @param id - The database ID for the zone
      * @param name - The name of the zone
      * @param color - The hex colour of the zone
      * @param parentWarehouse - The (nullable) parent warehouse
      */
-    private constructor(path: string, name: string, color: string, parentWarehouse?: Warehouse) {
-        super(path);
-        this.name = name;
-        this.color = color;
-
+    private constructor(id: string, name: string, color: string, parentWarehouse?: Warehouse) {
+        super({name: name, color: color}, "", id);
         this.parentWarehouse = parentWarehouse;
+    }
+
+    public get name(): string {
+        return this.fields.name;
+    }
+
+    public get color(): string {
+        return this.fields.color;
+    }
+
+    public set name(name: string) {
+        this.fields.name = name;
+        this.fieldChange();
+    }
+
+    public set color(color: string) {
+        this.fields.color = color;
+        this.fieldChange();
     }
 
     /**
@@ -46,7 +66,7 @@ export class Zone extends UpperLayer {
      * @returns The newly created zone
      */
     public static create(bays: Bay[], name?: string, color?: string, parentWarehouse?: Warehouse): Zone {
-        const zone: Zone = new Zone("", name ?? "", color ?? "#000000", parentWarehouse);
+        const zone: Zone = new Zone(Utils.generateRandomId(), name ?? "", color ?? "#000000", parentWarehouse);
         zone.bays = bays;
         for (let i = 0; i < zone.bays.length; i++)
             zone.bays[i].placeInZone(i, zone);
@@ -61,10 +81,6 @@ export class Zone extends UpperLayer {
         this.parentWarehouse = parentWarehouse;
     }
 
-    public async saveLayer(): Promise<void> {
-
-    }
-
     /**
      * Load all zones within a given warehouse
      * @async
@@ -73,7 +89,7 @@ export class Zone extends UpperLayer {
      */
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
         if (ONLINE) {
-            const zones: Zone[] = await this.loadChildObjects<Zone, Warehouse>(warehouse, "zones", "name");
+            const zones: Zone[] = await this.loadChildObjects<Zone, ZoneFields, Warehouse>(warehouse, "zones", "name");
             for (let zone of zones) {
                 zone.bays = await Bay.loadBays(zone);
                 zone.isDeepLoaded = true;
@@ -99,7 +115,7 @@ export class Zone extends UpperLayer {
      */
     public static async loadFlatZones(warehouse: Warehouse): Promise<Zone[]> {
         if (ONLINE)
-            return await this.loadChildObjects<Zone, Warehouse>(warehouse, "zones", "name");
+            return await this.loadChildObjects<Zone, ZoneFields, Warehouse>(warehouse, "zones", "name");
         else {
             const zones: Zone[] = [];
             for (let i = 0; i < colours.length; i++)
@@ -112,7 +128,7 @@ export class Zone extends UpperLayer {
      * Load the bays into the zone
      * @async
      */
-    public async loadNextLayer(): Promise<void> {
+    public async loadChildren(): Promise<void> {
         if (!this.isDeepLoaded)
             this.bays = await Bay.loadFlatBays(this);
         this.isDeepLoaded = true;

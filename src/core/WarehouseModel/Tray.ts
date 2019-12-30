@@ -6,7 +6,7 @@ import {Warehouse} from "./Warehouse";
 import {Category} from "./Category";
 import {Layer} from "./Layer";
 import {ONLINE} from "../WarehouseModel";
-import {Utils} from "./Utils";
+import Utils from "./Utils";
 
 
 const sizes: TraySize[] = [
@@ -70,14 +70,16 @@ export interface TraySize {
 }
 
 
-export class Tray extends Layer {
+interface TrayFields {
     index: number;
-
-    customField?: string;
     category?: Category;
     expiry?: ExpiryRange;
     weight?: number;
+    customField?: string;
+}
 
+
+export class Tray extends Layer<TrayFields> {
     parentColumn?: Column;
 
     /**
@@ -93,14 +95,59 @@ export class Tray extends Layer {
         location: string, index: number, category?: Category, expiryRange?: ExpiryRange,
         weight?: number, customField?: string, parentColumn?: Column
     ) {
-        super(location);
-        this.index = index;
-
-        this.category = category;
-        this.weight = weight;
-        this.expiry = expiryRange;
-        this.customField = customField;
+        super({
+            index: index,
+            category: category,
+            expiry: expiryRange,
+            weight: weight,
+            customField: customField
+        }, location);
         this.parentColumn = parentColumn;
+    }
+
+    public get index(): number {
+        return this.fields.index;
+    }
+
+    public get category(): Category | undefined {
+        return this.fields.category;
+    }
+
+    public get expiry(): ExpiryRange | undefined {
+        return this.fields.expiry;
+    }
+
+    public get weight(): number | undefined {
+        return this.fields.weight;
+    }
+
+    public get customField(): string | undefined {
+        return this.fields.customField;
+    }
+
+    public set index(index: number) {
+        this.fields.index = index;
+        this.fieldChange();
+    }
+
+    public set category(category: Category | undefined) {
+        this.fields.category = category;
+        this.fieldChange();
+    }
+
+    public set expiry(expiry: ExpiryRange | undefined) {
+        this.fields.expiry = expiry;
+        this.fieldChange();
+    }
+
+    public set weight(weight: number | undefined) {
+        this.fields.weight = weight;
+        this.fieldChange();
+    }
+
+    public set customField(customField: string | undefined) {
+        this.fields.customField = customField;
+        this.fieldChange();
     }
 
     /**
@@ -141,7 +188,7 @@ export class Tray extends Layer {
      */
     public static async loadTrays(column: Column): Promise<Tray[]> {
         if (ONLINE)
-            return await this.loadChildObjects<Tray, Column>(column, "columns", "index");
+            return await this.loadChildObjects<Tray, TrayFields, Column>(column, "columns", "index");
         else {
             const trays: Tray[] = [];
             for (let i = 0; i < 3; i++) {

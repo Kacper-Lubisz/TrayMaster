@@ -1,16 +1,20 @@
 import {Zone} from "./Zone";
-import {UpperLayer} from "./UpperLayer";
+import {Layer} from "./Layer";
 import {Bay} from "./Bay";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray, TraySize} from "./Tray";
 import {Category} from "./Category";
-import {Utils} from "./Utils";
 import {ONLINE} from "../WarehouseModel";
 
 
-export class Warehouse extends UpperLayer {
+interface WarehouseFields {
     name: string;
+}
+
+
+export class Warehouse extends Layer<WarehouseFields> {
+    isDeepLoaded: boolean = false;
 
     traySizes: TraySize[] = [];
     categories: Category[] = [];
@@ -21,8 +25,16 @@ export class Warehouse extends UpperLayer {
      * @param name - The name of the warehouse
      */
     private constructor(location: string, name: string) {
-        super(location);
-        this.name = name;
+        super({name: name}, location);
+    }
+
+    public get name(): string {
+        return this.fields.name;
+    }
+
+    public set name(name: string) {
+        this.fields.name = name;
+        this.fieldChange();
     }
 
     /**
@@ -39,10 +51,6 @@ export class Warehouse extends UpperLayer {
         return warehouse;
     }
 
-    public async saveLayer(): Promise<void> {
-
-    }
-
     /**
      * Load a whole warehouse corresponding to a given ID
      * @async
@@ -51,14 +59,14 @@ export class Warehouse extends UpperLayer {
      */
     public static async loadWarehouse(path: string): Promise<Warehouse> {
         if (ONLINE) {
-            const warehouse: Warehouse = await this.loadObject<Warehouse>(path);
+            const warehouse: Warehouse = await this.loadObject<Warehouse, WarehouseFields>(path);
             warehouse.categories = await Category.loadCategories(warehouse);
             warehouse.traySizes = await Tray.loadTraySizes();
             warehouse.zones = await Zone.loadZones(warehouse);
             warehouse.isDeepLoaded = true;
             return warehouse;
         } else {
-            const warehouse: Warehouse = new Warehouse(Utils.generateRandomId(), `Warehouse ${Math.random()}`);
+            const warehouse: Warehouse = new Warehouse(path, `Warehouse ${Math.random()}`);
             warehouse.categories = await Category.loadCategories(warehouse);
             warehouse.traySizes = await Tray.loadTraySizes();
             warehouse.zones = await Zone.loadZones(warehouse);
@@ -75,12 +83,12 @@ export class Warehouse extends UpperLayer {
      */
     public static async loadFlatWarehouse(path: string): Promise<Warehouse> {
         if (ONLINE) {
-            const warehouse: Warehouse = await this.loadObject<Warehouse>(path);
+            const warehouse: Warehouse = await this.loadObject<Warehouse, WarehouseFields>(path);
             warehouse.categories = await Category.loadCategories(warehouse);
             warehouse.traySizes = await Tray.loadTraySizes();
             return warehouse;
         } else {
-            const warehouse: Warehouse = new Warehouse(Utils.generateRandomId(), `Warehouse ${Math.random()}`);
+            const warehouse: Warehouse = new Warehouse(path, `Warehouse ${Math.random()}`);
             warehouse.categories = await Category.loadCategories(warehouse);
             warehouse.traySizes = await Tray.loadTraySizes();
             return warehouse;
@@ -91,7 +99,7 @@ export class Warehouse extends UpperLayer {
      * Load the zones into the warehouse
      * @async
      */
-    public async loadNextLayer(): Promise<void> {
+    public async loadChildren(): Promise<void> {
         if (!this.isDeepLoaded)
             this.zones = await Zone.loadFlatZones(this);
         this.isDeepLoaded = true;

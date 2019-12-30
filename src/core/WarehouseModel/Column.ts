@@ -1,23 +1,28 @@
-import {UpperLayer} from "./UpperLayer";
+import {Layer} from "./Layer";
 import {Shelf} from "./Shelf";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Tray, TraySize} from "./Tray";
 import {ONLINE, TrayCell, TraySpace} from "../WarehouseModel";
-import {Utils} from "./Utils";
+import Utils from "./Utils";
 
 
-export class Column extends UpperLayer {
+interface ColumnFields {
+    index: number;
+    size?: TraySize;
+    maxHeight?: number;
+}
+
+
+export class Column extends Layer<ColumnFields> {
+    isDeepLoaded: boolean = false;
+
     /**
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
      * different object would be different keys of the selection map
      */
     private static traySpaces: Map<Column, TraySpace[]> = new Map();
-
-    index: number;
-    size?: TraySize;
-    maxHeight?: number;
 
     parentShelf?: Shelf;
     trays: Tray[] = [];
@@ -30,12 +35,35 @@ export class Column extends UpperLayer {
      * @param parentShelf - The (nullable) parent shelf
      */
     private constructor(location: string, index: number, size?: TraySize, maxHeight?: number, parentShelf?: Shelf) {
-        super(location);
-        this.index = index;
-        this.size = size;
-        this.maxHeight = maxHeight;
-
+        super({index: index, size: size, maxHeight: maxHeight}, location);
         this.parentShelf = parentShelf;
+    }
+
+    public get index(): number {
+        return this.fields.index;
+    }
+
+    public get size(): TraySize | undefined {
+        return this.fields.size;
+    }
+
+    public get maxHeight(): number | undefined {
+        return this.fields.maxHeight;
+    }
+
+    public set index(index: number) {
+        this.fields.index = index;
+        this.fieldChange();
+    }
+
+    public set size(size: TraySize | undefined) {
+        this.fields.size = size;
+        this.fieldChange();
+    }
+
+    public set maxHeight(maxHeight: number | undefined) {
+        this.fields.maxHeight = maxHeight;
+        this.fieldChange();
     }
 
     /**
@@ -71,10 +99,6 @@ export class Column extends UpperLayer {
         this.parentShelf = parentShelf;
     }
 
-    public async saveLayer(): Promise<void> {
-
-    }
-
     /**
      * Load all columns within a given column
      * @async
@@ -83,7 +107,7 @@ export class Column extends UpperLayer {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         if (ONLINE) {
-            const columns: Column[] = await this.loadChildObjects<Column, Shelf>(shelf, "columns", "index");
+            const columns: Column[] = await this.loadChildObjects<Column, ColumnFields, Shelf>(shelf, "columns", "index");
             for (let column of columns) {
                 column.trays = await Tray.loadTrays(column);
                 column.isDeepLoaded = true;
@@ -117,7 +141,7 @@ export class Column extends UpperLayer {
      */
     public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
         if (ONLINE)
-            return await this.loadChildObjects<Column, Shelf>(shelf, "columns", "index");
+            return await this.loadChildObjects<Column, ColumnFields, Shelf>(shelf, "columns", "index");
         else {
             const columns: Column[] = [],
                 colNumber = shelf.index % 2 === 0 ? 4 : 2;
@@ -139,7 +163,7 @@ export class Column extends UpperLayer {
      * Load the trays into the column
      * @async
      */
-    public async loadNextLayer(): Promise<void> {
+    public async loadChildren(): Promise<void> {
         if (!this.isDeepLoaded)
             this.trays = await Tray.loadTrays(this);
         this.isDeepLoaded = true;
