@@ -1,12 +1,28 @@
 import React from "react";
+import "pepjs";
 import "./styles/shelfview.scss";
-import {Column, Tray} from "./core/Warehouse";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheckCircle as tickSolid} from "@fortawesome/free-solid-svg-icons";
-import {faCheckCircle as tickLine} from "@fortawesome/free-regular-svg-icons";
+import {
+    faCheckCircle as tickSolid,
+    faMinusSquare as minus,
+    faPlusSquare as plus,
+    faTrashAlt as trash
+} from "@fortawesome/free-solid-svg-icons";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/MockWarehouse";
+import classNames from "classnames/bind";
+import {getTextColorForBackground} from "./utils/getTextColorForBackground";
+import {getExpiryColor} from "./utils/getExpiryColor";
+
+
+export type ViewPortLocation = Shelf | Zone | Warehouse;
 
 interface ViewPortProps {
-    columns: Column[];
+    isShelfEdit: boolean;
+    current: ViewPortLocation;
+    selected: Map<TrayCell, boolean>;
+    setSelected: (newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)) => void;
+    isTraySelected: ((tray: TrayCell) => boolean | undefined);
+    selectedTrayCells: TrayCell[];
 }
 
 /**
@@ -14,19 +30,15 @@ interface ViewPortProps {
  */
 interface LongPress {
     isHappening: boolean;
-    timeout: number;
-    dragFrom: Tray;
-    selectedBefore: Map<Tray, boolean>;
+    timeout?: number;
+    dragFrom: TrayCell;
+    selectedBefore: Map<TrayCell, boolean>;
 }
 
 /**
  * The state of the ViewPort
- * @property columns The columns that the viewport displays
  */
 interface ViewPortState {
-    selected: Map<Tray, boolean>;
-    isMultipleSelect: boolean;
-    mouseDown?: boolean;
     longPress?: LongPress | null;
 }
 
@@ -42,50 +54,45 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     constructor(props: ViewPortProps) {
         super(props);
-
         this.state = {
-            isMultipleSelect: false,
-            selected: new Map(),
+            longPress: null,
         };
     }
 
     /**
      * This method is called when a dragging event is started.  This event is started when the timeout which is started
-     * inside onTrayMouseDown succeeds.  This timeout could fail iff the mouse leaves the tray or if the mouse is
+     * inside onTrayPointerDown succeeds.  This timeout could fail iff the pointer leaves the tray or if the pointer is
      * released before the timeout finishes.
+     * @param shelf The current shelf that is being displayed
      */
-    onDragSelectStart() {
-
-        const selectedBefore = new Map();
-        this.state.selected.forEach((selected, tray) => {
-            selectedBefore.set(tray, selected);
-        });
+    onDragSelectStart(shelf: Shelf) {
+        // Shallow clone the selected map from props, which we will save
+        const selectedBefore = new Map(this.props.selected);
 
         this.setState({
             ...this.state,
             longPress: {
                 isHappening: true,
-                timeout: -1,
+                timeout: undefined,
                 dragFrom: this.state.longPress?.dragFrom!!,
                 selectedBefore: selectedBefore,
             },
-            isMultipleSelect: true
         }, () => {
-            this.updateDragSelection(this.state.longPress?.dragFrom!!);
+            this.updateDragSelectionTo(shelf, this.state.longPress?.dragFrom!!);
         });
     }
 
     /**
-     * This method is called to update the state of the drag event.  It is called when the mouse enters a new tray while
-     * the viewport is in dragging mode.  This method sets the selection state based on the selection state from when
-     * the drag started (longPress.selectedBefore).
-     * @param to The tray that the mouse just entered, which triggered this listener
+     * This method is called to update the state of the drag event.  It is called when the pointer enters a new tray
+     * while the viewport is in dragging mode.  This method sets the selection state based on the selection state from
+     * when the drag started (longPress.selectedBefore).
+     * @param shelf The current shelf that is being displayed
+     * @param to The tray that the pointer just entered, which triggered this listener
      */
-    updateDragSelection(to: Tray) {
+    updateDragSelectionTo(shelf: Shelf, to: TrayCell) {
 
-        this.state.selected.forEach((_, tray) => { // reset selection
-            this.state.selected.set(tray, this.state.longPress?.selectedBefore.get(tray) ?? false);
-        });
+        // Shallow clone what was previously selected, which we will mutate
+        let newSelectedMap = new Map(this.state.longPress?.selectedBefore ?? new Map<Tray, boolean>());
 
         const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
 
@@ -104,8 +111,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
         // After they have been sorted into any order, anything between the from and to trays is then marked as selected
-        const trayOrdered = this.props.columns.flatMap((column, columnIndex) =>
-            column.trays.map((tray: Tray, trayIndex) => {
+        const trayOrdered = shelf.columns.flatMap((column, columnIndex) =>
+            column.getPaddedTrays().map((tray: TrayCell, trayIndex) => {
                 if (tray === from) {
                     boundIndices.from.column = columnIndex;
                     boundIndices.from.tray = trayIndex;
@@ -128,13 +135,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             if (a.columnIndex < b.columnIndex) return -1;
             if (a.columnIndex > b.columnIndex) return 1;
 
-            const invertColumns = boundIndices.from.column < boundIndices.to.column ? 1
-                                                                                    : -1;
-            // this invert makes sure that trays above the start tray are always selected
-            // todo decide if this ordering is more logical
-
-            if (a.trayIndex < b.trayIndex) return 1 * invertColumns;
-            if (a.trayIndex > b.trayIndex) return -1 * invertColumns;
+            if (a.trayIndex < b.trayIndex) return 1;
+            if (a.trayIndex > b.trayIndex) return -1;
 
             return 0;
         })).map(it => it.tray);
@@ -146,74 +148,62 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             const selectThis = isSelecting || tray === from || tray === to;
 
             if (selectThis) {
-                this.state.selected.set(tray, true);
+                newSelectedMap.set(tray, true);
             }
             return xor(isSelecting, xor(tray === from, tray === to));
 
         }, false); // the accumulator of the fold is if the trays are still being selected
 
-        this.forceUpdate(); // the state has been changed
+        this.props.setSelected(newSelectedMap);
     }
 
     /**
-     * This method is called when a drag event is ended.  It is used to finalise the state.
+     * This method is called when a drag event is ended by pointer up, or when the pointer leaves the viewport during a
+     * drag. After drag finishes and the state is set, the callback is to fix the UI select display mode
      */
     onDragSelectEnd() {
 
-        this.setState({ // if only one tray is selected, return to single select mode
+        this.setState({
             ...this.state,
             longPress: null,
         });
-
     }
 
     /**
-     * This method is called when a tray is clicked, a click being a higher level combination of onMouseDown and
-     * onMouseUp.  This method controls the selecting behaviour of a singular tray.  Notably, this method is also called
-     * after a mouse drag event if the event ends on the same tray as it started.
-     * @param tray The tray that is clicked
+     * This method is called when a TrayCell is clicked, a click being a higher level combination of onPointerDown and
+     * onPointerUp.  This method controls the selecting behaviour of a singular TrayCell.  Notably, this method is also
+     * called after a pointer drag event if the event ends on the same TrayCell as it started.
+     * @param trayCell The TrayCell that is clicked
      * @param e The react event object which triggered this listener
      */
-    onTrayClick(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+    onTrayClick(trayCell: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
 
-        const newTraySelection = !this.state.selected.get(tray); // if the tray will become selected
+        // Shallow clone the selected map from props, which we will mutate
+        let newSelectedMap = new Map(this.props.selected);
 
-        if (!this.state.isMultipleSelect && newTraySelection) { // deselect the currently selected
-            this.state.selected.forEach((_, tray) =>
-                this.state.selected.set(tray, false)
-            );
-            this.state.selected.set(tray, newTraySelection);
-            this.forceUpdate();
+        // If there's only one trayCell selected, and it's not the clicked-on trayCell
+        // then deselect that previously selected trayCell first, before toggling this clicked-on trayCell as normal
+        if (this.props.selectedTrayCells.length === 1 && this.props.selectedTrayCells[0] !== trayCell) {
+            newSelectedMap.set(this.props.selectedTrayCells[0], false);
+        }
 
-        } else if (this.state.isMultipleSelect) {
-            this.state.selected.set(tray, newTraySelection);
+        // Toggle the trayCell being clicked on
+        newSelectedMap.set(trayCell, !this.props.isTraySelected(trayCell));
 
-            const numSelected = Array.from(this.state.selected.entries())
-                                     .filter(([_, value]) => value).length;
-
-            if (numSelected === 1) {
-                this.setState({ // if only one tray is selected, return to single select mode
-                    ...this.state,
-                    isMultipleSelect: false
-                });
-            } else {
-                this.forceUpdate();
-            }
-
-        } // else !multipleSelect && !newSelected, can't deselect
-
+        this.props.setSelected(newSelectedMap);
     }
 
     /**
-     * This method is called when the mouse is pressed over a tray, it begins the timeout which controls dragging
-     * @param tray The tray on which the mouse is pressed
-     * @param e The react mouse event that triggered this call
+     * This method is called when the pointer is pressed over a tray, it begins the timeout which controls dragging
+     * @param shelf The current shelf that is being displayed
+     * @param tray The tray on which the pointer is pressed
+     * @param e The react pointer event that triggered this call
      */
-    onTrayMouseDown(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
-
+    onTrayPointerDown(shelf: Shelf, tray: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
         const timeout: number = window.setTimeout(() => { // await hold time
-            if (this.state.longPress?.timeout !== undefined) { // not interrupted
-                this.onDragSelectStart();
+            if (this.state.longPress) { // not interrupted
+                this.onDragSelectStart(shelf);
             }
         }, LONG_PRESS_TIMEOUT);
 
@@ -229,53 +219,54 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     }
 
     /**
-     * This method is called when the mouse button is released over a tray, this either cancels the new drag event
-     * timeout, finalises a current dragging event or performs a mouse click.
+     * This method is called when the pointer button is released over a tray, this either cancels the new drag event
+     * timeout, finalises a current dragging event or performs a pointer click.
      * @param tray The tray over which the even is triggered
-     * @param e The react mouse event that triggered this call
+     * @param e The react pointer event that triggered this call
      */
-    onTrayMouseUp(tray: Tray, e: React.MouseEvent<HTMLDivElement>) {
+    onTrayPointerUp(tray: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
 
         if (this.state.longPress) {
             if (this.state.longPress.isHappening) {
                 this.onDragSelectEnd(); // end of drag
             } else {
-                window.clearTimeout(this.state.longPress.timeout);
-                this.setState(Object.assign(this.state, {
+                window.clearTimeout(this.state.longPress?.timeout);
+                this.setState({
+                    ...this.state,
                     longPress: null
-                }));
+                });
                 this.onTrayClick(tray, e);
             }
-        } else {
-            this.onTrayClick(tray, e);
         }
+
     }
 
     /**
-     * This method is called when the mouse leaves the DOM element which represents a any tray.  This method stops a
-     * mouse down event from starting a drag event.
-     * @param e The react mouse event that triggered this call
+     * This method is called when the pointer leaves the DOM element which represents any tray.  This method stops a
+     * pointer down event from starting a drag event if the pointer leaves that tray.
+     * @param e The react pointer event that triggered this call
      */
-    onTrayMouseLeave(e: React.MouseEvent<HTMLDivElement>) {
+    onTrayPointerLeave(e: React.PointerEvent<HTMLDivElement>) {
 
         if (this.state.longPress && !this.state.longPress.isHappening) {
-            // is between mouse down and drag start
+            // is between pointer down and drag start
             window.clearTimeout(this.state.longPress?.timeout);
 
-            this.setState(Object.assign(this.state, { // kills the long press
+            this.setState({ // kills the long press
+                ...this.state,
                 longPress: null
-            }));
+            });
         }
     }
 
     /**
-     * This method is called when the mouse enters the DOM element which represents a particular tray
-     * @param tray The tray over which the mouse entered
+     * This method is called when the pointer enters the DOM element which represents a particular tray
+     * @param shelf The current shelf that is being displayed
+     * @param tray The tray over which the pointer entered
      */
-    onTrayMouseEnter(tray: Tray) {
-
+    onTrayPointerEnter(shelf: Shelf, tray: TrayCell) {
         if (this.state.longPress?.isHappening) {
-            this.updateDragSelection(tray);
+            this.updateDragSelectionTo(shelf, tray);
         }
     }
 
@@ -284,44 +275,235 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     render() {
 
-        return (
-            <div id="viewPort">
-                <div id="shelf">
-                    {this.props.columns.map((column, columnIndex) =>
-
-                        <div
-                            style={{order: columnIndex}}
-                            className="column"
-                            key={columnIndex}
-                        >
-                            {column.trays.map((tray, trayIndex) =>
-
-                                <div
-                                    className={`tray${this.state.isMultipleSelect ? " multipleSelect" : ""}${
-                                        this.state.selected.get(tray) ? " selected" : ""}`}
-
-                                    // onClick={this.onTrayClick.bind(this, tray)}
-                                    onMouseDown={this.onTrayMouseDown.bind(this, tray)}
-                                    onMouseEnter={this.onTrayMouseEnter.bind(this, tray)}
-                                    onMouseLeave={this.onTrayMouseLeave.bind(this)}
-                                    onMouseUp={this.onTrayMouseUp.bind(this, tray)}
-                                    key={trayIndex}
-                                >
-                                    <FontAwesomeIcon style={this.state.selected.get(tray) ? {"color": "#3347ff"} : {}}
-                                                     icon={this.state.selected.get(tray) ? tickSolid : tickLine}/>
-                                    <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
-
-                                    <div className="trayExpiry" style={{
-                                        backgroundColor: tray.expiry?.color
-                                    }}>{tray.expiry?.label ?? "?"}</div>
-
-                                    <div className="trayWeight">{tray.weight ?? "?"}kg</div>
-
-                                    <div className="trayCustomField">{tray.customField ?? ""}</div>
-                                </div>)}
-                        </div>)
-                    }</div>
-            </div>
-        );
+        if (this.props.current instanceof Warehouse) {
+            return <>
+                <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
+                <p>todo add a button to go to settings or wherever this can be changed</p>
+            </>;
+        } else if (this.props.current instanceof Zone) {
+            return <>
+                <h1>Current zone {this.props.current.toString()} has no bays</h1>
+                <p>todo add a button to go to settings or wherever this can be changed</p>
+            </>;
+        } else {
+            const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
+            return (
+                <div id="viewPort" touch-action="none" onPointerUp={this.onDragSelectEnd.bind(this)}
+                     onPointerLeave={this.onDragSelectEnd.bind(this)}>
+                    {/* DO NOT attach any touch/onClick/pointer stuff to #shelf, it won't receive them */}
+                    <div id="shelf">
+                        {shelf.columns.map((column, columnIndex) =>
+                            this.renderColumn(shelf, column, columnIndex)
+                        )}
+                    </div>
+                </div>
+            );
+        }
     }
+
+    /**
+     * This is the listener for incrementing/decrementing the max height of a column
+     * @param column The column to inc/dec
+     * @param changeType Either increment or decrement
+     */
+    changeColumnHeight(column: Column, changeType: "inc" | "dec") {
+        const change = changeType === "inc" ? 1
+                                            : -1;
+        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
+        Column.purgePaddedSpaces(column);
+        this.forceUpdate();
+    }
+
+    /**
+     * This method returns the possible changes to the current column max height for a particular column
+     * @param column The column in question
+     * @return an object map of possible inputs to the boolean which determines if they are possible
+     */
+    getPossibleHeightChanges(column: Column): { inc: boolean, dec: boolean } {
+        // todo decide if there ought to be max max height
+        if (column.maxHeight) {
+            return {inc: true, dec: column.maxHeight !== 1};
+        } else {
+
+            return {inc: true, dec: true};
+        }
+    }
+
+    /**
+     * This is the listener for increasing/decreasing the width of a column
+     * @param column The column to inc/dec
+     * @param changeType Either increase or decrease
+     */
+    changeColumnSize(column: Column, changeType: "inc" | "dec") {
+        const change = changeType === "inc" ? 1
+                                            : -1;
+
+        const columnSizes = column.parentWarehouse?.columnSizes!!;
+        const medianIndex = Math.floor(columnSizes.length / 2);
+
+        const currentIndex = columnSizes.indexOf(column.size ?? columnSizes[medianIndex]);
+
+        const newIndex = Math.min(Math.max(change + currentIndex, 0), columnSizes.length - 1);
+        column.size = columnSizes[newIndex];
+
+        this.forceUpdate();
+    }
+
+    /**
+     * This method returns the possible changes to the current column size for a particular column
+     * @param column The column in question
+     * @return an object map of possible inputs to the boolean which determines if they are possible
+     */
+    getPossibleSizeChanges(column: Column): { inc: boolean, dec: boolean } {
+
+        const columnSizes = column.parentWarehouse?.columnSizes!!;
+        if (column.size) {
+            const currentIndex = columnSizes.indexOf(column.size);
+            return {inc: currentIndex !== columnSizes.length - 1, dec: currentIndex !== 0};
+        } else {
+            return {inc: true, dec: true};
+        }
+    }
+
+    /**
+     * The listener for removing a column
+     * @param column The column to remove
+     */
+    removeColumn(column: Column) {
+        const shelf: Shelf | undefined = column.parentShelf;
+        if (shelf) {
+            const index = shelf.columns.indexOf(column);
+            shelf.columns.splice(index, 1);
+        } else throw Error("Shelf undefined");
+
+        this.forceUpdate();
+    }
+
+    /**
+     * This method renters a column.  It can either render it in or out of shelf edit mode depending on the props.
+     * @param shelf The current shelf that is being displayed
+     * @param column The column to draw
+     * @param order The index of the column
+     */
+    renderColumn(shelf: Shelf, column: Column, order: number) {
+        const possibleColumnChanges = this.getPossibleSizeChanges(column);
+        const possibleHeightChange = this.getPossibleHeightChanges(column);
+
+        /* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
+        return this.props.isShelfEdit ? <div
+            style={{
+                order: order,
+                flexGrow: column.size?.sizeRatio ?? 1
+            }}
+            className="column"
+            key={order}
+        >
+            <button onClick={this.removeColumn.bind(this, column)}> {/*todo revise these icon*/}
+                <FontAwesomeIcon icon={trash}/>
+            </button>
+
+            <div id="sizeControls">
+                <h1>Tray Size:</h1>
+                <button
+                    disabled={!possibleColumnChanges.inc}
+                    onClick={this.changeColumnSize.bind(this, column, "inc")}
+                >
+                    <FontAwesomeIcon icon={plus}/>
+                </button>
+
+                <div>{stringToTitleCase(column.size?.label ?? "?")}</div>
+                <button
+                    disabled={!possibleColumnChanges.dec}
+                    onClick={this.changeColumnSize.bind(this, column, "dec")}
+                >
+                    <FontAwesomeIcon icon={minus}/>
+                </button>
+            </div>
+
+            <div id="heightControls">
+                <h1>Max Height:</h1>
+                <button
+                    disabled={!possibleHeightChange.inc}
+                    onClick={this.changeColumnHeight.bind(this, column, "inc")}
+                >
+                    <FontAwesomeIcon icon={plus}/>
+                </button>
+                <div>{column.maxHeight ?? "?"}</div>
+                <button
+                    disabled={!possibleHeightChange.dec}
+                    onClick={this.changeColumnHeight.bind(this, column, "dec")}
+                >
+                    <FontAwesomeIcon icon={minus}/>
+                </button>
+            </div>
+
+        </div> : <div
+                   style={{
+                       order: order,
+                       flexGrow: column.size?.sizeRatio ?? 1
+                   }}
+                   className="column"
+                   key={order}
+               >{
+            column.getPaddedTrays(1).map(((tray, index) => {
+                let expiryStyle;
+                if (tray instanceof Tray) {
+                    const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";
+                    expiryStyle = {
+                        backgroundColor: bg,
+                        color: getTextColorForBackground(bg)
+                    };
+                }
+                return <div
+                    className={classNames("tray", {
+                        "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
+                        "selected": this.props.isTraySelected(tray),
+                        "firstTraySpace": index === column.trays.length,
+                        "traySpace": !(tray instanceof Tray)
+                    })}
+                    onPointerDown={this.onTrayPointerDown.bind(this, shelf, tray)}
+                    onPointerEnter={this.onTrayPointerEnter.bind(this, shelf, tray)}
+                    onPointerLeave={this.onTrayPointerLeave.bind(this)}
+                    onPointerUp={this.onTrayPointerUp.bind(this, tray)}
+                    key={index}
+                >
+                    <FontAwesomeIcon
+                        className={classNames("tray-tickbox", {
+                            "tick-selected": this.props.isTraySelected(tray)
+                        })}
+                        icon={tickSolid}/>
+
+                    {tray instanceof Tray && <>
+                        <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
+
+                        <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
+
+                        <div className="trayWeight">{tray.weight ?? "?"}kg</div>
+                        <div className="trayCustomField">{tray.customField ?? ""}</div>
+                    </>}
+                    {!(tray instanceof Tray) && index === column.trays.length && <>
+                        <p>EMPTY TRAY {tray.index}</p>
+                    </>}
+
+                </div>;
+            }))}
+               </div>;
+    }
+
+
+    /**
+     * This method clears the tray spaces if the shelf that is being displayed is changed.
+     * @inheritDoc
+     */
+    componentDidUpdate(prevProps: Readonly<ViewPortProps>, prevState: Readonly<ViewPortState>, snapshot?: any): void {
+        if (this.props.current !== prevProps.current) {
+            Column.purgePaddedSpaces();
+        }
+    }
+
+
+}
+
+function stringToTitleCase(string: string): string {
+    return string.charAt(0).toUpperCase() + string.substring(1).toLowerCase();
 }

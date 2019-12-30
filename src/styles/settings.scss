@@ -23,6 +23,10 @@
   height: 300px;
   width: 250px;
 
+  a {
+    position: relative;
+  }
+
   p {
     //font-size: 14px;
   }
@@ -36,9 +40,9 @@
 
   .back-btn {
     //back button icon
-    //TODO center it on the button
     position: absolute;
-    margin-top: 13px;
+    top: 50%;
+    transform: translate(0, -50%);
     left: 50px;
   }
 }

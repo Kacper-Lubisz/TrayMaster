@@ -1,10 +1,13 @@
 // MAIN SHELF VIEW STYLING
 
-@import "./keyboard";
-// Import generic keyboard styling
-@import "./shelfviewgrid";
+// Import system-wide variables: we need to know $accent-color here
+@import "./variables";
 // Import shelf view grid layout
-@import "./viewport"; // Import viewport styling
+@import "./shelfviewgrid";
+// Import generic keyboard styling
+@import "./keyboard";
+// Import viewport styling
+@import "./viewport";
 
 #topBar {
   background-color: #cccccc;
@@ -18,6 +21,10 @@
 
 #viewPort {
   background-color: #dddddd;
+
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 #sideBar {
@@ -29,7 +36,7 @@
   // container for keyboard switch buttons
   #kb-switcher {
     // Define container layout
-    padding: 10px;
+    margin-top: 10px;
     display: flex;
     justify-content: space-around;
     align-items: stretch;
@@ -47,10 +54,11 @@
       transition: color 0.2s;
       cursor: pointer;
       padding: 0;
+      margin: 0 5px;
 
       // When active, appear blue
       &.active {
-        color: #3347ff;
+        color: $accent-color;
       }
 
       // Set icon to fill containing button
@@ -62,42 +70,67 @@
   }
 }
 
+// bottom keyboards
 #bottom {
   padding: 5px;
 
+  // universal keyboard container
+  // centres keyboards that don't take up the full width
   .keyboard-container {
     display: flex;
     justify-content: center;
 
     height: 100%;
 
+    // divs directly inside .keyboard-container
     > div {
+      // A small horizontal margin
       margin: 0 10px;
     }
 
-    #exp-1 {
+    // expiry keyboard: years
+    #exp-years {
       width: 20%;
     }
 
-    #exp-2 {
+    // expiry keyboard: quarters
+    #exp-quarters {
       width: 15%;
     }
 
-    #exp-3 {
+    // expiry keyboard: months
+    #exp-months {
       width: 20%;
     }
 
+    // weight keyboard: main numpad
     #weight-numpad {
       width: 30%;
     }
 
+    // weight keyboard: side section (with backspace, enter etc0
     #numpadR {
+      height: 100%;
       width: 10%;
+      display: flex;
+      flex-direction: column;
+
+      #draftWeight {
+        text-align: right;
+        font-size: 30px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      #weight-numpad-side {
+        flex-grow: 1;
+      }
+    }
+
+    // vertical divider: used to separate keyboards where necessary
+    .vl {
+      width: 0;
+      border-left: 1px solid black;
     }
   }
-}
-
-.vl {
-  width: 0;
-  border-left: 1px solid black;
 }

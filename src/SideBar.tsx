@@ -2,12 +2,10 @@ import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
+import {KeyboardName} from "./ShelfView";
+import classNames from "classnames";
+import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 
-/**
- * Defines possible keyboard names
- */
-export type KeyboardName = "category" | "expiry" | "weight";
 
 /**
  * Props to be passed into SideBar
@@ -18,16 +16,29 @@ interface SideBarProps {
      * Function passed in from parent to call when keyboard needs to be switched
      * @param name - name of keyboard to switch to
      */
-    keyboardSwitcher: (name: KeyboardName) => void
+    keyboardSwitcher: (name: KeyboardName) => void;
+
+    /** List of buttons for the keyboard part of the side panel */
+    buttons: KeyboardButtonProps[];
+    /** List of button keyboard switches */
+    keyboards: KeyboardSwitch[];
+    /** The current keyboard, used for highlighting the active */
+    currentKeyboard: KeyboardName
+    /** If the keyboardSwitcher should be displayed */
+    showKeyboardSwitcher: boolean
+
+    /** This string is to describe the current location */
+    locationString: string;
+    /** This color is the color of the current zone */
+    zoneColor: string;
 }
 
 /**
- * State of SideBar: contains the name of the currently active keyboard
- * @see SideBar
- * @see KeyboardName
+ * This interface represents each individual keyboard switcher button
  */
-interface SideBarState {
-    activeButton: KeyboardName
+interface KeyboardSwitch {
+    icon: IconDefinition;
+    name: KeyboardName;
 }
 
 /**
@@ -37,17 +48,17 @@ interface KeyboardSwitchBtnProps {
     /**
      * Whether the button is active (ie whether it should be blue)
      */
-    active: boolean,
+    active: boolean;
 
     /**
      * Function to call when the button is clicked
      */
-    onClick: any,
+    onClick: any;
 
     /**
      * Icon to show on the button
      */
-    icon: IconDefinition
+    icon: IconDefinition;
 }
 
 /**
@@ -56,7 +67,10 @@ interface KeyboardSwitchBtnProps {
 class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
     render() {
         return (
-            <button className={this.props.active ? "active" : ""} onClick={(e) => this.props.onClick(e)}>
+            // by this point this.props.onClick has had bind called on it 2 times
+            <button className={classNames({
+                "active": this.props.active
+            })} onClick={this.props.onClick}>
                 <FontAwesomeIcon icon={this.props.icon}/>
             </button>
         );
@@ -66,74 +80,33 @@ class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
 /**
  * Main sidebar object
  */
-export class SideBar extends React.Component<SideBarProps, SideBarState> {
-    buttons: KeyboardButtonProps[];
-
-    constructor(props: SideBarProps) {
-        super(props);
-
-        // Generate sidebar buttons
-        this.buttons = [
-            {
-                name: "Settings",
-                onClick: () => {
-                    alert("Settings");
-                }
-            },
-            {
-                name: "Back",
-                onClick: () => {
-                    alert("Back");
-                }
-            },
-            {
-                name: "Edit Shelf",
-                onClick: () => {
-                    alert("Edit Shelf");
-                }
-            },
-            {
-                name: "Navigator",
-                onClick: () => {
-                    alert("Navigator");
-                }
-            },
-            {
-                name: "Next",
-                onClick: () => {
-                    alert("Next");
-                }
-            }
-        ];
-
-        // Set initial active button
-        this.state = {
-            activeButton: "category"
-        };
-    }
-
-    // Function to be called when switcher buttons are clicked
-    changeKeyboard(name: KeyboardName) {
-        this.props.keyboardSwitcher(name);
-        this.setState({
-            ...this.state,
-            activeButton: name
-        });
-    }
+export class SideBar extends React.Component<SideBarProps> {
 
     render() {
         return (
             <div id="sideBar">
-                <Keyboard buttons={this.buttons} gridX={1}/>
 
-                <div id="kb-switcher">
-                    <KeyboardSwitchBtn active={(this.state.activeButton === "category")}
-                                       onClick={() => this.changeKeyboard("category")} icon={faHome}/>
-                    <KeyboardSwitchBtn active={(this.state.activeButton === "expiry")}
-                                       onClick={() => this.changeKeyboard("expiry")} icon={faClock}/>
-                    <KeyboardSwitchBtn active={(this.state.activeButton === "weight")}
-                                       onClick={() => this.changeKeyboard("weight")} icon={faWeightHanging}/>
+                <div
+                    style={{
+                        backgroundColor: this.props.zoneColor,
+                        color: getTextColorForBackground(this.props.zoneColor)
+                    }}
+                >
+                    <h2>{this.props.locationString}</h2>
                 </div>
+
+                <Keyboard buttons={this.props.buttons} gridX={1}/>
+
+                {this.props.showKeyboardSwitcher && <div id="kb-switcher">
+                    {this.props.keyboards.map((keyboard) =>
+                        <KeyboardSwitchBtn
+                            key={keyboard.name}
+                            active={this.props.currentKeyboard === keyboard.name}
+                            onClick={this.props.keyboardSwitcher.bind(undefined, keyboard.name)}
+                            icon={keyboard.icon}
+                        />
+                    )}
+                </div>}
             </div>
         );
     }

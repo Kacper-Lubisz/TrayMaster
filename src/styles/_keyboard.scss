@@ -6,12 +6,14 @@
   background-color: #eeeeee;
   color: #000000;
   border-radius: 5px;
-  font-size: 24px;
-  line-height: 0;
-  padding: 0;
+  font-size: 20px;
+  line-height: 1px;
 
-  // Undecided - TODO: decide whether button text should be uppercase
-  //text-transform: uppercase;
+  padding: 0 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 
   border: 1px solid #aaaaaa;
   margin: 3px 5px;
@@ -25,12 +27,19 @@
   // HOVER AND ACTIVE VISUAL EFFECTS
   transition: box-shadow ease 0.5s;
 
-  &:hover {
+  &:hover:enabled {
     box-shadow: 0 0 20px -10px #000000;
   }
 
-  &:active {
+  // When the button is pressed or reflects the selected tray, darken its background
+  &:active:enabled, &.key-btn-selected {
     background-color: #dddddd;
+  }
+
+  // If the button is disabled, grey it out and don't give any visual feedback
+  &:disabled {
+    color: #989898;
+    cursor: default;
   }
 }
 

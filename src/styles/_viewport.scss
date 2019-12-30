@@ -1,5 +1,26 @@
 // VIEWPORT STYLING
 
+// Import system-wide variables: we need to know $accent-color here
+@import "variables";
+
+
+.shelf { //todo this belongs in a separate nav-popup file
+  align-content: center;
+  margin: auto auto;
+  width: 100px;
+  height: 100px;
+}
+
+.currentShelf {
+  width: 80px;
+  height: 80px;
+}
+
+#sizeControls, #heightControls { // todo fixme revise this style
+  width: 100%;
+  display: inline;
+}
+
 // Shelf
 #shelf {
   // Layout
@@ -8,32 +29,50 @@
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: stretch;
-  margin: 0 1%;
-  height: 80%;
+  margin: .5% .5%;
+  height: 98%;
 
   // Disable text selection: makes clicking and dragging feel less janky
   user-select: none;
+
+  // Shelf itself should not have any pointer events (let its parent handle them)
+  pointer-events: none;
+  // But all of its children (except column) should have their pointer events
+  > *:not(.column) {
+    pointer-events: auto;
+  }
 
   // Columns
   .column {
     // Layout
     flex: auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     flex-wrap: nowrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: flex-end;
     padding: 5px;
+
+    transition: flex-grow 0.5s ease;
 
     // Styling
     border: 1px solid white;
     text-align: center;
     background-color: #eee;
 
+    .tray:last-child {
+      margin: 0;
+    }
+
+    // Children of column should have all of their pointer events
+    > * {
+      pointer-events: auto;
+    }
+
     .tray {
       // Layout
       width: 100%;
-      height: 15%;
+      height: calc(100% / 3); // todo revise this change
       min-width: 0;
       margin: 5px 0 0 0;
 
@@ -48,12 +87,13 @@
       // Relative positioning: required to allow us to give children position: absolute;
       position: relative;
 
+
       // When we're in multiple select mode
       &.multipleSelect {
         // Round the corners
         border-radius: 10px;
 
-        > svg {
+        > svg.tray-tickbox {
           // Show the tickboxes
           visibility: visible;
         }
@@ -65,14 +105,32 @@
         z-index: 1; // TODO: is there any reason for this?
       }
 
+      // The first empty space a tray can take above
+      &.traySpace.firstTraySpace { //todo this needs to be completely restyled
+        background-color: #00000011;
+        border-color: #888;
+      }
+
+      &.traySpace {
+        background-color: #00000011;
+        border-color: #8880;
+      }
+
+      &.traySpace.selected { //todo this needs to be completely restyled
+        background-color: #00000011;
+        border-color: #888;
+      }
+
       // Everything inside a tray
       > * {
         // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
         position: absolute;
+        // Make all children elements (inside tray) transparent to pointer events (so they bubble to the tray itself)
+        pointer-events: none;
       }
 
       // Tickboxes
-      > svg {
+      > svg.tray-tickbox {
         // Layout
         margin: 5px 0;
         width: 10%;
@@ -80,8 +138,18 @@
         top: 0;
         left: 0;
 
-        // Hide by default; will be shown when in multiple select mode
+        // Grey unselected by default
+        // Needed because now just using tickSolid (better not to switch icons to avoid flickering)
+        color: #cacaca;
+
+        // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
         visibility: hidden;
+
+        &.tick-selected {
+          color: $accent-color;
+          visibility: visible;
+        }
+
       }
 
       // Tray category: bottom left
@@ -93,7 +161,7 @@
         text-align: left;
 
         // Truncate long categories: TODO make this work properly on all screen & tray sizes
-        width: 80%;
+        width: 60%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -103,16 +171,22 @@
       > div.trayExpiry {
         bottom: 0;
         right: 0;
-        font-size: 25px;
+        font-size: 22px;
         padding: 0 5px;
-        background-color: #aaa; // this is the default colour when there is no expiry specified
+
+        // Break lines when it gets too wide
+        width: 30%;
+        text-align: center;
+        word-wrap: break-word;
+
+        background-color: #aaa; // this is the default color when there is no expiry specified
       }
 
       // Tray weight: top right
       > div.trayWeight {
         top: 0;
         right: 0;
-        font-size: 15px;
+        font-size: 20px;
         margin: 2px 5px;
       }
 
