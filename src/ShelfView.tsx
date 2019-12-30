@@ -4,7 +4,18 @@ import {SideBar} from "./SideBar";
 import {ViewPort} from "./ViewPort";
 import {BottomPanel} from "./BottomPanel";
 import "./styles/shelfview.scss";
-import {Bay, Category, Column, Shelf, Tray, TrayCell, TraySpace, Warehouse, Zone} from "./core/WarehouseModel";
+import {
+    Bay,
+    Category,
+    Column,
+    ExpiryRange,
+    Shelf,
+    Tray,
+    TrayCell,
+    TraySpace,
+    Warehouse,
+    Zone
+} from "./core/WarehouseModel";
 import {Settings} from "./core/Settings";
 import {faClock, faHome, faWeightHanging} from "@fortawesome/free-solid-svg-icons";
 
@@ -37,6 +48,7 @@ interface ShelfViewState {
     currentKeyboard: KeyboardName;
     currentShelf: Shelf; // todo allow this to be nullable, if you load a warehouse with no shelves in it
     selected: Map<TrayCell, boolean>;
+    draftWeight?: string;
     isEditShelf: boolean;
 }
 
@@ -49,6 +61,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             selected: new Map(),
             currentKeyboard: "category",
             currentShelf: this.props.warehouse.shelves[0],
+            draftWeight: undefined,
             isEditShelf: false
         };
     }
@@ -71,15 +84,6 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      */
     public isTrayCellSelected(tray: TrayCell) {
         return this.state.selected.get(tray);
-    }
-
-    /**
-     * Returns whether the there are multiple selected trays
-     */
-    public areMultipleTraysSelected() {
-        const currSelected = Array.from(this.state.selected.entries())
-                                  .filter(([_, selected]) => selected);
-        return currSelected.length > 1;
     }
 
     /**
@@ -263,6 +267,17 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     // }
 
     /**
+     * This provisionally gets all selected TrayCells _before they're converted to Trays_ and
+     * without any side effects or manipulating state. This is important for BottomPanel's keyboards to know the number
+     * of TrayCells selected, and for expiry keyboard to highlight active year, and for ViewPort to know whether still
+     * in multiselect. It simply returns all selected TrayCells, including air spaces.
+     */
+    getSelectedTrayCells(): TrayCell[] {
+        return Array.from(this.state.selected.entries())
+                    .filter(([_, value]) => value).map(([a, _]) => a);
+    }
+
+    /**
      * This method returns a list of selected trays.  The method has the option to fill selected tray spaces with new
      * empty trays.  The method has an option to ignore selected spaces which are in the air.  The method ensures that
      * replaced spaces are deselected and new trays are selected, this causes setState to be called and thus causes a
@@ -329,13 +344,48 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
-    categorySelected(category: Category) {
+    onCategorySelected(category: Category) {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.category = category;
         });
         this.forceUpdate();
-        // this updates because get selected Trays causes an update after the click event is handled
+
+    }
+
+    /**
+     * This method is called when an expiry is selected on the expiry keyboard
+     * @param expiry The expiry that is selected
+     */
+    onExpirySelected(expiry: ExpiryRange) {
+
+        this.getSelectedTrays(true, true).forEach((tray) => {
+            tray.expiry = expiry;
+        });
+        this.forceUpdate();
+
+    }
+
+    /**
+     * Updates state's draftWeight. Called by typing on the weight keyboard
+     * @param newDraftWeight
+     */
+    setDraftWeight(newDraftWeight?: string) {
+        this.setState({
+            ...this.state,
+            draftWeight: newDraftWeight
+        });
+    }
+
+    /**
+     * Applies the draftWeight to the selected trays. Called when Enter is clicked on the weight keyboard
+     */
+    applyDraftWeight() {
+
+        this.getSelectedTrays(true, true).forEach((tray) => {
+            tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
+        });
+        this.forceUpdate();
 
     }
 
@@ -347,7 +397,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     switchKeyboard(newKeyboard: KeyboardName) {
         this.setState({
             ...this.state,
-            currentKeyboard: newKeyboard
+            currentKeyboard: newKeyboard,
+            draftWeight: "0"
         });
     }
 
@@ -453,7 +504,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     selected={this.state.selected}
                     setSelected={this.setSelected.bind(this)}
                     isTraySelected={this.isTrayCellSelected.bind(this)}
-                    areMultipleTraysSelected={this.areMultipleTraysSelected.bind(this)}
+                    selectedTrayCells={this.getSelectedTrayCells()}
 
                     shelf={this.state.currentShelf}
                     isShelfEdit={this.state.isEditShelf}
@@ -483,14 +534,15 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 />
 
                 <BottomPanel
-                    categories={this.props.warehouse.categories.map((category) => {
-                        return {
-                            name: category.shortName ?? category.name,
-                            onClick: this.categorySelected.bind(this, category)
-                        };
-                    })}
+                    categories={this.props.warehouse.categories}
+                    categorySelected={this.onCategorySelected.bind(this)}
+                    expirySelected={this.onExpirySelected.bind(this)}
+                    draftWeight={this.state.draftWeight}
+                    setDraftWeight={this.setDraftWeight.bind(this)}
+                    applyDraftWeight={this.applyDraftWeight.bind(this)}
                     keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
                     //fixme move this edit state to change current keyboard
+                    selectedTrayCells={this.getSelectedTrayCells()}
                 />
             </div>
         );

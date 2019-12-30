@@ -5,7 +5,7 @@ import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Category} from "./Category";
 import {Layer} from "./Layer";
-import {ONLINE} from "../WarehouseModel";
+import {ExpiryRange, ONLINE, TraySize} from "../WarehouseModel";
 import Utils from "./Utils";
 
 
@@ -20,54 +20,34 @@ const expires: ExpiryRange[] = [
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
-        color: "#FF0"
+        label: "Jan 2020"
     },
     {
         from: new Date(2020, 2).getTime(),
         to: new Date(2020, 3).getTime(),
-        label: "Feb 2020",
-        color: "#0ff"
+        label: "Feb 2020"
     },
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020",
-        color: "#00f"
+        label: "Jan-Mar 2020"
     },
     {
         from: new Date(2020, 4).getTime(),
         to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020",
-        color: "#F0f"
+        label: "Apr-Jun 2020"
     },
     {
         from: new Date(2020, 1).getTime(),
         to: new Date(2021, 1).getTime(),
-        label: "2020",
-        color: "#FF0000"
+        label: "2020"
     },
     {
         from: new Date(2021, 1).getTime(),
         to: new Date(2022, 1).getTime(),
-        label: "2021",
-        color: "#0f0"
+        label: "2021"
     },
 ];
-
-
-export interface ExpiryRange {
-    from: number;
-    to: number;
-    label: string;
-    color: string;
-}
-
-
-export interface TraySize {
-    label: string;
-    sizeRatio: number;
-}
 
 
 interface TrayFields {
@@ -110,6 +90,7 @@ export class Tray extends Layer<TrayFields> {
     }
 
     public get category(): Category | undefined {
+        // todo: resolve for firebase
         return this.fields.category;
     }
 

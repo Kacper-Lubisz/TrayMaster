@@ -3,8 +3,8 @@ import {Shelf} from "./Shelf";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
-import {Tray, TraySize} from "./Tray";
-import {ONLINE, TrayCell, TraySpace} from "../WarehouseModel";
+import {Tray} from "./Tray";
+import {ONLINE, TrayCell, TraySize, TraySpace} from "../WarehouseModel";
 import Utils from "./Utils";
 
 

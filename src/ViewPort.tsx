@@ -1,4 +1,5 @@
 import React from "react";
+// noinspection
 import "pepjs";
 import "./styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -10,6 +11,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {Column, Shelf, Tray, TrayCell} from "./core/WarehouseModel";
 import classNames from "classnames/bind";
+import {getTextColourForBackground} from "./utils/getTextColourForBackground";
+import {getExpiryColour} from "./utils/getExpiryColour";
+
 
 interface ViewPortProps {
     isShelfEdit: boolean;
@@ -17,7 +21,7 @@ interface ViewPortProps {
     selected: Map<TrayCell, boolean>;
     setSelected: (newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)) => void;
     isTraySelected: ((tray: TrayCell) => boolean | undefined);
-    areMultipleTraysSelected: () => boolean;
+    selectedTrayCells: TrayCell[];
 }
 
 /**
@@ -163,28 +167,25 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     }
 
     /**
-     * This method is called when a tray is clicked, a click being a higher level combination of onPointerDown and
-     * onPointerUp.  This method controls the selecting behaviour of a singular tray.  Notably, this method is also
-     * called after a pointer drag event if the event ends on the same tray as it started.
-     * @param tray The tray that is clicked
+     * This method is called when a TrayCell is clicked, a click being a higher level combination of onPointerDown and
+     * onPointerUp.  This method controls the selecting behaviour of a singular TrayCell.  Notably, this method is also
+     * called after a pointer drag event if the event ends on the same TrayCell as it started.
+     * @param trayCell The TrayCell that is clicked
      * @param e The react event object which triggered this listener
      */
-    onTrayClick(tray: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
-
-        const currSelected = Array.from(this.props.selected.entries())
-                                  .filter(([_, value]) => value);
+    onTrayClick(trayCell: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
 
         // Shallow clone the selected map from props, which we will mutate
         let newSelectedMap = new Map(this.props.selected);
 
-        // If there's only one tray selected, and it's not the clicked-on tray
-        // then deselect that previously selected tray first, before toggling this clicked-on tray as normal
-        if (currSelected.length === 1 && currSelected[0][0] !== tray) {
-            newSelectedMap.set(currSelected[0][0], false);
+        // If there's only one trayCell selected, and it's not the clicked-on trayCell
+        // then deselect that previously selected trayCell first, before toggling this clicked-on trayCell as normal
+        if (this.props.selectedTrayCells.length === 1 && this.props.selectedTrayCells[0] !== trayCell) {
+            newSelectedMap.set(this.props.selectedTrayCells[0], false);
         }
 
-        // Toggle the tray being clicked on
-        newSelectedMap.set(tray, !this.props.isTraySelected(tray));
+        // Toggle the trayCell being clicked on
+        newSelectedMap.set(trayCell, !this.props.isTraySelected(trayCell));
 
         this.props.setSelected(newSelectedMap);
     }
@@ -424,43 +425,49 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                    className="column"
                    key={order}
                >{
-            column.getPaddedTrays(1).map(((tray, index) =>
-                    <div
-                        className={classNames("tray", {
-                            "multipleSelect": this.props.areMultipleTraysSelected() || this.state.longPress?.isHappening,
-                            "selected": this.props.isTraySelected(tray),
-                            "firstTraySpace": index === column.trays.length,
-                            "traySpace": !(tray instanceof Tray)
+            column.getPaddedTrays(1).map(((tray, index) => {
+                let expiryStyle;
+                if (tray instanceof Tray) {
+                    const bg = tray.expiry ? getExpiryColour(tray.expiry) : "";
+                    expiryStyle = {
+                        backgroundColor: bg,
+                        color: getTextColourForBackground(bg)
+                    };
+                }
+                return <div
+                    className={classNames("tray", {
+                        "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
+                        "selected": this.props.isTraySelected(tray),
+                        "firstTraySpace": index === column.trays.length,
+                        "traySpace": !(tray instanceof Tray)
+                    })}
+                    onPointerDown={this.onTrayPointerDown.bind(this, tray)}
+                    onPointerEnter={this.onTrayPointerEnter.bind(this, tray)}
+                    onPointerLeave={this.onTrayPointerLeave.bind(this)}
+                    onPointerUp={this.onTrayPointerUp.bind(this, tray)}
+                    key={index}
+                >
+                    <FontAwesomeIcon
+                        className={classNames("tray-tickbox", {
+                            "tick-selected": this.props.isTraySelected(tray)
                         })}
-                        onPointerDown={this.onTrayPointerDown.bind(this, tray)}
-                        onPointerEnter={this.onTrayPointerEnter.bind(this, tray)}
-                        onPointerLeave={this.onTrayPointerLeave.bind(this)}
-                        onPointerUp={this.onTrayPointerUp.bind(this, tray)}
-                        key={index}
-                    >
-                        <FontAwesomeIcon
-                            className={classNames("tray-tickbox", {
-                                "tick-selected": this.props.isTraySelected(tray)
-                            })}
-                            icon={tickSolid}/>
+                        icon={tickSolid}/>
 
-                        {tray instanceof Tray && [
-                            <div className="trayCategory" key={1}>{tray.category?.name ?? "Mixed"}</div>,
+                    {tray instanceof Tray && [
+                        <div className="trayCategory" key={1}>{tray.category?.name ?? "Mixed"}</div>,
 
-                            <div className="trayExpiry" key={2} style={{
-                                backgroundColor: tray.expiry?.color
-                            }}>{tray.expiry?.label ?? "?"}</div>,
+                        <div className="trayExpiry" key={2} style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>,
 
-                            <div className="trayWeight" key={3}>{tray.weight ?? "?"}kg</div>,
+                        <div className="trayWeight" key={3}>{tray.weight ?? "?"}kg</div>,
 
-                            <div className="trayCustomField" key={4}>{tray.customField ?? ""}</div>
-                        ]}
-                        {!(tray instanceof Tray) && [
-                            index === column.trays.length && <p key={1}>EMPTY TRAY {tray.index}</p>
-                        ]}
+                        <div className="trayCustomField" key={4}>{tray.customField ?? ""}</div>
+                    ]}
+                    {!(tray instanceof Tray) && [
+                        index === column.trays.length && <p key={1}>EMPTY TRAY {tray.index}</p>
+                    ]}
 
-                    </div>
-            ))}
+                </div>;
+            }))}
                </div>;
     }
 

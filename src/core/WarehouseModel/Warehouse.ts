@@ -3,9 +3,9 @@ import {Layer} from "./Layer";
 import {Bay} from "./Bay";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
-import {Tray, TraySize} from "./Tray";
+import {Tray} from "./Tray";
 import {Category} from "./Category";
-import {ONLINE} from "../WarehouseModel";
+import {ONLINE, TraySize} from "../WarehouseModel";
 
 
 interface WarehouseFields {

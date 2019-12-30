@@ -32,7 +32,8 @@ class TestObj extends DatabaseObject<TestObjFields> {
         return this.colName;
     }
 
-    protected async save(): Promise<void> { }
+    protected async save(): Promise<void> {
+    }
 }
 
 test("DB path manipulation consistency and normalisation", () => {

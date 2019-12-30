@@ -4,6 +4,19 @@ import {Tray} from "./WarehouseModel/Tray";
 export const ONLINE: boolean = false;
 
 
+export interface ExpiryRange {
+    from: number;
+    to: number;
+    label: string;
+}
+
+
+export interface TraySize {
+    label: string;
+    sizeRatio: number;
+}
+
+
 export interface TraySpace {
     column: Column;
     index: number;
