@@ -16,7 +16,7 @@ export async function createTestWarehouse() {
                                                 .add({name: `Category ${Math.random()}`}));
 
     let traySnapshots = [];
-    const colours = [
+    const colors = [
         {label: "Red", hex: "#FF0000"},
         {label: "Green", hex: "#00FF00"},
         {label: "Blue", hex: "#0000FF"},
@@ -24,8 +24,8 @@ export async function createTestWarehouse() {
         {label: "Black", hex: "#000000"}
     ];
     const zonesRef = warehouseRef.doc(warehouseSnapshot.id).collection("zones");
-    for (let i: number = 0; i < colours.length; i++) {
-        let zoneSnapshot = await zonesRef.add({colour: colours[i]});
+    for (let i: number = 0; i < colors.length; i++) {
+        let zoneSnapshot = await zonesRef.add({color: colors[i]});
         let zoneRef = zonesRef.doc(zoneSnapshot.id);
 
         const baysRef = zoneRef.collection("bays");

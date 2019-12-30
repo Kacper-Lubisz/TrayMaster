@@ -27,7 +27,7 @@ const sizes: ColumnSize[] = [
     {label: "big", sizeRatio: 3.5},
 ];
 
-const colours: { label: string, hex: string }[] = [
+const colors: { label: string, hex: string }[] = [
     {label: "Red", hex: "#FF0000"},
     {label: "Green", hex: "#00FF00"},
     {label: "Blue", hex: "#0000FF"},
@@ -249,7 +249,7 @@ export class Zone implements UpperLayer {
     /**
      * @param id - The database ID for the zone
      * @param name - The name of the zone
-     * @param color - The hex colour of the zone
+     * @param color - The hex color of the zone
      * @param parentWarehouse - The (nullable) parent warehouse
      */
     private constructor(id: string, name: string, color: string, parentWarehouse?: Warehouse) {
@@ -264,7 +264,7 @@ export class Zone implements UpperLayer {
      * Create a zone from a collection of bays
      * @param bays - The bays to put in the zone
      * @param name - The name of the zone
-     * @param color - The hex colour of the zone
+     * @param color - The hex color of the zone
      * @param parentWarehouse - The warehouse the zone belongs to
      * @returns The newly created zone
      */
@@ -299,8 +299,8 @@ export class Zone implements UpperLayer {
 
         for (let i = 0; i < zoneNumber; i++) {
 
-            const colorIndex = Math.floor(Math.random() * colours.length);
-            const color = colours.splice(colorIndex, 1)[0];
+            const colorIndex = Math.floor(Math.random() * colors.length);
+            const color = colors.splice(colorIndex, 1)[0];
 
             const zone: Zone = new Zone(generateRandomId(), color.label, color.hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
@@ -318,8 +318,8 @@ export class Zone implements UpperLayer {
      */
     public static async loadFlatZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
-        for (let i = 0; i < colours.length; i++)
-            zones.push(new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse));
+        for (let i = 0; i < colors.length; i++)
+            zones.push(new Zone(generateRandomId(), colors[i].label, colors[i].hex, warehouse));
         return zones;
     }
 
@@ -434,7 +434,7 @@ export class Bay implements UpperLayer {
      */
     public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++)
             bays.push(new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone));
         return bays;
     }
@@ -552,7 +552,7 @@ export class Shelf implements UpperLayer {
      */
     public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++)
             shelves.push(new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay));
         return shelves;
     }
@@ -693,7 +693,7 @@ export class Column implements UpperLayer {
      */
     public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++)
             columns.push(new Column(generateRandomId(), i, shelf));
         return columns;
     }

@@ -10,8 +10,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/MockWarehouse";
 import classNames from "classnames/bind";
-import {getTextColourForBackground} from "./utils/getTextColourForBackground";
-import {getExpiryColour} from "./utils/getExpiryColour";
+import {getTextColorForBackground} from "./utils/getTextColorForBackground";
+import {getExpiryColor} from "./utils/getExpiryColor";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;
@@ -448,10 +448,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             column.getPaddedTrays(1).map(((tray, index) => {
                 let expiryStyle;
                 if (tray instanceof Tray) {
-                    const bg = tray.expiry ? getExpiryColour(tray.expiry) : "";
+                    const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";
                     expiryStyle = {
                         backgroundColor: bg,
-                        color: getTextColourForBackground(bg)
+                        color: getTextColorForBackground(bg)
                     };
                 }
                 return <div

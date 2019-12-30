@@ -2,7 +2,7 @@ import React from "react";
 import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {getTextColourForBackground, KeyboardName} from "./ShelfView";
+import {getTextColorForBackground, KeyboardName} from "./ShelfView";
 import classNames from "classnames";
 
 
@@ -88,7 +88,7 @@ export class SideBar extends React.Component<SideBarProps> {
                 <div
                     style={{
                         backgroundColor: this.props.zoneColor,
-                        color: getTextColourForBackground(this.props.zoneColor)
+                        color: getTextColorForBackground(this.props.zoneColor)
                     }}
                 >
                     <h2>{this.props.locationString}</h2>
