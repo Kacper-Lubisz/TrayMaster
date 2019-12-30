@@ -1,18 +1,27 @@
 import React from "react";
-import {Link} from "react-router-dom";
+import {Redirect} from "react-router-dom";
 import "./styles/mainmenu.scss";
+
 
 interface MainMenuProps {
     //Number of items about to expire, needs to be fetched from database in this file
     expiryAmount: number
 }
 
+
 export class MainMenu extends React.Component<MainMenuProps, any> {
+  state = {
+    changeScreen:false,
+    toScreen: '',
+  }
 
 
     render() {
+      if (this.state.changeScreen === true){
+        return <Redirect to={this.state.toScreen}/>
+      }
         return (
-            //Links are buttons
+
             //When all are implemented they should not all say "/Settings"
 
             <div className="main-menu">
@@ -27,11 +36,12 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
                 }
 
                 <div className="menu-btns">
-                    <Link to="/" className="key-btn" style={{textDecoration: "none"}}><p>Back to Shelf View</p></Link>
-                    <Link to="/Settings" className="key-btn" style={{textDecoration: "none"}}><p>Search</p></Link>
-                    <Link to="/Settings" className="key-btn" style={{textDecoration: "none"}}><p>Report</p></Link>
-                    <Link to="/Settings" className="key-btn" style={{textDecoration: "none"}}><p>Settings</p></Link>
+                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/'})}><p>Back to Shelf View</p></button>
+                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/Settings'})}><p>Search</p></button>
+                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/Settings'})}><p>Report</p></button>
+                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/Settings'})}><p>Settings</p></button>
                 </div>
+
             </div>
         );
     }
