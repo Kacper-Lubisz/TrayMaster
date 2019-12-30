@@ -1,3 +1,4 @@
+
 /*
 Warehouse
 >   Settings
@@ -34,46 +35,6 @@ const colours = [
     {label: "Black", hex: "#000000"}
 ];
 
-const expires: ExpiryRange[] = [
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
-        color: "#FF0"
-    },
-    {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Feb 2020",
-        color: "#0ff"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020",
-        color: "#00f"
-    },
-    {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020",
-        color: "#F0f"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
-        label: "2020",
-        color: "#FF0000"
-    },
-    {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
-        label: "2021",
-        color: "#0f0"
-    },
-];
-
-
 /**
  * Generate a pseudorandom firebase ID
  * @returns string - A randomly generated ID
@@ -84,6 +45,60 @@ export function generateRandomId(): string {
     for (let i = 0; i < 20; i++)
         id += chars[Math.floor(chars.length * Math.random())];
     return id;
+}
+
+
+const thisYear = new Date().getFullYear();
+const quarters = [
+    "Jan-Mar",
+    "Apr-Jun",
+    "Jul-Sep",
+    "Oct-Dec"
+];
+const months = [
+    "Jan", "Feb", "Mar",
+    "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep",
+    "Oct", "Nov", "Dec"
+];
+
+function generateRandomExpiry(): ExpiryRange {
+    // choose year in the next 8 years
+    const year = thisYear + Math.floor(Math.random() * 8);
+    type ExpiryType = "year" | "quarter" | "month";
+
+    // choose length of expiry
+    const expiryLength: ExpiryType = ["year", "quarter", "month"][Math.floor(Math.random() * 3)] as ExpiryType;
+
+    // choose which quarter or month of the current year we're on
+    const startIndex = {
+        "year": 0,
+        "quarter": Math.floor(Math.random() * 4),
+        "month": Math.floor(Math.random() * 12)
+    }[expiryLength];
+
+    // generate start and Date()s
+    const start = new Date(year, {
+        "year": startIndex,
+        "quarter": startIndex * 3,
+        "month": startIndex
+    }[expiryLength]);
+    const end = {
+        "year": new Date(year + 1, 0),
+        "quarter": new Date(startIndex === 3 ? year + 1 : year, ((startIndex + 1) * 3) % 12),
+        "month": new Date(startIndex === 11 ? year + 1 : year, (startIndex + 1) % 12)
+    }[expiryLength];
+
+    // return expiry range
+    return {
+        from: start.getTime(),
+        to: end.getTime(),
+        label: {
+            "year": year.toString(),
+            "quarter": `${quarters[startIndex]} ${year}`,
+            "month": `${months[startIndex]} ${year}`
+        }[expiryLength]
+    };
 }
 
 /**
@@ -838,7 +853,7 @@ export class Tray {
                 generateRandomId(),
                 i,
                 categories[Math.floor(categories.length * Math.random())],
-                expires[Math.floor(expires.length * Math.random())],
+                generateRandomExpiry(),
                 Number((15 * Math.random()).toFixed(2)),
                 Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
                 column
@@ -872,7 +887,6 @@ export interface ExpiryRange {
     from: number;
     to: number;
     label: string;
-    color: string;
 }
 
 

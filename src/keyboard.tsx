@@ -1,5 +1,7 @@
 import React from "react";
 import classNames from "classnames";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 
 /**
  * The properties that get passed into KeyboardButton components
@@ -9,11 +11,17 @@ export interface KeyboardButtonProps {
     /** Name to show on the button */
     name: string;
 
+    /** Icon to use - name still appears in tooltip */
+    icon?: IconDefinition;
+
     /** Function to call when button is clicked */
     onClick?: (e: React.MouseEvent) => void;
 
     /** Whether the button should be visibly selected */
     selected?: boolean;
+
+    /**  Whether the button should be disabled */
+    disabled?: boolean;
 }
 
 /**
@@ -23,14 +31,20 @@ export interface KeyboardButtonProps {
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render() {
         return (
-            <button className={classNames("key-btn", {
-                "key-btn-selected": this.props.selected
-            })} onClick={(e) => {
-                // if we've been given an onClick function, run it
-                if (this.props.onClick) {
+            <button disabled={this.props.disabled}
+                    className={classNames("key-btn", {
+                        "key-btn-selected": this.props.selected
+                    })} onClick={(e) => {
+                // if button isn't disabled, and we've been given an onClick function, run it
+                if (!this.props.disabled && this.props.onClick) {
                     this.props.onClick(e);
+                    // This prevents the blue/orange outline that Chrome adds to buttons after clicking
+                    // It's better to blur (defocus) element after clicking rather than use CSS to hide the outline
+                    // for accessibility reasons, because users who "tab" around the buttons need the outline
+                    e.currentTarget.blur();
                 }
-            }}>{this.props.name}</button>
+            }}>{this.props.icon ? <FontAwesomeIcon icon={this.props.icon} title={this.props.name}/>
+                                : this.props.name}</button>
         );
     }
 }
@@ -40,24 +54,21 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
  * @see Keyboard
  */
 interface KeyboardProps {
-    /**
-     * List of KeyboardButtonProps to give to child buttons
-     */
+    /** List of KeyboardButtonProps to give to child buttons */
     buttons: KeyboardButtonProps[];
 
-    /**
-     * Number of buttons to show in each horizontal row
-     */
+    /** Number of buttons to show in each horizontal row */
     gridX: number;
 
-    /**
-     * Id to give parent HTML element
-     */
+    /** Id to give parent HTML element */
     id?: string;
+
+    /** Whether to grey out the keyboard */
+    disabled?: boolean;
 }
 
 /**
- * Keyboard component: returns a full-width keyboard with the given buttons, grid width and height
+ * Keyboard component: returns a full-width keyboard with the given buttons and grid width
  * @see KeyboardProps
  */
 export class Keyboard extends React.Component<KeyboardProps> {
@@ -77,7 +88,8 @@ export class Keyboard extends React.Component<KeyboardProps> {
             return (<div key={r} className="kb-row">
                 {  // Generate the buttons in this row
                     Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
-                        return <KeyboardButton key={c} {...this.props.buttons[pastButtons + c]}/>;
+                        return <KeyboardButton disabled={this.props.disabled}
+                                               key={c} {...this.props.buttons[pastButtons + c]}/>;
                     })
                 }
             </div>);
