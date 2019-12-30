@@ -2,13 +2,20 @@ import React from "react";
 import {Redirect} from "react-router-dom";
 import "./styles/mainmenu.scss";
 
-
+/**
+ * expiryAmount is the number of items expiring soon
+ * TODO needs to be fetched from db
+ */
 interface MainMenuProps {
-    //Number of items about to expire, needs to be fetched from database in this file
     expiryAmount: number
 }
 
-
+/**
+ * This class creates the main menu, redirecting to other screens
+ * by changing state values when buttons are pressed
+ * TODO change which path it redirects to when those are finished
+ * Only shows the alert when an item is withing chosen expiry range
+ */
 export class MainMenu extends React.Component<MainMenuProps, any> {
   state = {
     changeScreen:false,
@@ -22,7 +29,7 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
       }
         return (
 
-            //When all are implemented they should not all say "/Settings"
+
 
             <div className="main-menu">
                 <div className="menu-header">

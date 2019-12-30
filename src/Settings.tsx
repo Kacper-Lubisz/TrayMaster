@@ -2,7 +2,11 @@ import React from "react";
 import "./styles/settings.scss";
 import {Redirect} from "react-router-dom";
 
-
+/**
+ * This class creates the settings screen, redirecting to other screens
+ * by changing state values when buttons are pressed
+ * TODO change which path it redirects to when those are finished
+ */
 export class Settings extends React.Component<any, any> {
 
     state = {
