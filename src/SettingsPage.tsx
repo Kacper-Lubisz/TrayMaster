@@ -1,12 +1,19 @@
 import React from "react";
 import "./styles/settings.scss";
-import {Link} from "react-router-dom";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
+import {StandardDialog} from "./App";
 
+interface SettingsProps {
+    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
+}
 
-export class SettingsPage extends React.Component<any, any> {
-
+/**
+ * RouteComponentProps enables the history.push to change paths
+ * TODO change paths when those screens are added
+ */
+class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, any> {
 
     render() {
         return (
@@ -15,18 +22,27 @@ export class SettingsPage extends React.Component<any, any> {
                     <h1>Settings</h1>
                 </div>
                 <div className="settings-btns">
-                    <Link to="/menu" className="key-btn" style={{textDecoration: "none"}}><p>Alerts</p></Link>
-                    <Link to="/menu" className="key-btn" style={{textDecoration: "none"}}><p>Type Labels</p></Link>
-                    <Link to="/menu" className="key-btn" style={{textDecoration: "none"}}><p>Time Labels</p></Link>
-                    <Link to="/menu" className="key-btn" style={{textDecoration: "none"}}><p>General</p></Link>
+                    <button className="key-btn" onClick={() => this.props.history.push("/settings")}>
+                        <p>Alerts</p></button>
+                    <button className="key-btn"
+                            onClick={() => this.props.history.push("/menu")}><p>Type Labels</p>
+                    </button>
+                    <button className="key-btn"
+                            onClick={() => this.props.history.push("/menu")}><p>Time Labels</p>
+                    </button>
+                    <button className="key-btn"
+                            onClick={() => this.props.history.push("/menu")}><p>General</p>
+                    </button>
                     <hr className="line"/>
-                    <Link to="/menu" className="key-btn" style={{textDecoration: "none"}}>
+                    <button className="key-btn" onClick={() => this.props.history.push("/menu")}>
                         <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                         <p>Back</p>
-                    </Link>
+                    </button>
                 </div>
             </div>
         );
     }
 
 }
+
+export default withRouter(SettingsPage);

@@ -1,5 +1,6 @@
 import React from "react";
-import {Redirect} from "react-router-dom";
+import {RouteComponentProps} from "react-router-dom";
+import {withRouter} from "react-router";
 import "./styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
@@ -11,29 +12,20 @@ import {StandardDialog} from "./App";
  */
 interface MainMenuProps {
     openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
-    //Number of items about to expire, needs to be fetched from database in this file
     expiryAmount: number;
 }
+
 
 /**
  * This class creates the main menu, redirecting to other screens
  * by changing state values when buttons are pressed
- * TODO change which path it redirects to when those are finished
+ * TODO change which path it pushes to when those are added
  * Only shows the alert when an item is withing chosen expiry range
  */
-export class MainMenu extends React.Component<MainMenuProps, any> {
-  state = {
-    changeScreen:false,
-    toScreen: '',
-  }
+class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
 
     render() {
-      if (this.state.changeScreen === true){
-        return <Redirect to={this.state.toScreen}/>
-      }
         return (
-            //Links are buttons
-            //When all are implemented they should not all say "/SettingsPage"
             <div className="main-menu">
                 <div className="menu-header">
                     <h1>Shelfmaster</h1>
@@ -48,10 +40,17 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
                 }
 
                 <div className="menu-btn-container">
-                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/'})}><p>Back to Shelf View</p></button>
-                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/Settings'})}><p>Search</p></button>
-                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/Settings'})}><p>Report</p></button>
-                    <button className="key-btn" onClick={() => this.setState({changeScreen: true, toScreen:'/Settings'})}><p>Settings</p></button>
+                    <button className="key-btn" onClick={() => this.props.history.push("/")}>
+                        <p>Back to Shelf View</p></button>
+                    <button className="key-btn"
+                            onClick={() => this.props.history.push("/settings")}><p>Search</p>
+                    </button>
+                    <button className="key-btn"
+                            onClick={() => this.props.history.push("/settings")}><p>Report</p>
+                    </button>
+                    <button className="key-btn"
+                            onClick={() => this.props.history.push("/settings")}><p>Settings</p>
+                    </button>
 
                 </div>
 
@@ -59,3 +58,5 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
         );
     }
 }
+
+export default withRouter(MainMenu);
