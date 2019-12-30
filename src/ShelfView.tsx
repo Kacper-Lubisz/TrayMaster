@@ -28,7 +28,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Popup from "reactjs-popup";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import App, {StandardDialog} from "./App";
+import {StandardDialog} from "./App";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 
 /**
@@ -648,11 +648,11 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             {name: "Next", onClick: this.changeView.bind(this, "next")},
                             // enabled = possibleMoveDirections.nextTray
 
-                            { /*This code adds a button which opens a test dialog*/
-                                name: "Test Dialog", onClick: this.props.openDialog.bind(undefined,
-                                    App.buildErrorDialog("this is a big test", true)
-                                )
-                            }
+                            // { /*This code adds a button which opens a test dialog*/
+                            //     name: "Test Dialog", onClick: this.props.openDialog.bind(undefined,
+                            //         App.buildErrorDialog("this is a big test", true)
+                            //     )
+                            // }
                         ]}
                         keyboards={[
                             {name: "category", icon: faHome},
