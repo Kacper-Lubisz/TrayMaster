@@ -193,10 +193,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             }
 
             return <div className="keyboard-container">
-                <Keyboard id="exp-1" disabled={disabled} buttons={this.years} gridX={2}/>
+                <Keyboard id="exp-years" disabled={disabled} buttons={this.years} gridX={2}/>
                 <div className="vl"/>
-                <Keyboard id="exp-2" disabled={!commonYear} buttons={this.quarters} gridX={1}/>
-                <Keyboard id="exp-3" disabled={!commonYear} buttons={this.months} gridX={3}/>
+                <Keyboard id="exp-quarters" disabled={!commonYear} buttons={this.quarters} gridX={1}/>
+                <Keyboard id="exp-months" disabled={!commonYear} buttons={this.months} gridX={3}/>
             </div>;
 
         } else if (this.props.keyboardState === "weight") {
