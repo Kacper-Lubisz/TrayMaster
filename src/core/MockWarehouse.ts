@@ -1,3 +1,4 @@
+
 /*
 Warehouse
 >   Settings
@@ -26,53 +27,21 @@ const sizes: ColumnSize[] = [
     {label: "big", sizeRatio: 3.5},
 ];
 
-const colours = [
+const colors: { label: string, hex: string }[] = [
     {label: "Red", hex: "#FF0000"},
     {label: "Green", hex: "#00FF00"},
     {label: "Blue", hex: "#0000FF"},
     {label: "White", hex: "#FFFFFF"},
-    {label: "Black", hex: "#000000"}
-];
-
-const expires: ExpiryRange[] = [
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
-        color: "#FF0"
-    },
-    {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Feb 2020",
-        color: "#0ff"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020",
-        color: "#00f"
-    },
-    {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020",
-        color: "#F0f"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
-        label: "2020",
-        color: "#FF0000"
-    },
-    {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
-        label: "2021",
-        color: "#0f0"
-    },
-];
-
+    {label: "Black", hex: "#000000"},
+    {label: "Yellow", hex: "#ffff00"},
+    {label: "Cyan", hex: "#00ffff"},
+    {label: "Magenta", hex: "#ff00ff"}
+].concat(Array(20).fill(0).map(_ => {
+    return {
+        label: "Generated",
+        hex: `#${Math.floor(Math.random() * 255 * 255 * 255).toString(16).padStart(6, "0")}`
+    };
+}));
 
 /**
  * Generate a pseudorandom firebase ID
@@ -84,6 +53,60 @@ export function generateRandomId(): string {
     for (let i = 0; i < 20; i++)
         id += chars[Math.floor(chars.length * Math.random())];
     return id;
+}
+
+
+const thisYear = new Date().getFullYear();
+const quarters = [
+    "Jan-Mar",
+    "Apr-Jun",
+    "Jul-Sep",
+    "Oct-Dec"
+];
+const months = [
+    "Jan", "Feb", "Mar",
+    "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep",
+    "Oct", "Nov", "Dec"
+];
+
+function generateRandomExpiry(): ExpiryRange {
+    // choose year in the next 8 years
+    const year = thisYear + Math.floor(Math.random() * 8);
+    type ExpiryType = "year" | "quarter" | "month";
+
+    // choose length of expiry
+    const expiryLength: ExpiryType = ["year", "quarter", "month"][Math.floor(Math.random() * 3)] as ExpiryType;
+
+    // choose which quarter or month of the current year we're on
+    const startIndex = {
+        "year": 0,
+        "quarter": Math.floor(Math.random() * 4),
+        "month": Math.floor(Math.random() * 12)
+    }[expiryLength];
+
+    // generate start and Date()s
+    const start = new Date(year, {
+        "year": startIndex,
+        "quarter": startIndex * 3,
+        "month": startIndex
+    }[expiryLength]);
+    const end = {
+        "year": new Date(year + 1, 0),
+        "quarter": new Date(startIndex === 3 ? year + 1 : year, ((startIndex + 1) * 3) % 12),
+        "month": new Date(startIndex === 11 ? year + 1 : year, (startIndex + 1) % 12)
+    }[expiryLength];
+
+    // return expiry range
+    return {
+        from: start.getTime(),
+        to: end.getTime(),
+        label: {
+            "year": year.toString(),
+            "quarter": `${quarters[startIndex]} ${year}`,
+            "month": `${months[startIndex]} ${year}`
+        }[expiryLength]
+    };
 }
 
 /**
@@ -226,7 +249,7 @@ export class Zone implements UpperLayer {
     /**
      * @param id - The database ID for the zone
      * @param name - The name of the zone
-     * @param color - The hex colour of the zone
+     * @param color - The hex color of the zone
      * @param parentWarehouse - The (nullable) parent warehouse
      */
     private constructor(id: string, name: string, color: string, parentWarehouse?: Warehouse) {
@@ -241,7 +264,7 @@ export class Zone implements UpperLayer {
      * Create a zone from a collection of bays
      * @param bays - The bays to put in the zone
      * @param name - The name of the zone
-     * @param color - The hex colour of the zone
+     * @param color - The hex color of the zone
      * @param parentWarehouse - The warehouse the zone belongs to
      * @returns The newly created zone
      */
@@ -271,8 +294,15 @@ export class Zone implements UpperLayer {
      */
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
-        for (let i = 0; i < colours.length; i++) {
-            const zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
+
+        let zoneNumber = Math.random() < 0.2 ? 0 : 10;
+
+        for (let i = 0; i < zoneNumber; i++) {
+
+            const colorIndex = Math.floor(Math.random() * colors.length);
+            const color = colors.splice(colorIndex, 1)[0];
+
+            const zone: Zone = new Zone(generateRandomId(), color.label, color.hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
             zone.isDeepLoaded = true;
             zones.push(zone);
@@ -288,8 +318,8 @@ export class Zone implements UpperLayer {
      */
     public static async loadFlatZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
-        for (let i = 0; i < colours.length; i++)
-            zones.push(new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse));
+        for (let i = 0; i < colors.length; i++)
+            zones.push(new Zone(generateRandomId(), colors[i].label, colors[i].hex, warehouse));
         return zones;
     }
 
@@ -317,6 +347,11 @@ export class Zone implements UpperLayer {
     }
 
     //#endregion
+
+    toString(): string {
+        return this.name;
+    }
+
 }
 
 
@@ -380,7 +415,9 @@ export class Bay implements UpperLayer {
      */
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < 3; i++) {
+        let bayNumber = Math.floor(Math.random() * 6);
+
+        for (let i = 0; i < bayNumber; i++) {
             const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
             bay.isDeepLoaded = true;
@@ -397,7 +434,7 @@ export class Bay implements UpperLayer {
      */
     public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++)
             bays.push(new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone));
         return bays;
     }
@@ -492,7 +529,8 @@ export class Shelf implements UpperLayer {
      */
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < 3; i++) {
+        let shelfNumber = Math.random() * 5 + 1;
+        for (let i = 0; i < shelfNumber; i++) {
             const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
             shelf.isDeepLoaded = true;
@@ -514,7 +552,7 @@ export class Shelf implements UpperLayer {
      */
     public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++)
             shelves.push(new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay));
         return shelves;
     }
@@ -655,7 +693,7 @@ export class Column implements UpperLayer {
      */
     public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++)
             columns.push(new Column(generateRandomId(), i, shelf));
         return columns;
     }
@@ -838,7 +876,7 @@ export class Tray {
                 generateRandomId(),
                 i,
                 categories[Math.floor(categories.length * Math.random())],
-                expires[Math.floor(expires.length * Math.random())],
+                generateRandomExpiry(),
                 Number((15 * Math.random()).toFixed(2)),
                 Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
                 column
@@ -872,7 +910,6 @@ export interface ExpiryRange {
     from: number;
     to: number;
     label: string;
-    color: string;
 }
 
 
