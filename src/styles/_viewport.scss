@@ -7,13 +7,26 @@
 .shelf { //todo this belongs in a separate nav-popup file
   align-content: center;
   margin: auto auto;
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  border-style: dashed;
+  cursor: pointer;
+
+  > .shelfLabel {
+    margin: auto;
+    font-size: 18px;
+  }
+
+}
+
+.centerText {
+  text-align: center;
 }
 
 .currentShelf {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
 }
 
 #sizeControls, #heightControls { // todo fixme revise this style
