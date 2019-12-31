@@ -30,16 +30,7 @@ import Popup from "reactjs-popup";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {StandardDialog} from "./App";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
-
-/**
- * Proper modulo function (gives a non-negative remainder as per mathematical definition)
- * @param dividend - the number that is being divided
- * @param divisor - the number to divide by
- * @returns the non-negative remainder
- */
-function properMod(dividend: number, divisor: number): number {
-    return ((dividend % divisor) + divisor) % divisor;
-}
+import {properMod} from "./utils/properMod";
 
 /**
  * Defines possible keyboard names
