@@ -30,5 +30,6 @@ jobs:
       run: |
         npm ci
         npm run build --if-present
+        # npm test [removed until we have actual tests]
       env:
         CI: true
