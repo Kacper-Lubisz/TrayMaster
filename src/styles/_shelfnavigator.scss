@@ -1,0 +1,139 @@
+
+.nav-modal {
+  position: relative;
+
+  #nav-close-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5px;
+
+    height: 30px;
+    width: 30px;
+    background-color: rgba(255, 255, 255, 0);
+    border: none;
+    cursor: pointer;
+
+    > svg {
+      height: 20px;
+      width: 20px;
+    }
+  }
+
+  // First div: add space for close button
+  > div:first-of-type {
+    padding-top: 35px;
+  }
+
+  #nav-zone-select {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+
+    p {
+      font-size: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    button {
+      font-size: 20px;
+    }
+  }
+
+  #nav-zone {
+    display: flex;
+    justify-content: center;
+    height: 50vh;
+
+    .nav-bay {
+      display: flex;
+      flex-direction: column-reverse;
+      margin: 5px;
+      width: 90px;
+      justify-content: stretch;
+
+      .nav-shelf {
+        cursor: pointer;
+        height: 50px;
+        flex-shrink: 1;
+        display: flex;
+        justify-content: center;
+        margin: 5px;
+
+        > p {
+          margin: auto;
+          text-align: center;
+          font-size: 18px;
+        }
+
+        &.currentShelf {
+          box-shadow: 0 0 40px -5px #000000;
+
+          > p {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+
+  #nav-arrow-area {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    font-size: 18px;
+
+    #arrow-area-label {
+      grid-row: 2;
+      grid-column: 2;
+      text-align: center;
+      margin: 5px;
+      padding: 15px;
+      font-weight: 600;
+    }
+
+    .nav-arrow-btn {
+      padding: 10px;
+      margin: 2px;
+
+      > svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    #shelf-up {
+      grid-row: 1;
+      grid-column: 2;
+    }
+
+    #shelf-down {
+      grid-row: 3;
+      grid-column: 2;
+    }
+
+    #shelf-left {
+      grid-row: 2;
+      grid-column: 1;
+    }
+
+    #shelf-right {
+      grid-row: 2;
+      grid-column: 3;
+    }
+
+    .nav-prev-next-btn {
+      margin: 2px;
+      font-size: 16px;
+    }
+
+    #nav-previous {
+      grid-row: 1;
+      grid-column: 1;
+    }
+
+    #nav-next {
+      grid-row: 1;
+      grid-column: 3;
+    }
+  }
+}
