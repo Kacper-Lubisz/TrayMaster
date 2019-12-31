@@ -43,10 +43,10 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
                     <button className="key-btn" onClick={() => this.props.history.push("/")}>
                         <p>Back to Shelf View</p></button>
                     <button className="key-btn"
-                            onClick={() => this.props.history.push("/settings")}><p>Search</p>
+                            onClick={() => alert("Search")}><p>Search</p>
                     </button>
                     <button className="key-btn"
-                            onClick={() => this.props.history.push("/settings")}><p>Report</p>
+                            onClick={() => alert("Report")}><p>Report</p>
                     </button>
                     <button className="key-btn"
                             onClick={() => this.props.history.push("/settings")}><p>Settings</p>

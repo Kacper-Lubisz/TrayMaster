@@ -22,16 +22,16 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                     <h1>Settings</h1>
                 </div>
                 <div className="settings-btns">
-                    <button className="key-btn" onClick={() => this.props.history.push("/settings")}>
+                    <button className="key-btn" onClick={() => alert("Alerts")}>
                         <p>Alerts</p></button>
                     <button className="key-btn"
-                            onClick={() => this.props.history.push("/menu")}><p>Type Labels</p>
+                            onClick={() => alert("Type Labels")}><p>Type Labels</p>
                     </button>
                     <button className="key-btn"
-                            onClick={() => this.props.history.push("/menu")}><p>Time Labels</p>
+                            onClick={() => alert("Time Labels")}><p>Time Labels</p>
                     </button>
                     <button className="key-btn"
-                            onClick={() => this.props.history.push("/menu")}><p>General</p>
+                            onClick={() => alert("General")}><p>General</p>
                     </button>
                     <hr className="line"/>
                     <button className="key-btn" onClick={() => this.props.history.push("/menu")}>
