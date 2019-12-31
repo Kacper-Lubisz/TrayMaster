@@ -778,13 +778,13 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             className="nav-prev-next-btn"
                             onClick={this.changeView.bind(this, "previousShelf")}
                             disabled={!possibleMoveDirections.get("previousShelf")}
-                    >Previous Tray
+                    >Previous Shelf
                     </button>
                     <button id="nav-next"
                             className="nav-prev-next-btn"
                             onClick={this.changeView.bind(this, "nextShelf")}
                             disabled={!possibleMoveDirections.get("nextShelf")}
-                    >Next Tray
+                    >Next Shelf
                     </button>
                 </div>
             </div>
