@@ -610,7 +610,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         const locationString = this.state.currentView.toString();
 
         return (<>
-                <div id="shelfView">
+                <div id="shelfView" className={this.state.isEditShelf ? "isEditShelf" : ""}>
                     <ViewPort
                         selected={this.state.selected}
                         setSelected={this.setSelected.bind(this)}

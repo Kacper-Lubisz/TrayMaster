@@ -1,5 +1,9 @@
 // Defines loading spinner animations and animation classes
 
+$trayHeight: 20px !default;
+$trayWidth: 35px !default;
+$gridGutter: 5px !default;
+
 // GRID DIMENSIONS:
 // DERIVED FROM VARIABLES DEFINED IN "loading.scss"
 // noinspections used to tell WebStorm that we are aware of the fact that these variables won't necessarily be
