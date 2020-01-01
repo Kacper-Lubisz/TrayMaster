@@ -23,6 +23,10 @@
   height: 300px;
   width: 250px;
 
+  button {
+    position: relative;
+  }
+
   .line {
     //line above 'back'
     background: gray;
@@ -30,12 +34,11 @@
     width: inherit;
   }
 
-}
-
-.back-btn {
-  //back button icon
-  position: fixed;
-  top: 94%;
-  transform: translate(0, -50%);
-  left: 30px;
+  .back-btn {
+    //back button icon
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+    left: 50px;
+  }
 }
