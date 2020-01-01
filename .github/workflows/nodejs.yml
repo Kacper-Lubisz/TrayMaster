@@ -2,7 +2,7 @@ name: Node CI
 
 on:
   push:
-    branches: 
+    branches-ignore:
       - master
       - staging
   pull_request:
