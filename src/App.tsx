@@ -33,14 +33,16 @@ class App extends React.Component<any, AppState> {
 
         this.state = {};
 
-        // fixme make sure that this promise doesn't cause a memory leak on component unmount
+        this.loadWarehouse();
+    }
+
+    async loadWarehouse() {
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
             Warehouse.loadWarehouse("ABCD")
         ]);
-
-        if (this.mounted) {
-            loadPromise.then((result) => {
+        loadPromise.then((result) => {
+            if (this.mounted) {
                 const [settings, warehouse] = result;
                 console.log(`Settings Loaded:`, settings);
                 console.log(`Warehouse Loaded:`, warehouse);
@@ -53,18 +55,19 @@ class App extends React.Component<any, AppState> {
                         }
                     };
                 });
+            }
 
-            }).catch(() => {
-                this.openDialog(App.buildErrorDialog(
-                    "Failed to load the warehouse or the settings",
-                    true
-                ));
-            });
-        }
+        }).catch(() => {
+            this.openDialog(App.buildErrorDialog(
+                "Failed to load the warehouse or the settings",
+                true
+            ));
+        });
     }
 
-    componentDidMount(): void {
+    async componentDidMount() {
         this.mounted = true;
+        await this.loadWarehouse();
     }
 
     componentWillUnmount(): void {
