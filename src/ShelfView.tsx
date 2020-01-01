@@ -756,35 +756,45 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             className="nav-arrow-btn"
                             disabled={!possibleMoveDirections.get("up")}
                             onClick={this.changeView.bind(this, "up")}
-                    ><FontAwesomeIcon icon={upArrow}/></button>
+                    >
+                        <FontAwesomeIcon icon={upArrow}/>
+                    </button>
                     <button id="shelf-down"
                             className="nav-arrow-btn"
                             onClick={this.changeView.bind(this, "down")}
                             disabled={!possibleMoveDirections.get("down")}
-                    ><FontAwesomeIcon icon={downArrow}/></button>
+                    >
+                        <FontAwesomeIcon icon={downArrow}/>
+                    </button>
                     <button id="shelf-left"
                             className="nav-arrow-btn"
                             onClick={this.changeView.bind(this, "left")}
                             disabled={!possibleMoveDirections.get("left")}
-                    ><FontAwesomeIcon icon={leftArrow}/></button>
+                    >
+                        <FontAwesomeIcon icon={leftArrow}/>
+                    </button>
                     <button id="shelf-right"
                             className="nav-arrow-btn"
                             onClick={this.changeView.bind(this, "right")}
                             disabled={!possibleMoveDirections.get("right")}
-                    ><FontAwesomeIcon icon={rightArrow}/></button>
+                    >
+                        <FontAwesomeIcon icon={rightArrow}/>
+                    </button>
 
                     {/* Next and previous shelf buttons */}
                     <button id="nav-previous"
                             className="nav-prev-next-btn"
                             onClick={this.changeView.bind(this, "previousShelf")}
                             disabled={!possibleMoveDirections.get("previousShelf")}
-                    >Previous Shelf
+                    >
+                        Previous Shelf
                     </button>
                     <button id="nav-next"
                             className="nav-prev-next-btn"
                             onClick={this.changeView.bind(this, "nextShelf")}
                             disabled={!possibleMoveDirections.get("nextShelf")}
-                    >Next Shelf
+                    >
+                        Next Shelf
                     </button>
                 </div>
             </div>
