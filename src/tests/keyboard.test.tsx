@@ -1,12 +1,20 @@
+// Following https://gist.github.com/jackawatts/1c7a8d3c277ccf4e969675002fe35bc9
+
 import React from "react";
 import renderer from "react-test-renderer";
 import ShallowRenderer from "react-test-renderer/shallow";
-import {Keyboard} from "../keyboard";
+import Enzyme from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
+
 import {
     faAmericanSignLanguageInterpreting as icon1,
     faSolarPanel as icon3,
     faSpider as icon2
 } from "@fortawesome/free-solid-svg-icons";
+import {Keyboard} from "../keyboard";
+
+// configure Enzyme to use React 16
+Enzyme.configure({adapter: new React16Adapter()});
 
 describe("Keyboard matches snapshots:", () => {
     it("renders no keys", () => {
@@ -474,5 +482,45 @@ describe("Keyboard matches snapshots:", () => {
         const kbRenderer = new ShallowRenderer(); // shallow render needed because FontAwesomeIcons change between runs
         kbRenderer.render(<Keyboard {...props} />);
         expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
+    });
+});
+
+describe("Keyboard DOM tests:", () => {
+    it("Buttons execute their onClick functions", () => {
+        // https://stackoverflow.com/a/46211877/5094386
+        const mockCallback = jest.fn();
+        const props = {
+            buttons: [
+                {
+                    name: "Geoff",
+                    onClick: mockCallback
+                }
+            ],
+            gridX: 1
+        };
+
+        const keyboard = Enzyme.mount(<Keyboard {...props} />);
+        keyboard.find("button").simulate("click");
+        expect(mockCallback.mock.calls.length).toEqual(1);
+    });
+
+    it("Generates the right number of rows", () => {
+        for (let i = 0; i < 10; i++) {
+            const btnCount = Math.floor(Math.random() * 20 + 20); // anywhere from 20-39
+            const gridX = Math.floor(Math.random() * 7 + 3); // anywhere from 3-9
+
+            const props = {
+                buttons: Array(btnCount).fill(0).map((_, i) => {
+                    return {
+                        name: `Btn ${i}`
+                    };
+                }),
+                gridX: gridX
+            };
+
+            const keyboard = Enzyme.mount(<Keyboard {...props} />);
+            expect(keyboard.find("div.kb-row")).toHaveLength(Math.ceil(btnCount / gridX));
+            expect(keyboard.find("div.kb-row:last-child button.key-btn")).toHaveLength(btnCount % gridX || gridX);
+        }
     });
 });
