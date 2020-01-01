@@ -7,6 +7,7 @@ import {Tray} from "./Tray";
 import {ONLINE} from "../WarehouseModel";
 import Utils from "./Utils";
 
+
 const colours = [
     {label: "Red", hex: "#FF0000"},
     {label: "Green", hex: "#00FF00"},

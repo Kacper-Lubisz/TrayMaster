@@ -3,6 +3,7 @@ import {Warehouse} from "./Warehouse";
 import Utils from "./Utils";
 import {ONLINE} from "../WarehouseModel";
 
+
 const cats = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
     "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
