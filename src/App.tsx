@@ -26,38 +26,49 @@ interface AppState {
 }
 
 class App extends React.Component<any, AppState> {
+    mounted = false;
 
     constructor(props: any) {
         super(props);
 
         this.state = {};
 
+        // fixme make sure that this promise doesn't cause a memory leak on component unmount
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
             Warehouse.loadWarehouse("ABCD")
         ]);
 
-        loadPromise.then((result) => {
-            const [settings, warehouse] = result;
-            console.log(`Settings Loaded:`, settings);
-            console.log(`Warehouse Loaded:`, warehouse);
+        if (this.mounted) {
+            loadPromise.then((result) => {
+                const [settings, warehouse] = result;
+                console.log(`Settings Loaded:`, settings);
+                console.log(`Warehouse Loaded:`, warehouse);
+                this.setState(state => {
+                    return {
+                        ...state,
+                        loaded: {
+                            warehouse: warehouse,
+                            settings: settings,
+                        }
+                    };
+                });
 
-            this.setState(state => {
-                return {
-                    ...state,
-                    loaded: {
-                        warehouse: warehouse,
-                        settings: settings,
-                    }
-                };
+            }).catch(() => {
+                this.openDialog(App.buildErrorDialog(
+                    "Failed to load the warehouse or the settings",
+                    true
+                ));
             });
+        }
+    }
 
-        }).catch(() => {
-            this.openDialog(App.buildErrorDialog(
-                "Failed to load the warehouse or the settings",
-                true
-            ));
-        });
+    componentDidMount(): void {
+        this.mounted = true;
+    }
+
+    componentWillUnmount(): void {
+        this.mounted = false;
     }
 
     render() {

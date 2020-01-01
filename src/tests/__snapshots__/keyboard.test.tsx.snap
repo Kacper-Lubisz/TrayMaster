@@ -1,0 +1,536 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Keyboard matches snapshots: renders disabled keyboard 1`] = `
+<div
+  className="keyboard"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Geoffrey
+    </button>
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Doris
+    </button>
+  </div>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Steve
+    </button>
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Paul
+    </button>
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Dave
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders keyboard with a number of buttons that's not divisible by gridX 1`] = `
+<div
+  className="keyboard"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Geoffrey
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Doris
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Steve
+    </button>
+  </div>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Paul
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Dave
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders multi-line keyboards 1`] = `
+<div
+  className="keyboard"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Geoffrey
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Doris
+    </button>
+  </div>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Steve
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Paul
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Dave
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders no keys 1`] = `
+<div
+  className="keyboard"
+/>
+`;
+
+exports[`Keyboard matches snapshots: renders one key 1`] = `
+<div
+  className="keyboard"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders selected buttons 1`] = `
+<div
+  className="keyboard"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+    <button
+      className="key-btn key-btn-selected"
+      onClick={[Function]}
+    >
+      Geoffrey
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Doris
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders the big chonker 1`] = `
+<div
+  className="keyboard"
+  id="BigBoy"
+>
+  <div
+    className="kb-row"
+  >
+    <KeyboardButton
+      disabled={true}
+      name="Bob"
+      onClick={[Function]}
+    />
+    <KeyboardButton
+      name="Geoffrey"
+      onClick={[Function]}
+      selected={true}
+    />
+    <KeyboardButton
+      icon={
+        Object {
+          "icon": Array [
+            576,
+            512,
+            Array [],
+            "f717",
+            "M151.17 167.35L177.1 176h4.67l5.22-26.12c.72-3.58 1.8-7.58 3.21-11.79l-20.29-40.58 23.8-71.39c2.79-8.38-1.73-17.44-10.12-20.24L168.42.82c-8.38-2.8-17.45 1.73-20.24 10.12l-25.89 77.68a32.04 32.04 0 0 0 1.73 24.43l27.15 54.3zm422.14 182.03l-52.75-79.12a32.002 32.002 0 0 0-26.62-14.25H416l68.99-24.36a32.03 32.03 0 0 0 16.51-12.61l53.6-80.41c4.9-7.35 2.91-17.29-4.44-22.19l-13.31-8.88c-7.35-4.9-17.29-2.91-22.19 4.44l-50.56 75.83L404.1 208H368l-10.37-51.85C355.44 145.18 340.26 96 288 96c-52.26 0-67.44 49.18-69.63 60.15L208 208h-36.1l-60.49-20.17L60.84 112c-4.9-7.35-14.83-9.34-22.19-4.44l-13.31 8.88c-7.35 4.9-9.34 14.83-4.44 22.19l53.6 80.41a32.03 32.03 0 0 0 16.51 12.61L160 256H82.06a32.02 32.02 0 0 0-26.63 14.25L2.69 349.38c-4.9 7.35-2.92 17.29 4.44 22.19l13.31 8.88c7.35 4.9 17.29 2.91 22.19-4.44l48-72h47.06l-60.83 97.33A31.988 31.988 0 0 0 72 418.3V496c0 8.84 7.16 16 16 16h16c8.84 0 16-7.16 16-16v-73.11l74.08-118.53c-1.01 14.05-2.08 28.11-2.08 42.21C192 399.64 232.76 448 288 448s96-48.36 96-101.43c0-14.1-1.08-28.16-2.08-42.21L456 422.89V496c0 8.84 7.16 16 16 16h16c8.84 0 16-7.16 16-16v-77.71c0-6-1.69-11.88-4.86-16.96L438.31 304h47.06l48 72c4.9 7.35 14.84 9.34 22.19 4.44l13.31-8.88c7.36-4.9 9.34-14.83 4.44-22.18zM406.09 97.51l-20.29 40.58c1.41 4.21 2.49 8.21 3.21 11.79l5.22 26.12h4.67l25.93-8.65 27.15-54.3a31.995 31.995 0 0 0 1.73-24.43l-25.89-77.68C425.03 2.56 415.96-1.98 407.58.82l-15.17 5.06c-8.38 2.8-12.91 11.86-10.12 20.24l23.8 71.39z",
+          ],
+          "iconName": "spider",
+          "prefix": "fas",
+        }
+      }
+      name="Doris"
+      onClick={[Function]}
+    />
+    <KeyboardButton
+      disabled={false}
+      icon={
+        Object {
+          "icon": Array [
+            640,
+            512,
+            Array [],
+            "f5ba",
+            "M431.98 448.01l-47.97.05V416h-128v32.21l-47.98.05c-8.82.01-15.97 7.16-15.98 15.99l-.05 31.73c-.01 8.85 7.17 16.03 16.02 16.02l223.96-.26c8.82-.01 15.97-7.16 15.98-15.98l.04-31.73c.01-8.85-7.17-16.03-16.02-16.02zM585.2 26.74C582.58 11.31 568.99 0 553.06 0H86.93C71 0 57.41 11.31 54.79 26.74-3.32 369.16.04 348.08.03 352c-.03 17.32 14.29 32 32.6 32h574.74c18.23 0 32.51-14.56 32.59-31.79.02-4.08 3.35 16.95-54.76-325.47zM259.83 64h120.33l9.77 96H250.06l9.77-96zm-75.17 256H71.09L90.1 208h105.97l-11.41 112zm16.29-160H98.24l16.29-96h96.19l-9.77 96zm32.82 160l11.4-112h149.65l11.4 112H233.77zm195.5-256h96.19l16.29 96H439.04l-9.77-96zm26.06 256l-11.4-112H549.9l19.01 112H455.33z",
+          ],
+          "iconName": "solar-panel",
+          "prefix": "fas",
+        }
+      }
+      name="Steve"
+      onClick={[Function]}
+    />
+  </div>
+  <div
+    className="kb-row"
+  >
+    <KeyboardButton
+      name="Paul"
+      onClick={[Function]}
+    />
+    <KeyboardButton
+      icon={
+        Object {
+          "icon": Array [
+            640,
+            512,
+            Array [],
+            "f2a3",
+            "M290.547 189.039c-20.295-10.149-44.147-11.199-64.739-3.89 42.606 0 71.208 20.475 85.578 50.576 8.576 17.899-5.148 38.071-23.617 38.071 18.429 0 32.211 20.136 23.617 38.071-14.725 30.846-46.123 50.854-80.298 50.854-.557 0-94.471-8.615-94.471-8.615l-66.406 33.347c-9.384 4.693-19.815.379-23.895-7.781L1.86 290.747c-4.167-8.615-1.111-18.897 6.946-23.621l58.072-33.069L108 159.861c6.39-57.245 34.731-109.767 79.743-146.726 11.391-9.448 28.341-7.781 37.51 3.613 9.446 11.394 7.78 28.067-3.612 37.516-12.503 10.559-23.618 22.509-32.509 35.57 21.672-14.729 46.679-24.732 74.186-28.067 14.725-1.945 28.063 8.336 29.73 23.065 1.945 14.728-8.336 28.067-23.062 29.734-16.116 1.945-31.12 7.503-44.178 15.284 26.114-5.713 58.712-3.138 88.079 11.115 13.336 6.669 18.893 22.509 12.224 35.848-6.389 13.06-22.504 18.617-35.564 12.226zm-27.229 69.472c-6.112-12.505-18.338-20.286-32.231-20.286a35.46 35.46 0 0 0-35.565 35.57c0 21.428 17.808 35.57 35.565 35.57 13.893 0 26.119-7.781 32.231-20.286 4.446-9.449 13.614-15.006 23.339-15.284-9.725-.277-18.893-5.835-23.339-15.284zm374.821-37.237c4.168 8.615 1.111 18.897-6.946 23.621l-58.071 33.069L532 352.16c-6.39 57.245-34.731 109.767-79.743 146.726-10.932 9.112-27.799 8.144-37.51-3.613-9.446-11.394-7.78-28.067 3.613-37.516 12.503-10.559 23.617-22.509 32.508-35.57-21.672 14.729-46.679 24.732-74.186 28.067-10.021 2.506-27.552-5.643-29.73-23.065-1.945-14.728 8.336-28.067 23.062-29.734 16.116-1.946 31.12-7.503 44.178-15.284-26.114 5.713-58.712 3.138-88.079-11.115-13.336-6.669-18.893-22.509-12.224-35.848 6.389-13.061 22.505-18.619 35.565-12.227 20.295 10.149 44.147 11.199 64.739 3.89-42.606 0-71.208-20.475-85.578-50.576-8.576-17.899 5.148-38.071 23.617-38.071-18.429 0-32.211-20.136-23.617-38.071 14.033-29.396 44.039-50.887 81.966-50.854l92.803 8.615 66.406-33.347c9.408-4.704 19.828-.354 23.894 7.781l44.455 88.926zm-229.227-18.618c-13.893 0-26.119 7.781-32.231 20.286-4.446 9.449-13.614 15.006-23.339 15.284 9.725.278 18.893 5.836 23.339 15.284 6.112 12.505 18.338 20.286 32.231 20.286a35.46 35.46 0 0 0 35.565-35.57c0-21.429-17.808-35.57-35.565-35.57z",
+          ],
+          "iconName": "american-sign-language-interpreting",
+          "prefix": "fas",
+        }
+      }
+      name="Dave"
+      onClick={[Function]}
+      selected={true}
+    />
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders with Font Awesome icons in buttons 1`] = `
+<div
+  className="keyboard"
+  id="BigBoy"
+>
+  <div
+    className="kb-row"
+  >
+    <KeyboardButton
+      name="Bob"
+      onClick={[Function]}
+    />
+    <KeyboardButton
+      name="Geoffrey"
+      onClick={[Function]}
+      selected={false}
+    />
+    <KeyboardButton
+      icon={
+        Object {
+          "icon": Array [
+            576,
+            512,
+            Array [],
+            "f717",
+            "M151.17 167.35L177.1 176h4.67l5.22-26.12c.72-3.58 1.8-7.58 3.21-11.79l-20.29-40.58 23.8-71.39c2.79-8.38-1.73-17.44-10.12-20.24L168.42.82c-8.38-2.8-17.45 1.73-20.24 10.12l-25.89 77.68a32.04 32.04 0 0 0 1.73 24.43l27.15 54.3zm422.14 182.03l-52.75-79.12a32.002 32.002 0 0 0-26.62-14.25H416l68.99-24.36a32.03 32.03 0 0 0 16.51-12.61l53.6-80.41c4.9-7.35 2.91-17.29-4.44-22.19l-13.31-8.88c-7.35-4.9-17.29-2.91-22.19 4.44l-50.56 75.83L404.1 208H368l-10.37-51.85C355.44 145.18 340.26 96 288 96c-52.26 0-67.44 49.18-69.63 60.15L208 208h-36.1l-60.49-20.17L60.84 112c-4.9-7.35-14.83-9.34-22.19-4.44l-13.31 8.88c-7.35 4.9-9.34 14.83-4.44 22.19l53.6 80.41a32.03 32.03 0 0 0 16.51 12.61L160 256H82.06a32.02 32.02 0 0 0-26.63 14.25L2.69 349.38c-4.9 7.35-2.92 17.29 4.44 22.19l13.31 8.88c7.35 4.9 17.29 2.91 22.19-4.44l48-72h47.06l-60.83 97.33A31.988 31.988 0 0 0 72 418.3V496c0 8.84 7.16 16 16 16h16c8.84 0 16-7.16 16-16v-73.11l74.08-118.53c-1.01 14.05-2.08 28.11-2.08 42.21C192 399.64 232.76 448 288 448s96-48.36 96-101.43c0-14.1-1.08-28.16-2.08-42.21L456 422.89V496c0 8.84 7.16 16 16 16h16c8.84 0 16-7.16 16-16v-77.71c0-6-1.69-11.88-4.86-16.96L438.31 304h47.06l48 72c4.9 7.35 14.84 9.34 22.19 4.44l13.31-8.88c7.36-4.9 9.34-14.83 4.44-22.18zM406.09 97.51l-20.29 40.58c1.41 4.21 2.49 8.21 3.21 11.79l5.22 26.12h4.67l25.93-8.65 27.15-54.3a31.995 31.995 0 0 0 1.73-24.43l-25.89-77.68C425.03 2.56 415.96-1.98 407.58.82l-15.17 5.06c-8.38 2.8-12.91 11.86-10.12 20.24l23.8 71.39z",
+          ],
+          "iconName": "spider",
+          "prefix": "fas",
+        }
+      }
+      name="Doris"
+      onClick={[Function]}
+    />
+    <KeyboardButton
+      icon={
+        Object {
+          "icon": Array [
+            640,
+            512,
+            Array [],
+            "f5ba",
+            "M431.98 448.01l-47.97.05V416h-128v32.21l-47.98.05c-8.82.01-15.97 7.16-15.98 15.99l-.05 31.73c-.01 8.85 7.17 16.03 16.02 16.02l223.96-.26c8.82-.01 15.97-7.16 15.98-15.98l.04-31.73c.01-8.85-7.17-16.03-16.02-16.02zM585.2 26.74C582.58 11.31 568.99 0 553.06 0H86.93C71 0 57.41 11.31 54.79 26.74-3.32 369.16.04 348.08.03 352c-.03 17.32 14.29 32 32.6 32h574.74c18.23 0 32.51-14.56 32.59-31.79.02-4.08 3.35 16.95-54.76-325.47zM259.83 64h120.33l9.77 96H250.06l9.77-96zm-75.17 256H71.09L90.1 208h105.97l-11.41 112zm16.29-160H98.24l16.29-96h96.19l-9.77 96zm32.82 160l11.4-112h149.65l11.4 112H233.77zm195.5-256h96.19l16.29 96H439.04l-9.77-96zm26.06 256l-11.4-112H549.9l19.01 112H455.33z",
+          ],
+          "iconName": "solar-panel",
+          "prefix": "fas",
+        }
+      }
+      name="Steve"
+      onClick={[Function]}
+    />
+  </div>
+  <div
+    className="kb-row"
+  >
+    <KeyboardButton
+      name="Paul"
+      onClick={[Function]}
+    />
+    <KeyboardButton
+      icon={
+        Object {
+          "icon": Array [
+            640,
+            512,
+            Array [],
+            "f2a3",
+            "M290.547 189.039c-20.295-10.149-44.147-11.199-64.739-3.89 42.606 0 71.208 20.475 85.578 50.576 8.576 17.899-5.148 38.071-23.617 38.071 18.429 0 32.211 20.136 23.617 38.071-14.725 30.846-46.123 50.854-80.298 50.854-.557 0-94.471-8.615-94.471-8.615l-66.406 33.347c-9.384 4.693-19.815.379-23.895-7.781L1.86 290.747c-4.167-8.615-1.111-18.897 6.946-23.621l58.072-33.069L108 159.861c6.39-57.245 34.731-109.767 79.743-146.726 11.391-9.448 28.341-7.781 37.51 3.613 9.446 11.394 7.78 28.067-3.612 37.516-12.503 10.559-23.618 22.509-32.509 35.57 21.672-14.729 46.679-24.732 74.186-28.067 14.725-1.945 28.063 8.336 29.73 23.065 1.945 14.728-8.336 28.067-23.062 29.734-16.116 1.945-31.12 7.503-44.178 15.284 26.114-5.713 58.712-3.138 88.079 11.115 13.336 6.669 18.893 22.509 12.224 35.848-6.389 13.06-22.504 18.617-35.564 12.226zm-27.229 69.472c-6.112-12.505-18.338-20.286-32.231-20.286a35.46 35.46 0 0 0-35.565 35.57c0 21.428 17.808 35.57 35.565 35.57 13.893 0 26.119-7.781 32.231-20.286 4.446-9.449 13.614-15.006 23.339-15.284-9.725-.277-18.893-5.835-23.339-15.284zm374.821-37.237c4.168 8.615 1.111 18.897-6.946 23.621l-58.071 33.069L532 352.16c-6.39 57.245-34.731 109.767-79.743 146.726-10.932 9.112-27.799 8.144-37.51-3.613-9.446-11.394-7.78-28.067 3.613-37.516 12.503-10.559 23.617-22.509 32.508-35.57-21.672 14.729-46.679 24.732-74.186 28.067-10.021 2.506-27.552-5.643-29.73-23.065-1.945-14.728 8.336-28.067 23.062-29.734 16.116-1.946 31.12-7.503 44.178-15.284-26.114 5.713-58.712 3.138-88.079-11.115-13.336-6.669-18.893-22.509-12.224-35.848 6.389-13.061 22.505-18.619 35.565-12.227 20.295 10.149 44.147 11.199 64.739 3.89-42.606 0-71.208-20.475-85.578-50.576-8.576-17.899 5.148-38.071 23.617-38.071-18.429 0-32.211-20.136-23.617-38.071 14.033-29.396 44.039-50.887 81.966-50.854l92.803 8.615 66.406-33.347c9.408-4.704 19.828-.354 23.894 7.781l44.455 88.926zm-229.227-18.618c-13.893 0-26.119 7.781-32.231 20.286-4.446 9.449-13.614 15.006-23.339 15.284 9.725.278 18.893 5.836 23.339 15.284 6.112 12.505 18.338 20.286 32.231 20.286a35.46 35.46 0 0 0 35.565-35.57c0-21.429-17.808-35.57-35.565-35.57z",
+          ],
+          "iconName": "american-sign-language-interpreting",
+          "prefix": "fas",
+        }
+      }
+      name="Dave"
+      onClick={[Function]}
+    />
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders with a given id 1`] = `
+<div
+  className="keyboard"
+  id="BigBoy"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Geoffrey
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Doris
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Steve
+    </button>
+  </div>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Paul
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Dave
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders with multiple disabled buttons 1`] = `
+<div
+  className="keyboard"
+  id="BigBoy"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Geoffrey
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Doris
+    </button>
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Steve
+    </button>
+  </div>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn"
+      disabled={true}
+      onClick={[Function]}
+    >
+      Paul
+    </button>
+    <button
+      className="key-btn"
+      disabled={false}
+      onClick={[Function]}
+    >
+      Dave
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Keyboard matches snapshots: renders with multiple selected buttons 1`] = `
+<div
+  className="keyboard"
+  id="BigBoy"
+>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn key-btn-selected"
+      onClick={[Function]}
+    >
+      Bob
+    </button>
+    <button
+      className="key-btn key-btn-selected"
+      onClick={[Function]}
+    >
+      Geoffrey
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Doris
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Steve
+    </button>
+  </div>
+  <div
+    className="kb-row"
+  >
+    <button
+      className="key-btn key-btn-selected"
+      onClick={[Function]}
+    >
+      Paul
+    </button>
+    <button
+      className="key-btn"
+      onClick={[Function]}
+    >
+      Dave
+    </button>
+  </div>
+</div>
+`;
