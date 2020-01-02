@@ -726,7 +726,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 </> : <div style={{display: "grid", gridGap: 5,}}>{
                     zone?.bays.flatMap((bay, bayIndex) =>
                         bay.shelves.map((shelf, shelfIndex) => {
-                            const colorForTextAndBorder = getTextColorForBackground(zone.color);
+                                const colorForTextAndBorder = getTextColorForBackground(zone.color);
                                 return <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
                                             style={{gridColumn: bayIndex + 1, gridRow: maxBaySize - shelfIndex + 1,}}
                                 >
