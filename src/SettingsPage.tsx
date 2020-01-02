@@ -8,7 +8,7 @@ import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 export class SettingsPage extends React.Component<any, any> {
 
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div className="settings">
                 <div className="settings-header">
