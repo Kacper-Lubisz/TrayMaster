@@ -1,16 +1,17 @@
 import React from "react";
 import {BrowserRouter, Route, Switch} from "react-router-dom";
-import {MainMenu} from "./MainMenu";
-import {SettingsPage} from "./SettingsPage";
-import {PageNotFoundPage} from "./PageNotFoundPage";
+
+import SettingsPage from "./SettingsPage";
+import PageNotFoundPage from "./PageNotFoundPage";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
 import {Warehouse} from "./core/MockWarehouse";
 import {LoadingPage} from "./Loading";
 import Popup from "reactjs-popup";
-import {ShelfView} from "./ShelfView";
+import ShelfView from "./ShelfView";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import MainMenu from "./MainMenu";
 
 /**
  * This interface exists because these are never null together
