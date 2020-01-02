@@ -50,7 +50,10 @@
     ],
     "rules": {
       "semi": "off",
-      "@typescript-eslint/semi": "error",
+      "@typescript-eslint/semi": [
+        "error",
+        "always"
+      ],
       "brace-style": "off",
       "@typescript-eslint/brace-style": [
         "error",
@@ -73,7 +76,7 @@
       ],
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/prefer-for-of": "warn",
-      "@typescript-eslint/prefer-optional-chain": "error",
+      "@typescript-eslint/prefer-optional-chain": "warn",
       "@typescript-eslint/restrict-plus-operands": [
         "error",
         {
