@@ -1,7 +1,6 @@
 import {getTextColorForBackground} from "../getTextColorForBackground";
 import ColorContrastChecker from "color-contrast-checker";
 
-// fixme I've got everything except this to work using the definition in src/@types/color-contrast-checker.d.ts
 const ccc = new ColorContrastChecker();
 
 describe("Function outputs colour combinations that meet accessibility guidelines:", () => {
