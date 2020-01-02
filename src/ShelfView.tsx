@@ -31,16 +31,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {StandardDialog} from "./App";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {properMod} from "./utils/properMod";
 
-/**
- * Proper modulo function (gives a non-negative remainder as per mathematical definition)
- * @param dividend - the number that is being divided
- * @param divisor - the number to divide by
- * @returns the non-negative remainder
- */
-function properMod(dividend: number, divisor: number): number {
-    return ((dividend % divisor) + divisor) % divisor;
-}
 
 /**
  * Defines possible keyboard names
@@ -620,7 +612,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
         const locationString = this.state.currentView.toString();
 
         return (<>
-                <div id="shelfView">
+                <div id="shelfView" className={this.state.isEditShelf ? "isEditShelf" : ""}>
                     <ViewPort
                         selected={this.state.selected}
                         setSelected={this.setSelected.bind(this)}
@@ -718,7 +710,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                         disabled={!possibleMoveDirections.get("previousZone")}
                     ><FontAwesomeIcon icon={leftArrow}/> Previous
                     </button>
-                    <p>{zone?.name ?? "?"}</p>
+                    <p className="centerText">{`${zone?.name} Zone` ?? "?"}</p>
                     <button
                         id="nextZone"
                         onClick={this.changeView.bind(this, "nextZone")}
@@ -732,19 +724,23 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                     <h1>This zone has no bays</h1>
                 </> : <div style={{display: "grid", gridGap: 5,}}>{
                     zone?.bays.flatMap((bay, bayIndex) =>
-                        bay.shelves.map((shelf, shelfIndex) =>
-                            <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
-                                 style={{gridColumn: bayIndex + 1, gridRow: maxBaySize - shelfIndex + 1,}}
-                            >
-                                <div
-                                    style={{
-                                        backgroundColor: zone?.color,
-                                        color: getTextColorForBackground(zone?.color ?? "#ffffff")
-                                    }}
-                                    className={`shelf ${this.state.currentView === shelf ? "currentShelf" : ""}`}
-                                    onClick={this.changeView.bind(this, shelf)}
-                                >{bay.name} {shelf.name}</div>
-                            </div>
+                        bay.shelves.map((shelf, shelfIndex) => {
+                                const colorForTextAndBorder = getTextColorForBackground(zone?.color ?? "#ffffff");
+                                return <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
+                                            style={{gridColumn: bayIndex + 1, gridRow: maxBaySize - shelfIndex + 1,}}
+                                >
+                                    <div
+                                        style={{
+                                            backgroundColor: zone?.color,
+                                            color: colorForTextAndBorder,
+                                            borderWidth: this.state.currentView === shelf ? "2px" : 0,
+                                            borderColor: colorForTextAndBorder,
+                                        }}
+                                        className={`shelf ${this.state.currentView === shelf ? "currentShelf" : ""}`}
+                                        onClick={this.changeView.bind(this, shelf)}
+                                    ><p className="shelfLabel">{bay.name}{shelf.name}</p></div>
+                                </div>;
+                            }
                         ))
                 }</div>}
 
@@ -753,9 +749,10 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                      style={{
                          display: "grid",
                      }}>
-                    {this.state.currentView instanceof Shelf ? // centre label
+                    {this.state.currentView instanceof Shelf ?
                      <p
                          id="arrowAreaLabel"
+                         className="centerText"
                          style={{
                              backgroundColor: zone?.color,
                              gridRow: 2,
