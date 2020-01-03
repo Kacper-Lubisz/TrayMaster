@@ -30,7 +30,9 @@ import Popup from "reactjs-popup";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {StandardDialog} from "./App";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 import {properMod} from "./utils/properMod";
+
 
 /**
  * Defines possible keyboard names
@@ -70,7 +72,7 @@ interface ShelfViewState {
     isNavModalOpen: boolean;
 }
 
-export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
+class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
 
     constructor(props: any) {
         super(props);
@@ -631,8 +633,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                             {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                         ] : [ // Generate sidebar buttons
-                            {name: "Settings", onClick: () => alert("Settings")},
-                            {name: "Home", onClick: () => alert("Home")},
+                            {name: "Settings", onClick: () => this.props.history.push("/settings")},
+                            {name: "Home", onClick: () => this.props.history.push("/menu")},
                             {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
                             {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                             {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a
@@ -826,3 +828,5 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     }
 
 }
+
+export default withRouter(ShelfView);
