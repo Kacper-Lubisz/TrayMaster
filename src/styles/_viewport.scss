@@ -1,7 +1,33 @@
 // VIEWPORT STYLING
 
-// Import system-wide variables: we need to know $accent-colour here
-@import "variables";
+// Import system-wide variables: we need to know $accent-color here
+@import "./variables";
+
+
+.shelf { //todo this belongs in a separate nav-popup file
+  align-content: center;
+  margin: auto auto;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  border-style: dashed;
+  cursor: pointer;
+
+  > .shelfLabel {
+    margin: auto;
+    font-size: 18px;
+  }
+
+}
+
+.centerText {
+  text-align: center;
+}
+
+.currentShelf {
+  width: 100px;
+  height: 100px;
+}
 
 #sizeControls, #heightControls { // todo fixme revise this style
   width: 100%;
@@ -39,6 +65,7 @@
     justify-content: flex-start;
     align-items: flex-end;
     padding: 5px;
+    position: relative; // needed to allow us to position shelf edit columns absolutely inside .column
 
     transition: flex-grow 0.5s ease;
 
@@ -133,7 +160,7 @@
         visibility: hidden;
 
         &.tick-selected {
-          color: $accent-colour;
+          color: $accent-color;
           visibility: visible;
         }
 
@@ -166,7 +193,7 @@
         text-align: center;
         word-wrap: break-word;
 
-        background-color: #aaa; // this is the default colour when there is no expiry specified
+        background-color: #aaa; // this is the default color when there is no expiry specified
       }
 
       // Tray weight: top right

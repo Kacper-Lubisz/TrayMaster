@@ -1,11 +1,11 @@
-import {Layer} from "./Layer";
+import {Layer} from "../Layer";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
-import {ONLINE} from "../WarehouseModel";
-import Utils from "./Utils";
+import {ONLINE} from "../../WarehouseModel";
+import Utils from "../Utils";
 
 interface BayFields {
     name: string;
@@ -20,13 +20,13 @@ export class Bay extends Layer<BayFields> {
     shelves: Shelf[] = [];
 
     /**
-     * @param location - The database location for the bay
+     * @param id - The database ID for the bay
      * @param name - The name of the bay
      * @param index - The (ordered) index of the bay within the zone
      * @param parentZone - The (nullable) parent zone
      */
-    private constructor(location: string, name: string, index: number, parentZone?: Zone) {
-        super({name: name, index: index}, location);
+    private constructor(id: string, name: string, index: number, parentZone?: Zone) {
+        super({name: name, index: index}, parentZone?.childCollection("bays") ?? "bays", id);
         this.parentZone = parentZone;
     }
 

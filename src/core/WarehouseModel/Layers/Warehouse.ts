@@ -1,11 +1,11 @@
 import {Zone} from "./Zone";
-import {Layer} from "./Layer";
+import {Layer} from "../Layer";
 import {Bay} from "./Bay";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
-import {Category} from "./Category";
-import {ONLINE, TraySize} from "../WarehouseModel";
+import {Category} from "../Category";
+import {ONLINE, TraySize} from "../../WarehouseModel";
 
 
 interface WarehouseFields {

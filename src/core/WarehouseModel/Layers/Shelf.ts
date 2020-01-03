@@ -1,11 +1,11 @@
-import {Layer} from "./Layer";
+import {Layer} from "../Layer";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
-import {ONLINE} from "../WarehouseModel";
-import Utils from "./Utils";
+import {ONLINE} from "../../WarehouseModel";
+import Utils from "../Utils";
 
 
 interface ShelfFields {
@@ -21,13 +21,13 @@ export class Shelf extends Layer<ShelfFields> {
     columns: Column[] = [];
 
     /**
-     * @param location - The database location for the shelf
+     * @param id - The database ID for the shelf
      * @param name - The name of the shelf
      * @param index - The (ordered) index of the shelf within the bay
      * @param parentBay - The (nullable) parent bay
      */
-    private constructor(location: string, name: string, index: number, parentBay?: Bay) {
-        super({name: name, index: index}, location);
+    private constructor(id: string, name: string, index: number, parentBay?: Bay) {
+        super({name: name, index: index}, parentBay?.childCollection("shelves") ?? "shelves", id);
         this.parentBay = parentBay;
     }
 

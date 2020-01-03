@@ -1,11 +1,11 @@
-import {Layer} from "./Layer";
+import {Layer} from "../Layer";
 import {Shelf} from "./Shelf";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
 import {Tray} from "./Tray";
-import {ONLINE, TrayCell, TraySize, TraySpace} from "../WarehouseModel";
-import Utils from "./Utils";
+import {ONLINE, TrayCell, TraySize, TraySpace} from "../../WarehouseModel";
+import Utils from "../Utils";
 
 
 interface ColumnFields {
@@ -35,7 +35,11 @@ export class Column extends Layer<ColumnFields> {
      * @param parentShelf - The (nullable) parent shelf
      */
     private constructor(location: string, index: number, size?: TraySize, maxHeight?: number, parentShelf?: Shelf) {
-        super({index: index, size: size, maxHeight: maxHeight}, location);
+        super({
+            index: index,
+            size: size,
+            maxHeight: maxHeight
+        }, parentShelf?.childCollection("columns") ?? "columns", location);
         this.parentShelf = parentShelf;
     }
 

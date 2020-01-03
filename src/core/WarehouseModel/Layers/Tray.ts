@@ -3,10 +3,10 @@ import {Shelf} from "./Shelf";
 import {Bay} from "./Bay";
 import {Zone} from "./Zone";
 import {Warehouse} from "./Warehouse";
-import {Category} from "./Category";
-import {Layer} from "./Layer";
-import {ExpiryRange, ONLINE, TraySize} from "../WarehouseModel";
-import Utils from "./Utils";
+import {Category} from "../Category";
+import {Layer} from "../Layer";
+import {ExpiryRange, ONLINE, TraySize} from "../../WarehouseModel";
+import Utils from "../Utils";
 
 
 const sizes: TraySize[] = [
@@ -63,7 +63,7 @@ export class Tray extends Layer<TrayFields> {
     parentColumn?: Column;
 
     /**
-     * @param location - The database location of the tray
+     * @param id - The database ID of the tray
      * @param index - The index of the tray within the column
      * @param category - The tray's (nullable) category
      * @param expiryRange - The tray's (nullable) expiry range
@@ -72,7 +72,7 @@ export class Tray extends Layer<TrayFields> {
      * @param parentColumn - The (nullable) parent column
      */
     private constructor(
-        location: string, index: number, category?: Category, expiryRange?: ExpiryRange,
+        id: string, index: number, category?: Category, expiryRange?: ExpiryRange,
         weight?: number, customField?: string, parentColumn?: Column
     ) {
         super({
@@ -81,7 +81,7 @@ export class Tray extends Layer<TrayFields> {
             expiry: expiryRange,
             weight: weight,
             customField: customField
-        }, location);
+        }, parentColumn?.childCollection("trays") ?? "trays", id);
         this.parentColumn = parentColumn;
     }
 
@@ -144,7 +144,7 @@ export class Tray extends Layer<TrayFields> {
         category?: Category, expiryRange?: ExpiryRange, weight?: number,
         customField?: string, index?: number, parentColumn?: Column
     ): Tray {
-        return new Tray("", index ?? -1, category, expiryRange, weight, customField, parentColumn);
+        return new Tray(Utils.generateRandomId(), index ?? -1, category, expiryRange, weight, customField, parentColumn);
     }
 
     /**

@@ -1,5 +1,4 @@
 import DatabaseObject from "../core/WarehouseModel/DatabaseObject";
-import Utils from "../core/WarehouseModel/Utils";
 
 interface TestObjFields {
 
@@ -37,32 +36,6 @@ class TestObj extends DatabaseObject<TestObjFields> {
 }
 
 test("DB path manipulation consistency and normalisation", () => {
-    expect(Utils.joinPaths("")).toBe("");
-    expect(Utils.joinPaths("", "")).toBe("");
-    expect(Utils.joinPaths("a", "b")).toBe("a/b");
-    expect(Utils.joinPaths("/a/", "b")).toBe("a/b");
-    expect(Utils.joinPaths("a", "/b/")).toBe("a/b");
-    expect(Utils.joinPaths("/a/", "/b/")).toBe("a/b");
-    expect(Utils.joinPaths("/a", "/b/", "c/d", "e/")).toBe("a/b/c/d/e");
-
-    expect(Utils.normalisePath("")).toBe("");
-    expect(Utils.normalisePath("////////")).toBe("");
-    expect(Utils.normalisePath("a/b/c/d")).toBe("a/b/c/d");
-    expect(Utils.normalisePath("/a//")).toBe("a");
-    expect(Utils.normalisePath("a//b///////c//d")).toBe("a/b/c/d");
-    expect(Utils.normalisePath("/a/b/c/d/")).toBe("a/b/c/d");
-
-    expect(Utils.getID("")).toBe("");
-    expect(Utils.getID("a/b/c/d/e")).toBe("e");
-    expect(Utils.getID("/a/b/c/d/e/")).toBe("e");
-    expect(Utils.getID("e")).toBe("e");
-    expect(Utils.getID("/e//")).toBe("e");
-
-    expect(Utils.getPath("")).toBe("");
-    expect(Utils.getPath("a/b/c/d/e")).toBe("a/b/c/d");
-    expect(Utils.getPath("/a//b/c/d/e//")).toBe("a/b/c/d");
-    expect(Utils.getPath("a")).toBe("");
-
     const testObjA: TestObj = new TestObj("/testLocation/ABC");
     expect(testObjA.getPath()).toBe("testLocation/ABC");
     expect(testObjA.getColPath()).toBe("testLocation");

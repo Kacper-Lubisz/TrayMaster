@@ -1,19 +1,19 @@
 import {Warehouse} from "./Warehouse";
-import {Layer} from "./Layer";
+import {Layer} from "../Layer";
 import {Bay} from "./Bay";
 import {Shelf} from "./Shelf";
 import {Column} from "./Column";
 import {Tray} from "./Tray";
-import {ONLINE} from "../WarehouseModel";
-import Utils from "./Utils";
+import {ONLINE} from "../../WarehouseModel";
+import Utils from "../Utils";
 
 
 const colours = [
-    {label: "Red", hex: "#FF0000"},
-    {label: "Green", hex: "#00FF00"},
-    {label: "Blue", hex: "#0000FF"},
-    {label: "White", hex: "#FFFFFF"},
-    {label: "Black", hex: "#000000"}
+    {name: "Red", color: "#FF0000"},
+    {name: "Green", color: "#00FF00"},
+    {name: "Blue", color: "#0000FF"},
+    {name: "White", color: "#FFFFFF"},
+    {name: "Black", color: "#000000"}
 ];
 
 
@@ -36,7 +36,7 @@ export class Zone extends Layer<ZoneFields> {
      * @param parentWarehouse - The (nullable) parent warehouse
      */
     private constructor(id: string, name: string, color: string, parentWarehouse?: Warehouse) {
-        super({name: name, color: color}, "", id);
+        super({name: name, color: color}, parentWarehouse?.childCollection("zones") ?? "zones", id);
         this.parentWarehouse = parentWarehouse;
     }
 
@@ -99,7 +99,7 @@ export class Zone extends Layer<ZoneFields> {
         } else {
             const zones: Zone[] = [];
             for (let i = 0; i < colours.length; i++) {
-                const zone: Zone = new Zone(Utils.generateRandomId(), colours[i].label, colours[i].hex, warehouse);
+                const zone: Zone = new Zone(Utils.generateRandomId(), colours[i].name, colours[i].color, warehouse);
                 zone.bays = await Bay.loadBays(zone);
                 zone.isDeepLoaded = true;
                 zones.push(zone);
@@ -120,7 +120,7 @@ export class Zone extends Layer<ZoneFields> {
         else {
             const zones: Zone[] = [];
             for (let i = 0; i < colours.length; i++)
-                zones.push(new Zone(Utils.generateRandomId(), colours[i].label, colours[i].hex, warehouse));
+                zones.push(new Zone(Utils.generateRandomId(), colours[i].name, colours[i].color, warehouse));
             return zones;
         }
     }

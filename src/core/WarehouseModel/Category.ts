@@ -1,5 +1,5 @@
 import DatabaseObject, {DatabaseWriter} from "./DatabaseObject";
-import {Warehouse} from "./Warehouse";
+import {Warehouse} from "./Layers/Warehouse";
 import Utils from "./Utils";
 import {ONLINE} from "../WarehouseModel";
 
@@ -19,7 +19,7 @@ interface CategoryFields {
 
 
 export class Category extends DatabaseObject<CategoryFields> {
-    private constructor(path: string, name: string, shortName: string) {
+    public constructor(path: string, name: string, shortName: string) {
         super({name: name, shortName: shortName}, path);
     }
 

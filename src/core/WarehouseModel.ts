@@ -1,5 +1,5 @@
-import {Column} from "./WarehouseModel/Column";
-import {Tray} from "./WarehouseModel/Tray";
+import {Column} from "./WarehouseModel/Layers/Column";
+import {Tray} from "./WarehouseModel/Layers/Tray";
 
 export const ONLINE: boolean = false;
 
@@ -23,10 +23,10 @@ export interface TraySpace {
 }
 
 export type TrayCell = Tray | TraySpace;
-export {Warehouse} from "./WarehouseModel/Warehouse";
-export {Zone} from "./WarehouseModel/Zone";
-export {Bay} from "./WarehouseModel/Bay";
-export {Shelf} from "./WarehouseModel/Shelf";
-export {Column} from "./WarehouseModel/Column";
-export {Tray} from "./WarehouseModel/Tray";
+export {Warehouse} from "./WarehouseModel/Layers/Warehouse";
+export {Zone} from "./WarehouseModel/Layers/Zone";
+export {Bay} from "./WarehouseModel/Layers/Bay";
+export {Shelf} from "./WarehouseModel/Layers/Shelf";
+export {Column} from "./WarehouseModel/Layers/Column";
+export {Tray} from "./WarehouseModel/Layers/Tray";
 export {Category} from "./WarehouseModel/Category";

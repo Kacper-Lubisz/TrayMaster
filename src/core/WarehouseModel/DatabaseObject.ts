@@ -30,9 +30,7 @@ class Firebase {
         fb.initializeApp(firebaseConfig);
 
         this.db = fb.firestore();
-        this.db.enablePersistence().then((err) => {
-            if (err !== undefined) console.log(err);
-        });
+        this.db.enablePersistence().catch(err => console.log(err));
     }
 }
 
@@ -44,11 +42,12 @@ class DatabaseUpdates {
 
     public async addChange<T>(objectDBPath: string, objectInstance: T): Promise<void> {
         this.updates.enqueue([Utils.normalisePath(objectDBPath), objectInstance]);
-        if (this.updates.length >= 250)
+        if (this.updates.length == 500)
             await this.commit();
     }
 
     public async commit(): Promise<void> {
+        console.log("Committing...");
         const batch: WriteBatch = firebase.db.batch();
         while (!this.updates.empty) {
             const change: [string, any] | undefined = this.updates.dequeue();
@@ -67,7 +66,7 @@ export abstract class DatabaseWriter {
         await this.changes.addChange(objectDBPath, objectInstance);
     }
 
-    public static async forceSave() {
+    public static async writeChanges() {
         await this.changes.commit();
     }
 }
@@ -79,8 +78,8 @@ export abstract class DatabaseWriter {
 export default abstract class DatabaseObject<TF> {
     private fieldsChanged: boolean = false;
 
-    protected colPath: string = "";
-    protected id: string = "";
+    public colPath: string = "";
+    public id: string = "";
 
     protected fields: TF;
 
@@ -97,12 +96,18 @@ export default abstract class DatabaseObject<TF> {
     }
 
     protected init(path?: string, id?: string) {
-        this.colPath = path ? Utils.normalisePath(id === undefined ? Utils.getPath(path) : path) : "";
-        this.id = path ? id === undefined ? Utils.getID(path) : id : "";
+        if (typeof path === "string") {
+            this.colPath = Utils.normalisePath(id === undefined ? Utils.getPath(path) : path);
+            this.id = id === undefined ? Utils.getID(path) : id;
+        }
     }
 
     protected get docRef(): DocReference {
         return firebase.db.doc(this.path);
+    }
+
+    public childCollection(collection: string): string {
+        return Utils.joinPaths(this.path, collection);
     }
 
     protected fieldChange(): void {
