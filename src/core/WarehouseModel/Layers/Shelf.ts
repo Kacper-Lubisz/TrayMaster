@@ -15,7 +15,7 @@ interface ShelfFields {
 
 
 export class Shelf extends Layer<ShelfFields> {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded: boolean;
 
     parentBay?: Bay;
     columns: Column[] = [];
@@ -29,19 +29,20 @@ export class Shelf extends Layer<ShelfFields> {
     private constructor(id: string, name: string, index: number, parentBay?: Bay) {
         super({name: name, index: index}, parentBay?.childCollection("shelves") ?? "shelves", id);
         this.parentBay = parentBay;
+        this.isDeepLoaded = false;
     }
 
     public get name(): string {
         return this.fields.name;
     }
 
-    public get index(): number {
-        return this.fields.index;
-    }
-
     public set name(name: string) {
         this.fields.name = name;
         this.fieldChange();
+    }
+
+    public get index(): number {
+        return this.fields.index;
     }
 
     public set index(index: number) {
@@ -71,14 +72,10 @@ export class Shelf extends Layer<ShelfFields> {
      * @param parentBay - The bay the shelf is being added to
      * @param name - The name of the shelf
      */
-    public placeInBay(index: number, parentBay: Bay, name?: string) {
+    public placeInBay(index: number, parentBay: Bay, name?: string): void {
         this.index = index;
         this.parentBay = parentBay;
         this.name = name ?? this.name;
-    }
-
-    public async saveLayer(): Promise<void> {
-
     }
 
     /**
@@ -90,7 +87,7 @@ export class Shelf extends Layer<ShelfFields> {
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         if (ONLINE) {
             const shelves: Shelf[] = await this.loadChildObjects<Shelf, ShelfFields, Bay>(bay, "shelves", "index");
-            for (let shelf of shelves) {
+            for (const shelf of shelves) {
                 shelf.columns = await Column.loadColumns(shelf);
                 shelf.isDeepLoaded = true;
             }

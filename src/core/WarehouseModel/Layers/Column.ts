@@ -16,7 +16,7 @@ interface ColumnFields {
 
 
 export class Column extends Layer<ColumnFields> {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded: boolean;
 
     /**
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
@@ -41,18 +41,11 @@ export class Column extends Layer<ColumnFields> {
             maxHeight: maxHeight
         }, parentShelf?.childCollection("columns") ?? "columns", location);
         this.parentShelf = parentShelf;
+        this.isDeepLoaded = false;
     }
 
     public get index(): number {
         return this.fields.index;
-    }
-
-    public get size(): TraySize | undefined {
-        return this.fields.size;
-    }
-
-    public get maxHeight(): number | undefined {
-        return this.fields.maxHeight;
     }
 
     public set index(index: number) {
@@ -63,6 +56,14 @@ export class Column extends Layer<ColumnFields> {
     public set size(size: TraySize | undefined) {
         this.fields.size = size;
         this.fieldChange();
+    }
+
+    public get size(): TraySize | undefined {
+        return this.fields.size;
+    }
+
+    public get maxHeight(): number | undefined {
+        return this.fields.maxHeight;
     }
 
     public set maxHeight(maxHeight: number | undefined) {
@@ -98,7 +99,7 @@ export class Column extends Layer<ColumnFields> {
      * @param index - The index of the column within the shelf
      * @param parentShelf - The shelf the column is being added to
      */
-    public placeInShelf(index: number, parentShelf: Shelf) {
+    public placeInShelf(index: number, parentShelf: Shelf): void {
         this.index = index;
         this.parentShelf = parentShelf;
     }
@@ -112,7 +113,7 @@ export class Column extends Layer<ColumnFields> {
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         if (ONLINE) {
             const columns: Column[] = await this.loadChildObjects<Column, ColumnFields, Shelf>(shelf, "columns", "index");
-            for (let column of columns) {
+            for (const column of columns) {
                 column.trays = await Tray.loadTrays(column);
                 column.isDeepLoaded = true;
             }
@@ -122,7 +123,7 @@ export class Column extends Layer<ColumnFields> {
                 colNumber = shelf.index % 2 === 0 ? 4 : 2;
 
             for (let i = 0; i < colNumber; i++) {
-                const sizes = shelf.parentWarehouse?.traySizes!!,
+                const sizes = shelf.parentWarehouse?.traySizes ?? [],
                     size: TraySize = sizes[Math.floor(Math.random() * sizes.length)],
                     maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
                                                       : Math.random() < 0.5 ? 2
@@ -151,7 +152,7 @@ export class Column extends Layer<ColumnFields> {
                 colNumber = shelf.index % 2 === 0 ? 4 : 2;
 
             for (let i = 0; i < colNumber; i++) {
-                const sizes = shelf.parentWarehouse?.traySizes!!,
+                const sizes = shelf.parentWarehouse?.traySizes ?? [],
                     size: TraySize = sizes[Math.floor(Math.random() * sizes.length)],
                     maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
                                                       : Math.random() < 0.5 ? 2
@@ -196,7 +197,7 @@ export class Column extends Layer<ColumnFields> {
      * @param ifNoMaxHeight The padding to add if maxHeight is empty
      * @return The padded array.
      */
-    getPaddedTrays(ifNoMaxHeight: number = 1): TrayCell[] {
+    getPaddedTrays(ifNoMaxHeight = 1): TrayCell[] {
 
         const missingTrays = this.maxHeight ? Math.max(0, this.maxHeight - this.trays.length)
                                             : 1;
@@ -245,7 +246,7 @@ export class Column extends Layer<ColumnFields> {
      * This method clears the padded spaces, this can be used to reset empty spaces or otherwise to clear up memory
      * which will no longer be used.  If a column is passed then only that column is purged otherwise all columns are.
      */
-    static purgePaddedSpaces(column?: Column) {
+    static purgePaddedSpaces(column?: Column): void {
         if (column) {
             Column.traySpaces.delete(column);
         } else {

@@ -89,26 +89,14 @@ export class Tray extends Layer<TrayFields> {
         return this.fields.index;
     }
 
-    public get category(): Category | undefined {
-        // todo: resolve for firebase
-        return this.fields.category;
-    }
-
-    public get expiry(): ExpiryRange | undefined {
-        return this.fields.expiry;
-    }
-
-    public get weight(): number | undefined {
-        return this.fields.weight;
-    }
-
-    public get customField(): string | undefined {
-        return this.fields.customField;
-    }
-
     public set index(index: number) {
         this.fields.index = index;
         this.fieldChange();
+    }
+
+    public get category(): Category | undefined {
+        // todo: resolve for firebase
+        return this.fields.category;
     }
 
     public set category(category: Category | undefined) {
@@ -116,14 +104,26 @@ export class Tray extends Layer<TrayFields> {
         this.fieldChange();
     }
 
+    public get expiry(): ExpiryRange | undefined {
+        return this.fields.expiry;
+    }
+
     public set expiry(expiry: ExpiryRange | undefined) {
         this.fields.expiry = expiry;
         this.fieldChange();
     }
 
+    public get weight(): number | undefined {
+        return this.fields.weight;
+    }
+
     public set weight(weight: number | undefined) {
         this.fields.weight = weight;
         this.fieldChange();
+    }
+
+    public get customField(): string | undefined {
+        return this.fields.customField;
     }
 
     public set customField(customField: string | undefined) {
@@ -152,13 +152,9 @@ export class Tray extends Layer<TrayFields> {
      * @param index - The index of the tray within the column
      * @param parentColumn - The column the tray is being added to
      */
-    public placeInColumn(index: number, parentColumn: Column) {
+    public placeInColumn(index: number, parentColumn: Column): void {
         this.index = index;
         this.parentColumn = parentColumn;
-    }
-
-    public async saveLayer(): Promise<void> {
-
     }
 
     /**
@@ -191,13 +187,15 @@ export class Tray extends Layer<TrayFields> {
      * @async
      * @returns A promise which resolves to the list of tray sizes in the warehouse
      */
+    // eslint-disable-next-line @typescript-eslint/require-await
     public static async loadTraySizes(): Promise<TraySize[]> {
         if (ONLINE) {
             throw new Error("Not yet implemented.");
         } else {
             const traySizes: TraySize[] = [];
-            for (let i = 0; i < sizes.length; i++)
-                traySizes.push({...sizes[i]});
+            for (const size of sizes) {
+                traySizes.push({...size});
+            }
             return traySizes;
         }
     }

@@ -30,7 +30,9 @@ import Popup from "reactjs-popup";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {StandardDialog} from "./App";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 import {properMod} from "./utils/properMod";
+
 
 /**
  * Defines possible keyboard names
@@ -49,14 +51,14 @@ type ShelfMoveDirection =
     | "nextShelf"
     | "previousShelf"
     | "nextZone"
-    | "previousZone"
+    | "previousZone";
 
 interface ShelfViewProps {
     /**
      * This function allows for opening new dialogs.
      * @param dialog A dialog builder function which takes the function that closes the dialog.
      */
-    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
+    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
     warehouse: Warehouse;
     settings: Settings;
 }
@@ -70,7 +72,7 @@ interface ShelfViewState {
     isNavModalOpen: boolean;
 }
 
-export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
+class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
 
     constructor(props: any) {
         super(props);
@@ -92,7 +94,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param newMap The map of trays to their selection
      * @param callback A callback to call after setting the selection
      */
-    public setSelected(newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)) {
+    public setSelected(newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)): void {
         this.setState({
             ...this.state,
             selected: newMap
@@ -103,15 +105,15 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * Returns if a tray is selected
      * @param tray A tray or tray space to be tested
      */
-    public isTrayCellSelected(tray: TrayCell) {
-        return this.state.selected.get(tray);
+    public isTrayCellSelected(tray: TrayCell): boolean {
+        return this.state.selected.get(tray) ?? false;
     }
 
     /**
      * This method returns all the parents of a shelf and the indices of all of them within each other
      * @param shelf The shelf in question
      */
-    private static currentShelfParentsAndIndices(shelf: Shelf) { // return type implied
+    private static currentShelfParentsAndIndices(shelf: Shelf): { warehouse: Warehouse; zone: Zone; bay: Bay; zoneIndex: number; bayIndex: number; shelfIndex: number } {
         const warehouse: Warehouse | undefined = shelf.parentWarehouse;
         const zone: Zone | undefined = shelf.parentZone;
         const bay: Bay | undefined = shelf.parentBay;
@@ -121,9 +123,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             //todo ensure that this is not nullable
         }
 
-        const zoneIndex = warehouse?.zones.indexOf(zone); // this is never null, it returns -1 if it can't be found
-        const bayIndex = zone?.bays.indexOf(bay);
-        const shelfIndex = bay?.shelves.indexOf(shelf);
+        const zoneIndex = warehouse.zones.indexOf(zone); // this is never null, it returns -1 if it can't be found
+        const bayIndex = zone.bays.indexOf(bay);
+        const shelfIndex = bay.shelves.indexOf(shelf);
         // this might need changing if these lists become unsorted
 
         if (zoneIndex === undefined || bayIndex === undefined || shelfIndex === undefined) {
@@ -150,7 +152,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * set the view to the zone itself (if no shelves available)
      * @param direction The shelf to move to or otherwise the direction in which to move.
      */
-    changeView(direction: ShelfMoveDirection | Shelf) {
+    changeView(direction: ShelfMoveDirection | Shelf): void {
 
         if (direction instanceof Shelf) { // to specific shelf
             this.setState({
@@ -244,9 +246,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                     currentView: currentZone.bays[newBayIndex].shelves[newShelfIndex]
                 });
 
-            } else if (direction === "nextShelf" || direction === "previousShelf" ||
-                direction === "nextZone" || direction === "previousZone") { // cyclic, inc/dec shelf -> bay -> zone
-
+            } else {
+                // "nextShelf", "previousShelf", "nextZone", "previousZone"
+                // cyclic, inc/dec shelf -> bay -> zone
                 const increment = direction === "nextShelf" || direction === "nextZone" ? 1 : -1;
                 const isZone = direction === "nextZone" || direction === "previousZone";
 
@@ -283,8 +285,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             currentView: newZone
                         });
                     } else {
-                        let bayIndex = increment === 1 ? 0
-                                                       : newZone.bays.length - 1;
+                        const bayIndex = increment === 1 ? 0
+                                                         : newZone.bays.length - 1;
                         const newBay = newZone.bays[bayIndex];
 
                         const newShelfIndex = increment === 1 ? 0
@@ -311,7 +313,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         if (location instanceof Warehouse) {
             return new Map();
         } else if (location instanceof Zone) {
-            let numberOfZones = this.props.warehouse.zones?.length ?? 0;
+            const numberOfZones = this.props.warehouse.zones.length;
             return new Map<ShelfMoveDirection, boolean>([
                 ["nextZone", numberOfZones > 1],
                 ["previousZone", numberOfZones > 1]
@@ -391,7 +393,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
             const newSelection = new Map(this.state.selected);
             const newTrays = spaces.map(space => {
                 if (!ignoreAirSpaces || space.index === space.column.trays.length) {
-                    let newTray = Tray.create(
+                    const newTray = Tray.create(
                         undefined,
                         undefined,
                         undefined,
@@ -418,7 +420,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This splits a list of TrayCells into a list of trays and spaces
      * @param selectedCells The list to split
      */
-    private splitCells(selectedCells: TrayCell[]): { trays: Tray[], spaces: TraySpace[] } {
+    private splitCells(selectedCells: TrayCell[]): { trays: Tray[]; spaces: TraySpace[] } {
         return selectedCells.reduce((acc, cell) => {
             if (cell instanceof Tray) {
                 acc.trays.push(cell);
@@ -433,7 +435,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
-    onCategorySelected(category: Category) {
+    onCategorySelected(category: Category): void {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.category = category;
@@ -446,7 +448,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when an expiry is selected on the expiry keyboard
      * @param expiry The expiry that is selected
      */
-    onExpirySelected(expiry: ExpiryRange) {
+    onExpirySelected(expiry: ExpiryRange): void {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.expiry = expiry;
@@ -459,7 +461,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * Updates state's draftWeight. Called by typing on the weight keyboard
      * @param newDraftWeight
      */
-    setDraftWeight(newDraftWeight?: string) {
+    setDraftWeight(newDraftWeight?: string): void {
         this.setState({
             ...this.state,
             draftWeight: newDraftWeight
@@ -469,7 +471,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     /**
      * Applies the draftWeight to the selected trays. Called when Enter is clicked on the weight keyboard
      */
-    applyDraftWeight() {
+    applyDraftWeight(): void {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
@@ -483,7 +485,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @see BottomPanel
      * @param newKeyboard The new keyboard
      */
-    switchKeyboard(newKeyboard: KeyboardName) {
+    switchKeyboard(newKeyboard: KeyboardName): void {
         this.setState({
             ...this.state,
             currentKeyboard: newKeyboard,
@@ -494,7 +496,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     /**
      * This method enters edit shelf mode
      */
-    enterEditShelf() {
+    enterEditShelf(): void {
         this.setState({
             ...this.state,
             isEditShelf: !this.state.isEditShelf
@@ -507,7 +509,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method adds a new column to the current shelf and is called when the add column button is pressed.
      * @param shelf The shelf in question
      */
-    addColumn(shelf: Shelf) {
+    addColumn(shelf: Shelf): void {
         shelf.columns.push(Column.create(
             [],
             shelf.columns.length,
@@ -522,7 +524,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when edit shelf mode is exited and the changes are not rolled back
      * @param shelf The shelf in question
      */
-    finaliseEditShelf(shelf: Shelf) {
+    finaliseEditShelf(shelf: Shelf): void {
         shelf.columns.forEach(column => { // remove trays over max height
             if (column.maxHeight) {
                 const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
@@ -543,7 +545,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * This method is called when edit shelf mode is exited and the changes **are** rolled back
      * @param shelf The shelf in question
      */
-    discardEditShelf(shelf: Shelf) {
+    discardEditShelf(shelf: Shelf): void {
 
         //todo unimplemented
         this.finaliseEditShelf(shelf);
@@ -553,7 +555,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     /**
      * This method opens the navigation popover which allows for navigating between shelves
      */
-    openNavigator() {
+    openNavigator(): void {
         this.setState({
             ...this.state,
             isNavModalOpen: true
@@ -563,7 +565,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     /**
      * This method closes the navigation popover which allows for navigating between shelves
      */
-    closeNavigator() {
+    closeNavigator(): void {
         this.setState({
             ...this.state,
             isNavModalOpen: false
@@ -573,8 +575,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     /**
      * This method removes all the trays that are currently selected
      */
-    clearTrays() {
-        const newSelectedMap = new Map(this.state.selected ?? new Map<Tray, boolean>());
+    clearTrays(): void {
+        const newSelectedMap = new Map(this.state.selected);
 
         const reindexColumns = new Set<Column>();
         this.state.selected.forEach((selected, tray) => {
@@ -582,7 +584,9 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 newSelectedMap.set(tray, false);
                 if (tray instanceof Tray) {
                     const column = tray.parentColumn;
-                    if (!column) throw Error("Tray has no parent column");
+                    if (!column) {
+                        throw Error("Tray has no parent column");
+                    }
 
                     const trayIndex = column.trays.indexOf(tray);
                     column.trays.splice(trayIndex, 1);
@@ -599,7 +603,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
         this.setSelected(newSelectedMap);
     }
 
-    render() {
+    render(): React.ReactNode {
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
         const zoneColor: string = (this.state.currentView instanceof Zone ? this.state.currentView.color
@@ -629,8 +633,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                             {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                             {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                         ] : [ // Generate sidebar buttons
-                            {name: "Settings", onClick: () => alert("Settings")},
-                            {name: "Home", onClick: () => alert("Home")},
+                            {name: "Settings", onClick: () => this.props.history.push("/settings")},
+                            {name: "Home", onClick: () => this.props.history.push("/menu")},
                             {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
                             {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                             {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a
@@ -679,7 +683,8 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
      * @param currentView The current vie wof the shelf view, limited to Zone or Shelf
      * @param possibleMoveDirections The possible directions in which the current view can be moved.
      */
-    private renderNavigationPopup(currentView: Zone | Shelf, possibleMoveDirections: Map<ShelfMoveDirection, boolean>) {
+    private renderNavigationPopup(
+        currentView: Zone | Shelf, possibleMoveDirections: Map<ShelfMoveDirection, boolean>): React.ReactNode {
 
         // todo fixme this whooole thing needs a restyle 😉
         // the popup needs to be moved to over the navigator button
@@ -708,7 +713,7 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                         disabled={!possibleMoveDirections.get("previousZone")}
                     ><FontAwesomeIcon icon={leftArrow}/> Previous
                     </button>
-                    <p className="centerText">{`${zone?.name} Zone` ?? "?"}</p>
+                    <p className="centerText">{`${zone?.name ?? "?"} Zone`}</p>
                     <button
                         id="nextZone"
                         onClick={this.changeView.bind(this, "nextZone")}
@@ -723,13 +728,13 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
                 </> : <div style={{display: "grid", gridGap: 5,}}>{
                     zone?.bays.flatMap((bay, bayIndex) =>
                         bay.shelves.map((shelf, shelfIndex) => {
-                                const colorForTextAndBorder = getTextColorForBackground(zone?.color ?? "#ffffff");
+                            const colorForTextAndBorder = getTextColorForBackground(zone.color);
                                 return <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
                                             style={{gridColumn: bayIndex + 1, gridRow: maxBaySize - shelfIndex + 1,}}
                                 >
                                     <div
                                         style={{
-                                            backgroundColor: zone?.color,
+                                            backgroundColor: zone.color,
                                             color: colorForTextAndBorder,
                                             borderWidth: this.state.currentView === shelf ? "2px" : 0,
                                             borderColor: colorForTextAndBorder,
@@ -823,3 +828,5 @@ export class ShelfView extends React.Component<ShelfViewProps, ShelfViewState> {
     }
 
 }
+
+export default withRouter(ShelfView);

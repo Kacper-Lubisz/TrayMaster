@@ -35,7 +35,70 @@
     "eject": "react-app-rewired eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "tsconfigRootDir": ".",
+      "project": "./tsconfig.json"
+    },
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "rules": {
+      "semi": "off",
+      "@typescript-eslint/semi": [
+        "error",
+        "always"
+      ],
+      "brace-style": "off",
+      "@typescript-eslint/brace-style": [
+        "error",
+        "1tbs"
+      ],
+      "require-await": "off",
+      "@typescript-eslint/require-await": "warn",
+      "func-call-spacing": "off",
+      "@typescript-eslint/func-call-spacing": [
+        "error",
+        "never"
+      ],
+      "no-unused-expressions": "off",
+      "@typescript-eslint/no-unused-expressions": [
+        "error",
+        {
+          "allowShortCircuit": true,
+          "allowTernary": true
+        }
+      ],
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/prefer-for-of": "warn",
+      "@typescript-eslint/prefer-optional-chain": "warn",
+      "@typescript-eslint/restrict-plus-operands": [
+        "error",
+        {
+          "checkCompoundAssignments": true
+        }
+      ],
+      "@typescript-eslint/promise-function-async": "error",
+      "@typescript-eslint/no-unnecessary-condition": [
+        "warn",
+        {
+          "ignoreRhs": true
+        }
+      ],
+      "@typescript-eslint/explicit-function-return-type": [
+        "error",
+        {
+          "allowExpressions": true
+        }
+      ]
+    }
   },
   "browserslist": {
     "production": [
@@ -51,6 +114,8 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.7.5",
+    "@typescript-eslint/eslint-plugin": "^2.14.0",
+    "@typescript-eslint/parser": "^2.14.0",
     "customize-cra": "^0.9.1",
     "npm-check-updates": "^4.0.1",
     "react-app-rewired": "^2.1.5"

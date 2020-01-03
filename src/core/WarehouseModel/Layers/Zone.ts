@@ -24,7 +24,7 @@ interface ZoneFields {
 
 
 export class Zone extends Layer<ZoneFields> {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded: boolean;
 
     parentWarehouse?: Warehouse;
     bays: Bay[] = [];
@@ -38,19 +38,20 @@ export class Zone extends Layer<ZoneFields> {
     private constructor(id: string, name: string, color: string, parentWarehouse?: Warehouse) {
         super({name: name, color: color}, parentWarehouse?.childCollection("zones") ?? "zones", id);
         this.parentWarehouse = parentWarehouse;
+        this.isDeepLoaded = false;
     }
 
     public get name(): string {
         return this.fields.name;
     }
 
-    public get color(): string {
-        return this.fields.color;
-    }
-
     public set name(name: string) {
         this.fields.name = name;
         this.fieldChange();
+    }
+
+    public get color(): string {
+        return this.fields.color;
     }
 
     public set color(color: string) {
@@ -78,7 +79,7 @@ export class Zone extends Layer<ZoneFields> {
      * Place the zone within a warehouse
      * @param parentWarehouse - The warehouse the zone is being added to
      */
-    public placeInWarehouse(parentWarehouse: Warehouse) {
+    public placeInWarehouse(parentWarehouse: Warehouse): void {
         this.parentWarehouse = parentWarehouse;
     }
 
@@ -91,15 +92,15 @@ export class Zone extends Layer<ZoneFields> {
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
         if (ONLINE) {
             const zones: Zone[] = await this.loadChildObjects<Zone, ZoneFields, Warehouse>(warehouse, "zones", "name");
-            for (let zone of zones) {
+            for (const zone of zones) {
                 zone.bays = await Bay.loadBays(zone);
                 zone.isDeepLoaded = true;
             }
             return zones;
         } else {
             const zones: Zone[] = [];
-            for (let i = 0; i < colours.length; i++) {
-                const zone: Zone = new Zone(Utils.generateRandomId(), colours[i].name, colours[i].color, warehouse);
+            for (const colour of colours) {
+                const zone: Zone = new Zone(Utils.generateRandomId(), colour.name, colour.color, warehouse);
                 zone.bays = await Bay.loadBays(zone);
                 zone.isDeepLoaded = true;
                 zones.push(zone);
@@ -119,8 +120,9 @@ export class Zone extends Layer<ZoneFields> {
             return await this.loadChildObjects<Zone, ZoneFields, Warehouse>(warehouse, "zones", "name");
         else {
             const zones: Zone[] = [];
-            for (let i = 0; i < colours.length; i++)
-                zones.push(new Zone(Utils.generateRandomId(), colours[i].name, colours[i].color, warehouse));
+            for (const colour of colours) {
+                zones.push(new Zone(Utils.generateRandomId(), colour.name, colour.color, warehouse));
+            }
             return zones;
         }
     }

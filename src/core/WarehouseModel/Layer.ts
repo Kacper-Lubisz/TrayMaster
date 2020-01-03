@@ -12,7 +12,7 @@ export interface TopLevelFields {
 export abstract class Layer<TF> extends DatabaseObject<TF> {
     protected async save(): Promise<void> {
         await DatabaseWriter.addChange(this.path, this.fields);
-        let topLevelFields: TF & TopLevelFields = this.fields as TF & TopLevelFields;
+        const topLevelFields: TF & TopLevelFields = this.fields as TF & TopLevelFields;
         topLevelFields.fullPath = this.path;
         await DatabaseWriter.addChange<TopLevelFields & TF>(`${this.colName}/${this.id}`, topLevelFields);
     }

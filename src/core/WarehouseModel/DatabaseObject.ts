@@ -42,8 +42,9 @@ class DatabaseUpdates {
 
     public async addChange<T>(objectDBPath: string, objectInstance: T): Promise<void> {
         this.updates.enqueue([Utils.normalisePath(objectDBPath), objectInstance]);
-        if (this.updates.length == 500)
+        if (this.updates.length === 500) {
             await this.commit();
+        }
     }
 
     public async commit(): Promise<void> {
@@ -66,7 +67,7 @@ export abstract class DatabaseWriter {
         await this.changes.addChange(objectDBPath, objectInstance);
     }
 
-    public static async writeChanges() {
+    public static async writeChanges(): Promise<void> {
         await this.changes.commit();
     }
 }
@@ -76,10 +77,10 @@ export abstract class DatabaseWriter {
  * Represents a document in the database as an object
  */
 export default abstract class DatabaseObject<TF> {
-    private fieldsChanged: boolean = false;
+    private fieldsChanged: boolean;
 
-    public colPath: string = "";
-    public id: string = "";
+    public colPath: string;
+    public id: string;
 
     protected fields: TF;
 
@@ -87,15 +88,18 @@ export default abstract class DatabaseObject<TF> {
     protected constructor(defaultFields: TF, fullPath: string);
     protected constructor(defaultFields: TF, path: string, id: string);
     protected constructor(defaultFields: TF, path?: string, id?: string) {
+        this.colPath = "";
+        this.id = "";
         this.init(path, id);
         this.fields = defaultFields;
+        this.fieldsChanged = false;
     }
 
     protected get path(): string {
         return Utils.normalisePath(Utils.joinPaths(this.colPath, this.id));
     }
 
-    protected init(path?: string, id?: string) {
+    protected init(path?: string, id?: string): void {
         if (typeof path === "string") {
             this.colPath = Utils.normalisePath(id === undefined ? Utils.getPath(path) : path);
             this.id = id === undefined ? Utils.getID(path) : id;
@@ -129,7 +133,7 @@ export default abstract class DatabaseObject<TF> {
 
     static async loadChildObjects<T extends DatabaseObject<TF>, TF, P extends DatabaseObject<any>>
     (parent: P, collectionName: string, orderField: string): Promise<T[]> {
-        return (await firebase.db.collection(`${parent.colPath}/${collectionName}`)/*.orderBy(orderField)*/
+        return (await firebase.db.collection(`${parent.colPath}/${collectionName}`).orderBy(orderField)
                               .get()).docs.map(snapshot => {
             const dbObj = {} as T;
             dbObj.init(snapshot.ref.path);
@@ -139,9 +143,10 @@ export default abstract class DatabaseObject<TF> {
     }
 
     public async saveObj(): Promise<void> {
-        if (this.fieldsChanged)
-            this.save();
-        this.fieldsChanged = false;
+        if (this.fieldsChanged) {
+            await this.save();
+            this.fieldsChanged = false;
+        }
     }
 
     protected abstract save(): Promise<void>;

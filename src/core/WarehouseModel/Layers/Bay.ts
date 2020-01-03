@@ -14,7 +14,7 @@ interface BayFields {
 
 
 export class Bay extends Layer<BayFields> {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded: boolean;
 
     parentZone?: Zone;
     shelves: Shelf[] = [];
@@ -28,19 +28,20 @@ export class Bay extends Layer<BayFields> {
     private constructor(id: string, name: string, index: number, parentZone?: Zone) {
         super({name: name, index: index}, parentZone?.childCollection("bays") ?? "bays", id);
         this.parentZone = parentZone;
+        this.isDeepLoaded = false;
     }
 
     public get name(): string {
         return this.fields.name;
     }
 
-    public get index(): number {
-        return this.fields.index;
-    }
-
     public set name(name: string) {
         this.fields.name = name;
         this.fieldChange();
+    }
+
+    public get index(): number {
+        return this.fields.index;
     }
 
     public set index(index: number) {
@@ -69,7 +70,7 @@ export class Bay extends Layer<BayFields> {
      * @param index - The index of the bay within the zone
      * @param parentZone - The zone the bay is being added to
      */
-    public placeInZone(index: number, parentZone: Zone) {
+    public placeInZone(index: number, parentZone: Zone): void {
         this.index = index;
         this.parentZone = parentZone;
     }
@@ -83,7 +84,7 @@ export class Bay extends Layer<BayFields> {
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         if (ONLINE) {
             const bays: Bay[] = await this.loadChildObjects<Bay, BayFields, Zone>(zone, "bays", "index");
-            for (let bay of bays) {
+            for (const bay of bays) {
                 bay.shelves = await Shelf.loadShelves(bay);
                 bay.isDeepLoaded = true;
             }

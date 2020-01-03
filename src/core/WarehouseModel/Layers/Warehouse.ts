@@ -14,7 +14,7 @@ interface WarehouseFields {
 
 
 export class Warehouse extends Layer<WarehouseFields> {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded: boolean;
 
     traySizes: TraySize[] = [];
     categories: Category[] = [];
@@ -26,6 +26,7 @@ export class Warehouse extends Layer<WarehouseFields> {
      */
     private constructor(location: string, name: string) {
         super({name: name}, location);
+        this.isDeepLoaded = false;
     }
 
     public get name(): string {
@@ -46,8 +47,9 @@ export class Warehouse extends Layer<WarehouseFields> {
     public static create(zones: Zone[], name?: string): Warehouse {
         const warehouse: Warehouse = new Warehouse("", name ?? "");
         warehouse.zones = zones;
-        for (let i = 0; i < warehouse.zones.length; i++)
-            warehouse.zones[i].placeInWarehouse(warehouse);
+        for (const zone of warehouse.zones) {
+            zone.placeInWarehouse(warehouse);
+        }
         return warehouse;
     }
 
