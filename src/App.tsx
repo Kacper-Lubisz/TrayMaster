@@ -1,16 +1,17 @@
 import React from "react";
 import {BrowserRouter, Route, Switch} from "react-router-dom";
-import {MainMenu} from "./MainMenu";
-import {SettingsPage} from "./SettingsPage";
-import {PageNotFoundPage} from "./PageNotFoundPage";
+
+import SettingsPage from "./SettingsPage";
+import PageNotFoundPage from "./PageNotFoundPage";
 
 import {Settings, SettingsManager} from "./core/MockSettings";
 import {Warehouse} from "./core/MockWarehouse";
 import {LoadingPage} from "./Loading";
 import Popup from "reactjs-popup";
-import {ShelfView} from "./ShelfView";
+import ShelfView from "./ShelfView";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import MainMenu from "./MainMenu";
 
 /**
  * This interface exists because these are never null together
@@ -60,17 +61,17 @@ class App extends React.Component<any, AppState> {
         });
     }
 
-    render() {
+    render(): React.ReactNode {
         return <>
             {this.state.loaded === undefined ? <LoadingPage/> : (
                 <BrowserRouter>
                     <Switch>
-                        <Route path="/" component={() =>
-                            <ShelfView // for some reason the type inference isn't working here
-                                openDialog={this.openDialog.bind(this)}
-                                settings={this.state.loaded!!.settings}
-                                warehouse={this.state.loaded!!.warehouse}
-                            />
+                        <Route path="/" component={() => this.state.loaded ?
+                                                         <ShelfView
+                                                             openDialog={this.openDialog.bind(this)}
+                                                             settings={this.state.loaded.settings}
+                                                             warehouse={this.state.loaded.warehouse}
+                                                         /> : <></>
                         } exact/>
                         <Route path="/menu"
                                component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
@@ -83,24 +84,24 @@ class App extends React.Component<any, AppState> {
                 open={!!this.state?.dialog} //double negate because of falsy magic
                 closeOnDocumentClick={false}
                 onClose={this.closeDialog.bind(this)}
-            ><> {/*empty tag because for some reason Popup overrides the type of the child props.  Making it so that a
+            >
+                <> {/*empty tag because for some reason Popup overrides the type of the child props.  Making it so that a
             boolean can't be a child, which is otherwise usually legal.  Boolean because the conditionals may evaluate
             to a boolean or an Element*/}
-                {this.state?.dialog?.title !== undefined && <h1>
-                    <FontAwesomeIcon {...this.state.dialog?.iconProps}/> {this.state?.dialog?.title}
-                </h1>}
-                {this.state?.dialog?.message !== undefined && <p>{
-                    this.state?.dialog?.message
-                }</p>}
+                    {this.state?.dialog?.title !== undefined && <h1>
+                        <FontAwesomeIcon {...this.state.dialog.iconProps}/> {this.state.dialog.title}
+                    </h1>}
+                    {this.state?.dialog?.message !== undefined && <p>{
+                        this.state.dialog.message
+                    }</p>}
 
-                {this.state?.dialog?.buttons !== undefined &&
-                <div style={{float: "right"}} id={"popupButtons"}>{
-                    this.state?.dialog?.buttons.map((button, index) =>
-                        <button key={index} {...button.buttonProps}>{button.name}</button>
-                    )}
-                </div>}
-
-            </>
+                    {this.state?.dialog?.buttons !== undefined &&
+                    <div style={{float: "right"}} id={"popupButtons"}>{
+                        this.state.dialog.buttons.map((button, index) =>
+                            <button key={index} {...button.buttonProps}>{button.name}</button>
+                        )}
+                    </div>}
+                </>
             </Popup>
         </>;
 
@@ -111,7 +112,7 @@ class App extends React.Component<any, AppState> {
      * will close the dialog.  Only one dialog can be open at a time.
      * @param dialog The dialog to be displayed
      */
-    public openDialog(dialog: ((close: () => void) => StandardDialog)) {
+    public openDialog(dialog: ((close: () => void) => StandardDialog)): void {
         this.setState((state) => {
             return {
                 ...state,
@@ -123,7 +124,7 @@ class App extends React.Component<any, AppState> {
     /**
      * This method closes the currently open dialog, if none is open then it does nothing.
      */
-    public closeDialog() {
+    public closeDialog(): void {
         this.setState((state) => {
             return {...state, dialog: null};
         });
@@ -167,8 +168,8 @@ class App extends React.Component<any, AppState> {
  * This is the interface to represent the buttons of a dialog
  */
 export interface DialogButton {
-    name: string
-    buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>
+    name: string;
+    buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 /**

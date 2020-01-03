@@ -81,7 +81,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Handles key presses clicked in the weight keyboard, by updating draftWeight in ShelfView
      * @param key
      */
-    weightKeyHandler(key: WeightKeyboardButton) {
+    weightKeyHandler(key: WeightKeyboardButton): void {
 
         if (key === "Enter") {
             this.props.applyDraftWeight();
@@ -115,7 +115,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Sets selectedYear and current tray expiry to that year
      * @param year - number representing the current year
      */
-    selectYear(year: number) {
+    selectYear(year: number): void {
         this.selectedYear = year;
         this.props.expirySelected({
             from: new Date(year, 0).getTime(),
@@ -129,7 +129,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Sets current tray expiry to that quarter in selectedYear
      * @param quarter - number in [0-3] inclusive representing the current quarter
      */
-    selectQuarter(quarter: number) {
+    selectQuarter(quarter: number): void {
         if (this.selectedYear) {
             this.props.expirySelected({
                 from: new Date(this.selectedYear, quarter * 3).getTime(),
@@ -145,7 +145,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Sets current tray expiry to that month in selectedYear
      * @param month - number in [0-11] inclusive representing the current month
      */
-    selectMonth(month: number) {
+    selectMonth(month: number): void {
         if (this.selectedYear) {
             this.props.expirySelected({
                 from: new Date(this.selectedYear, month).getTime(),
@@ -159,7 +159,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Return different keyboards depending on keyboardState
      * @param disabled whether the keyboard is disabled (ie no trays are selected)
      */
-    chooseKeyboard(disabled: boolean) {
+    chooseKeyboard(disabled: boolean): React.ReactNode {
         // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
         const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
 
@@ -167,7 +167,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
             const commonCat = firstCat === undefined ? undefined
-                                                     : traysOnly.every(item => item.category?.name === undefined || item.category?.name === firstCat)
+                                                     : traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
                                                        ? firstCat : null;
 
             const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
@@ -184,15 +184,15 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
             const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
             const commonYear = firstYear === undefined ? undefined
-                                                       : traysOnly.every(item => item.expiry?.from === undefined || new Date(item.expiry?.from).getFullYear() === firstYear)
+                                                       : traysOnly.every(item => item.expiry?.from === undefined || new Date(item.expiry.from).getFullYear() === firstYear)
                                                          ? firstYear : undefined;
 
             // update object-level selectedYear
             this.selectedYear = commonYear;
 
             // set the button corresponding to selectedYear to be visibly selected
-            for (let i = 0; i < this.years.length; i++) {
-                this.years[i].selected = this.years[i].name === commonYear?.toString();
+            for (const year of this.years) {
+                year.selected = year.name === commonYear?.toString();
             }
 
             return <div className="keyboard-container">
@@ -251,7 +251,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     /**
      * @inheritDoc
      */
-    render() {
+    render(): React.ReactNode {
 
         // return DOM elements using button structures
         return <div id="bottom">
