@@ -722,25 +722,27 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
 
                 {/* Grid of shelves in zone */}
                 <div id="nav-zone">{
-                    zone?.bays.length === 0 ? <h3>This zone has no bays</h3> : zone?.bays.flatMap((bay, bayIndex) =>
-                        <div className="nav-bay">
-                            {bay.shelves.map((shelf, shelfIndex) => {
-                                const textColor = getTextColorForBackground(zone?.color ?? "#ffffff");
-                                return <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
-                                            className={`nav-shelf${this.state.currentView === shelf ? " currentShelf"
-                                                                                                    : ""}`}
-                                            style={{
-                                                backgroundColor: zone?.color,
-                                                color: textColor,
-                                                border: `1px solid ${textColor}`
-                                            }}
-                                            onClick={this.changeView.bind(this, shelf)}
-                                >
-                                    <p className="shelfLabel">{bay.name}{shelf.name}</p>
-                                </div>;
-                            })}
-                        </div>
-                    )
+                    zone?.bays.length === 0 ? <h3>This zone has no bays</h3> : () => {
+                        const textColor = getTextColorForBackground(zone?.color ?? "#ffffff");
+                        return zone?.bays.flatMap((bay, bayIndex) =>
+                            <div className="nav-bay">
+                                {bay.shelves.map((shelf, shelfIndex) =>
+                                    <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
+                                         className={`nav-shelf${this.state.currentView === shelf ? " currentShelf"
+                                                                                                 : ""}`}
+                                         style={{
+                                             backgroundColor: zone?.color,
+                                             color: textColor,
+                                             border: `1px solid ${textColor}`
+                                         }}
+                                         onClick={this.changeView.bind(this, shelf)}
+                                    >
+                                        <p className="shelfLabel">{bay.name}{shelf.name}</p>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    }
                 }</div>
 
                 {/* Arrow grid */}
