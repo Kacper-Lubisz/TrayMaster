@@ -6,7 +6,7 @@ import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 import {StandardDialog} from "./App";
 
 interface SettingsProps {
-    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
+    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
 }
 
 /**
