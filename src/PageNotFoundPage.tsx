@@ -4,7 +4,7 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 
 class PageNotFoundPage extends React.Component<RouteComponentProps, any> {
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div>
                 <h1>Page not found</h1>

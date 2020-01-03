@@ -1,3 +1,5 @@
+// TODO: Remove this. Temporarily disabled while our functions are not implemented
+/* eslint-disable @typescript-eslint/require-await */
 /*
 Warehouse
 >   Settings
@@ -26,11 +28,11 @@ const sizes: ColumnSize[] = [
     {label: "big", sizeRatio: 3.5},
 ];
 
-const colors: { label: string, hex: string }[] = [
-    {label: "Red", hex: "#FF0000"},
-    {label: "Green", hex: "#00FF00"},
-    {label: "Blue", hex: "#0000FF"},
-    {label: "White", hex: "#FFFFFF"},
+const colors: { label: string; hex: string }[] = [
+    {label: "Red", hex: "#ff0000"},
+    {label: "Green", hex: "#00ff00"},
+    {label: "Blue", hex: "#0000ff"},
+    {label: "White", hex: "#ffffff"},
     {label: "Black", hex: "#000000"},
     {label: "Yellow", hex: "#ffff00"},
     {label: "Cyan", hex: "#00ffff"},
@@ -49,8 +51,9 @@ const colors: { label: string, hex: string }[] = [
 export function generateRandomId(): string {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let id = "";
-    for (let i = 0; i < 20; i++)
+    for (let i = 0; i < 20; i++) {
         id += chars[Math.floor(chars.length * Math.random())];
+    }
     return id;
 }
 
@@ -119,7 +122,7 @@ interface UpperLayer {
 }
 
 export class Warehouse implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
@@ -148,8 +151,9 @@ export class Warehouse implements UpperLayer {
     public static create(zones: Zone[], name?: string): Warehouse {
         const warehouse: Warehouse = new Warehouse(generateRandomId(), name ?? "");
         warehouse.zones = zones;
-        for (let i = 0; i < warehouse.zones.length; i++)
-            warehouse.zones[i].placeInWarehouse(warehouse);
+        for (const zone of warehouse.zones) {
+            zone.placeInWarehouse(warehouse);
+        }
         return warehouse;
     }
 
@@ -160,8 +164,9 @@ export class Warehouse implements UpperLayer {
      */
     public static async loadCategories(): Promise<Category[]> {
         const categories: Category[] = [];
-        for (let i = 0; i < cats.length; i++)
-            categories.push({name: cats[i]});
+        for (const cat of cats) {
+            categories.push({name: cat});
+        }
         return categories;
     }
 
@@ -172,8 +177,9 @@ export class Warehouse implements UpperLayer {
      */
     public static async loadColumnSizes(): Promise<ColumnSize[]> {
         const columnSizes: ColumnSize[] = [];
-        for (let i = 0; i < sizes.length; i++)
-            columnSizes.push({...sizes[i]});
+        for (const colSize of sizes) {
+            columnSizes.push({...colSize});
+        }
         return columnSizes;
     }
 
@@ -209,8 +215,9 @@ export class Warehouse implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.zones = await Zone.loadFlatZones(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -236,7 +243,7 @@ export class Warehouse implements UpperLayer {
 
 
 export class Zone implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
@@ -270,8 +277,9 @@ export class Zone implements UpperLayer {
     public static create(bays: Bay[], name?: string, color?: string, parentWarehouse?: Warehouse): Zone {
         const zone: Zone = new Zone(generateRandomId(), name ?? "", color ?? "#000000", parentWarehouse);
         zone.bays = bays;
-        for (let i = 0; i < zone.bays.length; i++)
+        for (let i = 0; i < zone.bays.length; i++) {
             zone.bays[i].placeInZone(i, zone);
+        }
         return zone;
     }
 
@@ -280,7 +288,7 @@ export class Zone implements UpperLayer {
      * @param parentWarehouse - The warehouse the zone is being added to
      * @param name - The name of the zone
      */
-    public placeInWarehouse(parentWarehouse: Warehouse, name?: string) {
+    public placeInWarehouse(parentWarehouse: Warehouse, name?: string): void {
         this.parentWarehouse = parentWarehouse;
         this.name = name ?? this.name;
     }
@@ -294,7 +302,7 @@ export class Zone implements UpperLayer {
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
 
-        let zoneNumber = Math.random() < 0.2 ? 0 : 10;
+        const zoneNumber = Math.random() < 0.2 ? 0 : 10;
 
         for (let i = 0; i < zoneNumber; i++) {
 
@@ -317,8 +325,9 @@ export class Zone implements UpperLayer {
      */
     public static async loadFlatZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
-        for (let i = 0; i < colors.length; i++)
-            zones.push(new Zone(generateRandomId(), colors[i].label, colors[i].hex, warehouse));
+        for (const color of colors) {
+            zones.push(new Zone(generateRandomId(), color.label, color.hex, warehouse));
+        }
         return zones;
     }
 
@@ -327,8 +336,9 @@ export class Zone implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.bays = await Bay.loadFlatBays(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -355,7 +365,7 @@ export class Zone implements UpperLayer {
 
 
 export class Bay implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
@@ -389,8 +399,9 @@ export class Bay implements UpperLayer {
     public static create(shelves: Shelf[], name?: string, index?: number, parentZone?: Zone): Bay {
         const bay: Bay = new Bay(generateRandomId(), name ?? "", index ?? -1, parentZone);
         bay.shelves = shelves;
-        for (let i = 0; i < bay.shelves.length; i++)
+        for (let i = 0; i < bay.shelves.length; i++) {
             bay.shelves[i].placeInBay(i, bay);
+        }
         return bay;
     }
 
@@ -400,7 +411,7 @@ export class Bay implements UpperLayer {
      * @param parentZone - The zone the bay is being added to
      * @param name - The name of the bay
      */
-    public placeInZone(index: number, parentZone: Zone, name?: string) {
+    public placeInZone(index: number, parentZone: Zone, name?: string): void {
         this.index = index;
         this.parentZone = parentZone;
         this.name = name ?? this.name;
@@ -414,7 +425,7 @@ export class Bay implements UpperLayer {
      */
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        let bayNumber = Math.floor(Math.random() * 6);
+        const bayNumber = Math.floor(Math.random() * 6);
 
         for (let i = 0; i < bayNumber; i++) {
             const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
@@ -433,8 +444,9 @@ export class Bay implements UpperLayer {
      */
     public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < colors.length; i++)
+        for (let i = 0; i < colors.length; i++) {
             bays.push(new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone));
+        }
         return bays;
     }
 
@@ -443,8 +455,9 @@ export class Bay implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.shelves = await Shelf.loadFlatShelves(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -469,7 +482,7 @@ export class Bay implements UpperLayer {
 
 
 export class Shelf implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
@@ -503,8 +516,9 @@ export class Shelf implements UpperLayer {
     public static create(columns: Column[], name?: string, index?: number, parentBay?: Bay): Shelf {
         const shelf: Shelf = new Shelf(generateRandomId(), name ?? "", index ?? -1);
         shelf.columns = columns;
-        for (let i = 0; i < shelf.columns.length; i++)
+        for (let i = 0; i < shelf.columns.length; i++) {
             shelf.columns[i].placeInShelf(i, shelf);
+        }
         return shelf;
     }
 
@@ -514,7 +528,7 @@ export class Shelf implements UpperLayer {
      * @param parentBay - The bay the shelf is being added to
      * @param name - The name of the shelf
      */
-    public placeInBay(index: number, parentBay: Bay, name?: string) {
+    public placeInBay(index: number, parentBay: Bay, name?: string): void {
         this.index = index;
         this.parentBay = parentBay;
         this.name = name ?? this.name;
@@ -528,7 +542,7 @@ export class Shelf implements UpperLayer {
      */
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        let shelfNumber = Math.random() * 5 + 1;
+        const shelfNumber = Math.random() * 5 + 1;
         for (let i = 0; i < shelfNumber; i++) {
             const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
@@ -551,8 +565,9 @@ export class Shelf implements UpperLayer {
      */
     public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < colors.length; i++)
+        for (let i = 0; i < colors.length; i++) {
             shelves.push(new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay));
+        }
         return shelves;
     }
 
@@ -561,8 +576,9 @@ export class Shelf implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.columns = await Column.loadFlatColumns(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -598,7 +614,7 @@ export class Column implements UpperLayer {
      */
     private static traySpaces: Map<Column, TraySpace[]> = new Map();
 
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     index: number;
@@ -643,8 +659,9 @@ export class Column implements UpperLayer {
     ): Column {
         const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf, size, maxHeight);
         column.trays = trays;
-        for (let i = 0; i < column.trays.length; i++)
+        for (let i = 0; i < column.trays.length; i++) {
             column.trays[i].placeInColumn(i, column);
+        }
         return column;
     }
 
@@ -653,7 +670,7 @@ export class Column implements UpperLayer {
      * @param index - The index of the column within the shelf
      * @param parentShelf - The shelf the column is being added to
      */
-    public placeInShelf(index: number, parentShelf: Shelf) {
+    public placeInShelf(index: number, parentShelf: Shelf): void {
         this.index = index;
         this.parentShelf = parentShelf;
     }
@@ -670,16 +687,18 @@ export class Column implements UpperLayer {
         const colNumber = shelf.index % 2 === 0 ? 4 : 2;
 
         for (let i = 0; i < colNumber; i++) {
-            const sizes = shelf.parentWarehouse?.columnSizes!!;
-            const size: ColumnSize = sizes[Math.floor(Math.random() * sizes.length)];
-            const maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
-                                                    : Math.random() < 0.5 ? 2
-                                                                          : 10;
+            if (shelf.parentWarehouse) {
+                const sizes = shelf.parentWarehouse.columnSizes;
+                const size: ColumnSize = sizes[Math.floor(Math.random() * sizes.length)];
+                const maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
+                                                        : Math.random() < 0.5 ? 2
+                                                                              : 10;
 
-            const column: Column = new Column(generateRandomId(), i, shelf, size, maxHeight);
-            column.trays = await Tray.loadTrays(column);
-            column.isDeepLoaded = true;
-            columns.push(column);
+                const column: Column = new Column(generateRandomId(), i, shelf, size, maxHeight);
+                column.trays = await Tray.loadTrays(column);
+                column.isDeepLoaded = true;
+                columns.push(column);
+            }
         }
         return columns;
     }
@@ -692,8 +711,9 @@ export class Column implements UpperLayer {
      */
     public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < colors.length; i++)
+        for (let i = 0; i < colors.length; i++) {
             columns.push(new Column(generateRandomId(), i, shelf));
+        }
         return columns;
     }
 
@@ -702,8 +722,9 @@ export class Column implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.trays = await Tray.loadTrays(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -730,7 +751,7 @@ export class Column implements UpperLayer {
      * @param ifNoMaxHeight The padding to add if maxHeight is empty
      * @return The padded array.
      */
-    getPaddedTrays(ifNoMaxHeight: number = 1): TrayCell[] {
+    getPaddedTrays(ifNoMaxHeight = 1): TrayCell[] {
 
         const missingTrays = this.maxHeight ? Math.max(0, this.maxHeight - this.trays.length)
                                             : 1;
@@ -779,7 +800,7 @@ export class Column implements UpperLayer {
      * This method clears the padded spaces, this can be used to reset empty spaces or otherwise to clear up memory
      * which will no longer be used.  If a column is passed then only that column is purged otherwise all columns are.
      */
-    static purgePaddedSpaces(column?: Column) {
+    static purgePaddedSpaces(column?: Column): void {
         if (column) {
             Column.traySpaces.delete(column);
         } else {
@@ -852,7 +873,7 @@ export class Tray {
      * @param index - The index of the tray within the column
      * @param parentColumn - The column the tray is being added to
      */
-    public placeInColumn(index: number, parentColumn: Column) {
+    public placeInColumn(index: number, parentColumn: Column): void {
         this.index = index;
         this.parentColumn = parentColumn;
     }

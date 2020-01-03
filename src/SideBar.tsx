@@ -23,9 +23,9 @@ interface SideBarProps {
     /** List of button keyboard switches */
     keyboards: KeyboardSwitch[];
     /** The current keyboard, used for highlighting the active */
-    currentKeyboard: KeyboardName
+    currentKeyboard: KeyboardName;
     /** If the keyboardSwitcher should be displayed */
-    showKeyboardSwitcher: boolean
+    showKeyboardSwitcher: boolean;
 
     /** This string is to describe the current location */
     locationString: string;
@@ -65,7 +65,7 @@ interface KeyboardSwitchBtnProps {
  * Button to switch keyboards
  */
 class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
-    render() {
+    render(): React.ReactNode {
         return (
             // by this point this.props.onClick has had bind called on it 2 times
             <button className={classNames({
@@ -82,7 +82,7 @@ class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
  */
 export class SideBar extends React.Component<SideBarProps> {
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div id="sideBar">
 

@@ -11,7 +11,7 @@ import {StandardDialog} from "./App";
  * TODO needs to be fetched from db
  */
 interface MainMenuProps {
-    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void
+    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
     expiryAmount: number;
 }
 
@@ -24,7 +24,7 @@ interface MainMenuProps {
  */
 class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div className="main-menu">
                 <div className="menu-header">
