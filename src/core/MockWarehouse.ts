@@ -514,7 +514,7 @@ export class Shelf implements UpperLayer {
      * @returns The newly created shelf
      */
     public static create(columns: Column[], name?: string, index?: number, parentBay?: Bay): Shelf {
-        const shelf: Shelf = new Shelf(generateRandomId(), name ?? "", index ?? -1);
+        const shelf: Shelf = new Shelf(generateRandomId(), name ?? "", index ?? -1, parentBay);
         shelf.columns = columns;
         for (let i = 0; i < shelf.columns.length; i++) {
             shelf.columns[i].placeInShelf(i, shelf);
@@ -754,7 +754,7 @@ export class Column implements UpperLayer {
     getPaddedTrays(ifNoMaxHeight = 1): TrayCell[] {
 
         const missingTrays = this.maxHeight ? Math.max(0, this.maxHeight - this.trays.length)
-                                            : 1;
+                                            : ifNoMaxHeight;
 
         const existing: TraySpace[] | undefined = Column.traySpaces.get(this);
         if (existing) {

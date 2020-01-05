@@ -66,13 +66,13 @@ class App extends React.Component<any, AppState> {
             {this.state.loaded === undefined ? <LoadingPage/> : (
                 <BrowserRouter>
                     <Switch>
-                        <Route path="/" component={() => this.state.loaded ?
-                                                         <ShelfView
-                                                             openDialog={this.openDialog.bind(this)}
-                                                             settings={this.state.loaded.settings}
-                                                             warehouse={this.state.loaded.warehouse}
-                                                         /> : <></>
-                        } exact/>
+                        <Route path="/" component={((loaded: LoadedContent) => {
+                            return <ShelfView
+                                openDialog={this.openDialog.bind(this)}
+                                settings={loaded.settings}
+                                warehouse={loaded.warehouse}
+                            />;
+                        }).bind(this, this.state.loaded)} exact/>
                         <Route path="/menu"
                                component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
                         <Route path="/settings"
