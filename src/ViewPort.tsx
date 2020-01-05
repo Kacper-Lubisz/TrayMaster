@@ -78,7 +78,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 selectedBefore: selectedBefore,
             } : undefined,
         }, () => {
-            return this.state.longPress ? this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom) : undefined;
+            if (this.state.longPress) {
+                this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom);
+            }
         });
     }
 
@@ -134,19 +136,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
             if (a.columnIndex < b.columnIndex) {
                 return -1;
-            }
-            if (a.columnIndex > b.columnIndex) {
+            } else if (a.columnIndex > b.columnIndex) {
                 return 1;
-            }
-
-            if (a.trayIndex < b.trayIndex) {
+            } else if (a.trayIndex < b.trayIndex) {
                 return 1;
-            }
-            if (a.trayIndex > b.trayIndex) {
+            } else if (a.trayIndex > b.trayIndex) {
                 return -1;
+            } else {
+                return 0;
             }
 
-            return 0;
         })).map(it => it.tray);
 
         // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
