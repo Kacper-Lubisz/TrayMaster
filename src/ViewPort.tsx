@@ -440,17 +440,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             "tick-selected": this.props.isTraySelected(tray)
                         })}
                         icon={tickSolid}/>
-                    {tray instanceof Tray && <>
+                    {tray instanceof Tray ? <>
                         <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
                         <div className="trayWeight">{tray.weight ?? "?"}kg</div>
                         <div className="trayCustomField">{tray.customField ?? ""}</div>
-                    </>}
-                    {!(tray instanceof Tray) && index === column.trays.length && <>
+                    </> : null}
+                    {!(tray instanceof Tray) && index === column.trays.length ? <>
                         <p>EMPTY TRAY {tray.index}</p>
-                    </>}
+                    </> : null}
                 </div>;
             })}
             {this.props.isShelfEdit ? <div className="edit-shelf-column">

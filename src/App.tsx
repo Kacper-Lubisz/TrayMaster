@@ -40,8 +40,8 @@ class App extends React.Component<any, AppState> {
 
         loadPromise.then((result) => {
             const [settings, warehouse] = result;
-            console.log(`Settings Loaded:`, settings);
-            console.log(`Warehouse Loaded:`, warehouse);
+            console.log("Settings Loaded:", settings);
+            console.log("Warehouse Loaded:", warehouse);
 
             this.setState(state => {
                 return {
@@ -88,19 +88,19 @@ class App extends React.Component<any, AppState> {
                 <> {/*empty tag because for some reason Popup overrides the type of the child props.  Making it so that a
             boolean can't be a child, which is otherwise usually legal.  Boolean because the conditionals may evaluate
             to a boolean or an Element*/}
-                    {this.state?.dialog?.title !== undefined && <h1>
+                    {this.state?.dialog?.title ? <h1>
                         <FontAwesomeIcon {...this.state.dialog.iconProps}/> {this.state.dialog.title}
-                    </h1>}
-                    {this.state?.dialog?.message !== undefined && <p>{
+                    </h1> : null}
+                    {this.state?.dialog?.message ? <p>{
                         this.state.dialog.message
-                    }</p>}
+                    }</p> : null}
 
-                    {this.state?.dialog?.buttons !== undefined &&
-                    <div style={{float: "right"}} id={"popupButtons"}>{
-                        this.state.dialog.buttons.map((button, index) =>
-                            <button key={index} {...button.buttonProps}>{button.name}</button>
-                        )}
-                    </div>}
+                    {this.state?.dialog?.buttons ?
+                     <div style={{float: "right"}} id={"popupButtons"}>{
+                         this.state.dialog.buttons.map((button, index) =>
+                             <button key={index} {...button.buttonProps}>{button.name}</button>
+                         )}
+                     </div> : null}
                 </>
             </Popup>
         </>;
