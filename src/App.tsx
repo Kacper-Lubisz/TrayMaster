@@ -5,7 +5,7 @@ import SettingsPage from "./SettingsPage";
 import PageNotFoundPage from "./PageNotFoundPage";
 
 import {Settings, SettingsManager} from "./core/Settings";
-import {loadWarehouse, Warehouse} from "./core/WarehouseModel";
+import * as WarehouseModel from "./core/WarehouseModel";
 import {LoadingPage} from "./Loading";
 import Popup from "reactjs-popup";
 import ShelfView from "./ShelfView";
@@ -17,7 +17,7 @@ import MainMenu from "./MainMenu";
  * This interface exists because these are never null together
  */
 interface LoadedContent {
-    warehouse: Warehouse;
+    warehouse: WarehouseModel.Warehouse;
     settings: Settings;
 }
 
@@ -35,7 +35,7 @@ class App extends React.Component<any, AppState> {
 
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
-            loadWarehouse("NXhrW34QZpo20Oc3RmZw")
+            WarehouseModel.loadWarehouse("NXhrW34QZpo20Oc3RmZw")
         ]);
 
         loadPromise.then((result) => {
