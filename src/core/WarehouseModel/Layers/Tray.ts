@@ -1,206 +1,83 @@
-import {Column} from "./Column";
-import {Shelf} from "./Shelf";
-import {Bay} from "./Bay";
-import {Zone} from "./Zone";
-import {Warehouse} from "./Warehouse";
-import {Category} from "../Category";
-import {Layer} from "../Layer";
-import {ExpiryRange, ONLINE, TraySize} from "../../WarehouseModel";
+import {BottomLayer} from "../LayerStructure/BottomLayer";
+import {Bay, Category, Column, ExpiryRange, Shelf, Warehouse, warehouse, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
-
-
-const sizes: TraySize[] = [
-    {label: "small", sizeRatio: 1.5},
-    {label: "normal", sizeRatio: 2.5},
-    {label: "big", sizeRatio: 3.5},
-];
-
-
-const expires: ExpiryRange[] = [
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020"
-    },
-    {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Feb 2020"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020"
-    },
-    {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
-        label: "2020"
-    },
-    {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
-        label: "2021"
-    },
-];
 
 
 interface TrayFields {
     index: number;
-    category?: Category;
-    expiry?: ExpiryRange;
-    weight?: number;
-    customField?: string;
+    categoryId: string;
+    expiry: ExpiryRange | null;
+    weight: number | null;
+    customField: string | null;
 }
 
+export class Tray extends BottomLayer<Column, TrayFields> {
+    public readonly collectionName = "trays";
 
-export class Tray extends Layer<TrayFields> {
-    parentColumn?: Column;
-
-    /**
-     * @param id - The database ID of the tray
-     * @param index - The index of the tray within the column
-     * @param category - The tray's (nullable) category
-     * @param expiryRange - The tray's (nullable) expiry range
-     * @param weight - The tray's (nullable) weight
-     * @param customField - The tray's (nullable) custom field
-     * @param parentColumn - The (nullable) parent column
-     */
-    private constructor(
-        id: string, index: number, category?: Category, expiryRange?: ExpiryRange,
-        weight?: number, customField?: string, parentColumn?: Column
-    ) {
-        super({
-            index: index,
-            category: category,
-            expiry: expiryRange,
-            weight: weight,
-            customField: customField
-        }, parentColumn?.childCollection("trays") ?? "trays", id);
-        this.parentColumn = parentColumn;
+    public static create(parent: Column, index: number, category?: Category, expiry?: ExpiryRange, weight?: number,
+                         customField?: string
+    ): Tray {
+        return new Tray(Utils.generateRandomId(), {
+            index,
+            categoryId: warehouse.getCategoryID(category),
+            expiry: expiry ?? null,
+            weight: weight ?? null,
+            customField: customField ?? null
+        }, parent);
     }
 
+    public static createFromFields(id: string, fields: unknown, parent: Column): Tray {
+        return new Tray(id, fields as TrayFields, parent);
+    }
+
+    //#region Field Getters and Setters
     public get index(): number {
         return this.fields.index;
     }
 
     public set index(index: number) {
         this.fields.index = index;
-        this.fieldChange();
     }
 
     public get category(): Category | undefined {
-        // todo: resolve for firebase
-        return this.fields.category;
+        return warehouse.getCategoryByID(this.fields.categoryId);
     }
 
     public set category(category: Category | undefined) {
-        this.fields.category = category;
-        this.fieldChange();
+        this.fields.categoryId = warehouse.getCategoryID(category);
     }
 
     public get expiry(): ExpiryRange | undefined {
-        return this.fields.expiry;
+        return this.fields.expiry ?? undefined;
     }
 
     public set expiry(expiry: ExpiryRange | undefined) {
-        this.fields.expiry = expiry;
-        this.fieldChange();
+        this.fields.expiry = expiry ?? null;
     }
 
     public get weight(): number | undefined {
-        return this.fields.weight;
+        return this.fields.weight ?? undefined;
     }
 
     public set weight(weight: number | undefined) {
-        this.fields.weight = weight;
-        this.fieldChange();
+        this.fields.weight = weight ?? null;
     }
 
     public get customField(): string | undefined {
-        return this.fields.customField;
+        return this.fields.customField || undefined;
     }
 
     public set customField(customField: string | undefined) {
-        this.fields.customField = customField;
-        this.fieldChange();
+        this.fields.customField = customField || null;
     }
 
-    /**
-     * Create a new tray
-     * @param category - The tray's (nullable) category
-     * @param expiryRange - The tray's (nullable) expiry range
-     * @param weight - The tray's (nullable) weight
-     * @param customField - The tray's (nullable) custom field
-     * @param index - The index of the tray within the column
-     * @param parentColumn - The (nullable) parent column
-     */
-    public static create(
-        category?: Category, expiryRange?: ExpiryRange, weight?: number,
-        customField?: string, index?: number, parentColumn?: Column
-    ): Tray {
-        return new Tray(Utils.generateRandomId(), index ?? -1, category, expiryRange, weight, customField, parentColumn);
-    }
-
-    /**
-     * Place the tray within a column
-     * @param index - The index of the tray within the column
-     * @param parentColumn - The column the tray is being added to
-     */
-    public placeInColumn(index: number, parentColumn: Column): void {
-        this.index = index;
-        this.parentColumn = parentColumn;
-    }
-
-    /**
-     * Load all trays within a given column
-     * @async
-     * @param column - The column to load the trays for
-     * @returns A promise which resolves to all trays within the column
-     */
-    public static async loadTrays(column: Column): Promise<Tray[]> {
-        if (ONLINE)
-            return await this.loadChildObjects<Tray, TrayFields, Column>(column, "columns", "index");
-        else {
-            const trays: Tray[] = [];
-            for (let i = 0; i < 3; i++) {
-                const categories: Category[] | undefined = column?.parentWarehouse?.categories;
-                trays.push(new Tray(Utils.generateRandomId(),
-                    i, categories === undefined ? undefined : categories[Math.floor(categories.length * Math.random())],
-                    expires[Math.floor(expires.length * Math.random())],
-                    Number((15 * Math.random()).toFixed(2)),
-                    Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
-                    column
-                ));
-            }
-            return trays;
-        }
-    }
-
-    /**
-     * Load tray sizes.
-     * @async
-     * @returns A promise which resolves to the list of tray sizes in the warehouse
-     */
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public static async loadTraySizes(): Promise<TraySize[]> {
-        if (ONLINE) {
-            throw new Error("Not yet implemented.");
-        } else {
-            const traySizes: TraySize[] = [];
-            for (const size of sizes) {
-                traySizes.push({...size});
-            }
-            return traySizes;
-        }
-    }
+    //#endregion
 
     //#region Parent Getters
+    get parentColumn(): Column | undefined {
+        return this.parent;
+    }
+
     get parentShelf(): Shelf | undefined {
         return this.parentColumn?.parentShelf;
     }

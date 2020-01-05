@@ -394,12 +394,11 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
             const newTrays = spaces.map(space => {
                 if (!ignoreAirSpaces || space.index === space.column.trays.length) {
                     const newTray = Tray.create(
-                        undefined,
-                        undefined,
-                        undefined,
-                        undefined,
+                        space.column,
                         space.index,
-                        space.column);
+                        undefined,
+                        undefined,
+                        undefined);
                     space.column.trays.push(newTray);
                     newSelection.set(newTray, true);
                     newSelection.delete(space);
@@ -511,7 +510,6 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
      */
     addColumn(shelf: Shelf): void {
         shelf.columns.push(Column.create(
-            [],
             shelf.columns.length,
             this.props.warehouse.traySizes[1], //fixme set a default
             3,

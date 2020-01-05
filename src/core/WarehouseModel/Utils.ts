@@ -2,6 +2,7 @@
 Warehouse
 >   Settings
 >   Categories
+>   TraySizes
 >   Zones
     >   Bays
         >   Shelves
@@ -15,7 +16,7 @@ Warehouse
 
 
 export class Queue<T> {
-    private items: T[];
+    protected items: T[];
 
     public constructor() {
         this.items = [];
@@ -35,6 +36,10 @@ export class Queue<T> {
 
     public dequeue(): T | undefined {
         return this.items.shift();
+    }
+
+    public clear(): void {
+        this.items = [];
     }
 }
 
@@ -60,6 +65,10 @@ export class Stack<T> {
 
     public pop(): T | undefined {
         return this.items.pop();
+    }
+
+    public clear(): void {
+        this.items = [];
     }
 }
 
@@ -91,5 +100,9 @@ export default abstract class Utils {
 
     public static getPath(docPath: string): string {
         return this.normalisePath(docPath).split("/").slice(0, -1).join("/");
+    }
+
+    public static randItem<T>(items: T[]): T {
+        return items[Math.floor(items.length * Math.random())];
     }
 }

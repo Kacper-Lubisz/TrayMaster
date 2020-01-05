@@ -1,22 +1,17 @@
-import {Layer} from "../Layer";
-import {Shelf} from "./Shelf";
-import {Bay} from "./Bay";
-import {Zone} from "./Zone";
-import {Warehouse} from "./Warehouse";
-import {Tray} from "./Tray";
-import {ONLINE, TrayCell, TraySize, TraySpace} from "../../WarehouseModel";
+import {MiddleLayer} from "../LayerStructure/MiddleLayer";
+import {Bay, Shelf, Tray, TrayCell, TraySize, TraySpace, Warehouse, warehouse, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 
 
 interface ColumnFields {
     index: number;
-    size?: TraySize;
-    maxHeight?: number;
+    traySizeId: string;
+    maxHeight: number;
 }
 
-
-export class Column extends Layer<ColumnFields> {
-    isDeepLoaded: boolean;
+export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
+    public readonly collectionName = "columns";
+    protected readonly childCollectionName = "trays";
 
     /**
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
@@ -24,157 +19,53 @@ export class Column extends Layer<ColumnFields> {
      */
     private static traySpaces: Map<Column, TraySpace[]> = new Map();
 
-    parentShelf?: Shelf;
-    trays: Tray[] = [];
-
-    /**
-     * @param location - The database location of the column
-     * @param index - The (ordered) index of the column within the shelf
-     * @param size - The size of the tray
-     * @param maxHeight - The maximum number of trays that can be placed in this column
-     * @param parentShelf - The (nullable) parent shelf
-     */
-    private constructor(location: string, index: number, size?: TraySize, maxHeight?: number, parentShelf?: Shelf) {
-        super({
-            index: index,
-            size: size,
-            maxHeight: maxHeight
-        }, parentShelf?.childCollection("columns") ?? "columns", location);
-        this.parentShelf = parentShelf;
-        this.isDeepLoaded = false;
+    public static create(index: number, traySize: TraySize, maxHeight: number, parent: Shelf): Column {
+        return new Column(Utils.generateRandomId(), {
+            index,
+            traySizeId: warehouse.getTraySizeId(traySize),
+            maxHeight
+        }, parent);
     }
 
+    public static createFromFields(id: string, fields: unknown, parent: Shelf): Column {
+        return new Column(id, fields as ColumnFields, parent);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    protected createChild = Tray.createFromFields;
+
+    //#region Field Getters and Setters
     public get index(): number {
         return this.fields.index;
     }
 
     public set index(index: number) {
         this.fields.index = index;
-        this.fieldChange();
     }
 
-    public set size(size: TraySize | undefined) {
-        this.fields.size = size;
-        this.fieldChange();
+    public get traySize(): TraySize | undefined {
+        return warehouse.getTraySizeByID(this.fields.traySizeId);
     }
 
-    public get size(): TraySize | undefined {
-        return this.fields.size;
+    public set traySize(traySize: TraySize | undefined) {
+        this.fields.traySizeId = warehouse.getTraySizeId(traySize);
     }
 
-    public get maxHeight(): number | undefined {
+    public get maxHeight(): number {
         return this.fields.maxHeight;
     }
 
-    public set maxHeight(maxHeight: number | undefined) {
+    public set maxHeight(maxHeight: number) {
         this.fields.maxHeight = maxHeight;
-        this.fieldChange();
     }
 
-    /**
-     * Create a column from a collection of trays
-     * @param trays - The trays to put in the column
-     * @param index - The index of the column within its shelf
-     * @param size - The column size
-     * @param maxHeight - The max number of trays that can go in this column
-     * @param parentShelf - The shelf the column belongs to
-     * @returns The newly created column
-     */
-    public static create(
-        trays: Tray[],
-        index?: number,
-        size?: TraySize,
-        maxHeight?: number,
-        parentShelf?: Shelf
-    ): Column {
-        const column: Column = new Column(Utils.generateRandomId(), index ?? -1, size, maxHeight, parentShelf);
-        column.trays = trays;
-        for (let i = 0; i < column.trays.length; i++)
-            column.trays[i].placeInColumn(i, column);
-        return column;
-    }
-
-    /**
-     * Place the column within a shelf
-     * @param index - The index of the column within the shelf
-     * @param parentShelf - The shelf the column is being added to
-     */
-    public placeInShelf(index: number, parentShelf: Shelf): void {
-        this.index = index;
-        this.parentShelf = parentShelf;
-    }
-
-    /**
-     * Load all columns within a given column
-     * @async
-     * @param shelf - The shelf to load the columns for
-     * @returns A promise which resolves to all columns within the shelf
-     */
-    public static async loadColumns(shelf: Shelf): Promise<Column[]> {
-        if (ONLINE) {
-            const columns: Column[] = await this.loadChildObjects<Column, ColumnFields, Shelf>(shelf, "columns", "index");
-            for (const column of columns) {
-                column.trays = await Tray.loadTrays(column);
-                column.isDeepLoaded = true;
-            }
-            return columns;
-        } else {
-            const columns: Column[] = [],
-                colNumber = shelf.index % 2 === 0 ? 4 : 2;
-
-            for (let i = 0; i < colNumber; i++) {
-                const sizes = shelf.parentWarehouse?.traySizes ?? [],
-                    size: TraySize = sizes[Math.floor(Math.random() * sizes.length)],
-                    maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
-                                                      : Math.random() < 0.5 ? 2
-                                                                            : 10;
-
-                const column: Column = new Column(Utils.generateRandomId(), i, size, maxHeight, shelf);
-                column.trays = await Tray.loadTrays(column);
-                column.isDeepLoaded = true;
-                columns.push(column);
-            }
-            return columns;
-        }
-    }
-
-    /**
-     * Load all columns (without any trays) in a shelf
-     * @async
-     * @param shelf - The shelf to load the columns for
-     * @returns A promise which resolves to the flat column list
-     */
-    public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
-        if (ONLINE)
-            return await this.loadChildObjects<Column, ColumnFields, Shelf>(shelf, "columns", "index");
-        else {
-            const columns: Column[] = [],
-                colNumber = shelf.index % 2 === 0 ? 4 : 2;
-
-            for (let i = 0; i < colNumber; i++) {
-                const sizes = shelf.parentWarehouse?.traySizes ?? [],
-                    size: TraySize = sizes[Math.floor(Math.random() * sizes.length)],
-                    maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
-                                                      : Math.random() < 0.5 ? 2
-                                                                            : 10;
-
-                columns.push(new Column(Utils.generateRandomId(), i, size, maxHeight, shelf));
-            }
-            return columns;
-        }
-    }
-
-    /**
-     * Load the trays into the column
-     * @async
-     */
-    public async loadChildren(): Promise<void> {
-        if (!this.isDeepLoaded)
-            this.trays = await Tray.loadTrays(this);
-        this.isDeepLoaded = true;
-    }
+    //#endregion
 
     //#region Parent Getters
+    get parentShelf(): Shelf | undefined {
+        return this.parent;
+    }
+
     get parentBay(): Bay | undefined {
         return this.parentShelf?.parentBay;
     }
@@ -185,6 +76,13 @@ export class Column extends Layer<ColumnFields> {
 
     get parentWarehouse(): Warehouse | undefined {
         return this.parentZone?.parentWarehouse;
+    }
+
+    //#endregion
+
+    //#region Children Getters
+    get trays(): Tray[] {
+        return this.children;
     }
 
     //#endregion
@@ -240,7 +138,6 @@ export class Column extends Layer<ColumnFields> {
         }
 
     }
-
 
     /**
      * This method clears the padded spaces, this can be used to reset empty spaces or otherwise to clear up memory

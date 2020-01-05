@@ -5,10 +5,8 @@ import SettingsPage from "./SettingsPage";
 import PageNotFoundPage from "./PageNotFoundPage";
 
 import {Settings, SettingsManager} from "./core/Settings";
-import {Warehouse} from "./core/WarehouseModel";
-// import {loadWarehouse} from "./core/WarehouseModel/WHTesting";
+import {loadWarehouse, Warehouse} from "./core/WarehouseModel";
 import {LoadingPage} from "./Loading";
-import Utils from "./core/WarehouseModel/Utils";
 import Popup from "reactjs-popup";
 import ShelfView from "./ShelfView";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
@@ -35,25 +33,18 @@ class App extends React.Component<any, AppState> {
 
         this.state = {};
 
-        /*        loadWarehouse()
-                    .then(wh => {
-                        // let paths = "";
-                        // wh.dfs(layer => paths += `${layer.path}\n`);
-                        // console.log(paths);
-                        console.log("Saving...");
-                        wh.save(true, true, true)
-                          .then(() => console.log("Done"));
-                    });*/
-
         const loadPromise = Promise.all([
             SettingsManager.loadSettings(),
-            Warehouse.loadWarehouse(`warehouses/${Utils.generateRandomId()}`)
+            loadWarehouse("NXhrW34QZpo20Oc3RmZw")
         ]);
 
         loadPromise.then((result) => {
             const [settings, warehouse] = result;
             console.log(`Settings Loaded:`, settings);
             console.log(`Warehouse Loaded:`, warehouse);
+
+            //warehouse.save(true, true, true)
+            //    .then(() => console.log("Done."));
 
             this.setState(state => {
                 return {

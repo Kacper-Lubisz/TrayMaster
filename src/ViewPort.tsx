@@ -317,7 +317,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
+        column.maxHeight = Math.max(change + column.maxHeight, 1);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -346,13 +346,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const change = changeType === "inc" ? 1
                                             : -1;
         if (column.parentWarehouse) {
-            const columnSizes = column.parentWarehouse.traySizes;
-            const medianIndex = Math.floor(columnSizes.length / 2);
+            const traySizes = column.parentWarehouse.traySizes;
+            const medianIndex = Math.floor(traySizes.length / 2);
 
-            const currentIndex = columnSizes.indexOf(column.size ?? columnSizes[medianIndex]);
+            const currentIndex = traySizes.indexOf(column.traySize ?? traySizes[medianIndex]);
 
-            const newIndex = Math.min(Math.max(change + currentIndex, 0), columnSizes.length - 1);
-            column.size = columnSizes[newIndex];
+            const newIndex = Math.min(Math.max(change + currentIndex, 0), traySizes.length - 1);
+            column.traySize = traySizes[newIndex];
 
             this.forceUpdate();
         }
@@ -366,11 +366,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
 
         if (column.parentWarehouse) {
-            const columnSizes = column.parentWarehouse.traySizes;
+            const traySizes = column.parentWarehouse.traySizes;
 
-            if (column.size) {
-                const currentIndex = columnSizes.indexOf(column.size);
-                return {inc: currentIndex !== columnSizes.length - 1, dec: currentIndex !== 0};
+            if (column.traySize) {
+                const currentIndex = traySizes.indexOf(column.traySize);
+                return {inc: currentIndex !== traySizes.length - 1, dec: currentIndex !== 0};
             } else {
                 return {inc: true, dec: true};
             }
@@ -409,7 +409,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         return <div
             style={{
                 order: order,
-                flexGrow: column.size?.sizeRatio ?? 1
+                flexGrow: column.traySize?.sizeRatio ?? 1
             }}
             className="column"
             key={order}
@@ -470,7 +470,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         >
                             <FontAwesomeIcon icon={plus}/>
                         </button>
-                        <div className="colHeightValue">{column.maxHeight ?? "?"}</div>
+                        <div className="colHeightValue">{column.maxHeight}</div>
                         <button
                             disabled={!possibleHeightChange.dec}
                             onClick={this.changeColumnHeight.bind(this, column, "dec")}
@@ -482,7 +482,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                 <div className="colWidth">
                     <div className="colControlHeader">Tray Width:&nbsp;
-                        <span className="colWidthValue">{stringToTitleCase(column.size?.label ?? "?")}</span>
+                        <span className="colWidthValue">{stringToTitleCase(column.traySize?.label ?? "?")}</span>
                     </div>
                     <div className="colWidthControls">
                         <button
