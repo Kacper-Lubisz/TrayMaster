@@ -2,14 +2,16 @@
 
 // Import system-wide variables: we need to know $accent-color here
 @import "./variables";
-// Import shelf view grid layout
-@import "./shelfviewgrid";
 // Import generic keyboard styling
 @import "./keyboard";
+// Import shelf view grid layout
+@import "./shelfviewgrid";
 // Import viewport styling
 @import "./viewport";
 // Import shelf edit styling
 @import "./shelfedit";
+// Import shelf navigator styling
+@import "./shelfnavigator";
 
 #topBar {
   background-color: #cccccc;
