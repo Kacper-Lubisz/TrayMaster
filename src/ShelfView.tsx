@@ -28,6 +28,7 @@ import {
     faWeightHanging
 } from "@fortawesome/free-solid-svg-icons";
 import Popup from "reactjs-popup";
+import classNames from "classnames";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {StandardDialog} from "./App";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
@@ -678,13 +679,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
      */
     private renderNavigationPopup(
         currentView: Zone | Shelf, possibleMoveDirections: Map<ShelfMoveDirection, boolean>): React.ReactNode {
-
-        // todo fixme this whooole thing needs a restyle 😉
         // the popup needs to be moved to over the navigator button
-
-        const maxBaySize: number = warehouse.bays.reduce((max, current) => {
-            return Math.max(max, current.shelves.length);
-        }, 0);
 
         const zone = currentView instanceof Zone ? currentView
                                                  : currentView.parentZone;
@@ -695,125 +690,112 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
             closeOnDocumentClick
             onClose={this.closeNavigator.bind(this)}
         >
-            <div className="modal">
-                <FontAwesomeIcon onClick={this.closeNavigator.bind(this)} icon={cross}/>
+            <div className="nav-modal">
+                <button id="nav-close-btn" onClick={this.closeNavigator.bind(this)}>
+                    <FontAwesomeIcon icon={cross}/>
+                </button>
 
                 {/* Top zone selector */}
-                <div id="zoneSelector" style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr"}}>
+                <div id="nav-zone-select">
                     <button
                         id="previousZone"
                         onClick={this.changeView.bind(this, "previousZone")}
                         disabled={!possibleMoveDirections.get("previousZone")}
-                    ><FontAwesomeIcon icon={leftArrow}/> Previous
+                    >
+                        <FontAwesomeIcon icon={leftArrow}/> &nbsp; Previous
                     </button>
                     <p className="centerText">{`${zone?.name ?? "?"} Zone`}</p>
                     <button
                         id="nextZone"
                         onClick={this.changeView.bind(this, "nextZone")}
                         disabled={!possibleMoveDirections.get("nextZone")}
-                    >Next <FontAwesomeIcon icon={rightArrow}/>
+                    >
+                        Next &nbsp; <FontAwesomeIcon icon={rightArrow}/>
                     </button>
                 </div>
 
                 {/* Grid of shelves in zone */}
-                {zone?.bays.length === 0 ? <> {/* todo fixme this needs a complete redesign */}
-                    <h1>This zone has no bays</h1>
-                </> : <div style={{display: "grid", gridGap: 5,}}>{
-                    zone?.bays.flatMap((bay, bayIndex) =>
-                        bay.shelves.map((shelf, shelfIndex) => {
-                            const colorForTextAndBorder = getTextColorForBackground(zone.color);
-                                return <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
-                                            style={{gridColumn: bayIndex + 1, gridRow: maxBaySize - shelfIndex + 1,}}
-                                >
-                                    <div
-                                        style={{
-                                            backgroundColor: zone.color,
-                                            color: colorForTextAndBorder,
-                                            borderWidth: this.state.currentView === shelf ? "2px" : 0,
-                                            borderColor: colorForTextAndBorder,
-                                        }}
-                                        className={`shelf ${this.state.currentView === shelf ? "currentShelf" : ""}`}
-                                        onClick={this.changeView.bind(this, shelf)}
-                                    ><p className="shelfLabel">{bay.name}{shelf.name}</p></div>
-                                </div>;
-                            }
-                        ))
-                }</div>}
+                <div id="nav-zone">{
+                    zone?.bays.length ? (() => {
+                        const textColor = getTextColorForBackground(zone.color);
+                        return zone.bays.flatMap((bay, bayIndex) =>
+                            <div className="nav-bay">
+                                {bay.shelves.map((shelf, shelfIndex) =>
+                                    <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
+                                         className={classNames("nav-shelf", {
+                                             "currentShelf": this.state.currentView === shelf
+                                         })} style={{
+                                        backgroundColor: zone.color,
+                                        color: textColor,
+                                        border: `1px solid ${textColor}`
+                                    }}
+                                         onClick={this.changeView.bind(this, shelf)}
+                                    >
+                                        <p className="shelfLabel">{bay.name}{shelf.name}</p>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })() : <h3>This zone has no bays</h3>
+                }</div>
 
                 {/* Arrow grid */}
-                <div id="arrowArea"
-                     style={{
-                         display: "grid",
-                     }}>
+                <div id="nav-arrow-area">
                     {this.state.currentView instanceof Shelf ?
                      <p
-                         id="arrowAreaLabel"
-                         className="centerText"
+                         id="arrow-area-label"
                          style={{
                              backgroundColor: zone?.color,
-                             gridRow: 2,
-                             gridColumn: 2,
-                             margin: 0,
                              color: getTextColorForBackground(
                                  zone?.color ?? "#ffffff"
                              )
                          }}
-                     >{this.state.currentView.toString()}</p> : undefined
+                     >{`Current Shelf: ${this.state.currentView.toString()}`}</p> : undefined
                     }
 
-                    <button id="trayUp"
+                    <button id="shelf-up"
+                            className="nav-arrow-btn"
                             disabled={!possibleMoveDirections.get("up")}
                             onClick={this.changeView.bind(this, "up")}
-                            style={{
-                                gridRow: 1,
-                                gridColumn: 2,
-                            }}
-                    ><FontAwesomeIcon icon={upArrow}/></button>
-                    <button id="trayDown"
-                            onClick={this.changeView.bind(this, "down")}
-                            style={{
-                                gridRow: 3,
-                                gridColumn: 2,
-                            }}
-                            disabled={!possibleMoveDirections.get("down")}
-                    ><FontAwesomeIcon icon={downArrow}/></button>
-                    <button id="trayLeft"
-                            onClick={this.changeView.bind(this, "left")}
-                            style={{
-                                gridRow: 2,
-                                gridColumn: 1,
-                            }}
-                            disabled={!possibleMoveDirections.get("left")}
-                    ><FontAwesomeIcon icon={leftArrow}/></button>
-                    <button id="trayRight"
-                            onClick={this.changeView.bind(this, "right")}
-                            style={{
-                                gridRow: 2,
-                                gridColumn: 3,
-                            }}
-                            disabled={!possibleMoveDirections.get("right")}
-                    ><FontAwesomeIcon icon={rightArrow}/></button>
-                </div>
-
-                {/* Next and previous shelf buttons */}
-                <div id="nextPrevious" style={{display: "grid"}}>
-                    <button id="previous"
-                            onClick={this.changeView.bind(this, "previousShelf")}
-                            style={{
-                                gridRow: 4,
-                                gridColumn: 1,
-                            }}
-                            disabled={!possibleMoveDirections.get("previousShelf")}
-                    ><FontAwesomeIcon icon={leftArrow}/> Previous
+                    >
+                        <FontAwesomeIcon icon={upArrow}/>
                     </button>
-                    <button id="next"
+                    <button id="shelf-down"
+                            className="nav-arrow-btn"
+                            onClick={this.changeView.bind(this, "down")}
+                            disabled={!possibleMoveDirections.get("down")}
+                    >
+                        <FontAwesomeIcon icon={downArrow}/>
+                    </button>
+                    <button id="shelf-left"
+                            className="nav-arrow-btn"
+                            onClick={this.changeView.bind(this, "left")}
+                            disabled={!possibleMoveDirections.get("left")}
+                    >
+                        <FontAwesomeIcon icon={leftArrow}/>
+                    </button>
+                    <button id="shelf-right"
+                            className="nav-arrow-btn"
+                            onClick={this.changeView.bind(this, "right")}
+                            disabled={!possibleMoveDirections.get("right")}
+                    >
+                        <FontAwesomeIcon icon={rightArrow}/>
+                    </button>
+
+                    {/* Next and previous shelf buttons */}
+                    <button id="nav-previous"
+                            className="nav-prev-next-btn"
+                            onClick={this.changeView.bind(this, "previousShelf")}
+                            disabled={!possibleMoveDirections.get("previousShelf")}
+                    >
+                        Previous Shelf
+                    </button>
+                    <button id="nav-next"
+                            className="nav-prev-next-btn"
                             onClick={this.changeView.bind(this, "nextShelf")}
-                            style={{
-                                gridRow: 4,
-                                gridColumn: 2,
-                            }}
                             disabled={!possibleMoveDirections.get("nextShelf")}
-                    >Next <FontAwesomeIcon icon={rightArrow}/>
+                    >
+                        Next Shelf
                     </button>
                 </div>
             </div>
