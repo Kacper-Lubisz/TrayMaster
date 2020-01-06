@@ -29,7 +29,7 @@ export interface KeyboardButtonProps {
  * @see KeyboardButtonProps
  */
 class KeyboardButton extends React.Component<KeyboardButtonProps> {
-    render() {
+    render(): React.ReactNode {
         return (
             <button disabled={this.props.disabled}
                     className={classNames("key-btn", {
@@ -76,11 +76,11 @@ export class Keyboard extends React.Component<KeyboardProps> {
     /**
      * Generate and return an object representing a full keyboard based on the given props
      */
-    generateBoard() {
+    generateBoard(): React.ReactNode[] {
         // calculate the number of rows we need
         const rowCount: number = Math.ceil(this.props.buttons.length / this.props.gridX);
 
-        return Array(rowCount).fill(0).map((_, r) => {
+        return Array(rowCount).fill(0).map((_, r): React.ReactNode => {
 
             // Work out how many buttons we've generated so far
             const pastButtons: number = r * this.props.gridX;
@@ -96,7 +96,7 @@ export class Keyboard extends React.Component<KeyboardProps> {
         });
     }
 
-    render() {
+    render(): React.ReactNode {
 
         return (
             <div className="keyboard" id={this.props.id}>
