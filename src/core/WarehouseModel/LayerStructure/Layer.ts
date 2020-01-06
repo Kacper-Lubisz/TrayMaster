@@ -4,6 +4,7 @@ import database from "../Database";
 import {TopLayer} from "./TopLayer";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
+import {WarehouseModel} from "../../WarehouseModel";
 
 
 export interface TopLevelFields {
@@ -20,7 +21,7 @@ export type LowerLayer = MiddleLayer<any, any, any, any> | BottomLayer<any, any>
 
 
 export abstract class Layer<TF> {
-    public abstract readonly layerID: number;
+    public abstract readonly layerID: WarehouseModel;
     public abstract readonly collectionName: string;
     public readonly id: string;
     protected fields: TF;

@@ -2,7 +2,7 @@ import {Layer, LayerIdentifiers, Layers, LowerLayer, UpperLayer} from "./Layer";
 import {BottomLayer} from "./BottomLayer";
 import database from "../Database";
 import Utils, {Queue} from "../Utils";
-import {breadthFirstLoad} from "../../WarehouseModel";
+import {breadthFirstLoad, WarehouseModel} from "../../WarehouseModel";
 
 
 export abstract class MiddleLayer<TU extends UpperLayer, T extends MiddleLayer<any, T, any, any>, TF, TL extends LowerLayer> extends Layer<TF> {
@@ -83,20 +83,20 @@ export abstract class MiddleLayer<TU extends UpperLayer, T extends MiddleLayer<a
         }
     }
 
-    public async depthFirstLoad(forceLoad = false, recursionCount = 0): Promise<this> {
+    public async depthFirstLoad(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
         await this.loadLayer(forceLoad);
 
-        if (recursionCount > 0) {
+        if (this.layerID >= minLayer) {
             await this.loadNextLayer(forceLoad);
             for (const child of this.children) {
-                await child.depthFirstLoad(forceLoad, recursionCount - 1);
+                await child.depthFirstLoad(forceLoad, minLayer);
             }
         }
 
         return this;
     }
 
-    public async load(minLayer = 0): Promise<this> {
+    public async load(minLayer: WarehouseModel = this.layerID): Promise<this> {
         await breadthFirstLoad.call(this, minLayer);
         return this;
     }

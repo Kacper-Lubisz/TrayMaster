@@ -10,10 +10,10 @@ import {BottomLayer} from "./WarehouseModel/LayerStructure/BottomLayer";
 import {MiddleLayer} from "./WarehouseModel/LayerStructure/MiddleLayer";
 import {Layers, LowerLayer, TopLevelFields, UpperLayer} from "./WarehouseModel/LayerStructure/Layer";
 
-export const ONLINE = true;
+export const ONLINE = false;
 
 
-export enum Layer {
+export enum WarehouseModel {
     tray,
     column,
     shelf,
@@ -112,8 +112,12 @@ async function generateRandomWarehouse(id: string): Promise<void> {
     }
 }
 
-
-export async function breadthFirstLoad(this: UpperLayer, minLayer: number = 0): Promise<void> {
+/**
+ * Load down to minLayer one layer at a time.
+ * @async
+ * @param minLayer - The number of the layer to load down to
+ */
+export async function breadthFirstLoad(this: UpperLayer, minLayer: WarehouseModel = 0): Promise<void> {
     this.loadLayer();
 
     const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
@@ -168,7 +172,7 @@ export let warehouse: Warehouse, warehouseLoaded = false;
 export async function loadWarehouse(id: string): Promise<Warehouse> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ONLINE) {
-        warehouse = await Warehouse.create(id).load(Layer.tray);
+        warehouse = await Warehouse.create(id).load(WarehouseModel.tray);
     } else {
         await generateRandomWarehouse(id);
         //await warehouse.save(true, true, true).then(() => console.log("Done."));

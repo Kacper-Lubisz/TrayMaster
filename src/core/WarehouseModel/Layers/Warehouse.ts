@@ -1,4 +1,4 @@
-import {Bay, Category, Column, Shelf, Tray, TraySize, Zone} from "../../WarehouseModel";
+import {Bay, Category, Column, WarehouseModel, Shelf, Tray, TraySize, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import database, {DatabaseCollection} from "../Database";
@@ -23,7 +23,7 @@ interface WarehouseFields {
 }
 
 export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
-    public readonly layerID: number = 5;
+    public readonly layerID: WarehouseModel = WarehouseModel.warehouse;
     public readonly collectionName = "warehouses";
     public readonly childCollectionName = "zones";
 
@@ -51,12 +51,12 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
         }
     }
 
-    public async depthFirstLoad(forceLoad = false, recursionCount = 0): Promise<this> {
+    public async depthFirstLoad(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
         await this.loadCollections();
-        return super.depthFirstLoad(forceLoad, recursionCount);
+        return super.depthFirstLoad(forceLoad, minLayer);
     }
 
-    public async load(minLayer = 0) {
+    public async load(minLayer = this.layerID) {
         await this.loadCollections();
         return super.load(minLayer);
     }

@@ -42,7 +42,7 @@ export abstract class BottomLayer<TU extends UpperLayer, TF> extends Layer<TF> {
         return this;
     }
 
-    public async load(minLayer = 0): Promise<this> {
+    public async load(): Promise<this> {
         await this.loadLayer(true);
         return this;
     }
