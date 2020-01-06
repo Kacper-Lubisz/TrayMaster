@@ -27,6 +27,7 @@ import {
     faWeightHanging
 } from "@fortawesome/free-solid-svg-icons";
 import Popup from "reactjs-popup";
+import classNames from "classnames";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {StandardDialog} from "./App";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
@@ -722,19 +723,19 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
 
                 {/* Grid of shelves in zone */}
                 <div id="nav-zone">{
-                    zone?.bays.length === 0 ? <h3>This zone has no bays</h3> : () => {
-                        const textColor = getTextColorForBackground(zone?.color ?? "#ffffff");
-                        return zone?.bays.flatMap((bay, bayIndex) =>
+                    zone?.bays.length ? (() => {
+                        const textColor = getTextColorForBackground(zone.color);
+                        return zone.bays.flatMap((bay, bayIndex) =>
                             <div className="nav-bay">
                                 {bay.shelves.map((shelf, shelfIndex) =>
                                     <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
-                                         className={`nav-shelf${this.state.currentView === shelf ? " currentShelf"
-                                                                                                 : ""}`}
-                                         style={{
-                                             backgroundColor: zone?.color,
-                                             color: textColor,
-                                             border: `1px solid ${textColor}`
-                                         }}
+                                         className={classNames("nav-shelf", {
+                                             "currentShelf": this.state.currentView === shelf
+                                         })} style={{
+                                        backgroundColor: zone.color,
+                                        color: textColor,
+                                        border: `1px solid ${textColor}`
+                                    }}
                                          onClick={this.changeView.bind(this, shelf)}
                                     >
                                         <p className="shelfLabel">{bay.name}{shelf.name}</p>
@@ -742,7 +743,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                                 )}
                             </div>
                         );
-                    }
+                    })() : <h3>This zone has no bays</h3>
                 }</div>
 
                 {/* Arrow grid */}
