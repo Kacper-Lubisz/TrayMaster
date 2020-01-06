@@ -1,8 +1,8 @@
-import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
-import {MiddleLayer} from "./MiddleLayer";
+import {Layer, LayerIdentifiers, Layers, LowerLayer} from "./Layer";
 import {BottomLayer} from "./BottomLayer";
 import database from "../Database";
 import Utils, {Queue} from "../Utils";
+import {breadthFirstLoad} from "../../WarehouseModel";
 
 
 export abstract class TopLayer<TF, T extends TopLayer<any, T, any>, TL extends LowerLayer> extends Layer<TF> {
@@ -75,13 +75,13 @@ export abstract class TopLayer<TF, T extends TopLayer<any, T, any>, TL extends L
     // noinspection DuplicatedCode
     public abstract async loadNextLayer(forceLoad: boolean): Promise<void>;
 
-    public async dfsLoad(forceLoad = false, recursionCount = 0): Promise<this> {
+    public async depthFirstLoad(forceLoad = false, recursionCount = 0): Promise<this> {
         await this.loadLayer(forceLoad);
 
         if (recursionCount > 0) {
             await this.loadNextLayer(forceLoad);
             for (const child of this.children) {
-                await child.dfsLoad(forceLoad, recursionCount - 1);
+                await child.depthFirstLoad(forceLoad, recursionCount - 1);
             }
         }
 
@@ -89,52 +89,7 @@ export abstract class TopLayer<TF, T extends TopLayer<any, T, any>, TL extends L
     }
 
     public async load(minLayer = 0): Promise<this> {
-        this.loadLayer();
-        const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
-            [this.collectionName, new Map<string, Layers>([[this.id, this]])]
-        ]);
-
-        type State = {
-            generator: (id: string, fields: unknown, parent: any) => LowerLayer,
-            collectionName: string,
-            childCollectionName: string,
-            topLevelChildCollectionPath: string
-        };
-
-        let currentState: State = {
-            generator: this.createChild,
-            collectionName: this.collectionName,
-            childCollectionName: this.childCollectionName,
-            topLevelChildCollectionPath: this.topLevelChildCollectionPath
-        };
-
-        for (let i = this.layerID - 1; i >= minLayer; i--) {
-            childMap.set(currentState.childCollectionName, new Map<string, Layers>());
-            let nextState: State | undefined;
-
-            for (const document of (await database().loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
-                let parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
-                if (parent && !(parent instanceof BottomLayer)) {
-                    const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
-                    childMap.get(currentState.childCollectionName)?.set(document.id, child);
-                    parent.children.push(child);
-                    if (child instanceof MiddleLayer && !nextState) {
-                        nextState = {
-                            generator: child.createChild,
-                            collectionName: child.collectionName,
-                            childCollectionName: child.childCollectionName,
-                            topLevelChildCollectionPath: child.topLevelChildCollectionPath
-                        };
-                    }
-                }
-            }
-
-            if (nextState) {
-                currentState = {...nextState};
-            } else {
-                break;
-            }
-        }
+        await breadthFirstLoad.call(this, minLayer);
         return this;
     }
 

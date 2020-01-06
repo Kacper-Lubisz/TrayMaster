@@ -5,11 +5,15 @@ import {Shelf} from "./WarehouseModel/Layers/Shelf";
 import {Column} from "./WarehouseModel/Layers/Column";
 import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
+import database from "./WarehouseModel/Database";
+import {BottomLayer} from "./WarehouseModel/LayerStructure/BottomLayer";
+import {MiddleLayer} from "./WarehouseModel/LayerStructure/MiddleLayer";
+import {Layers, LowerLayer, TopLevelFields, UpperLayer} from "./WarehouseModel/LayerStructure/Layer";
 
-export const ONLINE = false;
+export const ONLINE = true;
 
 
-export enum Layers {
+export enum Layer {
     tray,
     column,
     shelf,
@@ -17,8 +21,6 @@ export enum Layers {
     zone,
     warehouse
 }
-
-export const getRecursionCount = (currentLayer: Layers, targetLayer: Layers): number => currentLayer - targetLayer;
 
 export interface ExpiryRange {
     from: number;
@@ -85,7 +87,7 @@ const trayExpiries: ExpiryRange[] = [
 
 
 async function generateRandomWarehouse(id: string): Promise<void> {
-    warehouse = await Warehouse.create(id, "Chester-le-Street").dfsLoad();
+    warehouse = await Warehouse.create(id, "Chester-le-Street").depthFirstLoad();
     for (let i = 0; i < zoneColors.length; i++) {
         const zone = Zone.create(zoneColors[i].name, zoneColors[i].color, warehouse);
         for (let j = 0; j < 3; j++) {
@@ -110,12 +112,63 @@ async function generateRandomWarehouse(id: string): Promise<void> {
     }
 }
 
+
+export async function breadthFirstLoad(this: UpperLayer, minLayer: number = 0): Promise<void> {
+    this.loadLayer();
+
+    const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
+        [this.collectionName, new Map<string, Layers>([[this.id, this]])]
+    ]);
+
+    type State = {
+        generator: (id: string, fields: unknown, parent: any) => LowerLayer,
+        collectionName: string,
+        childCollectionName: string,
+        topLevelChildCollectionPath: string
+    };
+
+    let currentState: State = {
+        generator: this.createChild,
+        collectionName: this.collectionName,
+        childCollectionName: this.childCollectionName,
+        topLevelChildCollectionPath: this.topLevelChildCollectionPath
+    };
+
+    for (let i = this.layerID - 1; i >= minLayer; i--) {
+        childMap.set(currentState.childCollectionName, new Map<string, Layers>());
+        let nextState: State | undefined;
+
+        for (const document of (await database().loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            let parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
+            if (parent && !(parent instanceof BottomLayer)) {
+                const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
+                childMap.get(currentState.childCollectionName)?.set(document.id, child);
+                parent.children.push(child);
+                if (child instanceof MiddleLayer && !nextState) {
+                    nextState = {
+                        generator: child.createChild,
+                        collectionName: child.collectionName,
+                        childCollectionName: child.childCollectionName,
+                        topLevelChildCollectionPath: child.topLevelChildCollectionPath
+                    };
+                }
+            }
+        }
+
+        if (nextState) {
+            currentState = {...nextState};
+        } else {
+            break;
+        }
+    }
+}
+
 export let warehouse: Warehouse, warehouseLoaded = false;
 
 export async function loadWarehouse(id: string): Promise<Warehouse> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ONLINE) {
-        warehouse = await Warehouse.create(id).load(Layers.tray);
+        warehouse = await Warehouse.create(id).load(Layer.tray);
     } else {
         await generateRandomWarehouse(id);
         //await warehouse.save(true, true, true).then(() => console.log("Done."));

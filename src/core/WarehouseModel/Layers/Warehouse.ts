@@ -51,9 +51,9 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
         }
     }
 
-    public async dfsLoad(forceLoad = false, recursionCount = 0): Promise<this> {
+    public async depthFirstLoad(forceLoad = false, recursionCount = 0): Promise<this> {
         await this.loadCollections();
-        return super.dfsLoad(forceLoad, recursionCount);
+        return super.depthFirstLoad(forceLoad, recursionCount);
     }
 
     public async load(minLayer = 0) {

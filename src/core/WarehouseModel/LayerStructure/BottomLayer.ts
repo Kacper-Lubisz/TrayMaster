@@ -37,7 +37,7 @@ export abstract class BottomLayer<TU extends UpperLayer, TF> extends Layer<TF> {
         callback(this);
     }
 
-    public async dfsLoad(forceLoad = false): Promise<this> {
+    public async depthFirstLoad(forceLoad = false): Promise<this> {
         await this.loadLayer(forceLoad);
         return this;
     }

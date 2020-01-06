@@ -35,7 +35,7 @@ export abstract class Layer<TF> {
     }
 
     protected get changed(): boolean {
-        return deepEqual(this.fields, this.originalFields);
+        return !deepEqual(this.fields, this.originalFields);
     }
 
     public get path(): string {
@@ -60,7 +60,7 @@ export abstract class Layer<TF> {
         this.originalFields = Object.assign({}, this.fields);
     }
 
-    protected async loadLayer(forceLoad = true): Promise<this> {
+    public async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
             this.fields = (await database().loadDocument<TF>(this.path))?.fields ?? this.fields;
             this.fieldsSaved();
@@ -80,7 +80,7 @@ export abstract class Layer<TF> {
         }
     }
 
-    public abstract dfsLoad(forceLoad: boolean): Promise<this>;
+    public abstract depthFirstLoad(forceLoad: boolean): Promise<this>;
 
     public abstract load(): Promise<this>;
 
