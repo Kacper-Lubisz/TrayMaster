@@ -1,5 +1,6 @@
 import React from "react";
 import "./styles/loading.scss";
+import logoSkew from "./Logo_skew.svg";
 
 // VARIABLES DEFINING THE TRAY SPINNER GRID
 // DO NOT ADJUST THESE WITHOUT ADJUSTING THE CORRESPONDING VALUES IN "loading.scss"
@@ -121,7 +122,7 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
         return (
             <div id="loadingPage">
                 <div id="menu-header">
-                    <h1>Shelfmaster</h1>
+                    <img alt="TrayMaster logo" src={logoSkew}/>
                 </div>
                 <div id="loading-box">
                     <svg id="spinner">
