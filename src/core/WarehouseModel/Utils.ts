@@ -18,8 +18,8 @@ Warehouse
 export class Queue<T> {
     protected items: T[];
 
-    public constructor() {
-        this.items = [];
+    public constructor(items?: T[]) {
+        this.items = items ?? [];
     }
 
     public get length(): number {
@@ -47,8 +47,8 @@ export class Queue<T> {
 export class Stack<T> {
     private items: T[];
 
-    public constructor() {
-        this.items = [];
+    public constructor(items?: T[]) {
+        this.items = items ?? [];
     }
 
     public get length(): number {

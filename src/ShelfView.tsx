@@ -12,6 +12,7 @@ import {
     Tray,
     TrayCell,
     TraySpace,
+    warehouse,
     Warehouse,
     Zone
 } from "./core/WarehouseModel";
@@ -114,18 +115,12 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
      * @param shelf The shelf in question
      */
     private static currentShelfParentsAndIndices(shelf: Shelf): { warehouse: Warehouse; zone: Zone; bay: Bay; zoneIndex: number; bayIndex: number; shelfIndex: number } {
-        const warehouse: Warehouse | undefined = shelf.parentWarehouse;
         const zone: Zone | undefined = shelf.parentZone;
         const bay: Bay | undefined = shelf.parentBay;
 
-        if (!bay || !zone || !warehouse) {
-            throw Error("Failed to get parent (either bay, zone or warehouse) of current shelf");
-            //todo ensure that this is not nullable
-        }
-
-        const zoneIndex = warehouse.zones.indexOf(zone); // this is never null, it returns -1 if it can't be found
-        const bayIndex = zone.bays.indexOf(bay);
-        const shelfIndex = bay.shelves.indexOf(shelf);
+        const zoneIndex = zone.indexInParent; // this is never null, it returns -1 if it can't be found
+        const bayIndex = bay.indexInParent;
+        const shelfIndex = shelf.indexInParent;
         // this might need changing if these lists become unsorted
 
         if (zoneIndex === undefined || bayIndex === undefined || shelfIndex === undefined) {
@@ -687,9 +682,9 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
         // todo fixme this whooole thing needs a restyle 😉
         // the popup needs to be moved to over the navigator button
 
-        const maxBaySize: number = currentView.parentWarehouse?.bays.reduce((max, current) => {
+        const maxBaySize: number = warehouse.bays.reduce((max, current) => {
             return Math.max(max, current.shelves.length);
-        }, 0) ?? 0;
+        }, 0);
 
         const zone = currentView instanceof Zone ? currentView
                                                  : currentView.parentZone;

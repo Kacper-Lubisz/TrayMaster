@@ -10,8 +10,9 @@ interface ColumnFields {
 }
 
 export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
+    public readonly layerID: number = 1;
     public readonly collectionName = "columns";
-    protected readonly childCollectionName = "trays";
+    public readonly childCollectionName = "trays";
 
     /**
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
@@ -31,8 +32,12 @@ export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
         return new Column(id, fields as ColumnFields, parent);
     }
 
+    public toString(): string {
+        return `Column(${this.index}, ${this.traySize?.label}, ${this.maxHeight})`;
+    }
+
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    protected createChild = Tray.createFromFields;
+    public createChild = Tray.createFromFields;
 
     //#region Field Getters and Setters
     public get index(): number {
@@ -62,20 +67,20 @@ export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
     //#endregion
 
     //#region Parent Getters
-    get parentShelf(): Shelf | undefined {
+    get parentShelf(): Shelf {
         return this.parent;
     }
 
-    get parentBay(): Bay | undefined {
-        return this.parentShelf?.parentBay;
+    get parentBay(): Bay {
+        return this.parentShelf.parentBay;
     }
 
-    get parentZone(): Zone | undefined {
-        return this.parentBay?.parentZone;
+    get parentZone(): Zone {
+        return this.parentBay.parentZone;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
-        return this.parentZone?.parentWarehouse;
+    get parentWarehouse(): Warehouse {
+        return this.parentZone.parentWarehouse;
     }
 
     //#endregion

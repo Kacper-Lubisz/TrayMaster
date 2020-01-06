@@ -12,6 +12,7 @@ interface TrayFields {
 }
 
 export class Tray extends BottomLayer<Column, TrayFields> {
+    public readonly layerID: number = 0;
     public readonly collectionName = "trays";
 
     public static create(parent: Column, index: number, category?: Category, expiry?: ExpiryRange, weight?: number,
@@ -28,6 +29,10 @@ export class Tray extends BottomLayer<Column, TrayFields> {
 
     public static createFromFields(id: string, fields: unknown, parent: Column): Tray {
         return new Tray(id, fields as TrayFields, parent);
+    }
+
+    public toString(): string {
+        return `Tray(${this.index}, ${this.category?.name}, ${this.expiry?.label}, ${this.weight} kg, "${this.customField}")`;
     }
 
     //#region Field Getters and Setters
@@ -74,24 +79,24 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     //#endregion
 
     //#region Parent Getters
-    get parentColumn(): Column | undefined {
+    get parentColumn(): Column {
         return this.parent;
     }
 
-    get parentShelf(): Shelf | undefined {
-        return this.parentColumn?.parentShelf;
+    get parentShelf(): Shelf {
+        return this.parentColumn.parentShelf;
     }
 
-    get parentBay(): Bay | undefined {
-        return this.parentShelf?.parentBay;
+    get parentBay(): Bay {
+        return this.parentShelf.parentBay;
     }
 
-    get parentZone(): Zone | undefined {
-        return this.parentBay?.parentZone;
+    get parentZone(): Zone {
+        return this.parentBay.parentZone;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
-        return this.parentZone?.parentWarehouse;
+    get parentWarehouse(): Warehouse {
+        return this.parentZone.parentWarehouse;
     }
 
     //#endregion

@@ -8,7 +8,7 @@ import {
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/WarehouseModel";
+import {Column, Shelf, Tray, TrayCell, warehouse, Warehouse, Zone} from "./core/WarehouseModel";
 import classNames from "classnames/bind";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 import {getExpiryColor} from "./utils/getExpiryColor";
@@ -345,17 +345,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     changeColumnSize(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        if (column.parentWarehouse) {
-            const traySizes = column.parentWarehouse.traySizes;
-            const medianIndex = Math.floor(traySizes.length / 2);
 
-            const currentIndex = traySizes.indexOf(column.traySize ?? traySizes[medianIndex]);
+        const traySizes = warehouse.traySizes;
+        const medianIndex = Math.floor(traySizes.length / 2);
 
-            const newIndex = Math.min(Math.max(change + currentIndex, 0), traySizes.length - 1);
-            column.traySize = traySizes[newIndex];
+        const currentIndex = traySizes.indexOf(column.traySize ?? traySizes[medianIndex]);
 
-            this.forceUpdate();
-        }
+        const newIndex = Math.min(Math.max(change + currentIndex, 0), traySizes.length - 1);
+        column.traySize = traySizes[newIndex];
+
+        this.forceUpdate();
     }
 
     /**
@@ -364,18 +363,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
     getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
+        const traySizes = warehouse.traySizes;
 
-        if (column.parentWarehouse) {
-            const traySizes = column.parentWarehouse.traySizes;
-
-            if (column.traySize) {
-                const currentIndex = traySizes.indexOf(column.traySize);
-                return {inc: currentIndex !== traySizes.length - 1, dec: currentIndex !== 0};
-            } else {
-                return {inc: true, dec: true};
-            }
+        if (column.traySize) {
+            const currentIndex = traySizes.indexOf(column.traySize);
+            return {inc: currentIndex !== traySizes.length - 1, dec: currentIndex !== 0};
         } else {
-            return {inc: false, dec: false};
+            return {inc: true, dec: true};
         }
     }
 

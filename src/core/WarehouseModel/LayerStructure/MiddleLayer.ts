@@ -1,20 +1,19 @@
-import {Layer, LayerIdentifiers} from "./Layer";
-import {TopLayer} from "./TopLayer";
+import {Layer, LayerIdentifiers, Layers, LowerLayer, UpperLayer} from "./Layer";
 import {BottomLayer} from "./BottomLayer";
 import database from "../Database";
-import Utils from "../Utils";
+import Utils, {Queue} from "../Utils";
 
 
-export abstract class MiddleLayer<TU extends TopLayer<any, any, any> | MiddleLayer<any, any, any, any>, T extends MiddleLayer<any, T, any, any>, TF, TL extends MiddleLayer<any, any, any, any> | BottomLayer<any, any>> extends Layer<TF> {
-    protected abstract readonly childCollectionName: string = "";
-    protected parent?: TU;
-    protected children: TL[];
+export abstract class MiddleLayer<TU extends UpperLayer, T extends MiddleLayer<any, T, any, any>, TF, TL extends LowerLayer> extends Layer<TF> {
+    public abstract readonly childCollectionName: string = "";
+    public parent: TU;
+    public children: TL[];
     protected childrenLoaded: boolean;
 
-    protected constructor(id: string, fields: TF, parent?: TU, children?: TL[]) {
+    protected constructor(id: string, fields: TF, parent: TU, children: TL[] = []) {
         super(id, fields);
         this.parent = parent;
-        this.children = children || [];
+        this.children = children;
         this.childrenLoaded = typeof children !== "undefined";
     }
 
@@ -26,8 +25,20 @@ export abstract class MiddleLayer<TU extends TopLayer<any, any, any> | MiddleLay
         return this.parent?.topLayerPath ?? "";
     }
 
+    public get topLevelChildCollectionPath(): string {
+        return Utils.joinPaths(this.topLayerPath, this.childCollectionName);
+    }
+
     public get childCollectionPath(): string {
         return Utils.joinPaths(this.path, this.childCollectionName);
+    }
+
+    public get indexInParent(): number {
+        return this.parent.getChildIndex(this);
+    }
+
+    public getChildIndex(child: TL): number {
+        return this.children.indexOf(child);
     }
 
     public get layerIdentifiers(): LayerIdentifiers {
@@ -36,17 +47,34 @@ export abstract class MiddleLayer<TU extends TopLayer<any, any, any> | MiddleLay
         return refs;
     }
 
-    public dfs(callback: (layer: Layer<any>) => void): void {
+    public dfs(callback: (layer: Layers) => void, minLayer = 0): void {
         callback(this);
-        for (const child of this.children) {
-            child.dfs(callback);
+        if (minLayer <= this.layerID) {
+            for (const child of this.children) {
+                child.dfs(callback, minLayer);
+            }
         }
     }
 
-    // noinspection DuplicatedCode
+    public bfs(callback: (layer: Layers) => void): void {
+        const layerQueue: Queue<LowerLayer> = new Queue<LowerLayer>([this]);
+        while (!layerQueue.empty) {
+            const layer: Layers | undefined = layerQueue.dequeue();
+            if (layer) {
+                callback(layer);
+
+                if (!(layer instanceof BottomLayer)) {
+                    for (const child of layer.children) {
+                        layerQueue.enqueue(child);
+                    }
+                }
+            }
+        }
+    }
+
     public async loadNextLayer(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database().db.collection(this.childCollectionPath)
+            const query = database().db.collection(this.topLevelChildCollectionPath)
                                     .where(`layerIdentifiers.${this.collectionName}`, "==", this.id);
             this.children = (await database().loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
@@ -54,15 +82,20 @@ export abstract class MiddleLayer<TU extends TopLayer<any, any, any> | MiddleLay
         }
     }
 
-    public async load(forceLoad = false, recurse = false): Promise<this> {
+    public async dfsLoad(forceLoad = false, recursionCount = 0): Promise<this> {
         await this.loadLayer(forceLoad);
 
-        if (recurse) {
+        if (recursionCount > 0) {
             await this.loadNextLayer(forceLoad);
             for (const child of this.children) {
-                await child.load(forceLoad, recurse);
+                await child.dfsLoad(forceLoad, recursionCount - 1);
             }
         }
+
+        return this;
+    }
+
+    public async load(minLayer = 0): Promise<this> {
 
         return this;
     }
@@ -82,5 +115,5 @@ export abstract class MiddleLayer<TU extends TopLayer<any, any, any> | MiddleLay
         }
     }
 
-    protected abstract createChild: (id: string, fields: unknown, parent: any) => TL;
+    public abstract createChild: (id: string, fields: unknown, parent: any) => TL;
 }

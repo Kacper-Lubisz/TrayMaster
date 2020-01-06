@@ -43,9 +43,6 @@ class App extends React.Component<any, AppState> {
             console.log(`Settings Loaded:`, settings);
             console.log(`Warehouse Loaded:`, warehouse);
 
-            //warehouse.save(true, true, true)
-            //    .then(() => console.log("Done."));
-
             this.setState(state => {
                 return {
                     ...state,

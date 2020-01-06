@@ -1,14 +1,12 @@
-import {Layer, LayerIdentifiers} from "./Layer";
-import {TopLayer} from "./TopLayer";
-import {MiddleLayer} from "./MiddleLayer";
+import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
 import database from "../Database";
 import Utils from "../Utils";
 
 
-export abstract class BottomLayer<TU extends TopLayer<any, any, any> | MiddleLayer<any, any, any, any>, TF> extends Layer<TF> {
-    protected parent?: TU;
+export abstract class BottomLayer<TU extends UpperLayer, TF> extends Layer<TF> {
+    public parent: TU;
 
-    protected constructor(id: string, fields: TF, parent?: TU) {
+    protected constructor(id: string, fields: TF, parent: TU) {
         super(id, fields);
         this.parent = parent;
     }
@@ -27,17 +25,30 @@ export abstract class BottomLayer<TU extends TopLayer<any, any, any> | MiddleLay
         return refs;
     }
 
-    public dfs(callback: (layer: Layer<any>) => void): void {
+    public get indexInParent(): number {
+        return this.parent.getChildIndex(this);
+    }
+
+    public dfs(callback: (layer: Layers) => void): void {
         callback(this);
     }
 
-    public async load(forceLoad = false, recurse = false): Promise<this> {
+    public bfs(callback: (layer: Layers) => void): void {
+        callback(this);
+    }
+
+    public async dfsLoad(forceLoad = false): Promise<this> {
         await this.loadLayer(forceLoad);
         return this;
     }
 
+    public async load(minLayer = 0): Promise<this> {
+        await this.loadLayer(true);
+        return this;
+    }
+
     public async save(
-        forceSave = false, recurse = false, commitAtEnd = false): Promise<void> {
+        forceSave = false, commitAtEnd = false): Promise<void> {
         await this.saveLayer(forceSave);
 
         if (commitAtEnd) {

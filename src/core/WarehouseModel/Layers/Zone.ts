@@ -1,6 +1,5 @@
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import {Bay, Column, Shelf, Tray, Warehouse} from "../../WarehouseModel";
-import database from "../Database";
 import Utils from "../Utils";
 
 
@@ -10,8 +9,9 @@ interface ZoneFields {
 }
 
 export class Zone extends MiddleLayer<Warehouse, Zone, ZoneFields, Bay> {
+    public readonly layerID: number = 4;
     public readonly collectionName = "zones";
-    protected readonly childCollectionName = "bays";
+    public readonly childCollectionName = "bays";
 
     public static create(name: string, color: string, parent: Warehouse): Zone {
         return new Zone(Utils.generateRandomId(), {name, color}, parent);
@@ -22,13 +22,17 @@ export class Zone extends MiddleLayer<Warehouse, Zone, ZoneFields, Bay> {
     }
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    protected createChild = Bay.createFromFields;
+    public createChild = Bay.createFromFields;
 
-    protected async saveLayer(forceSave = false): Promise<void> {
-        if (this.changed || forceSave) {
-            await database().set(this.path, this.fields);
-            this.fieldsSaved();
-        }
+    // protected async saveLayer(forceSave = false): Promise<void> {
+    //     if (this.changed || forceSave) {
+    //         await database().set(this.path, this.fields);
+    //         this.fieldsSaved();
+    //     }
+    // }
+
+    public toString(): string {
+        return this.name;
     }
 
     //#region Field Getters and Setters
@@ -51,7 +55,7 @@ export class Zone extends MiddleLayer<Warehouse, Zone, ZoneFields, Bay> {
     //#endregion
 
     //#region Parent Getters
-    get parentWarehouse(): Warehouse | undefined {
+    get parentWarehouse(): Warehouse {
         return this.parent;
     }
 

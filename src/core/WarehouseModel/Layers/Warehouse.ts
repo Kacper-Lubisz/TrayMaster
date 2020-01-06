@@ -23,8 +23,9 @@ interface WarehouseFields {
 }
 
 export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
+    public readonly layerID: number = 5;
     public readonly collectionName = "warehouses";
-    protected readonly childCollectionName = "zones";
+    public readonly childCollectionName = "zones";
 
     protected readonly categoryCollection: DatabaseCollection<Category>;
     protected readonly traySizeCollection: DatabaseCollection<TraySize>;
@@ -35,14 +36,32 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
         this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"));
     }
 
-    public static create(id: string, name: string): Warehouse {
-        return new Warehouse(id, {name});
+    public static create(id: string, name?: string): Warehouse {
+        return new Warehouse(id, {name: name ?? ""});
     }
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    protected createChild = Zone.createFromFields;
+    public createChild = Zone.createFromFields;
 
-    public async load(forceLoad = false, recurse = false): Promise<this> {
+    public async loadNextLayer(forceLoad = false): Promise<void> {
+        if (!this.childrenLoaded || forceLoad) {
+            const query = database().db.collection(this.topLevelChildCollectionPath);
+            this.children = (await database().loadQuery<unknown>(query))
+                .map(document => this.createChild(document.id, document.fields, this));
+            this.childrenLoaded = true;
+        }
+    }
+
+    public async dfsLoad(forceLoad = false, recursionCount = 0): Promise<this> {
+        await this.loadCollections();
+        return super.dfsLoad(forceLoad, recursionCount);
+    }
+
+    public async load(minLayer = 0) {
+        await this.loadCollections();
+        return super.load(minLayer);
+    }
+
+    private async loadCollections(): Promise<void> {
         await this.categoryCollection.load();
         await this.traySizeCollection.load();
 
@@ -57,8 +76,10 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
                 this.traySizeCollection.add(Object.assign({}, mockTraySize));
             }
         }
+    }
 
-        return super.load(forceLoad, recurse);
+    public toString(): string {
+        return this.name;
     }
 
     //#region Categories

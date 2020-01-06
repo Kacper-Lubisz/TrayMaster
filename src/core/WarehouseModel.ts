@@ -9,6 +9,17 @@ import Utils from "./WarehouseModel/Utils";
 export const ONLINE = false;
 
 
+export enum Layers {
+    tray,
+    column,
+    shelf,
+    bay,
+    zone,
+    warehouse
+}
+
+export const getRecursionCount = (currentLayer: Layers, targetLayer: Layers): number => currentLayer - targetLayer;
+
 export interface ExpiryRange {
     from: number;
     to: number;
@@ -73,8 +84,8 @@ const trayExpiries: ExpiryRange[] = [
 ];
 
 
-async function generateWarehouse(id: string): Promise<Warehouse> {
-    warehouse = await Warehouse.create(id, "Chester-le-Street").load();
+async function generateRandomWarehouse(id: string): Promise<void> {
+    warehouse = await Warehouse.create(id, "Chester-le-Street").dfsLoad();
     for (let i = 0; i < zoneColors.length; i++) {
         const zone = Zone.create(zoneColors[i].name, zoneColors[i].color, warehouse);
         for (let j = 0; j < 3; j++) {
@@ -97,13 +108,18 @@ async function generateWarehouse(id: string): Promise<Warehouse> {
         }
         warehouse.zones.push(zone);
     }
-    return warehouse;
 }
 
 export let warehouse: Warehouse, warehouseLoaded = false;
 
 export async function loadWarehouse(id: string): Promise<Warehouse> {
-    warehouse = await generateWarehouse(id);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (ONLINE) {
+        warehouse = await Warehouse.create(id).load(Layers.tray);
+    } else {
+        await generateRandomWarehouse(id);
+        //await warehouse.save(true, true, true).then(() => console.log("Done."));
+    }
     warehouseLoaded = true;
     return warehouse;
 }

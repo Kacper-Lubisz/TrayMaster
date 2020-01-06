@@ -35,6 +35,18 @@ export class DatabaseDocument<TF> {
     public get path(): string {
         return Utils.joinPaths(this.collectionPath, this.id);
     }
+
+    /*    public get parentPath(): string {
+            return this.collectionPath.split("/").slice(0, -1).join("/");
+        }
+
+        public get parentID(): string {
+            return this.collectionPath.split("/").slice(0, -1).pop() || "";
+        }
+
+        public get collectionName(): string {
+            return this.collectionPath.split("/").pop() || "";
+        }*/
 }
 
 class Firebase {

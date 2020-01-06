@@ -1,9 +1,12 @@
 import Utils from "../Utils";
 import deepEqual from "deep-equal";
 import database from "../Database";
+import {TopLayer} from "./TopLayer";
+import {MiddleLayer} from "./MiddleLayer";
+import {BottomLayer} from "./BottomLayer";
 
 
-interface TopLevelFields {
+export interface TopLevelFields {
     layerIdentifiers: LayerIdentifiers;
 }
 
@@ -11,10 +14,15 @@ export interface LayerIdentifiers {
     [collectionName: string]: string;
 }
 
+export type Layers = TopLayer<any, any, any> | MiddleLayer<any, any, any, any> | BottomLayer<any, any>;
+export type UpperLayer = TopLayer<any, any, any> | MiddleLayer<any, any, any, any>;
+export type LowerLayer = MiddleLayer<any, any, any, any> | BottomLayer<any, any>;
+
 
 export abstract class Layer<TF> {
-    protected abstract readonly collectionName: string;
-    protected readonly id: string;
+    public abstract readonly layerID: number;
+    public abstract readonly collectionName: string;
+    public readonly id: string;
     protected fields: TF;
     private originalFields: TF;
     private loaded: boolean;
@@ -44,31 +52,37 @@ export abstract class Layer<TF> {
 
     public abstract get layerIdentifiers(): LayerIdentifiers;
 
-    public abstract dfs(callback: (layer: Layer<any>) => void): void;
+    public abstract dfs(callback: (layer: Layers) => void): void;
+
+    public abstract bfs(callback: (layer: Layers) => void): void;
 
     protected fieldsSaved(): void {
         this.originalFields = Object.assign({}, this.fields);
     }
 
-    protected async loadLayer(forceLoad = true): Promise<void> {
+    protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
             this.fields = (await database().loadDocument<TF>(this.path))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
         }
+        return this;
     }
 
     protected async saveLayer(forceSave = false): Promise<void> {
         if (this.changed || forceSave) {
             await database().set(this.path, this.fields);
-            const fields: TopLevelFields & TF = this.fields as TopLevelFields & TF;
-            fields.layerIdentifiers = this.layerIdentifiers;
-            await database().set(this.topLevelPath, fields);
+            await database().set(this.topLevelPath, {
+                ...this.fields,
+                layerIdentifiers: this.layerIdentifiers
+            });
             this.fieldsSaved();
         }
     }
 
-    public abstract load(forceLoad: boolean, recurse: boolean): Promise<this>;
+    public abstract dfsLoad(forceLoad: boolean): Promise<this>;
 
-    public abstract save(forceSave: boolean, recurse: boolean, commitAtEnd: boolean): Promise<void>;
+    public abstract load(): Promise<this>;
+
+    public abstract save(forceSave: boolean, commitAtEnd: boolean): Promise<void>;
 }

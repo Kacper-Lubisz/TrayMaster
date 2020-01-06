@@ -9,8 +9,9 @@ interface ShelfFields {
 }
 
 export class Shelf extends MiddleLayer<Bay, Shelf, ShelfFields, Column> {
+    public readonly layerID: number = 2;
     public readonly collectionName = "shelves";
-    protected readonly childCollectionName = "columns";
+    public readonly childCollectionName = "columns";
 
     public static create(index: number, name: string, parent: Bay): Shelf {
         return new Shelf(Utils.generateRandomId(), {index, name}, parent);
@@ -21,10 +22,10 @@ export class Shelf extends MiddleLayer<Bay, Shelf, ShelfFields, Column> {
     }
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    protected createChild = Column.createFromFields;
+    public createChild = Column.createFromFields;
 
     public toString(): string {
-        return `${this.parentZone?.name} ${this.parentBay?.name}${this.name}`;
+        return `${this.parentZone?.toString()} ${this.parentBay?.toString()}${this.name}`;
     }
 
     //#region Field Getters and Setters
@@ -47,16 +48,16 @@ export class Shelf extends MiddleLayer<Bay, Shelf, ShelfFields, Column> {
     //#endregion
 
     //#region Parent Getters
-    get parentBay(): Bay | undefined {
+    get parentBay(): Bay {
         return this.parent;
     }
 
-    get parentZone(): Zone | undefined {
-        return this.parentBay?.parentZone;
+    get parentZone(): Zone {
+        return this.parentBay.parentZone;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
-        return this.parentZone?.parentWarehouse;
+    get parentWarehouse(): Warehouse {
+        return this.parentZone.parentWarehouse;
     }
 
     //#endregion

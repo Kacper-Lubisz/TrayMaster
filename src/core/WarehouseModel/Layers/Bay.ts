@@ -9,8 +9,9 @@ interface BayFields {
 }
 
 export class Bay extends MiddleLayer<Zone, Bay, BayFields, Shelf> {
+    public readonly layerID: number = 3;
     public readonly collectionName = "bays";
-    protected readonly childCollectionName = "shelves";
+    public readonly childCollectionName = "shelves";
 
     public static create(index: number, name: string, parent: Zone): Bay {
         return new Bay(Utils.generateRandomId(), {index, name}, parent);
@@ -20,8 +21,11 @@ export class Bay extends MiddleLayer<Zone, Bay, BayFields, Shelf> {
         return new Bay(id, fields as BayFields, parent);
     }
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    protected createChild = Shelf.createFromFields;
+    public toString(): string {
+        return this.name;
+    }
+
+    public createChild = Shelf.createFromFields;
 
     //#region Field Getters and Setters
     public get index(): number {
@@ -43,12 +47,12 @@ export class Bay extends MiddleLayer<Zone, Bay, BayFields, Shelf> {
     //#endregion
 
     //#region Parent Getters
-    get parentZone(): Zone | undefined {
+    get parentZone(): Zone {
         return this.parent;
     }
 
-    get parentWarehouse(): Warehouse | undefined {
-        return this.parentZone?.parentWarehouse;
+    get parentWarehouse(): Warehouse {
+        return this.parentZone.parentWarehouse;
     }
 
     //#endregion
