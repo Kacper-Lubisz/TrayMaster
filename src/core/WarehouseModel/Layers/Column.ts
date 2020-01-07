@@ -19,7 +19,7 @@ interface ColumnFields {
     maxHeight: number;
 }
 
-export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
+export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public readonly layerID: WarehouseModel = WarehouseModel.column;
     public readonly collectionName = "columns";
     public readonly childCollectionName = "trays";

@@ -20,9 +20,9 @@ export interface LayerIdentifiers {
     [collectionName: string]: string;
 }
 
-export type Layers = TopLayer<any, any, any> | MiddleLayer<any, any, any, any> | BottomLayer<any, any>;
-export type UpperLayer = TopLayer<any, any, any> | MiddleLayer<any, any, any, any>;
-export type LowerLayer = MiddleLayer<any, any, any, any> | BottomLayer<any, any>;
+export type Layers = TopLayer<any, any> | MiddleLayer<any, any, any> | BottomLayer<any, any>;
+export type UpperLayer = TopLayer<any, any> | MiddleLayer<any, any, any>;
+export type LowerLayer = MiddleLayer<any, any, any> | BottomLayer<any, any>;
 
 export abstract class Layer<TF> {
     public abstract readonly layerID: WarehouseModel;

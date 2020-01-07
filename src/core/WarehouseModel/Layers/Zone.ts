@@ -8,7 +8,7 @@ interface ZoneFields {
     color: string;
 }
 
-export class Zone extends MiddleLayer<Warehouse, Zone, ZoneFields, Bay> {
+export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
     public readonly layerID: WarehouseModel = WarehouseModel.zone;
     public readonly collectionName = "zones";
     public readonly childCollectionName = "bays";

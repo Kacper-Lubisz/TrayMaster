@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import * as fb from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
@@ -16,14 +15,14 @@ type Firestore = fb.firestore.Firestore;
 //type Authentication = fb.auth.Auth; // todo: authentication
 
 
-enum OperationType {
+enum WriteOperation {
     set,
     update,
     delete
 }
 
 interface DatabaseOperation<T> {
-    type: OperationType;
+    type: WriteOperation;
     path: string;
     obj?: T;
 }
@@ -35,18 +34,6 @@ export class DatabaseDocument<TF> {
     public get path(): string {
         return Utils.joinPaths(this.collectionPath, this.id);
     }
-
-    /*    public get parentPath(): string {
-            return this.collectionPath.split("/").slice(0, -1).join("/");
-        }
-
-        public get parentID(): string {
-            return this.collectionPath.split("/").slice(0, -1).pop() || "";
-        }
-
-        public get collectionName(): string {
-            return this.collectionPath.split("/").pop() || "";
-        }*/
 }
 
 class Firebase {
@@ -76,24 +63,15 @@ class Firebase {
 
     //#region Writing
     public async update<T>(path: string, obj: T): Promise<void> {
-        this.dbChangeQueue.enqueue({type: OperationType.update, path: path, obj: obj});
-        await this.checkForOverflow();
+        this.dbChangeQueue.enqueue({type: WriteOperation.update, path: path, obj: obj});
     }
 
     public async set<T>(path: string, obj: T): Promise<void> {
-        this.dbChangeQueue.enqueue({type: OperationType.set, path: path, obj: obj});
-        await this.checkForOverflow();
+        this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path, obj: obj});
     }
 
     public async delete(path: string): Promise<void> {
-        this.dbChangeQueue.enqueue({type: OperationType.set, path: path});
-        await this.checkForOverflow();
-    }
-
-    public async checkForOverflow(): Promise<void> {
-        if (this.dbChangeQueue.length === 500) {
-            await this.commit();
-        }
+        this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path});
     }
 
     public async commit(): Promise<void> {
@@ -103,23 +81,22 @@ class Firebase {
                 const change: DatabaseOperation<any> | undefined = this.dbChangeQueue.dequeue();
                 if (typeof change !== "undefined") {
                     switch (change.type) {
-                        case OperationType.set:
+                        case WriteOperation.set:
                             if (typeof change.obj !== "undefined") {
                                 batch.set(this.db.doc(change.path), change.obj);
                             }
                             break;
-                        case OperationType.update:
+                        case WriteOperation.update:
                             if (typeof change.obj !== "undefined") {
                                 batch.update(this.db.doc(change.path), change.obj);
                             }
                             break;
-                        case OperationType.delete:
+                        case WriteOperation.delete:
                             batch.delete(this.db.doc(change.path));
                             break;
                     }
                 }
             }
-            console.log("Committing...");
             await batch.commit();
         } else {
             this.dbChangeQueue.clear();

@@ -116,27 +116,13 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
      * @param shelf The shelf in question
      */
     private static currentShelfParentsAndIndices(shelf: Shelf): { warehouse: Warehouse; zone: Zone; bay: Bay; zoneIndex: number; bayIndex: number; shelfIndex: number } {
-        const zone: Zone | undefined = shelf.parentZone;
-        const bay: Bay | undefined = shelf.parentBay;
-
-        const zoneIndex = zone.indexInParent; // this is never null, it returns -1 if it can't be found
-        const bayIndex = bay.indexInParent;
-        const shelfIndex = shelf.indexInParent;
-        // this might need changing if these lists become unsorted
-
-        if (zoneIndex === undefined || bayIndex === undefined || shelfIndex === undefined) {
-
-            throw Error("Failed to get the indices of children from warehouse to current shelf (zone, bay or, shelf)");
-            //todo ensure that this is not nullable
-        }
-
         return {
             warehouse: warehouse,
-            zone: zone,
-            bay: bay,
-            zoneIndex: zoneIndex,
-            bayIndex: bayIndex,
-            shelfIndex: shelfIndex
+            zone: shelf.parentZone,
+            bay: shelf.parentBay,
+            zoneIndex: shelf.parentZone.indexInParent,
+            bayIndex: shelf.parentBay.index,
+            shelfIndex: shelf.index
         };
 
     }

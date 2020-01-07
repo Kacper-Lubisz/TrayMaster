@@ -7,7 +7,7 @@ interface ShelfFields {
     name: string;
 }
 
-export class Shelf extends MiddleLayer<Bay, Shelf, ShelfFields, Column> {
+export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     public readonly layerID: WarehouseModel = WarehouseModel.shelf;
     public readonly collectionName = "shelves";
     public readonly childCollectionName = "columns";
@@ -34,7 +34,7 @@ export class Shelf extends MiddleLayer<Bay, Shelf, ShelfFields, Column> {
     public createChild = Column.createFromFields;
 
     public toString(): string {
-        return `${this.parentZone?.toString()} ${this.parentBay?.toString()}${this.name}`;
+        return `${this.parentZone.toString()} ${this.parentBay.toString()}${this.name}`;
     }
 
     //#region Field Getters and Setters

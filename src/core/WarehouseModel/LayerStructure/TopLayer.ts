@@ -5,7 +5,7 @@ import {WarehouseModel} from "../../WarehouseModel";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
 
-export abstract class TopLayer<TF, T extends TopLayer<any, T, any>, TL extends LowerLayer> extends Layer<TF> {
+export abstract class TopLayer<TF, TL extends LowerLayer> extends Layer<TF> {
     public abstract readonly childCollectionName: string = "";
     public children: TL[];
     public childrenLoaded: boolean;
@@ -33,13 +33,6 @@ export abstract class TopLayer<TF, T extends TopLayer<any, T, any>, TL extends L
      */
     public get topLevelChildCollectionPath(): string {
         return Utils.joinPaths(this.topLayerPath, this.childCollectionName);
-    }
-
-    /**
-     * The database path of the collection of children
-     */
-    public get childCollectionPath(): string {
-        return Utils.joinPaths(this.path, this.childCollectionName);
     }
 
     /**
@@ -84,6 +77,7 @@ export abstract class TopLayer<TF, T extends TopLayer<any, T, any>, TL extends L
 
     public abstract async loadChildren(forceLoad: boolean): Promise<void>;
 
+    // noinspection DuplicatedCode
     /**
      * Load down to minLayer a layer at a time (using the top-level structure in the database).
      * @async

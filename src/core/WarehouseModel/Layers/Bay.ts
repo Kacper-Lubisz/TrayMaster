@@ -7,7 +7,7 @@ interface BayFields {
     name: string;
 }
 
-export class Bay extends MiddleLayer<Zone, Bay, BayFields, Shelf> {
+export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
     public readonly layerID: WarehouseModel = WarehouseModel.bay;
     public readonly collectionName = "bays";
     public readonly childCollectionName = "shelves";

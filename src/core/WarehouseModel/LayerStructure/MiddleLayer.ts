@@ -4,7 +4,7 @@ import Utils, {Queue} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {BottomLayer} from "./BottomLayer";
 
-export abstract class MiddleLayer<TU extends UpperLayer, T extends MiddleLayer<any, T, any, any>, TF, TL extends LowerLayer> extends Layer<TF> {
+export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLayer> extends Layer<TF> {
     public abstract readonly childCollectionName: string = "";
     public parent: TU;
     public children: TL[];
@@ -30,13 +30,6 @@ export abstract class MiddleLayer<TU extends UpperLayer, T extends MiddleLayer<a
      */
     public get topLevelChildCollectionPath(): string {
         return Utils.joinPaths(this.topLayerPath, this.childCollectionName);
-    }
-
-    /**
-     * The database path of the collection of children
-     */
-    public get childCollectionPath(): string {
-        return Utils.joinPaths(this.path, this.childCollectionName);
     }
 
     /**
@@ -99,6 +92,7 @@ export abstract class MiddleLayer<TU extends UpperLayer, T extends MiddleLayer<a
         }
     }
 
+    // noinspection DuplicatedCode
     /**
      * Load down to minLayer a layer at a time (using the top-level structure in the database).
      * @async

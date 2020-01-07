@@ -21,7 +21,7 @@ interface WarehouseFields {
     name: string;
 }
 
-export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
+export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     public readonly layerID: WarehouseModel = WarehouseModel.warehouse;
     public readonly collectionName = "warehouses";
     public readonly childCollectionName = "zones";
@@ -71,14 +71,14 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
         await this.traySizeCollection.load();
 
         if (this.categoryCollection.size === 0) {
-            for (const mockCategory of defaultCategories) {
-                this.categoryCollection.add({name: mockCategory, shortName: mockCategory});
+            for (const defaultCategory of defaultCategories) {
+                this.categoryCollection.add({name: defaultCategory, shortName: defaultCategory});
             }
         }
 
         if (this.traySizeCollection.size === 0) {
-            for (const mockTraySize of defaultTraySizes) {
-                this.traySizeCollection.add(Object.assign({}, mockTraySize));
+            for (const defaultTraySize of defaultTraySizes) {
+                this.traySizeCollection.add(Object.assign({}, defaultTraySize));
             }
         }
     }
