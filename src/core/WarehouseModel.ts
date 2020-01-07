@@ -5,14 +5,16 @@ import {Shelf} from "./WarehouseModel/Layers/Shelf";
 import {Column} from "./WarehouseModel/Layers/Column";
 import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
-import database from "./WarehouseModel/Database";
-import {BottomLayer} from "./WarehouseModel/LayerStructure/BottomLayer";
-import {MiddleLayer} from "./WarehouseModel/LayerStructure/MiddleLayer";
-import {Layers, LowerLayer, TopLevelFields, UpperLayer} from "./WarehouseModel/LayerStructure/Layer";
 
-export const ONLINE = false;
+/**
+ * If true, use firebase to load and save the warehouse model to and from
+ * If false, generate a random offline mock warehouse
+ */
+export const ONLINE = true;
 
-
+/**
+ * Represents the order of (and IDs of) each layer in the warehouse model
+ */
 export enum WarehouseModel {
     tray,
     column,
@@ -22,28 +24,42 @@ export enum WarehouseModel {
     warehouse
 }
 
+/**
+ * Represents a tray expiry range
+ */
 export interface ExpiryRange {
     from: number;
     to: number;
     label: string;
 }
 
+/**
+ * Represents a tray space within a column
+ */
 export interface TraySpace {
     column: Column;
     index: number;
 }
 
+/**
+ * Represents a single tray size option
+ */
 export interface TraySize {
     label: string;
     sizeRatio: number;
 }
 
+/**
+ * Represents a single tray category
+ */
 export interface Category {
     name: string;
     shortName: string;
 }
 
-
+/**
+ * Mock warehouse zone colours
+ */
 const zoneColors = [
     {name: "Red", color: "#ff0000"},
     {name: "Green", color: "#00ff00"},
@@ -52,6 +68,9 @@ const zoneColors = [
     {name: "Black", color: "#000000"}
 ];
 
+/**
+ * Mock warehouse tray expiries
+ */
 const trayExpiries: ExpiryRange[] = [
     {
         from: new Date(2020, 1).getTime(),
@@ -85,9 +104,13 @@ const trayExpiries: ExpiryRange[] = [
     },
 ];
 
-
+/**
+ * Generate a random warehouse structure down to tray level
+ * @async
+ * @param id - The ID of the warehouse
+ */
 async function generateRandomWarehouse(id: string): Promise<void> {
-    warehouse = await Warehouse.create(id, "Chester-le-Street").depthFirstLoad();
+    warehouse = await Warehouse.create(id, "Chester-le-Street").loadDepthFirst();
     for (let i = 0; i < zoneColors.length; i++) {
         const zone = Zone.create(zoneColors[i].name, zoneColors[i].color, warehouse);
         for (let j = 0; j < 3; j++) {
@@ -113,62 +136,16 @@ async function generateRandomWarehouse(id: string): Promise<void> {
 }
 
 /**
- * Load down to minLayer one layer at a time.
- * @async
- * @param minLayer - The number of the layer to load down to
+ * The active instance of the warehouse
  */
-export async function breadthFirstLoad(this: UpperLayer, minLayer: WarehouseModel = 0): Promise<void> {
-    this.loadLayer();
-
-    const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
-        [this.collectionName, new Map<string, Layers>([[this.id, this]])]
-    ]);
-
-    type State = {
-        generator: (id: string, fields: unknown, parent: any) => LowerLayer,
-        collectionName: string,
-        childCollectionName: string,
-        topLevelChildCollectionPath: string
-    };
-
-    let currentState: State = {
-        generator: this.createChild,
-        collectionName: this.collectionName,
-        childCollectionName: this.childCollectionName,
-        topLevelChildCollectionPath: this.topLevelChildCollectionPath
-    };
-
-    for (let i = this.layerID - 1; i >= minLayer; i--) {
-        childMap.set(currentState.childCollectionName, new Map<string, Layers>());
-        let nextState: State | undefined;
-
-        for (const document of (await database().loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
-            let parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
-            if (parent && !(parent instanceof BottomLayer)) {
-                const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
-                childMap.get(currentState.childCollectionName)?.set(document.id, child);
-                parent.children.push(child);
-                if (child instanceof MiddleLayer && !nextState) {
-                    nextState = {
-                        generator: child.createChild,
-                        collectionName: child.collectionName,
-                        childCollectionName: child.childCollectionName,
-                        topLevelChildCollectionPath: child.topLevelChildCollectionPath
-                    };
-                }
-            }
-        }
-
-        if (nextState) {
-            currentState = {...nextState};
-        } else {
-            break;
-        }
-    }
-}
-
 export let warehouse: Warehouse, warehouseLoaded = false;
 
+/**
+ * Load the warehouse
+ * @async
+ * @param id - The database ID of the warehouse to load
+ * @returns The active instance of the warehouse
+ */
 export async function loadWarehouse(id: string): Promise<Warehouse> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (ONLINE) {

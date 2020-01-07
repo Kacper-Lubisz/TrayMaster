@@ -1,8 +1,7 @@
-import {Bay, Category, Column, WarehouseModel, Shelf, Tray, TraySize, Zone} from "../../WarehouseModel";
+import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import database, {DatabaseCollection} from "../Database";
-
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
@@ -27,22 +26,28 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
     public readonly collectionName = "warehouses";
     public readonly childCollectionName = "zones";
 
-    protected readonly categoryCollection: DatabaseCollection<Category>;
-    protected readonly traySizeCollection: DatabaseCollection<TraySize>;
+    private readonly categoryCollection: DatabaseCollection<Category>;
+    private readonly traySizeCollection: DatabaseCollection<TraySize>;
 
-    public constructor(id: string, fields: WarehouseFields) {
+    private constructor(id: string, fields: WarehouseFields) {
         super(id, fields);
         this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"));
         this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"));
     }
 
-    public static create(id: string, name?: string): Warehouse {
-        return new Warehouse(id, {name: name ?? ""});
+    /**
+     * Create a warehouse instance
+     * @param id - The database ID of the warehouse
+     * @param name - The name of the warehouse
+     * @returns The newly created warehouse
+     */
+    public static create(id?: string, name?: string): Warehouse {
+        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? ""});
     }
 
     public createChild = Zone.createFromFields;
 
-    public async loadNextLayer(forceLoad = false): Promise<void> {
+    public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
             const query = database().db.collection(this.topLevelChildCollectionPath);
             this.children = (await database().loadQuery<unknown>(query))
@@ -51,9 +56,9 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
         }
     }
 
-    public async depthFirstLoad(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
+    public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
         await this.loadCollections();
-        return super.depthFirstLoad(forceLoad, minLayer);
+        return super.loadDepthFirst(forceLoad, minLayer);
     }
 
     public async load(minLayer = this.layerID) {
@@ -150,23 +155,23 @@ export class Warehouse extends TopLayer<WarehouseFields, Warehouse, Zone> {
     //#endregion
 
     //#region Children Getters
-    get zones(): Zone[] {
+    public get zones(): Zone[] {
         return this.children;
     }
 
-    get bays(): Bay[] {
+    public get bays(): Bay[] {
         return this.zones.flatMap(zone => zone.bays);
     }
 
-    get shelves(): Shelf[] {
+    public get shelves(): Shelf[] {
         return this.bays.flatMap(bay => bay.shelves);
     }
 
-    get columns(): Column[] {
+    public get columns(): Column[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays(): Tray[] {
+    public get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 

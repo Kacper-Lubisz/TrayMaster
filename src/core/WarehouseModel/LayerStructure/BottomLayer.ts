@@ -25,6 +25,9 @@ export abstract class BottomLayer<TU extends UpperLayer, TF> extends Layer<TF> {
         return refs;
     }
 
+    /**
+     * Get the index of the object within its parent's collection
+     */
     public get indexInParent(): number {
         return this.parent.getChildIndex(this);
     }
@@ -37,7 +40,7 @@ export abstract class BottomLayer<TU extends UpperLayer, TF> extends Layer<TF> {
         callback(this);
     }
 
-    public async depthFirstLoad(forceLoad = false): Promise<this> {
+    public async loadDepthFirst(forceLoad = false): Promise<this> {
         await this.loadLayer(forceLoad);
         return this;
     }

@@ -1,7 +1,6 @@
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
-import {Column, Shelf, Tray, Warehouse, Zone} from "../../WarehouseModel";
+import {Column, Shelf, Tray, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
-
 
 interface BayFields {
     index: number;
@@ -9,14 +8,24 @@ interface BayFields {
 }
 
 export class Bay extends MiddleLayer<Zone, Bay, BayFields, Shelf> {
-    public readonly layerID: number = 3;
+    public readonly layerID: WarehouseModel = WarehouseModel.bay;
     public readonly collectionName = "bays";
     public readonly childCollectionName = "shelves";
 
+    /**
+     * @param name - The name of the bay
+     * @param index - The (ordered) index of the bay within the zone
+     * @param parent - The parent zone
+     */
     public static create(index: number, name: string, parent: Zone): Bay {
         return new Bay(Utils.generateRandomId(), {index, name}, parent);
     }
 
+    /**
+     * @param id - The database ID for the bay
+     * @param fields - The bay fields
+     * @param parent - The parent zone
+     */
     public static createFromFields(id: string, fields: unknown, parent: Zone): Bay {
         return new Bay(id, fields as BayFields, parent);
     }
@@ -47,26 +56,26 @@ export class Bay extends MiddleLayer<Zone, Bay, BayFields, Shelf> {
     //#endregion
 
     //#region Parent Getters
-    get parentZone(): Zone {
+    public get parentZone(): Zone {
         return this.parent;
     }
 
-    get parentWarehouse(): Warehouse {
+    public get parentWarehouse(): Warehouse {
         return this.parentZone.parentWarehouse;
     }
 
     //#endregion
 
     //#region Children Getters
-    get shelves(): Shelf[] {
+    public get shelves(): Shelf[] {
         return this.children;
     }
 
-    get columns(): Column[] {
+    public get columns(): Column[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays(): Tray[] {
+    public get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 

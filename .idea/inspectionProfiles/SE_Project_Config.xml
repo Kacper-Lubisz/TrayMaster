@@ -13,6 +13,7 @@
     <inspection_tool class="DivideByZeroJS" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="DocumentWriteJS" enabled="true" level="SERVER PROBLEM" enabled_by_default="true" />
     <inspection_tool class="DuplicateConditionJS" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="DuplicatedCode" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="DynamicallyGeneratedCodeJS" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="ES6ConvertModuleExportToExport" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="ES6ConvertRequireIntoImport" enabled="true" level="WEAK WARNING" enabled_by_default="true" />

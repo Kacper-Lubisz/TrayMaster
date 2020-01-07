@@ -1,7 +1,17 @@
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
-import {Bay, Shelf, Tray, TrayCell, TraySize, TraySpace, Warehouse, warehouse, Zone} from "../../WarehouseModel";
+import {
+    Bay,
+    Shelf,
+    Tray,
+    TrayCell,
+    TraySize,
+    TraySpace,
+    Warehouse,
+    warehouse,
+    WarehouseModel,
+    Zone
+} from "../../WarehouseModel";
 import Utils from "../Utils";
-
 
 interface ColumnFields {
     index: number;
@@ -10,7 +20,7 @@ interface ColumnFields {
 }
 
 export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
-    public readonly layerID: number = 1;
+    public readonly layerID: WarehouseModel = WarehouseModel.column;
     public readonly collectionName = "columns";
     public readonly childCollectionName = "trays";
 
@@ -18,8 +28,14 @@ export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
      * different object would be different keys of the selection map
      */
-    private static traySpaces: Map<Column, TraySpace[]> = new Map();
+    private static traySpaces: Map<Column, TraySpace[]> = new Map<Column, TraySpace[]>();
 
+    /**
+     * @param index - The (ordered) index of the column within the shelf
+     * @param traySize - The size of the tray
+     * @param maxHeight - The maximum number of trays that can be placed in this column
+     * @param parent - The parent shelf
+     */
     public static create(index: number, traySize: TraySize, maxHeight: number, parent: Shelf): Column {
         return new Column(Utils.generateRandomId(), {
             index,
@@ -28,6 +44,11 @@ export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
         }, parent);
     }
 
+    /**
+     * @param id - The database ID for the column
+     * @param fields - The column fields
+     * @param parent - The parent shelf
+     */
     public static createFromFields(id: string, fields: unknown, parent: Shelf): Column {
         return new Column(id, fields as ColumnFields, parent);
     }
@@ -67,26 +88,26 @@ export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
     //#endregion
 
     //#region Parent Getters
-    get parentShelf(): Shelf {
+    public get parentShelf(): Shelf {
         return this.parent;
     }
 
-    get parentBay(): Bay {
+    public get parentBay(): Bay {
         return this.parentShelf.parentBay;
     }
 
-    get parentZone(): Zone {
+    public get parentZone(): Zone {
         return this.parentBay.parentZone;
     }
 
-    get parentWarehouse(): Warehouse {
+    public get parentWarehouse(): Warehouse {
         return this.parentZone.parentWarehouse;
     }
 
     //#endregion
 
     //#region Children Getters
-    get trays(): Tray[] {
+    public get trays(): Tray[] {
         return this.children;
     }
 
@@ -100,7 +121,7 @@ export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
      * @param ifNoMaxHeight The padding to add if maxHeight is empty
      * @return The padded array.
      */
-    getPaddedTrays(ifNoMaxHeight = 1): TrayCell[] {
+    public getPaddedTrays(ifNoMaxHeight = 1): TrayCell[] {
 
         const missingTrays = this.maxHeight ? Math.max(0, this.maxHeight - this.trays.length)
                                             : 1;
@@ -148,7 +169,7 @@ export class Column extends MiddleLayer<Shelf, Column, ColumnFields, Tray> {
      * This method clears the padded spaces, this can be used to reset empty spaces or otherwise to clear up memory
      * which will no longer be used.  If a column is passed then only that column is purged otherwise all columns are.
      */
-    static purgePaddedSpaces(column?: Column): void {
+    public static purgePaddedSpaces(column?: Column): void {
         if (column) {
             Column.traySpaces.delete(column);
         } else {

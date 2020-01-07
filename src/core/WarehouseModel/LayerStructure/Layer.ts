@@ -6,11 +6,16 @@ import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
 import {WarehouseModel} from "../../WarehouseModel";
 
-
+/**
+ * Represents additional metadata for the top-level database model
+ */
 export interface TopLevelFields {
     layerIdentifiers: LayerIdentifiers;
 }
 
+/**
+ * Represents a collection of layer names and their corresponding IDs
+ */
 export interface LayerIdentifiers {
     [collectionName: string]: string;
 }
@@ -19,14 +24,13 @@ export type Layers = TopLayer<any, any, any> | MiddleLayer<any, any, any, any> |
 export type UpperLayer = TopLayer<any, any, any> | MiddleLayer<any, any, any, any>;
 export type LowerLayer = MiddleLayer<any, any, any, any> | BottomLayer<any, any>;
 
-
 export abstract class Layer<TF> {
     public abstract readonly layerID: WarehouseModel;
     public abstract readonly collectionName: string;
     public readonly id: string;
     protected fields: TF;
-    private originalFields: TF;
-    private loaded: boolean;
+    protected originalFields: TF;
+    protected loaded: boolean;
 
     protected constructor(id: string, fields: TF) {
         this.id = id;
@@ -35,39 +39,53 @@ export abstract class Layer<TF> {
         this.loaded = false;
     }
 
-    protected get changed(): boolean {
-        return !deepEqual(this.fields, this.originalFields);
-    }
-
+    /**
+     * The database path of the object
+     */
     public get path(): string {
         return Utils.joinPaths(this.collectionPath, this.id);
     }
 
+    /**
+     * The top-level database path of the object
+     */
     public get topLevelPath(): string {
         return Utils.joinPaths(this.topLayerPath, this.collectionName, this.id);
     }
 
+    /**
+     * The database path of the collection the object belongs to
+     */
     public abstract get collectionPath(): string;
 
+    /**
+     * The database path to the top layer object
+     */
     public abstract get topLayerPath(): string;
 
+    /**
+     * The set of layer collection names with corresponding IDs at and above the layer
+     */
     public abstract get layerIdentifiers(): LayerIdentifiers;
 
+    /**
+     * Perform a Depth First Search on the object
+     * @param callback - A callback for each object found in the search
+     */
     public abstract dfs(callback: (layer: Layers) => void): void;
 
+    /**
+     * Perform a Breadth First Search on the object
+     * @param callback - A callback for each object found in the search
+     */
     public abstract bfs(callback: (layer: Layers) => void): void;
+
+    protected get changed(): boolean {
+        return !deepEqual(this.fields, this.originalFields);
+    }
 
     protected fieldsSaved(): void {
         this.originalFields = Object.assign({}, this.fields);
-    }
-
-    public async loadLayer(forceLoad = true): Promise<this> {
-        if (!this.loaded || forceLoad) {
-            this.fields = (await database().loadDocument<TF>(this.path))?.fields ?? this.fields;
-            this.fieldsSaved();
-            this.loaded = true;
-        }
-        return this;
     }
 
     protected async saveLayer(forceSave = false): Promise<void> {
@@ -81,9 +99,32 @@ export abstract class Layer<TF> {
         }
     }
 
-    public abstract depthFirstLoad(forceLoad: boolean): Promise<this>;
+    protected async loadLayer(forceLoad = true): Promise<this> {
+        if (!this.loaded || forceLoad) {
+            this.fields = (await database().loadDocument<TF>(this.path))?.fields ?? this.fields;
+            this.fieldsSaved();
+            this.loaded = true;
+        }
+        return this;
+    }
 
+    /**
+     * Save the object
+     * @async
+     * @param forceSave - Save the object regardless of whether fields have changed or not
+     * @param commitAtEnd - Force the database to commit the changes at the end of saving
+     */
+    public abstract save(forceSave: boolean, commitAtEnd: boolean): Promise<void>;
+
+    /**
+     * Load the object (breadth first)
+     * @async
+     */
     public abstract load(): Promise<this>;
 
-    public abstract save(forceSave: boolean, commitAtEnd: boolean): Promise<void>;
+    /**
+     * Load the object (depth first)
+     * @param forceLoad
+     */
+    public abstract loadDepthFirst(forceLoad: boolean): Promise<this>;
 }

@@ -1,5 +1,5 @@
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
-import {Bay, Column, Shelf, Tray, Warehouse} from "../../WarehouseModel";
+import {Bay, Column, Shelf, Tray, Warehouse, WarehouseModel} from "../../WarehouseModel";
 import Utils from "../Utils";
 
 
@@ -9,27 +9,29 @@ interface ZoneFields {
 }
 
 export class Zone extends MiddleLayer<Warehouse, Zone, ZoneFields, Bay> {
-    public readonly layerID: number = 4;
+    public readonly layerID: WarehouseModel = WarehouseModel.zone;
     public readonly collectionName = "zones";
     public readonly childCollectionName = "bays";
 
+    /**
+     * @param name - The name of the zone
+     * @param color - The hex colour of the zone
+     * @param parent - The parent warehouse
+     */
     public static create(name: string, color: string, parent: Warehouse): Zone {
         return new Zone(Utils.generateRandomId(), {name, color}, parent);
     }
 
+    /**
+     * @param id - The database ID for the zone
+     * @param fields - The zone fields
+     * @param parent - The parent warehouse
+     */
     public static createFromFields(id: string, fields: unknown, parent: Warehouse): Zone {
         return new Zone(id, fields as ZoneFields, parent);
     }
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Bay.createFromFields;
-
-    // protected async saveLayer(forceSave = false): Promise<void> {
-    //     if (this.changed || forceSave) {
-    //         await database().set(this.path, this.fields);
-    //         this.fieldsSaved();
-    //     }
-    // }
 
     public toString(): string {
         return this.name;
@@ -55,26 +57,26 @@ export class Zone extends MiddleLayer<Warehouse, Zone, ZoneFields, Bay> {
     //#endregion
 
     //#region Parent Getters
-    get parentWarehouse(): Warehouse {
+    public get parentWarehouse(): Warehouse {
         return this.parent;
     }
 
     //#endregion
 
     //#region Children Getters
-    get bays(): Bay[] {
+    public get bays(): Bay[] {
         return this.children;
     }
 
-    get shelves(): Shelf[] {
+    public get shelves(): Shelf[] {
         return this.bays.flatMap(bay => bay.shelves);
     }
 
-    get columns(): Column[] {
+    public get columns(): Column[] {
         return this.shelves.flatMap(shelf => shelf.columns);
     }
 
-    get trays(): Tray[] {
+    public get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
     }
 

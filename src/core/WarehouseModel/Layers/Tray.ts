@@ -1,7 +1,16 @@
 import {BottomLayer} from "../LayerStructure/BottomLayer";
-import {Bay, Category, Column, ExpiryRange, Shelf, Warehouse, warehouse, Zone} from "../../WarehouseModel";
+import {
+    Bay,
+    Category,
+    Column,
+    ExpiryRange,
+    Shelf,
+    Warehouse,
+    warehouse,
+    WarehouseModel,
+    Zone
+} from "../../WarehouseModel";
 import Utils from "../Utils";
-
 
 interface TrayFields {
     index: number;
@@ -12,9 +21,17 @@ interface TrayFields {
 }
 
 export class Tray extends BottomLayer<Column, TrayFields> {
-    public readonly layerID: number = 0;
+    public readonly layerID: WarehouseModel = WarehouseModel.tray;
     public readonly collectionName = "trays";
 
+    /**
+     * @param parent - The (nullable) parent column
+     * @param index - The index of the tray within the column
+     * @param category - The tray's (nullable) category
+     * @param expiry - The tray's (nullable) expiry range
+     * @param weight - The tray's (nullable) weight
+     * @param customField - The tray's (nullable) custom field
+     */
     public static create(parent: Column, index: number, category?: Category, expiry?: ExpiryRange, weight?: number,
                          customField?: string
     ): Tray {
@@ -27,6 +44,11 @@ export class Tray extends BottomLayer<Column, TrayFields> {
         }, parent);
     }
 
+    /**
+     * @param id - The database ID for the tray
+     * @param fields - The tray fields
+     * @param parent - The parent column
+     */
     public static createFromFields(id: string, fields: unknown, parent: Column): Tray {
         return new Tray(id, fields as TrayFields, parent);
     }
@@ -79,23 +101,23 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     //#endregion
 
     //#region Parent Getters
-    get parentColumn(): Column {
+    public get parentColumn(): Column {
         return this.parent;
     }
 
-    get parentShelf(): Shelf {
+    public get parentShelf(): Shelf {
         return this.parentColumn.parentShelf;
     }
 
-    get parentBay(): Bay {
+    public get parentBay(): Bay {
         return this.parentShelf.parentBay;
     }
 
-    get parentZone(): Zone {
+    public get parentZone(): Zone {
         return this.parentBay.parentZone;
     }
 
-    get parentWarehouse(): Warehouse {
+    public get parentWarehouse(): Warehouse {
         return this.parentZone.parentWarehouse;
     }
 
