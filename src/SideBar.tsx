@@ -99,7 +99,7 @@ export class SideBar extends React.Component<SideBarProps> {
                     <Keyboard buttons={this.props.buttons} gridX={1}/>
                 </div>
 
-                {this.props.showKeyboardSwitcher && <div id="kb-switcher">
+                {this.props.showKeyboardSwitcher ? <div id="kb-switcher">
                     {this.props.keyboards.map((keyboard) =>
                         <KeyboardSwitchBtn
                             key={keyboard.name}
@@ -108,7 +108,7 @@ export class SideBar extends React.Component<SideBarProps> {
                             icon={keyboard.icon}
                         />
                     )}
-                </div>}
+                </div> : null}
             </div>
         );
     }
