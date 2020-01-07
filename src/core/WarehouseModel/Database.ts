@@ -76,28 +76,36 @@ class Firebase {
 
     public async commit(): Promise<void> {
         if (ONLINE) {
-            const batch: WriteBatch = this.db.batch();
+            let changeCount = 0;
+            const batches: WriteBatch[] = [this.db.batch()];
             while (!this.dbChangeQueue.empty) {
                 const change: DatabaseOperation<any> | undefined = this.dbChangeQueue.dequeue();
                 if (typeof change !== "undefined") {
                     switch (change.type) {
                         case WriteOperation.set:
                             if (typeof change.obj !== "undefined") {
-                                batch.set(this.db.doc(change.path), change.obj);
+                                batches[batches.length - 1].set(this.db.doc(change.path), change.obj);
+                                changeCount += 1;
                             }
                             break;
                         case WriteOperation.update:
                             if (typeof change.obj !== "undefined") {
-                                batch.update(this.db.doc(change.path), change.obj);
+                                batches[batches.length - 1].update(this.db.doc(change.path), change.obj);
+                                changeCount += 1;
                             }
                             break;
                         case WriteOperation.delete:
-                            batch.delete(this.db.doc(change.path));
+                            batches[batches.length - 1].delete(this.db.doc(change.path));
+                            changeCount += 1;
                             break;
                     }
                 }
+                if (changeCount === 500) {
+                    batches.push(this.db.batch());
+                }
             }
-            await batch.commit();
+
+            await Promise.all(batches.map(batch => batch.commit()));
         } else {
             this.dbChangeQueue.clear();
         }

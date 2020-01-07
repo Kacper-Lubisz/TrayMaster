@@ -90,11 +90,13 @@ export abstract class Layer<TF> {
 
     protected async saveLayer(forceSave = false): Promise<void> {
         if (this.changed || forceSave) {
-            await database().set(this.path, this.fields);
-            await database().set(this.topLevelPath, {
-                ...this.fields,
-                layerIdentifiers: this.layerIdentifiers
-            });
+            await Promise.all([
+                database().set(this.path, this.fields),
+                database().set(this.topLevelPath, {
+                    ...this.fields,
+                    layerIdentifiers: this.layerIdentifiers
+                })
+            ]);
             this.fieldsSaved();
         }
     }
