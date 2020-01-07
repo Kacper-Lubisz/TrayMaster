@@ -4,20 +4,20 @@ import {Settings} from "./core/MockSettings";
 import "./styles/search.scss";
 
 interface SearchPageProps {
-    warehouse: Warehouse,
-    settings: Settings,
-    query?: SearchQuery
+    warehouse: Warehouse;
+    settings: Settings;
+    query?: SearchQuery;
     setQuery: (query: SearchQuery) => void;
 }
 
 export interface SearchPanelProps {
-    keyboardState: string
+    keyboardState: string;
     // I don't know what other information the SearchPanel needs
 }
 
 export class SearchPanel extends React.Component<SearchPanelProps> {
 
-    render() {
+    render(): React.ReactNode {
         // return DOM elements using button structures
         return (
             <div id="searchPanel">
@@ -28,7 +28,7 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
 }
 
 interface SearchPageState {
-    results?: Tray[]
+    results?: Tray[];
 }
 
 export class SearchPage extends React.Component<SearchPageProps, SearchPageState> {
@@ -47,7 +47,7 @@ export class SearchPage extends React.Component<SearchPageProps, SearchPageState
 
     }
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div id="searchPage">
                 <div id="leftPanel">
@@ -102,7 +102,7 @@ export class SearchPage extends React.Component<SearchPageProps, SearchPageState
     /**
      * This method opens a search a for the specified query
      */
-    static openSearch(query: SearchQuery) {
+    static openSearch(query: SearchQuery): undefined {
         throw Error("Unimplemented method stub");
         // window.history.pushState(query, "", "/search");
         // todo navigate to the search page
