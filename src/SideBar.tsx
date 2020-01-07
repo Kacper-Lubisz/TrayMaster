@@ -3,6 +3,8 @@ import {Keyboard, KeyboardButtonProps} from "./keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {KeyboardName} from "./ShelfView";
+import classNames from "classnames";
+import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 
 
 /**
@@ -14,30 +16,29 @@ interface SideBarProps {
      * Function passed in from parent to call when keyboard needs to be switched
      * @param name - name of keyboard to switch to
      */
-    keyboardSwitcher: (name: KeyboardName) => void
+    keyboardSwitcher: (name: KeyboardName) => void;
 
-    /**
-     * List of buttons for the keyboard part of the side panel
-     */
+    /** List of buttons for the keyboard part of the side panel */
     buttons: KeyboardButtonProps[];
+    /** List of button keyboard switches */
+    keyboards: KeyboardSwitch[];
+    /** The current keyboard, used for highlighting the active */
+    currentKeyboard: KeyboardName;
+    /** If the keyboardSwitcher should be displayed */
+    showKeyboardSwitcher: boolean;
 
-    /**
-     * List of button keyboard switches
-     */
-    keyboards: KeyboardSwitch[]
-
-    /**
-     * The current keyboard, used for highlighting the active
-     */
-    currentKeyboard: KeyboardName
+    /** This string is to describe the current location */
+    locationString: string;
+    /** This color is the color of the current zone */
+    zoneColor: string;
 }
 
 /**
  * This interface represents each individual keyboard switcher button
  */
 interface KeyboardSwitch {
-    icon: IconDefinition,
-    name: KeyboardName
+    icon: IconDefinition;
+    name: KeyboardName;
 }
 
 /**
@@ -47,27 +48,29 @@ interface KeyboardSwitchBtnProps {
     /**
      * Whether the button is active (ie whether it should be blue)
      */
-    active: boolean,
+    active: boolean;
 
     /**
      * Function to call when the button is clicked
      */
-    onClick: any,
+    onClick: any;
 
     /**
      * Icon to show on the button
      */
-    icon: IconDefinition
+    icon: IconDefinition;
 }
 
 /**
  * Button to switch keyboards
  */
 class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
-    render() {
+    render(): React.ReactNode {
         return (
             // by this point this.props.onClick has had bind called on it 2 times
-            <button className={this.props.active ? "active" : ""} onClick={this.props.onClick}>
+            <button className={classNames({
+                "active": this.props.active
+            })} onClick={this.props.onClick}>
                 <FontAwesomeIcon icon={this.props.icon}/>
             </button>
         );
@@ -79,12 +82,24 @@ class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
  */
 export class SideBar extends React.Component<SideBarProps> {
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div id="sideBar">
-                <Keyboard buttons={this.props.buttons} gridX={1}/>
 
-                <div id="kb-switcher">
+                <div
+                    style={{
+                        backgroundColor: this.props.zoneColor,
+                        color: getTextColorForBackground(this.props.zoneColor)
+                    }}
+                >
+                    <h2>{this.props.locationString}</h2>
+                </div>
+
+                <div id="side-keyboard-container"> {/* Constrains sidebar keyboard(s) vertically when necessary*/}
+                    <Keyboard buttons={this.props.buttons} gridX={1}/>
+                </div>
+
+                {this.props.showKeyboardSwitcher ? <div id="kb-switcher">
                     {this.props.keyboards.map((keyboard) =>
                         <KeyboardSwitchBtn
                             key={keyboard.name}
@@ -93,7 +108,7 @@ export class SideBar extends React.Component<SideBarProps> {
                             icon={keyboard.icon}
                         />
                     )}
-                </div>
+                </div> : null}
             </div>
         );
     }

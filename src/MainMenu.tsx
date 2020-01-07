@@ -1,21 +1,31 @@
 import React from "react";
-import {Link} from "react-router-dom";
+import {RouteComponentProps} from "react-router-dom";
+import {withRouter} from "react-router";
 import "./styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {StandardDialog} from "./App";
 
+/**
+ * expiryAmount is the number of items expiring soon
+ * TODO needs to be fetched from db
+ */
 interface MainMenuProps {
-    //Number of items about to expire, needs to be fetched from database in this file
-    expiryAmount: number
+    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+    expiryAmount: number;
 }
 
-export class MainMenu extends React.Component<MainMenuProps, any> {
 
-    render() {
+/**
+ * This class creates the main menu, redirecting to other screens
+ * by changing state values when buttons are pressed
+ * TODO change which path it pushes to when those are added
+ * Only shows the alert when an item is withing chosen expiry range
+ */
+class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
+
+    render(): React.ReactNode {
         return (
-            //Links are buttons
-            //When all are implemented they should not all say "/SettingsPage"
-
             <div className="main-menu">
                 <div className="menu-header">
                     <h1>Shelfmaster</h1>
@@ -30,12 +40,23 @@ export class MainMenu extends React.Component<MainMenuProps, any> {
                 }
 
                 <div className="menu-btn-container">
-                    <Link to="/" className="key-btn" style={{textDecoration: "none"}}><p>Back to Shelf View</p></Link>
-                    <Link to="/search" className="key-btn" style={{textDecoration: "none"}}><p>Search</p></Link>
-                    <Link to="/report" className="key-btn" style={{textDecoration: "none"}}><p>Report</p></Link>
-                    <Link to="/settings" className="key-btn" style={{textDecoration: "none"}}><p>Settings</p></Link>
+                    <button className="key-btn" onClick={() => this.props.history.push("/")}>
+                        <p>Back to Shelf View</p></button>
+                    <button className="key-btn"
+                            onClick={() => alert("Search")}><p>Search</p>
+                    </button>
+                    <button className="key-btn"
+                            onClick={() => alert("Report")}><p>Report</p>
+                    </button>
+                    <button className="key-btn"
+                            onClick={() => this.props.history.push("/settings")}><p>Settings</p>
+                    </button>
+
                 </div>
+
             </div>
         );
     }
 }
+
+export default withRouter(MainMenu);

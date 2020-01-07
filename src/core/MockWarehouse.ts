@@ -1,3 +1,5 @@
+// TODO: Remove this. Temporarily disabled while our functions are not implemented
+/* eslint-disable @typescript-eslint/require-await */
 /*
 Warehouse
 >   Settings
@@ -20,53 +22,27 @@ const cats = [
     "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
 ];
 
-const colours = [
-    {label: "Red", hex: "#FF0000"},
-    {label: "Green", hex: "#00FF00"},
-    {label: "Blue", hex: "#0000FF"},
-    {label: "White", hex: "#FFFFFF"},
-    {label: "Black", hex: "#000000"}
+const sizes: ColumnSize[] = [
+    {label: "small", sizeRatio: 1.5},
+    {label: "normal", sizeRatio: 2.5},
+    {label: "big", sizeRatio: 3.5},
 ];
 
-const expires = [
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
-        label: "Jan 2020",
-        color: "#FF0"
-    },
-    {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
-        label: "Feb 2020",
-        color: "#0ff"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
-        label: "Jan-Mar 2020",
-        color: "#00f"
-    },
-    {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
-        label: "Apr-Jun 2020",
-        color: "#F0f"
-    },
-    {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
-        label: "2020",
-        color: "#FF0000"
-    },
-    {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
-        label: "2021",
-        color: "#0f0"
-    },
-];
-
+const colors: { label: string; hex: string }[] = [
+    {label: "Red", hex: "#ff0000"},
+    {label: "Green", hex: "#00ff00"},
+    {label: "Blue", hex: "#0000ff"},
+    {label: "White", hex: "#ffffff"},
+    {label: "Black", hex: "#000000"},
+    {label: "Yellow", hex: "#ffff00"},
+    {label: "Cyan", hex: "#00ffff"},
+    {label: "Magenta", hex: "#ff00ff"}
+].concat(Array(20).fill(0).map(_ => {
+    return {
+        label: "Generated",
+        hex: `#${Math.floor(Math.random() * 16 ** 6).toString(16).padStart(6, "0")}`
+    };
+}));
 
 /**
  * Generate a pseudorandom firebase ID
@@ -75,9 +51,64 @@ const expires = [
 export function generateRandomId(): string {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let id = "";
-    for (let i = 0; i < 20; i++)
+    for (let i = 0; i < 20; i++) {
         id += chars[Math.floor(chars.length * Math.random())];
+    }
     return id;
+}
+
+
+const thisYear = new Date().getFullYear();
+const quarters = [
+    "Jan-Mar",
+    "Apr-Jun",
+    "Jul-Sep",
+    "Oct-Dec"
+];
+const months = [
+    "Jan", "Feb", "Mar",
+    "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep",
+    "Oct", "Nov", "Dec"
+];
+
+function generateRandomExpiry(): ExpiryRange {
+    // choose year in the next 8 years
+    const year = thisYear + Math.floor(Math.random() * 8);
+    type ExpiryType = "year" | "quarter" | "month";
+
+    // choose length of expiry
+    const expiryLength: ExpiryType = ["year", "quarter", "month"][Math.floor(Math.random() * 3)] as ExpiryType;
+
+    // choose which quarter or month of the current year we're on
+    const startIndex = {
+        "year": 0,
+        "quarter": Math.floor(Math.random() * 4),
+        "month": Math.floor(Math.random() * 12)
+    }[expiryLength];
+
+    // generate start and Date()s
+    const start = new Date(year, {
+        "year": startIndex,
+        "quarter": startIndex * 3,
+        "month": startIndex
+    }[expiryLength]);
+    const end = {
+        "year": new Date(year + 1, 0),
+        "quarter": new Date(startIndex === 3 ? year + 1 : year, ((startIndex + 1) * 3) % 12),
+        "month": new Date(startIndex === 11 ? year + 1 : year, (startIndex + 1) % 12)
+    }[expiryLength];
+
+    // return expiry range
+    return {
+        from: start.getTime(),
+        to: end.getTime(),
+        label: {
+            "year": year.toString(),
+            "quarter": `${quarters[startIndex]} ${year}`,
+            "month": `${months[startIndex]} ${year}`
+        }[expiryLength]
+    };
 }
 
 /**
@@ -90,25 +121,17 @@ interface UpperLayer {
     loadNextLayer(): Promise<void>;
 }
 
-
-/**
- * Objects of this interface represent all possible search queries that can be performed by the search page.
- * The predicate for a tray t that this query represents is
- * (t.category in categories) and //todo agree and finish this
- */
-export interface SearchQuery {
-    categories: (Category | undefined)[]
-    sortBy: "expiry"
-}
-
 export class Warehouse implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
 
+    columnSizes: ColumnSize[] = [];
     categories: Category[] = [];
     zones: Zone[] = [];
+
+    // todo rename column size to tray size, load tray sizes
 
     /**
      * @param id firebase - The database ID of the warehouse
@@ -117,28 +140,6 @@ export class Warehouse implements UpperLayer {
     private constructor(id: string, name: string) {
         this.id = id;
         this.name = name;
-    }
-
-    // todo
-    async traySearch(query: SearchQuery): Promise<Tray[]> {
-
-        // this is an example implementation
-        return this.trays.filter((tray) =>
-            query.categories.includes(tray.category)
-        ).sort((a, b) => {
-            if (query.sortBy === "expiry") {
-                if (a.expiry === undefined) {
-                    return -1;
-                } else if (b.expiry === undefined) {
-                    return 1;
-                } else {
-                    return a.expiry.from < b.expiry.from ? -1 : 1;
-                }
-            } else {
-                return 0;
-            }
-        });
-
     }
 
     /**
@@ -150,8 +151,9 @@ export class Warehouse implements UpperLayer {
     public static create(zones: Zone[], name?: string): Warehouse {
         const warehouse: Warehouse = new Warehouse(generateRandomId(), name ?? "");
         warehouse.zones = zones;
-        for (let i = 0; i < warehouse.zones.length; i++)
-            warehouse.zones[i].placeInWarehouse(warehouse);
+        for (const zone of warehouse.zones) {
+            zone.placeInWarehouse(warehouse);
+        }
         return warehouse;
     }
 
@@ -162,9 +164,23 @@ export class Warehouse implements UpperLayer {
      */
     public static async loadCategories(): Promise<Category[]> {
         const categories: Category[] = [];
-        for (let i = 0; i < cats.length; i++)
-            categories.push({name: cats[i]});
+        for (const cat of cats) {
+            categories.push({name: cat});
+        }
         return categories;
+    }
+
+    /**
+     * Load column sizes.
+     * @async
+     * @returns A promise which resolves to the list of column sizes in the warehouse
+     */
+    public static async loadColumnSizes(): Promise<ColumnSize[]> {
+        const columnSizes: ColumnSize[] = [];
+        for (const colSize of sizes) {
+            columnSizes.push({...colSize});
+        }
+        return columnSizes;
     }
 
     /**
@@ -176,6 +192,7 @@ export class Warehouse implements UpperLayer {
     public static async loadWarehouse(id: string): Promise<Warehouse> {
         const warehouse: Warehouse = new Warehouse(id, `Warehouse ${Math.random()}`);
         warehouse.categories = await Warehouse.loadCategories();
+        warehouse.columnSizes = await Warehouse.loadColumnSizes();
         warehouse.zones = await Zone.loadZones(warehouse);
         warehouse.isDeepLoaded = true;
         return warehouse;
@@ -198,8 +215,9 @@ export class Warehouse implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.zones = await Zone.loadFlatZones(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -225,7 +243,7 @@ export class Warehouse implements UpperLayer {
 
 
 export class Zone implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
@@ -237,7 +255,7 @@ export class Zone implements UpperLayer {
     /**
      * @param id - The database ID for the zone
      * @param name - The name of the zone
-     * @param color - The hex colour of the zone
+     * @param color - The hex color of the zone
      * @param parentWarehouse - The (nullable) parent warehouse
      */
     private constructor(id: string, name: string, color: string, parentWarehouse?: Warehouse) {
@@ -252,15 +270,16 @@ export class Zone implements UpperLayer {
      * Create a zone from a collection of bays
      * @param bays - The bays to put in the zone
      * @param name - The name of the zone
-     * @param color - The hex colour of the zone
+     * @param color - The hex color of the zone
      * @param parentWarehouse - The warehouse the zone belongs to
      * @returns The newly created zone
      */
     public static create(bays: Bay[], name?: string, color?: string, parentWarehouse?: Warehouse): Zone {
         const zone: Zone = new Zone(generateRandomId(), name ?? "", color ?? "#000000", parentWarehouse);
         zone.bays = bays;
-        for (let i = 0; i < zone.bays.length; i++)
+        for (let i = 0; i < zone.bays.length; i++) {
             zone.bays[i].placeInZone(i, zone);
+        }
         return zone;
     }
 
@@ -269,7 +288,7 @@ export class Zone implements UpperLayer {
      * @param parentWarehouse - The warehouse the zone is being added to
      * @param name - The name of the zone
      */
-    public placeInWarehouse(parentWarehouse: Warehouse, name?: string) {
+    public placeInWarehouse(parentWarehouse: Warehouse, name?: string): void {
         this.parentWarehouse = parentWarehouse;
         this.name = name ?? this.name;
     }
@@ -282,8 +301,15 @@ export class Zone implements UpperLayer {
      */
     public static async loadZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
-        for (let i = 0; i < colours.length; i++) {
-            const zone: Zone = new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse);
+
+        const zoneNumber = Math.random() < 0.2 ? 0 : 10;
+
+        for (let i = 0; i < zoneNumber; i++) {
+
+            const colorIndex = Math.floor(Math.random() * colors.length);
+            const color = colors.splice(colorIndex, 1)[0];
+
+            const zone: Zone = new Zone(generateRandomId(), color.label, color.hex, warehouse);
             zone.bays = await Bay.loadBays(zone);
             zone.isDeepLoaded = true;
             zones.push(zone);
@@ -299,8 +325,9 @@ export class Zone implements UpperLayer {
      */
     public static async loadFlatZones(warehouse: Warehouse): Promise<Zone[]> {
         const zones: Zone[] = [];
-        for (let i = 0; i < colours.length; i++)
-            zones.push(new Zone(generateRandomId(), colours[i].label, colours[i].hex, warehouse));
+        for (const color of colors) {
+            zones.push(new Zone(generateRandomId(), color.label, color.hex, warehouse));
+        }
         return zones;
     }
 
@@ -309,8 +336,9 @@ export class Zone implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.bays = await Bay.loadFlatBays(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -328,11 +356,16 @@ export class Zone implements UpperLayer {
     }
 
     //#endregion
+
+    toString(): string {
+        return this.name;
+    }
+
 }
 
 
 export class Bay implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
@@ -366,8 +399,9 @@ export class Bay implements UpperLayer {
     public static create(shelves: Shelf[], name?: string, index?: number, parentZone?: Zone): Bay {
         const bay: Bay = new Bay(generateRandomId(), name ?? "", index ?? -1, parentZone);
         bay.shelves = shelves;
-        for (let i = 0; i < bay.shelves.length; i++)
+        for (let i = 0; i < bay.shelves.length; i++) {
             bay.shelves[i].placeInBay(i, bay);
+        }
         return bay;
     }
 
@@ -377,7 +411,7 @@ export class Bay implements UpperLayer {
      * @param parentZone - The zone the bay is being added to
      * @param name - The name of the bay
      */
-    public placeInZone(index: number, parentZone: Zone, name?: string) {
+    public placeInZone(index: number, parentZone: Zone, name?: string): void {
         this.index = index;
         this.parentZone = parentZone;
         this.name = name ?? this.name;
@@ -391,7 +425,9 @@ export class Bay implements UpperLayer {
      */
     public static async loadBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < 3; i++) {
+        const bayNumber = Math.floor(Math.random() * 6);
+
+        for (let i = 0; i < bayNumber; i++) {
             const bay: Bay = new Bay(generateRandomId(), String.fromCharCode(i + 65), i, zone);
             bay.shelves = await Shelf.loadShelves(bay);
             bay.isDeepLoaded = true;
@@ -408,8 +444,9 @@ export class Bay implements UpperLayer {
      */
     public static async loadFlatBays(zone: Zone): Promise<Bay[]> {
         const bays: Bay[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++) {
             bays.push(new Bay(generateRandomId(), `Bay ${Math.random()}`, i, zone));
+        }
         return bays;
     }
 
@@ -418,8 +455,9 @@ export class Bay implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.shelves = await Shelf.loadFlatShelves(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -444,7 +482,7 @@ export class Bay implements UpperLayer {
 
 
 export class Shelf implements UpperLayer {
-    isDeepLoaded: boolean = false;
+    isDeepLoaded = false;
 
     id: string;
     name: string;
@@ -476,10 +514,11 @@ export class Shelf implements UpperLayer {
      * @returns The newly created shelf
      */
     public static create(columns: Column[], name?: string, index?: number, parentBay?: Bay): Shelf {
-        const shelf: Shelf = new Shelf(generateRandomId(), name ?? "", index ?? -1);
+        const shelf: Shelf = new Shelf(generateRandomId(), name ?? "", index ?? -1, parentBay);
         shelf.columns = columns;
-        for (let i = 0; i < shelf.columns.length; i++)
+        for (let i = 0; i < shelf.columns.length; i++) {
             shelf.columns[i].placeInShelf(i, shelf);
+        }
         return shelf;
     }
 
@@ -489,7 +528,7 @@ export class Shelf implements UpperLayer {
      * @param parentBay - The bay the shelf is being added to
      * @param name - The name of the shelf
      */
-    public placeInBay(index: number, parentBay: Bay, name?: string) {
+    public placeInBay(index: number, parentBay: Bay, name?: string): void {
         this.index = index;
         this.parentBay = parentBay;
         this.name = name ?? this.name;
@@ -503,7 +542,8 @@ export class Shelf implements UpperLayer {
      */
     public static async loadShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < 3; i++) {
+        const shelfNumber = Math.random() * 5 + 1;
+        for (let i = 0; i < shelfNumber; i++) {
             const shelf: Shelf = new Shelf(generateRandomId(), `${i + 1}`, i, bay);
             shelf.columns = await Column.loadColumns(shelf);
             shelf.isDeepLoaded = true;
@@ -525,8 +565,9 @@ export class Shelf implements UpperLayer {
      */
     public static async loadFlatShelves(bay: Bay): Promise<Shelf[]> {
         const shelves: Shelf[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++) {
             shelves.push(new Shelf(generateRandomId(), `Shelf ${Math.random()}`, i, bay));
+        }
         return shelves;
     }
 
@@ -535,8 +576,9 @@ export class Shelf implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.columns = await Column.loadFlatColumns(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -559,12 +601,26 @@ export class Shelf implements UpperLayer {
     //#endregion
 }
 
+interface ColumnSize {
+    label: string;
+    sizeRatio: number;
+}
 
 export class Column implements UpperLayer {
-    isDeepLoaded: boolean = false;
+
+    /**
+     * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
+     * different object would be different keys of the selection map
+     */
+    private static traySpaces: Map<Column, TraySpace[]> = new Map();
+
+    isDeepLoaded = false;
 
     id: string;
     index: number;
+
+    size?: ColumnSize;
+    maxHeight?: number;
 
     parentShelf?: Shelf;
     trays: Tray[] = [];
@@ -573,10 +629,14 @@ export class Column implements UpperLayer {
      * @param id - The database ID of the column
      * @param index - The (ordered) index of the column within the shelf
      * @param parentShelf - The (nullable) parent shelf
+     * @param size - The size of the tray
+     * @param maxHeight - The maximum number of trays that can be placed in this column
      */
-    private constructor(id: string, index: number, parentShelf?: Shelf) {
+    private constructor(id: string, index: number, parentShelf?: Shelf, size?: ColumnSize, maxHeight?: number) {
         this.id = id;
         this.index = index;
+        this.size = size;
+        this.maxHeight = maxHeight;
 
         this.parentShelf = parentShelf;
     }
@@ -586,13 +646,22 @@ export class Column implements UpperLayer {
      * @param trays - The trays to put in the column
      * @param index - The index of the column within its shelf
      * @param parentShelf - The shelf the column belongs to
+     * @param size - The column size
+     * @param maxHeight - The max number of trays that can go in this column
      * @returns The newly created column
      */
-    public static create(trays: Tray[], index?: number, parentShelf?: Shelf): Column {
-        const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf);
+    public static create(
+        trays: Tray[],
+        index?: number,
+        parentShelf?: Shelf,
+        size?: ColumnSize,
+        maxHeight?: number
+    ): Column {
+        const column: Column = new Column(generateRandomId(), index ?? -1, parentShelf, size, maxHeight);
         column.trays = trays;
-        for (let i = 0; i < column.trays.length; i++)
+        for (let i = 0; i < column.trays.length; i++) {
             column.trays[i].placeInColumn(i, column);
+        }
         return column;
     }
 
@@ -601,7 +670,7 @@ export class Column implements UpperLayer {
      * @param index - The index of the column within the shelf
      * @param parentShelf - The shelf the column is being added to
      */
-    public placeInShelf(index: number, parentShelf: Shelf) {
+    public placeInShelf(index: number, parentShelf: Shelf): void {
         this.index = index;
         this.parentShelf = parentShelf;
     }
@@ -614,11 +683,22 @@ export class Column implements UpperLayer {
      */
     public static async loadColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < 4; i++) {
-            const column: Column = new Column(generateRandomId(), i, shelf);
-            column.trays = await Tray.loadTrays(column);
-            column.isDeepLoaded = true;
-            columns.push(column);
+
+        const colNumber = shelf.index % 2 === 0 ? 4 : 2;
+
+        for (let i = 0; i < colNumber; i++) {
+            if (shelf.parentWarehouse) {
+                const sizes = shelf.parentWarehouse.columnSizes;
+                const size: ColumnSize = sizes[Math.floor(Math.random() * sizes.length)];
+                const maxHeight = shelf.index % 2 === 0 ? Math.floor(Math.random() * 8 + 2)
+                                                        : Math.random() < 0.5 ? 2
+                                                                              : 10;
+
+                const column: Column = new Column(generateRandomId(), i, shelf, size, maxHeight);
+                column.trays = await Tray.loadTrays(column);
+                column.isDeepLoaded = true;
+                columns.push(column);
+            }
         }
         return columns;
     }
@@ -631,8 +711,9 @@ export class Column implements UpperLayer {
      */
     public static async loadFlatColumns(shelf: Shelf): Promise<Column[]> {
         const columns: Column[] = [];
-        for (let i = 0; i < colours.length; i++)
+        for (let i = 0; i < colors.length; i++) {
             columns.push(new Column(generateRandomId(), i, shelf));
+        }
         return columns;
     }
 
@@ -641,8 +722,9 @@ export class Column implements UpperLayer {
      * @async
      */
     public async loadNextLayer(): Promise<void> {
-        if (!this.isDeepLoaded)
+        if (!this.isDeepLoaded) {
             this.trays = await Tray.loadTrays(this);
+        }
         this.isDeepLoaded = true;
     }
 
@@ -660,8 +742,81 @@ export class Column implements UpperLayer {
     }
 
     //#endregion
+
+    /**
+     * This method pads the tray arrays of a column with TraySpaces such that the the length of the returned array is
+     * the max height of the column.  If the column has an undefined max height, it is padded with the specified value.
+     * This method stores the tray spaces that are added in the traySpaces field such that the same TraySpace object is
+     * always returned.  The same object being returned is important if it is going to be used as the key of a map.
+     * @param ifNoMaxHeight The padding to add if maxHeight is empty
+     * @return The padded array.
+     */
+    getPaddedTrays(ifNoMaxHeight = 1): TrayCell[] {
+
+        const missingTrays = this.maxHeight ? Math.max(0, this.maxHeight - this.trays.length)
+                                            : ifNoMaxHeight;
+
+        const existing: TraySpace[] | undefined = Column.traySpaces.get(this);
+        if (existing) {
+
+            if (existing.length === missingTrays) {
+
+                return (this.trays as TrayCell[]).concat(existing);
+
+            } else if (existing.length > missingTrays) { // there are too many missing trays
+
+                const newSpaces = existing.filter(space => space.index >= this.trays.length);
+
+                Column.traySpaces.set(this, newSpaces);
+                return (this.trays as TrayCell[]).concat(newSpaces);
+            } else { // there are not enough tray spaces
+
+                const traysToAdd = missingTrays - existing.length;
+                const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
+                        return ({column: this, index: this.trays.length + index} as TraySpace);
+                    }
+                ).concat(existing);
+
+                Column.traySpaces.set(this, newSpaces);
+                return (this.trays as TrayCell[]).concat(newSpaces);
+            }
+
+        } else { // build tray spaces
+
+            const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
+                    return {column: this, index: this.trays.length + index};
+                }
+            );
+            Column.traySpaces.set(this, newSpaces);
+
+            return (this.trays as TrayCell[]).concat(newSpaces);
+
+        }
+
+    }
+
+
+    /**
+     * This method clears the padded spaces, this can be used to reset empty spaces or otherwise to clear up memory
+     * which will no longer be used.  If a column is passed then only that column is purged otherwise all columns are.
+     */
+    static purgePaddedSpaces(column?: Column): void {
+        if (column) {
+            Column.traySpaces.delete(column);
+        } else {
+            Column.traySpaces.clear();
+        }
+    }
+
 }
 
+
+export interface TraySpace {
+    column: Column;
+    index: number;
+}
+
+export type TrayCell = Tray | TraySpace;
 
 export class Tray {
     id: string;
@@ -718,7 +873,7 @@ export class Tray {
      * @param index - The index of the tray within the column
      * @param parentColumn - The column the tray is being added to
      */
-    public placeInColumn(index: number, parentColumn: Column) {
+    public placeInColumn(index: number, parentColumn: Column): void {
         this.index = index;
         this.parentColumn = parentColumn;
     }
@@ -732,12 +887,16 @@ export class Tray {
     public static async loadTrays(column: Column): Promise<Tray[]> {
         const trays: Tray[] = [];
         const categories: Category[] = column?.parentWarehouse?.categories ?? [{name: ""}];
-        for (let i = 0; i < 3; i++) {
+
+        const height = Math.random() > 0.5 ? column.maxHeight ?? 3
+                                           : Math.min(3, column.maxHeight ?? 3);
+
+        for (let i = 0; i < height; i++) {
             trays.push(new Tray(
                 generateRandomId(),
                 i,
                 categories[Math.floor(categories.length * Math.random())],
-                expires[Math.floor(expires.length * Math.random())],
+                generateRandomExpiry(),
                 Number((15 * Math.random()).toFixed(2)),
                 Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined,
                 column
@@ -771,7 +930,6 @@ export interface ExpiryRange {
     from: number;
     to: number;
     label: string;
-    color: string;
 }
 
 

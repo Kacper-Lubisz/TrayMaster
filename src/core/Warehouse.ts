@@ -6,52 +6,53 @@ import {firestore} from "firebase";
  * Generate a random warehouse in the firebase database
  * @async
  */
-export async function createTestWarehouse() {
+export async function createTestWarehouse(): Promise<void> {
     const warehouseRef = db.collection("warehouses");
     const warehouseSnapshot = await warehouseRef.add({name: `Warehouse ${Math.random()}`});
 
-    let categorySnapshot = [];
-    for (let i: number = 0; i < 25; i++)
+    const categorySnapshot = [];
+    for (let i = 0; i < 25; i++) {
         categorySnapshot.push(await warehouseRef.doc(warehouseSnapshot.id).collection("categories")
                                                 .add({name: `Category ${Math.random()}`}));
+    }
 
-    let traySnapshots = [];
-    const colours = [
-        {label: "Red", hex: "#FF0000"},
-        {label: "Green", hex: "#00FF00"},
-        {label: "Blue", hex: "#0000FF"},
-        {label: "White", hex: "#FFFFFF"},
+    const traySnapshots = [];
+    const colors = [
+        {label: "Red", hex: "#ff0000"},
+        {label: "Green", hex: "#00ff00"},
+        {label: "Blue", hex: "#0000ff"},
+        {label: "White", hex: "#ffffff"},
         {label: "Black", hex: "#000000"}
     ];
     const zonesRef = warehouseRef.doc(warehouseSnapshot.id).collection("zones");
-    for (let i: number = 0; i < colours.length; i++) {
-        let zoneSnapshot = await zonesRef.add({colour: colours[i]});
-        let zoneRef = zonesRef.doc(zoneSnapshot.id);
+    for (const color of colors) {
+        const zoneSnapshot = await zonesRef.add({color: color});
+        const zoneRef = zonesRef.doc(zoneSnapshot.id);
 
         const baysRef = zoneRef.collection("bays");
-        for (let j: number = 0; j < 5; j++) {
-            let baySnapshot = await baysRef.add({name: `Bay ${Math.random()}`});
-            let bayRef = baysRef.doc(baySnapshot.id);
+        for (let j = 0; j < 5; j++) {
+            const baySnapshot = await baysRef.add({name: `Bay ${Math.random()}`});
+            const bayRef = baysRef.doc(baySnapshot.id);
 
             const shelvesRef = bayRef.collection("shelves");
-            for (let k: number = 0; k < 25; k++) {
-                let shelfSnapshot = await shelvesRef.add({
+            for (let k = 0; k < 25; k++) {
+                const shelfSnapshot = await shelvesRef.add({
                     name: `Shelf ${Math.random()}`,
                     maxWeight: 100 + Math.trunc(500 * Math.random())
                 });
-                let shelfRef = shelvesRef.doc(shelfSnapshot.id);
+                const shelfRef = shelvesRef.doc(shelfSnapshot.id);
 
                 const columnsRef = shelfRef.collection("columns");
-                for (let k: number = 0; k < 4; k++) {
-                    let maxHeight = 2 + Math.trunc(3 * Math.random());
-                    let columnSnapshot = await columnsRef.add({maxHeight: maxHeight});
-                    let columnRef = columnsRef.doc(columnSnapshot.id);
+                for (let k = 0; k < 4; k++) {
+                    const maxHeight = 2 + Math.trunc(3 * Math.random());
+                    const columnSnapshot = await columnsRef.add({maxHeight: maxHeight});
+                    const columnRef = columnsRef.doc(columnSnapshot.id);
 
                     const traysRef = columnRef.collection("trays");
-                    for (let l: number = 0; l < Math.floor(maxHeight * Math.random()); l++) {
-                        let fromDate = new firestore.Timestamp(1576591600 +
+                    for (let l = 0; l < Math.floor(maxHeight * Math.random()); l++) {
+                        const fromDate = new firestore.Timestamp(1576591600 +
                             Math.trunc(157766400 * Math.random()), 0);
-                        let tray = {
+                        const tray = {
                             category: categorySnapshot[Math.trunc(categorySnapshot.length * Math.random())].path,
                             customField: `${Math.random()}`,
                             expiry: {
@@ -60,8 +61,8 @@ export async function createTestWarehouse() {
                                 label: `${Math.random()} time`
                             }
                         };
-                        let trayRef = await traysRef.add(tray);
-                        let traySearchReference = {
+                        const trayRef = await traysRef.add(tray);
+                        const traySearchReference = {
                             category: tray.category,
                             customField: tray.customField,
                             expiry: tray.expiry,

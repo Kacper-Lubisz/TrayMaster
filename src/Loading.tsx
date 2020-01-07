@@ -15,12 +15,12 @@ interface SpinnerTrayProps {
     /**
      * Co-ordinates inside the SVG in pixels, from top left, in the format [x, y]
      */
-    pos: [number, number],
+    pos: [number, number];
 
     /**
      * Animation class to give to the returned SVG rect
      */
-    anim?: string
+    anim?: string;
 }
 
 /**
@@ -34,7 +34,7 @@ interface LoadingPageState {
      *     [tray2Key]: [animationClass2]
      * }
      */
-    animation?: any
+    animation?: any;
 }
 
 /**
@@ -43,7 +43,7 @@ interface LoadingPageState {
  */
 class SpinnerTray extends React.Component<SpinnerTrayProps> {
 
-    render() {
+    render(): React.ReactNode {
         // generate rect with appropriate position and animation class as given in this.props.anim
         return (
             <rect x={this.props.pos[0] * gridDistX} y={this.props.pos[1] * gridDistY}
@@ -60,14 +60,12 @@ class SpinnerTray extends React.Component<SpinnerTrayProps> {
  * No props
  */
 export class LoadingPage extends React.Component<any, LoadingPageState> {
-    // @ts-ignore stops TypeScript getting angry under the "strictPropertyInitialization" rule
-    // [https://stackoverflow.com/q/49699067/5094386]
-    traySwapInterval: NodeJS.Timeout;
+    traySwapInterval: NodeJS.Timeout | undefined;
 
     /**
      * Choose two trays to swap, and update the state to reflect this
      */
-    swapTrays() {
+    swapTrays(): void {
         // Decide what kind of swap to make
         const swapDir: boolean = Math.random() < 0.5; // axis: true => x, false => y
         let swaps = swapDir ? ["r", "l"] : ["d", "u"]; // start generating class names
@@ -87,9 +85,8 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
 
             // find key of the tray at the other end of the swap
             endTray = `${col + dist}${row}`;
-        }
-        // otherwise, swapping horizontally
-        else {
+        } else {
+            // otherwise, swapping horizontally
             // decide first tray
             const col = Math.floor(Math.random() * gridCols);
             const row = Math.floor(Math.random() * (gridRows - dist));
@@ -115,10 +112,12 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
     }
 
     componentWillUnmount(): void {
-        clearInterval(this.traySwapInterval);
+        if (this.traySwapInterval) {
+            clearInterval(this.traySwapInterval);
+        }
     }
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div id="loadingPage">
                 <div id="menu-header">
@@ -130,7 +129,7 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
                             {
                                 Array(gridCols).fill(0).map((_, i) => {
                                     return Array(gridRows).fill(0).map((_, j) => {
-                                        let key = `${i}${j}`;
+                                        const key = `${i}${j}`;
                                         return <rect className="spinner-tray-slot" key={key} x={i * gridDistX}
                                                      y={j * gridDistY}/>;
                                     });
@@ -140,7 +139,7 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
                         {
                             Array(gridCols).fill(0).map((_, i) => {
                                 return Array(gridRows).fill(0).map((_, j) => {
-                                    let key = `${i}${j}`;
+                                    const key = `${i}${j}`;
                                     return <SpinnerTray anim={this.state?.animation[key]} key={key} pos={[i, j]}/>;
                                 });
                             })
