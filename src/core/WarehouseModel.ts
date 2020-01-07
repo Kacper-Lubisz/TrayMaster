@@ -10,7 +10,7 @@ import Utils from "./WarehouseModel/Utils";
  * If true, use firebase to load and save the warehouse model to and from
  * If false, generate a random offline mock warehouse
  */
-export const ONLINE = true;
+export const ONLINE = false;
 
 /**
  * Represents the order of (and IDs of) each layer in the warehouse model
