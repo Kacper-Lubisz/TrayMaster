@@ -316,7 +316,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
+        column.maxHeight = Math.max(change + column.maxHeight, 1);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -401,7 +401,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             className="column"
             key={order}
         >{
-            column.getPaddedTrays(1).map((tray, index) => {
+            column.getPaddedTrays().map((tray, index) => {
                 let expiryStyle;
                 if (tray instanceof Tray) {
                     const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";
