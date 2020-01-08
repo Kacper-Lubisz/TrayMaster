@@ -5,20 +5,7 @@ import {Shelf} from "./WarehouseModel/Layers/Shelf";
 import {Column} from "./WarehouseModel/Layers/Column";
 import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
-
-/**
- * If true, use firebase to load and save the warehouse model to and from the database
- * If false, generate a randomised offline mock warehouse
- *
- * NOTE:
- * To configure process.env.REACT_APP_ONLINE, in the root project directory create a file named ".env.local",
- * in this file place the line "REACT_APP_ONLINE=true" or "REACT_APP_ONLINE=false" (without quotes).
- * DO NOT change the value in ".env" or ".env.production".
- * For any changes to take effect, restart the development server.
- * Further Documentation:
- * https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env
- */
-export const ONLINE = process.env.REACT_APP_ONLINE === "true";
+import {ONLINE} from "./WarehouseModel/Database";
 
 /**
  * Represents the order of (and IDs of) each layer in the warehouse model

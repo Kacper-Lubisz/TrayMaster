@@ -109,7 +109,7 @@ export abstract class TopLayer<TF, TL extends LowerLayer> extends Layer<TF> {
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await database().loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            for (const document of (await database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
@@ -164,7 +164,7 @@ export abstract class TopLayer<TF, TL extends LowerLayer> extends Layer<TF> {
         }
 
         if (commitAtEnd) {
-            await database().commit();
+            await database.commit();
         }
     }
 

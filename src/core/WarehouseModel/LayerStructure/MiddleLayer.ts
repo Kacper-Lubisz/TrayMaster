@@ -84,9 +84,9 @@ export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLay
      */
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database().db.collection(this.topLevelChildCollectionPath)
-                                    .where(`layerIdentifiers.${this.collectionName}`, "==", this.id);
-            this.children = (await database().loadQuery<unknown>(query))
+            const query = database.db.collection(this.topLevelChildCollectionPath)
+                                  .where(`layerIdentifiers.${this.collectionName}`, "==", this.id);
+            this.children = (await database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
@@ -124,7 +124,7 @@ export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLay
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await database().loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            for (const document of (await database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
@@ -179,7 +179,7 @@ export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLay
         }
 
         if (commitAtEnd) {
-            await database().commit();
+            await database.commit();
         }
     }
 

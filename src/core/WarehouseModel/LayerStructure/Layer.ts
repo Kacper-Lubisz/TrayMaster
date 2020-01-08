@@ -91,8 +91,8 @@ export abstract class Layer<TF> {
     protected async saveLayer(forceSave = false): Promise<void> {
         if (this.changed || forceSave) {
             await Promise.all([
-                database().set(this.path, this.fields),
-                database().set(this.topLevelPath, {
+                database.set(this.path, this.fields),
+                database.set(this.topLevelPath, {
                     ...this.fields,
                     layerIdentifiers: this.layerIdentifiers
                 })
@@ -103,7 +103,7 @@ export abstract class Layer<TF> {
 
     protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
-            this.fields = (await database().loadDocument<TF>(this.path))?.fields ?? this.fields;
+            this.fields = (await database.loadDocument<TF>(this.path))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
         }

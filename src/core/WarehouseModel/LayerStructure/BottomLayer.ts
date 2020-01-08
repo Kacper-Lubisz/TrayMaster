@@ -55,7 +55,7 @@ export abstract class BottomLayer<TU extends UpperLayer, TF> extends Layer<TF> {
         await this.saveLayer(forceSave);
 
         if (commitAtEnd) {
-            await database().commit();
+            await database.commit();
         }
     }
 }

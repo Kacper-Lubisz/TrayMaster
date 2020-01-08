@@ -4,8 +4,22 @@ import "firebase/firestore";
 import "firebase/auth";
 import "path";
 import Utils, {Queue} from "./Utils";
-import {ONLINE} from "../WarehouseModel";
 import deepEqual from "deep-equal";
+
+
+/**
+ * If true, use firebase to load and save the warehouse model to and from the database
+ * If false, generate a randomised offline mock warehouse
+ *
+ * NOTE:
+ * To configure process.env.REACT_APP_ONLINE, in the root project directory create a file named ".env.local",
+ * in this file place the line "REACT_APP_ONLINE=true" or "REACT_APP_ONLINE=false" (without quotes).
+ * DO NOT change the value in ".env" or ".env.production".
+ * For any changes to take effect, restart the development server.
+ * Further Documentation:
+ * https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env
+ */
+export const ONLINE = process.env.REACT_APP_ONLINE === "true" && !process.env.CI;
 
 
 type DocumentSnapshot = fb.firestore.DocumentSnapshot;
@@ -57,7 +71,9 @@ class Firebase {
         fb.initializeApp(firebaseConfig);
 
         this.db = fb.firestore();
-        this.db.enablePersistence().catch(err => console.log(err));
+        if (ONLINE) {
+            this.db.enablePersistence().catch(err => console.log(err));
+        }
 
         this.dbChangeQueue = new Queue<DatabaseOperation<any>>();
     }
@@ -219,4 +235,4 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
     }
 }
 
-export default (): Firebase => Firebase.firebase;
+export default Firebase.firebase;
