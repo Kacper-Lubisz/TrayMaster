@@ -122,7 +122,7 @@ class Firebase {
                 }
             }
 
-            await Promise.all(batches.map(batch => batch.commit()));
+            await Promise.all(batches.map(async batch => batch.commit()));
         } else {
             this.dbChangeQueue.clear();
         }

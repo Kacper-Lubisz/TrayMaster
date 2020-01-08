@@ -74,12 +74,7 @@ module.exports = {
 
         // These rules don't have an equivalent in ESLint to disable
         "@typescript-eslint/no-throw-literal": "error",
-        "@typescript-eslint/promise-function-async": [
-            "error",
-            {
-                "checkArrowFunctions": false
-            }
-        ],
+        "@typescript-eslint/promise-function-async": "error",
         "@typescript-eslint/no-extra-non-null-assertion": "error",
         "@typescript-eslint/explicit-function-return-type": [
             "error",
