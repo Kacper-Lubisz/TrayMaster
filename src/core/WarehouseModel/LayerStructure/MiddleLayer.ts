@@ -24,11 +24,11 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
     }
 
     public get collectionPath(): string {
-        return Utils.joinPaths(this.parent?.path ?? "", this.collectionName);
+        return Utils.joinPaths(this.parent.path, this.collectionName);
     }
 
     public get topLayerPath(): string {
-        return this.parent?.topLayerPath ?? "";
+        return this.parent.topLayerPath;
     }
 
     /**

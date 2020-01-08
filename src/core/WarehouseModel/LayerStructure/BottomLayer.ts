@@ -16,15 +16,15 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     }
 
     public get collectionPath(): string {
-        return Utils.joinPaths(this.parent?.path ?? "", this.collectionName);
+        return Utils.joinPaths(this.parent.path, this.collectionName);
     }
 
     public get topLayerPath(): string {
-        return this.parent?.topLayerPath ?? "";
+        return this.parent.topLayerPath;
     }
 
     public get layerIdentifiers(): LayerIdentifiers {
-        const refs: LayerIdentifiers = this.parent?.layerIdentifiers ?? {};
+        const refs: LayerIdentifiers = this.parent.layerIdentifiers;
         refs[this.collectionName] = this.id;
         return refs;
     }
