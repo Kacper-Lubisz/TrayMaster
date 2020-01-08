@@ -4,13 +4,19 @@ import Utils, {Queue} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {BottomLayer} from "./BottomLayer";
 
-export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLayer> extends Layer<TF> {
+/**
+ * Represents a middle layer in the object model (that has children and a parent)
+ * @template TParent - The type of the type's parent
+ * @template TFields - The Fields type to have its members saved to and loaded from the database
+ * @template TChildren - The type of the type's children
+ */
+export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren extends LowerLayer> extends Layer<TFields> {
     public abstract readonly childCollectionName: string = "";
-    public parent: TU;
-    public children: TL[];
+    public parent: TParent;
+    public children: TChildren[];
     public childrenLoaded: boolean;
 
-    protected constructor(id: string, fields: TF, parent: TU, children?: TL[]) {
+    protected constructor(id: string, fields: TFields, parent: TParent, children?: TChildren[]) {
         super(id, fields);
         this.parent = parent;
         this.children = children ?? [];
@@ -36,7 +42,7 @@ export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLay
      * Get the index of a given child within the local collection of children
      * @param child - The child to get the index of
      */
-    public getChildIndex(child: TL): number {
+    public getChildIndex(child: TChildren): number {
         return this.children.indexOf(child);
     }
 
@@ -186,5 +192,5 @@ export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLay
     /**
      * Spawn a child instance
      */
-    public abstract createChild: (id: string, fields: unknown, parent: any) => TL;
+    public abstract createChild: (id: string, fields: unknown, parent: any) => TChildren;
 }

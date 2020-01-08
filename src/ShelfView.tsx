@@ -112,22 +112,6 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
     }
 
     /**
-     * This method returns all the parents of a shelf and the indices of all of them within each other
-     * @param shelf The shelf in question
-     */
-    private static currentShelfParentsAndIndices(shelf: Shelf): { warehouse: Warehouse; zone: Zone; bay: Bay; zoneIndex: number; bayIndex: number; shelfIndex: number } {
-        return {
-            warehouse: warehouse,
-            zone: shelf.parentZone,
-            bay: shelf.parentBay,
-            zoneIndex: shelf.parentZone.indexInParent,
-            bayIndex: shelf.parentBay.index,
-            shelfIndex: shelf.index
-        };
-
-    }
-
-    /**
      * This method changes the current shelf that is displayed in shelf view.  The shelf can be changed to a specific
      * shelf or can derive a new shelf from the current shelf and a direction.  The method throws an error if the
      * direction can't be moved in.  If moving to another zone the method will choose the first shelf or otherwise
@@ -188,10 +172,13 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                 });
             }
         } else { // moving from a shelf
-            const {
-                warehouse, zone: currentZone, bay: currentBay,
-                zoneIndex, bayIndex, shelfIndex,
-            } = ShelfView.currentShelfParentsAndIndices(this.state.currentView);
+            const
+                currentShelf = this.state.currentView,
+                currentBay: Bay = currentShelf.parent,
+                currentZone: Zone = currentBay.parent,
+                shelfIndex: number = currentShelf.index,
+                bayIndex: number = currentBay.index,
+                zoneIndex: number = currentZone.indexInParent;
 
             if (direction === "up" || direction === "down") { // vertical
 
@@ -302,15 +289,11 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
             ]);
         }
 
-        const {
-            warehouse, zone, bay, bayIndex, shelfIndex,
-        } = ShelfView.currentShelfParentsAndIndices(location);
-
         return new Map([
-            ["left", bayIndex - 1 !== -1],
-            ["right", bayIndex + 1 !== zone.bays.length],
-            ["up", shelfIndex + 1 !== bay.shelves.length],
-            ["down", shelfIndex - 1 !== -1],
+            ["left", location.parentBay.index - 1 !== -1],
+            ["right", location.parentBay.index + 1 !== location.parentZone.bays.length],
+            ["up", location.index + 1 !== location.parentBay.shelves.length],
+            ["down", location.index - 1 !== -1],
             ["nextShelf", warehouse.shelves.length > 1],
             ["previousShelf", warehouse.shelves.length > 1],
             ["nextZone", warehouse.zones.length > 1],
@@ -563,16 +546,9 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
             if (selected) {
                 newSelectedMap.set(tray, false);
                 if (tray instanceof Tray) {
-                    const column = tray.parentColumn;
-                    if (!column) {
-                        throw Error("Tray has no parent column");
-                    }
-
-                    const trayIndex = column.trays.indexOf(tray);
-                    column.trays.splice(trayIndex, 1);
-
-                    reindexColumns.add(column);
-
+                    const trayIndex = tray.parentColumn.trays.indexOf(tray);
+                    tray.parentColumn.trays.splice(trayIndex, 1);
+                    reindexColumns.add(tray.parentColumn);
                 }
             }
         });
@@ -588,7 +564,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
 
         const zoneColor: string = (this.state.currentView instanceof Zone ? this.state.currentView.color
                                                                           : this.state.currentView instanceof Shelf
-                                                                            ? this.state.currentView.parentZone?.color
+                                                                            ? this.state.currentView.parentZone.color
                                                                             : undefined) ?? "#ffffff";
 
         const locationString = this.state.currentView.toString();
@@ -690,7 +666,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                     >
                         <FontAwesomeIcon icon={leftArrow}/> &nbsp; Previous
                     </button>
-                    <p className="centerText">{`${zone?.name ?? "?"} Zone`}</p>
+                    <p className="centerText">{`${zone.name} Zone`}</p>
                     <button
                         id="nextZone"
                         onClick={this.changeView.bind(this, "nextZone")}
@@ -702,7 +678,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
 
                 {/* Grid of shelves in zone */}
                 <div id="nav-zone">{
-                    zone?.bays.length ? (() => {
+                    zone.bays.length ? (() => {
                         const textColor = getTextColorForBackground(zone.color);
                         return zone.bays.flatMap((bay, bayIndex) =>
                             <div className="nav-bay">
@@ -731,10 +707,8 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                      <p
                          id="arrow-area-label"
                          style={{
-                             backgroundColor: zone?.color,
-                             color: getTextColorForBackground(
-                                 zone?.color ?? "#ffffff"
-                             )
+                             backgroundColor: zone.color,
+                             color: getTextColorForBackground(zone.color)
                          }}
                      >{`Current Shelf: ${this.state.currentView.toString()}`}</p> : undefined
                     }

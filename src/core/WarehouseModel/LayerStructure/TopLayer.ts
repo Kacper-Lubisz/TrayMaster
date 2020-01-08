@@ -5,12 +5,17 @@ import {WarehouseModel} from "../../WarehouseModel";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
 
-export abstract class TopLayer<TF, TL extends LowerLayer> extends Layer<TF> {
+/**
+ * Represents the top layer in the object model (that has children)
+ * @template TFields - The Fields type to have its members saved to and loaded from the database
+ * @template TChildren - The type of the type's children
+ */
+export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends Layer<TFields> {
     public abstract readonly childCollectionName: string = "";
-    public children: TL[];
+    public children: TChildren[];
     public childrenLoaded: boolean;
 
-    protected constructor(id: string, fields: TF, children?: TL[]) {
+    protected constructor(id: string, fields: TFields, children?: TChildren[]) {
         super(id, fields);
         this.children = children ?? [];
         this.childrenLoaded = typeof children !== "undefined";
@@ -39,7 +44,7 @@ export abstract class TopLayer<TF, TL extends LowerLayer> extends Layer<TF> {
      * Get the index of a given child within the local collection of children
      * @param child - The child to get the index of
      */
-    public getChildIndex(child: TL): number {
+    public getChildIndex(child: TChildren): number {
         return this.children.indexOf(child);
     }
 
@@ -171,5 +176,5 @@ export abstract class TopLayer<TF, TL extends LowerLayer> extends Layer<TF> {
     /**
      * Spawn a child instance
      */
-    public abstract createChild: (id: string, fields: unknown, parent: any) => TL;
+    public abstract createChild: (id: string, fields: unknown, parent: any) => TChildren;
 }

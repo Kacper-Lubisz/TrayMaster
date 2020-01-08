@@ -20,19 +20,32 @@ export interface LayerIdentifiers {
     [collectionName: string]: string;
 }
 
+/**
+ * Represents one of the three sub-classes of Layer
+ */
 export type Layers = TopLayer<any, any> | MiddleLayer<any, any, any> | BottomLayer<any, any>;
+/**
+ * Represents sub-classes of Layer that are guaranteed to have children
+ */
 export type UpperLayer = TopLayer<any, any> | MiddleLayer<any, any, any>;
+/**
+ * Represents sub-classes of Layer that are guaranteed to have parents
+ */
 export type LowerLayer = MiddleLayer<any, any, any> | BottomLayer<any, any>;
 
-export abstract class Layer<TF> {
+/**
+ * Represents data and methods common to all layers in the object model
+ * @template TFields - The Fields type to have its members saved to and loaded from the database
+ */
+export abstract class Layer<TFields> {
     public abstract readonly layerID: WarehouseModel;
     public abstract readonly collectionName: string;
     public readonly id: string;
-    protected fields: TF;
-    protected originalFields: TF;
+    protected fields: TFields;
+    protected originalFields: TFields;
     protected loaded: boolean;
 
-    protected constructor(id: string, fields: TF) {
+    protected constructor(id: string, fields: TFields) {
         this.id = id;
         this.fields = fields;
         this.originalFields = Object.assign({}, fields);
@@ -103,7 +116,7 @@ export abstract class Layer<TF> {
 
     protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
-            this.fields = (await database.loadDocument<TF>(this.path))?.fields ?? this.fields;
+            this.fields = (await database.loadDocument<TFields>(this.path))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
         }

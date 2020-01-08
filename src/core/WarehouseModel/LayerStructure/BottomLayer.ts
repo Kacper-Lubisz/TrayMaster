@@ -2,11 +2,15 @@ import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
 import database from "../Database";
 import Utils from "../Utils";
 
+/**
+ * Represents the bottom layer in the object model (that has a parent)
+ * @template TParent - The type of the type's parent
+ * @template TFields - The Fields type to have its members saved to and loaded from the database
+ */
+export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends Layer<TFields> {
+    public parent: TParent;
 
-export abstract class BottomLayer<TU extends UpperLayer, TF> extends Layer<TF> {
-    public parent: TU;
-
-    protected constructor(id: string, fields: TF, parent: TU) {
+    protected constructor(id: string, fields: TFields, parent: TParent) {
         super(id, fields);
         this.parent = parent;
     }
