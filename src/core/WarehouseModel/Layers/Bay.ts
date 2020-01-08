@@ -34,6 +34,7 @@ export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
         return this.name;
     }
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Shelf.createFromFields;
 
     //#region Field Getters and Setters

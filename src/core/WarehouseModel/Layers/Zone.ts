@@ -31,6 +31,7 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
         return new Zone(id, fields as ZoneFields, parent);
     }
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Bay.createFromFields;
 
     public toString(): string {

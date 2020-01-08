@@ -45,6 +45,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? ""});
     }
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Zone.createFromFields;
 
     public async loadChildren(forceLoad = false): Promise<void> {
@@ -61,7 +62,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         return super.loadDepthFirst(forceLoad, minLayer);
     }
 
-    public async load(minLayer = this.layerID) {
+    public async load(minLayer = this.layerID): Promise<this> {
         await this.loadCollections();
         return super.load(minLayer);
     }
@@ -138,7 +139,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         await this.traySizeCollection.save(forceSave);
 
         if (this.changed || forceSave) {
-            await database().set(this.path, this.fields);
+            database().set(this.path, this.fields);
             this.fieldsSaved();
         }
     }

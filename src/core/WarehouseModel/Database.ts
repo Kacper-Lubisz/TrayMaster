@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import * as fb from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
@@ -62,15 +63,15 @@ class Firebase {
     }
 
     //#region Writing
-    public async update<T>(path: string, obj: T): Promise<void> {
+    public update<T>(path: string, obj: T): void {
         this.dbChangeQueue.enqueue({type: WriteOperation.update, path: path, obj: obj});
     }
 
-    public async set<T>(path: string, obj: T): Promise<void> {
+    public set<T>(path: string, obj: T): void {
         this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path, obj: obj});
     }
 
-    public async delete(path: string): Promise<void> {
+    public delete(path: string): void {
         this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path});
     }
 
@@ -166,11 +167,11 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
     public async save(forceSave = false, forceCommit = false): Promise<void> {
         if (this.changed || forceSave) {
             for (const id of Array.from(this.deleted)) {
-                await Firebase.firebase.delete(Utils.joinPaths(this.collectionPath, id));
+                Firebase.firebase.delete(Utils.joinPaths(this.collectionPath, id));
             }
             this.deleted.clear();
             for (const [id, item] of Array.from(this)) {
-                await Firebase.firebase.set(Utils.joinPaths(this.collectionPath, id), item);
+                Firebase.firebase.set(Utils.joinPaths(this.collectionPath, id), item);
             }
         }
         if (forceCommit) {

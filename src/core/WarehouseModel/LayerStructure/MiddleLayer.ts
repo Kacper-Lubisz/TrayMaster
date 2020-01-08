@@ -107,10 +107,10 @@ export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLay
         ]);
 
         type State = {
-            generator: (id: string, fields: unknown, parent: any) => LowerLayer,
-            collectionName: string,
-            childCollectionName: string,
-            topLevelChildCollectionPath: string
+            generator: (id: string, fields: unknown, parent: any) => LowerLayer;
+            collectionName: string;
+            childCollectionName: string;
+            topLevelChildCollectionPath: string;
         };
 
         let currentState: State = {
@@ -125,7 +125,7 @@ export abstract class MiddleLayer<TU extends UpperLayer, TF, TL extends LowerLay
             let nextState: State | undefined;
 
             for (const document of (await database().loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
-                let parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
+                const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
                     const child: LowerLayer = currentState.generator(document.id, document.fields, parent);

@@ -117,7 +117,7 @@ export default abstract class Utils {
      * @returns The ID of the referenced document
      */
     public static getID(docPath: string): string {
-        return this.normalisePath(docPath).split("/").pop() || "";
+        return this.normalisePath(docPath).split("/").pop() ?? "";
     }
 
     /**

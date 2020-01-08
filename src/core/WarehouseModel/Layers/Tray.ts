@@ -91,11 +91,11 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     }
 
     public get customField(): string | undefined {
-        return this.fields.customField || undefined;
+        return this.fields.customField ?? undefined;
     }
 
     public set customField(customField: string | undefined) {
-        this.fields.customField = customField || null;
+        this.fields.customField = customField ?? null;
     }
 
     //#endregion

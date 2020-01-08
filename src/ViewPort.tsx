@@ -316,7 +316,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + column.maxHeight, 1);
+        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -377,14 +377,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column to remove
      */
     removeColumn(column: Column): void {
-        const shelf: Shelf | undefined = column.parentShelf;
-        if (shelf) {
-            const index = shelf.columns.indexOf(column);
-            shelf.columns.splice(index, 1);
-        } else {
-            throw Error("Shelf undefined");
-        }
-
+        const index = column.parentShelf.columns.indexOf(column);
+        column.parentShelf.columns.splice(index, 1);
         this.forceUpdate();
     }
 

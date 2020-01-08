@@ -16,7 +16,7 @@ import Utils from "../Utils";
 interface ColumnFields {
     index: number;
     traySizeId: string;
-    maxHeight: number;
+    maxHeight: number | null;
 }
 
 export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
@@ -77,11 +77,11 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
         this.fields.traySizeId = warehouse.getTraySizeId(traySize);
     }
 
-    public get maxHeight(): number {
+    public get maxHeight(): number | null {
         return this.fields.maxHeight;
     }
 
-    public set maxHeight(maxHeight: number) {
+    public set maxHeight(maxHeight: number | null) {
         this.fields.maxHeight = maxHeight;
     }
 
