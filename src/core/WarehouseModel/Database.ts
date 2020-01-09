@@ -163,6 +163,7 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
     protected readonly collectionPath: string;
     protected changed: boolean;
     protected deleted: Set<string>;
+    protected loaded: boolean;
 
     public constructor(collectionPath: string, values?: [string, TF][]) {
         if (values) {
@@ -172,16 +173,20 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
         }
         this.collectionPath = collectionPath;
         this.changed = false;
+        this.loaded = false;
         this.deleted = new Set<string>();
     }
 
-    public async load(): Promise<void> {
-        (await Firebase.firebase.loadCollection<TF>(this.collectionPath))
-            .forEach(document => super.set(document.id, document.fields));
+    public async load(forceLoad = false): Promise<void> {
+        if (!this.loaded || forceLoad) {
+            (await Firebase.firebase.loadCollection<TF>(this.collectionPath))
+                .forEach(document => super.set(document.id, document.fields));
+            this.loaded = true;
+        }
     }
 
-    public async save(forceSave = false, forceCommit = false): Promise<void> {
-        if (this.changed || forceSave) {
+    public async stage(forceStage = false, commit = false): Promise<void> {
+        if (this.changed || forceStage) {
             for (const id of Array.from(this.deleted)) {
                 Firebase.firebase.delete(Utils.joinPaths(this.collectionPath, id));
             }
@@ -190,7 +195,7 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
                 Firebase.firebase.set(Utils.joinPaths(this.collectionPath, id), item);
             }
         }
-        if (forceCommit) {
+        if (commit) {
             await Firebase.firebase.commit();
         }
     }

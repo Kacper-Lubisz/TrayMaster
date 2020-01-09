@@ -1,16 +1,5 @@
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
-import {
-    Bay,
-    Shelf,
-    Tray,
-    TrayCell,
-    TraySize,
-    TraySpace,
-    Warehouse,
-    warehouse,
-    WarehouseModel,
-    Zone
-} from "../../WarehouseModel";
+import {Bay, Shelf, Tray, TrayCell, TraySize, TraySpace, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 
 interface ColumnFields {
@@ -44,7 +33,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public static create(index: number, traySize: TraySize, maxHeight: number, parent: Shelf): Column {
         return new Column(Utils.generateRandomId(), {
             index,
-            traySizeId: warehouse.getTraySizeId(traySize),
+            traySizeId: parent.parentWarehouse.getTraySizeId(traySize),
             maxHeight
         }, parent);
     }
@@ -54,16 +43,14 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
      * @param fields - The column fields
      * @param parent - The parent shelf
      */
-    public static createFromFields(id: string, fields: unknown, parent: Shelf): Column {
-        return new Column(id, fields as ColumnFields, parent);
-    }
+    public static createFromFields = (id: string, fields: unknown, parent: Shelf): Column =>
+        new Column(id, fields as ColumnFields, parent);
+
+    public createChild = Tray.createFromFields;
 
     public toString(): string {
         return `Column(${this.index}, ${this.traySize?.label}, ${this.maxHeight})`;
     }
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    public createChild = Tray.createFromFields;
 
     //#region Field Getters and Setters
     public get index(): number {
@@ -75,11 +62,11 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     }
 
     public get traySize(): TraySize | undefined {
-        return warehouse.getTraySizeByID(this.fields.traySizeId);
+        return this.parentWarehouse.getTraySizeByID(this.fields.traySizeId);
     }
 
     public set traySize(traySize: TraySize | undefined) {
-        this.fields.traySizeId = warehouse.getTraySizeId(traySize);
+        this.fields.traySizeId = this.parentWarehouse.getTraySizeId(traySize);
     }
 
     public get maxHeight(): number {

@@ -12,7 +12,6 @@ import {
     Tray,
     TrayCell,
     TraySpace,
-    warehouse,
     Warehouse,
     Zone
 } from "./core/WarehouseModel";
@@ -245,7 +244,8 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                     });
                 } else { // increment zone
 
-                    const newZone = warehouse.zones[properMod(zoneIndex + increment, warehouse.zones.length)];
+                    const newZone = currentZone.parent.zones[properMod(zoneIndex + increment,
+                        currentZone.parent.zones.length)];
 
                     if (newZone.bays.length === 0) {
                         this.setState({
@@ -294,10 +294,10 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
             ["right", location.parentBay.index + 1 !== location.parentZone.bays.length],
             ["up", location.index + 1 !== location.parentBay.shelves.length],
             ["down", location.index - 1 !== -1],
-            ["nextShelf", warehouse.shelves.length > 1],
-            ["previousShelf", warehouse.shelves.length > 1],
-            ["nextZone", warehouse.zones.length > 1],
-            ["previousZone", warehouse.zones.length > 1],
+            ["nextShelf", location.parentWarehouse.shelves.length > 1],
+            ["previousShelf", location.parentWarehouse.shelves.length > 1],
+            ["nextZone", location.parentWarehouse.zones.length > 1],
+            ["previousZone", location.parentWarehouse.zones.length > 1],
         ]);
     }
 
@@ -681,7 +681,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                     zone.bays.length ? (() => {
                         const textColor = getTextColorForBackground(zone.color);
                         return zone.bays.flatMap((bay, bayIndex) =>
-                            <div className="nav-bay">
+                            <div className="nav-bay" key={bayIndex}>
                                 {bay.shelves.map((shelf, shelfIndex) =>
                                     <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
                                          className={classNames("nav-shelf", {

@@ -183,13 +183,13 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         return this;
     }
 
-    public async save(
-        forceSave = false, recurse = false, commitAtEnd = false): Promise<void> {
-        await this.saveLayer(forceSave);
+    public async stage(
+        forceStage = false, commitAtEnd = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
+        await this.stageLayer(forceStage);
 
-        if (recurse) {
+        if (this.layerID >= minLayer) {
             for (const child of this.children) {
-                await child.save(forceSave, recurse, false);
+                await child.stage(forceStage, false, minLayer);
             }
         }
 

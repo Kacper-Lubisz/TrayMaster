@@ -31,11 +31,9 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
      * @param fields - The shelf fields
      * @param parent - The parent bay
      */
-    public static createFromFields(id: string, fields: unknown, parent: Bay): Shelf {
-        return new Shelf(id, fields as ShelfFields, parent);
-    }
+    public static createFromFields = (id: string, fields: unknown, parent: Bay): Shelf =>
+        new Shelf(id, fields as ShelfFields, parent);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Column.createFromFields;
 
     public toString(): string {

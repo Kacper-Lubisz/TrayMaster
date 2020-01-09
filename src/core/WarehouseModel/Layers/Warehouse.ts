@@ -45,7 +45,13 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? ""});
     }
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    /**
+     * @param id - The database ID for the warehouse
+     * @param fields - The column fields
+     */
+    public static createFromFields = (id: string, fields: unknown): Warehouse =>
+        new Warehouse(id, fields as WarehouseFields);
+
     public createChild = Zone.createFromFields;
 
     public async loadChildren(forceLoad = false): Promise<void> {
@@ -58,18 +64,21 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     }
 
     public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
-        await this.loadCollections();
+        await this.loadCollections(forceLoad);
         return super.loadDepthFirst(forceLoad, minLayer);
     }
 
-    public async load(minLayer = this.layerID): Promise<this> {
-        await this.loadCollections();
-        return super.load(minLayer);
+    public async load(minLayer = this.layerID, forceLoad = false): Promise<this> {
+        await this.loadCollections(forceLoad);
+        if ((!this.loaded || (!this.childrenLoaded && this.layerID > minLayer)) || forceLoad) {
+            return super.load(minLayer);
+        }
+        return this;
     }
 
-    private async loadCollections(): Promise<void> {
-        await this.categoryCollection.load();
-        await this.traySizeCollection.load();
+    private async loadCollections(forceLoad: boolean): Promise<void> {
+        await this.categoryCollection.load(forceLoad);
+        await this.traySizeCollection.load(forceLoad);
 
         if (this.categoryCollection.size === 0) {
             for (const defaultCategory of defaultCategories) {
@@ -134,11 +143,11 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //#endregion
 
-    protected async saveLayer(forceSave = false): Promise<void> {
-        await this.categoryCollection.save(forceSave);
-        await this.traySizeCollection.save(forceSave);
+    protected async stageLayer(forceStage = false): Promise<void> {
+        await this.categoryCollection.stage(forceStage);
+        await this.traySizeCollection.stage(forceStage);
 
-        if (this.changed || forceSave) {
+        if (this.changed || forceStage) {
             database.set(this.path, this.fields);
             this.fieldsSaved();
         }

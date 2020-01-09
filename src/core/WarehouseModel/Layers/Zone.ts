@@ -32,11 +32,9 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
      * @param fields - The zone fields
      * @param parent - The parent warehouse
      */
-    public static createFromFields(id: string, fields: unknown, parent: Warehouse): Zone {
-        return new Zone(id, fields as ZoneFields, parent);
-    }
+    public static createFromFields = (id: string, fields: unknown, parent: Warehouse): Zone =>
+        new Zone(id, fields as ZoneFields, parent);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Bay.createFromFields;
 
     public toString(): string {
