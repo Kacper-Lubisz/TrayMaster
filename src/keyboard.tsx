@@ -39,7 +39,7 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
                 if (!this.props.disabled && this.props.onClick) {
                     this.props.onClick(e);
                     // This prevents the blue/orange outline that Chrome adds to buttons after clicking
-                    // It's better to blur (defocus) element after clicking rather than use CSS to hide the outline
+                    // It's better to blur (de-focus) element after clicking rather than use CSS to hide the outline
                     // for accessibility reasons, because users who "tab" around the buttons need the outline
                     e.currentTarget.blur();
                 }

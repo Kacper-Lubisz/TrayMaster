@@ -181,9 +181,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * onPointerUp.  This method controls the selecting behaviour of a singular TrayCell.  Notably, this method is also
      * called after a pointer drag event if the event ends on the same TrayCell as it started.
      * @param trayCell The TrayCell that is clicked
-     * @param e The react event object which triggered this listener
      */
-    onTrayClick(trayCell: TrayCell, e: React.PointerEvent<HTMLDivElement>): void {
+    onTrayClick(trayCell: TrayCell): void {
 
         // Shallow clone the selected map from props, which we will mutate
         const newSelectedMap = new Map(this.props.selected);
@@ -229,9 +228,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when the pointer button is released over a tray, this either cancels the new drag event
      * timeout, finalises a current dragging event or performs a pointer click.
      * @param tray The tray over which the even is triggered
-     * @param e The react pointer event that triggered this call
      */
-    onTrayPointerUp(tray: TrayCell, e: React.PointerEvent<HTMLDivElement>): void {
+    onTrayPointerUp(tray: TrayCell): void {
 
         if (this.state.longPress) {
             if (this.state.longPress.isHappening) {
@@ -242,7 +240,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     ...this.state,
                     longPress: null
                 });
-                this.onTrayClick(tray, e);
+                this.onTrayClick(tray);
             }
         }
 
@@ -251,9 +249,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     /**
      * This method is called when the pointer leaves the DOM element which represents any tray.  This method stops a
      * pointer down event from starting a drag event if the pointer leaves that tray.
-     * @param e The react pointer event that triggered this call
      */
-    onTrayPointerLeave(e: React.PointerEvent<HTMLDivElement>): void {
+    onTrayPointerLeave(): void {
 
         if (this.state.longPress && !this.state.longPress.isHappening) {
             // is between pointer down and drag start
@@ -507,7 +504,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method clears the tray spaces if the shelf that is being displayed is changed.
      * @inheritDoc
      */
-    componentDidUpdate(prevProps: Readonly<ViewPortProps>, prevState: Readonly<ViewPortState>, snapshot?: any): void {
+    componentDidUpdate(prevProps: Readonly<ViewPortProps>): void {
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
         }
