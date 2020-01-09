@@ -106,10 +106,10 @@ const trayExpiries: ExpiryRange[] = [
  */
 async function generateRandomWarehouse(id: string): Promise<void> {
     warehouse = await Warehouse.create(id, "Chester-le-Street").loadDepthFirst();
-    for (let i = 0; i < zoneColors.length; i++) {
-        const zone = Zone.create(zoneColors[i].name, zoneColors[i].color, warehouse);
+    for (const zoneColor of zoneColors) {
+        const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
         for (let j = 0; j < 3; j++) {
-            const bay = Bay.create(j, String.fromCharCode(65 + i), zone);
+            const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
             for (let k = 0; k < 3; k++) {
                 const shelf = Shelf.create(k, `${k + 1}`, bay);
                 for (let l = 0; l < 4; l++) {

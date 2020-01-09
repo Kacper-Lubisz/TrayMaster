@@ -12,6 +12,11 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     public readonly collectionName = "shelves";
     public readonly childCollectionName = "columns";
 
+    protected constructor(id: string, fields: ShelfFields, parent: Bay) {
+        super(id, fields, parent);
+        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
+    }
+
     /**
      * @param index - The (ordered) index of the shelf within the bay
      * @param name - The name of the shelf

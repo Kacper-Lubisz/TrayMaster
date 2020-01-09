@@ -13,6 +13,11 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
     public readonly collectionName = "zones";
     public readonly childCollectionName = "bays";
 
+    protected constructor(id: string, fields: ZoneFields, parent: Warehouse) {
+        super(id, fields, parent);
+        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
+    }
+
     /**
      * @param name - The name of the zone
      * @param color - The hex colour of the zone

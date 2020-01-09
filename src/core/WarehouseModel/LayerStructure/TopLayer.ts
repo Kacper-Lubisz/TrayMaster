@@ -14,6 +14,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
     public abstract readonly childCollectionName: string = "";
     public children: TChildren[];
     public childrenLoaded: boolean;
+    public childLoadComplete?: () => void;
 
     protected constructor(id: string, fields: TFields, children?: TChildren[]) {
         super(id, fields);
@@ -119,6 +120,8 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
                     const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
+                    child.loaded = true;
+                    child.loadComplete?.call(child);
                     childMap.get(currentState.childCollectionName)?.set(document.id, child);
                     parent.children.push(child);
                     if (child instanceof MiddleLayer && !nextState) {
@@ -138,6 +141,12 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                 break;
             }
         }
+
+        this.dfs(layer => {
+            if (!(layer instanceof BottomLayer)) {
+                layer.childLoadComplete?.call(layer);
+            }
+        });
     }
 
     public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {

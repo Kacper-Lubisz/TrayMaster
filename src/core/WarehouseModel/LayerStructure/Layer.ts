@@ -41,9 +41,10 @@ export abstract class Layer<TFields> {
     public abstract readonly layerID: WarehouseModel;
     public abstract readonly collectionName: string;
     public readonly id: string;
+    public loaded: boolean;
+    public loadComplete?: () => void;
     protected fields: TFields;
     protected originalFields: TFields;
-    protected loaded: boolean;
 
     protected constructor(id: string, fields: TFields) {
         this.id = id;
@@ -119,6 +120,7 @@ export abstract class Layer<TFields> {
             this.fields = (await database.loadDocument<TFields>(this.path))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
+            this.loadComplete?.call(this);
         }
         return this;
     }

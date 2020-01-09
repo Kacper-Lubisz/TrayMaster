@@ -24,6 +24,11 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public readonly collectionName = "columns";
     public readonly childCollectionName = "trays";
 
+    protected constructor(id: string, fields: ColumnFields, parent: Shelf) {
+        super(id, fields, parent);
+        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
+    }
+
     /**
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
      * different object would be different keys of the selection map
