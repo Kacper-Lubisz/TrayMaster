@@ -1,6 +1,6 @@
 import React from "react";
 import "pepjs";
-import "./styles/shelfview.scss";
+import "../styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle as tickSolid,
@@ -8,10 +8,10 @@ import {
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/MockWarehouse";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/MockWarehouse";
 import classNames from "classnames/bind";
-import {getTextColorForBackground} from "./utils/getTextColorForBackground";
-import {getExpiryColor} from "./utils/getExpiryColor";
+import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getExpiryColor} from "../utils/getExpiryColor";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;
@@ -443,7 +443,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
                         <div className="trayWeight">{tray.weight ?? "?"}kg</div>
-                        <div className="trayCustomField">{tray.customField ?? ""}</div>
+                        <div className="trayCustomField">{tray.comment ?? ""}</div>
                     </> : null}
                     {!(tray instanceof Tray) && index === column.trays.length ? <>
                         <p>EMPTY TRAY {tray.index}</p>

@@ -53,7 +53,7 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
  * The properties that get passed into Keyboard components
  * @see Keyboard
  */
-interface KeyboardProps {
+export interface KeyboardProps {
     /** List of KeyboardButtonProps to give to child buttons */
     buttons: KeyboardButtonProps[];
 

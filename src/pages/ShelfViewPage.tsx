@@ -1,8 +1,8 @@
 import React from "react";
-import {SideBar} from "./SideBar";
-import {ViewPort, ViewPortLocation} from "./ViewPort";
-import {BottomPanel} from "./BottomPanel";
-import "./styles/shelfview.scss";
+import {SideBar} from "../components/SideBar";
+import {ViewPort, ViewPortLocation} from "../components/ViewPort";
+import {BottomPanel} from "../components/BottomPanel";
+import "../styles/shelfview.scss";
 import {
     Bay,
     Category,
@@ -14,25 +14,33 @@ import {
     TraySpace,
     Warehouse,
     Zone
-} from "./core/MockWarehouse";
-import {Settings} from "./core/MockSettings";
+} from "../core/MockWarehouse";
+import {Settings} from "../core/MockSettings";
 import {
     faArrowDown as downArrow,
     faArrowLeft as leftArrow,
     faArrowRight as rightArrow,
     faArrowUp as upArrow,
+    faCheckCircle as tickSolid,
     faClock,
+    faCommentAlt,
+    faEraser,
     faHome,
     faTimes as cross,
     faWeightHanging
 } from "@fortawesome/free-solid-svg-icons";
+
+import {faCheckCircle as tickRegular} from "@fortawesome/free-regular-svg-icons";
 import Popup from "reactjs-popup";
 import classNames from "classnames";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {StandardDialog} from "./App";
-import {getTextColorForBackground} from "./utils/getTextColorForBackground";
+
 import {RouteComponentProps, withRouter} from "react-router-dom";
-import {properMod} from "./utils/properMod";
+import {properMod} from "../utils/properMod";
+import App, {Dialog, DialogButtons, DialogTitle} from "../core/App";
+import {ToolBar} from "../components/ToolBar";
+import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+// todo fixme decide if to replace this icon, if this icon is removed then remove this package too
 
 
 /**
@@ -59,7 +67,7 @@ interface ShelfViewProps {
      * This function allows for opening new dialogs.
      * @param dialog A dialog builder function which takes the function that closes the dialog.
      */
-    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+    openDialog: (dialog: Dialog) => void;
     warehouse: Warehouse;
     settings: Settings;
 }
@@ -73,7 +81,7 @@ interface ShelfViewState {
     isNavModalOpen: boolean;
 }
 
-class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
+class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
 
     constructor(props: any) {
         super(props);
@@ -210,7 +218,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
             const {
                 warehouse, zone: currentZone, bay: currentBay,
                 zoneIndex, bayIndex, shelfIndex,
-            } = ShelfView.currentShelfParentsAndIndices(this.state.currentView);
+            } = ShelfViewPage.currentShelfParentsAndIndices(this.state.currentView);
 
             if (direction === "up" || direction === "down") { // vertical
 
@@ -323,7 +331,7 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
 
         const {
             warehouse, zone, bay, bayIndex, shelfIndex,
-        } = ShelfView.currentShelfParentsAndIndices(location);
+        } = ShelfViewPage.currentShelfParentsAndIndices(location);
 
         return new Map([
             ["left", bayIndex - 1 !== -1],
@@ -604,13 +612,56 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
         this.setSelected(newSelectedMap);
     }
 
+    /**
+     * Sets the selection of all trays and tray spaces in the shelf.
+     * @param select if all should be  selected or deslected
+     */
+    setSelectAll(select: boolean): void {
+        if (this.state.currentView instanceof Shelf) {
+            this.setSelected(new Map<TrayCell, boolean>(this.state.currentView.columns.flatMap(column =>
+                column.getPaddedTrays().map(cell => [cell, select])
+            )));
+        } else {
+            throw Error("Select/Deselect all can't be performed while not looking at a shelf");
+        }
+    }
+
+    /**
+     * Opens a popup which allows for editing the custom field
+     */
+    editTrayComment(): void {
+
+        if (this.getSelectedTrayCells().length === 1) {
+
+            this.props.openDialog({
+                closeOnDocumentClick: true,
+                dialog: (close: () => void) => <EditCommentContent
+                    onDiscard={close}
+                    draft={this.getSelectedTrays(false, false)[0].comment ?? null}
+                    onSubmit={(comment) => {
+                        this.getSelectedTrays(false, false)[0].comment = comment ?? undefined;
+                        close();
+                    }}
+                />
+            });
+        } else {
+            throw Error("Multiple comments can't be set at the same time, maybe they should be");
+        }
+
+    }
+
     render(): React.ReactNode {
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
-        const zoneColor: string = (this.state.currentView instanceof Zone ? this.state.currentView.color
-                                                                          : this.state.currentView instanceof Shelf
-                                                                            ? this.state.currentView.parentZone?.color
-                                                                            : undefined) ?? "#ffffff";
+        const zoneColor: string = (() => {
+            if (this.state.currentView instanceof Zone) {
+                return this.state.currentView.color;
+            } else if (this.state.currentView instanceof Shelf) {
+                return this.state.currentView.parentZone?.color ?? "#ffffff";
+            } else {
+                return "#ffffff";
+            }
+        })();
 
         const locationString = this.state.currentView.toString();
 
@@ -625,10 +676,32 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                         current={this.state.currentView}
                         isShelfEdit={this.state.isEditShelf}
                     />
+                    <ToolBar toolbar={[
+                        this.getSelectedTrayCells().length === 0 ?
+                            {name: "Select All", icon: tickRegular, onClick: this.setSelectAll.bind(this, true)} :
+                            {name: "Deselect All", icon: tickSolid, onClick: this.setSelectAll.bind(this, false)},
+                        {
+                            name: "Edit Custom",
+                            icon: faCommentAlt,
+                            onClick: this.editTrayComment.bind(this),
+                            disabled: this.getSelectedTrays(false, false).length !== 1
+                        },
+                        {
+                            name: "Clear Trays",
+                            icon: faEraser,
+                            onClick: this.clearTrays.bind(this),
+                            disabled: this.getSelectedTrayCells().length === 0
+                        },
+                        { /*This code adds a button which opens a test dialog*/
+                            name: "Test Error", onClick: this.props.openDialog.bind(undefined,
+                                App.buildErrorDialog("this is a big test", true)
+                            )
+                        }
+
+                    ]}/>
                     <SideBar
                         zoneColor={zoneColor}
                         locationString={locationString}
-
                         buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
                             {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
                             {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
@@ -636,19 +709,12 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
                         ] : [ // Generate sidebar buttons
                             {name: "Settings", onClick: () => this.props.history.push("/settings")},
                             {name: "Home", onClick: () => this.props.history.push("/menu")},
-                            {name: "Clear Trays", onClick: this.clearTrays.bind(this)},
                             {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                             {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a
                                                                                          // warehouse
                             // enabled = possibleMoveDirections.previousTray
                             {name: "Next", onClick: this.changeView.bind(this, "next")},
                             // enabled = possibleMoveDirections.nextTray
-
-                            // { /*This code adds a button which opens a test dialog*/
-                            //     name: "Test Dialog", onClick: this.props.openDialog.bind(undefined,
-                            //         App.buildErrorDialog("this is a big test", true)
-                            //     )
-                            // }
                         ]}
                         keyboards={[
                             {name: "category", icon: faHome},
@@ -685,7 +751,9 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
      * @param possibleMoveDirections The possible directions in which the current view can be moved.
      */
     private renderNavigationPopup(
-        currentView: Zone | Shelf, possibleMoveDirections: Map<ShelfMoveDirection, boolean>): React.ReactNode {
+        currentView: Zone | Shelf,
+        possibleMoveDirections: Map<ShelfMoveDirection, boolean>
+    ): React.ReactNode {
         // the popup needs to be moved to over the navigator button
 
         const zone = currentView instanceof Zone ? currentView
@@ -811,4 +879,50 @@ class ShelfView extends React.Component<RouteComponentProps & ShelfViewProps, Sh
 
 }
 
-export default withRouter(ShelfView);
+type EditCommentDialogState = { draft: string | null };
+type EditCommentDialogProps = {
+    onDiscard: () => void;
+    onSubmit: (draft: string | null) => void;
+} & EditCommentDialogState;
+
+/**
+ * This is the the content of the dialog which is shown when the comment on a tray is being edited
+ */
+class EditCommentContent extends React.Component<EditCommentDialogProps, EditCommentDialogState> {
+    constructor(props: EditCommentDialogProps) {
+        super(props);
+        this.state = {draft: this.props.draft};
+    }
+
+    render(): React.ReactElement {
+        return <>
+            <DialogTitle title="Edit Comment"/>
+            <form onSubmit={() => this.props.onSubmit(this.state.draft)}>
+                <input
+                    type="text"
+                    onChange={(event) => {
+                        this.setState({
+                            draft: event.target.value.length === 0 ? null : event.target.value
+                        });
+                    }}
+                    value={this.state.draft ?? ""}
+                /></form>
+            <DialogButtons buttons={[
+                {
+                    name: "Discard", buttonProps: {
+                        onClick: this.props.onDiscard,
+                        style: {borderColor: "red"}
+                    }
+                }, {
+                    name: "Done", buttonProps: {
+                        onClick: () => this.props.onSubmit(this.state.draft),
+                        style: {borderColor: "red"}
+                    }
+                }
+            ]}/>
+        </>;
+    }
+}
+
+
+export default withRouter(ShelfViewPage);

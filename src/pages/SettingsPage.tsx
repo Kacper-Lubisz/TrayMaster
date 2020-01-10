@@ -1,12 +1,12 @@
 import React from "react";
-import "./styles/settings.scss";
+import "../styles/settings.scss";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
-import {StandardDialog} from "./App";
+import {Dialog} from "../core/App";
 
 interface SettingsProps {
-    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+    openDialog: (dialog: Dialog) => void;
 }
 
 /**

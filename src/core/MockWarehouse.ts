@@ -822,7 +822,7 @@ export class Tray {
     id: string;
     index: number;
 
-    customField?: string;
+    comment?: string;
     category?: Category;
     expiry?: ExpiryRange;
     weight?: number;
@@ -848,7 +848,7 @@ export class Tray {
         this.category = category;
         this.weight = weight;
         this.expiry = expiryRange;
-        this.customField = customField;
+        this.comment = customField;
         this.parentColumn = parentColumn;
     }
 
