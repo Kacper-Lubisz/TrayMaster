@@ -183,13 +183,14 @@ class App extends React.Component<unknown, AppState> {
     }
 
     render(): React.ReactNode {
+        console.log(this.state);
         return <>
             {this.state === null ? <LoadingPage/>
                                  : <BrowserRouter>
                  <Switch>
                      <Route path="/" component={() =>
                          this.state.loginState === null || (this.state.loginState as
-                             (User & WarehouseNotChosen) | (User & WarehouseChosen)).chosen
+                             (User & WarehouseNotChosen) | (User & WarehouseChosen)).chosen === undefined
                          ? <Redirect to="/login"/> : <ShelfView
                              openDialog={this.openDialog.bind(this)}
                              settings={{sampleSetting: ""}}
