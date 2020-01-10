@@ -4,8 +4,8 @@ import {BrowserRouter, Route, Switch} from "react-router-dom";
 import SettingsPage from "./SettingsPage";
 import PageNotFoundPage from "./PageNotFoundPage";
 
-import {Settings, SettingsManager} from "./core/MockSettings";
-import {Warehouse} from "./core/MockWarehouse";
+import {Settings, SettingsManager} from "./core/Settings";
+import * as WarehouseModel from "./core/WarehouseModel";
 import {LoadingPage} from "./Loading";
 import Popup from "reactjs-popup";
 import ShelfView from "./ShelfView";
@@ -17,7 +17,7 @@ import MainMenu from "./MainMenu";
  * This interface exists because these are never null together
  */
 interface LoadedContent {
-    warehouse: Warehouse;
+    warehouse: WarehouseModel.Warehouse;
     settings: Settings;
 }
 
@@ -33,32 +33,33 @@ class App extends React.Component<any, AppState> {
 
         this.state = {};
 
-        const loadPromise = Promise.all([
-            SettingsManager.loadSettings(),
-            Warehouse.loadWarehouse("ABCD")
-        ]);
+        if (process.env.NODE_ENV !== "test") {
+            const loadPromise = Promise.all([
+                SettingsManager.loadSettings(),
+                WarehouseModel.loadWarehouse("NXhrW34QZpo20Oc3RmZw")
+            ]);
 
-        loadPromise.then((result) => {
-            const [settings, warehouse] = result;
-            console.log("Settings Loaded:", settings);
-            console.log("Warehouse Loaded:", warehouse);
+            loadPromise.then((result) => {
+                const [settings, warehouse] = result;
+                console.log("Settings Loaded:", settings);
+                console.log("Warehouse Loaded:", warehouse);
 
-            this.setState(state => {
-                return {
-                    ...state,
-                    loaded: {
-                        warehouse: warehouse,
-                        settings: settings,
-                    }
-                };
+                this.setState(state => {
+                    return {
+                        ...state,
+                        loaded: {
+                            warehouse: warehouse,
+                            settings: settings,
+                        }
+                    };
+                });
+            }).catch(() => {
+                this.openDialog(App.buildErrorDialog(
+                    "Failed to load the warehouse or the settings",
+                    true
+                ));
             });
-
-        }).catch(() => {
-            this.openDialog(App.buildErrorDialog(
-                "Failed to load the warehouse or the settings",
-                true
-            ));
-        });
+        }
     }
 
     render(): React.ReactNode {

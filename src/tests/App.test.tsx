@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars,@typescript-eslint/no-unused-vars-experimental */
+
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "../App";
