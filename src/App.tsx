@@ -4,8 +4,8 @@ import {BrowserRouter, Route, Switch} from "react-router-dom";
 import SettingsPage from "./SettingsPage";
 import PageNotFoundPage from "./PageNotFoundPage";
 
-import {Settings, SettingsManager} from "./core/MockSettings";
-import {Warehouse} from "./core/MockWarehouse";
+import {Settings, SettingsManager} from "./core/Settings";
+import {Warehouse, WarehouseManager} from "./core/WarehouseModel";
 import {LoadingPage} from "./Loading";
 import Popup from "reactjs-popup";
 import ShelfView from "./ShelfView";
@@ -33,32 +33,40 @@ class App extends React.Component<any, AppState> {
 
         this.state = {};
 
-        const loadPromise = Promise.all([
-            SettingsManager.loadSettings(),
-            Warehouse.loadWarehouse("ABCD")
-        ]);
+        if (process.env.NODE_ENV !== "test") {
+            const loadPromise = Promise.all([
+                SettingsManager.loadSettings(),
+                WarehouseManager.loadWarehouses()
+            ]);
 
-        loadPromise.then((result) => {
-            const [settings, warehouse] = result;
-            console.log("Settings Loaded:", settings);
-            console.log("Warehouse Loaded:", warehouse);
+            loadPromise.then(async (result) => {
+                const [settings, warehouses] = result;
+                console.log("Settings Loaded:", settings);
+                console.log("Warehouse List Loaded: ", warehouses);
 
-            this.setState(state => {
-                return {
-                    ...state,
-                    loaded: {
-                        warehouse: warehouse,
-                        settings: settings,
-                    }
-                };
+                const warehouse: Warehouse | undefined = await WarehouseManager.loadWarehouse("Chester-le-Street");
+                if (warehouse) {
+                    console.log("Warehouse Loaded:", warehouse);
+
+                    this.setState(state => {
+                        return {
+                            ...state,
+                            loaded: {
+                                warehouse: warehouse,
+                                settings: settings,
+                            }
+                        };
+                    });
+                } else {
+                    throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
+                }
+            }).catch(e => {
+                this.openDialog(App.buildErrorDialog(
+                    `Failed to load the warehouse or the settings (${e}).`,
+                    true
+                ));
             });
-
-        }).catch(() => {
-            this.openDialog(App.buildErrorDialog(
-                "Failed to load the warehouse or the settings",
-                true
-            ));
-        });
+        }
     }
 
     render(): React.ReactNode {
