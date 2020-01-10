@@ -103,9 +103,10 @@ const trayExpiries: ExpiryRange[] = [
  * Generate a random warehouse structure down to tray level
  * @async
  * @param id - The ID of the warehouse
+ * @param name - The name of the new warehouse
  */
-async function generateRandomWarehouse(id: string): Promise<Warehouse> {
-    const warehouse = await Warehouse.create(id, "Chester-le-Street").loadDepthFirst();
+async function generateRandomWarehouse(id: string, name: string): Promise<Warehouse> {
+    const warehouse = await Warehouse.create(id, name).loadDepthFirst();
     for (const zoneColor of zoneColors) {
         const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
         for (let j = 0; j < 3; j++) {
@@ -161,7 +162,10 @@ export class WarehouseManager {
                     Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
             }
         } else {
-            WarehouseManager.warehouses["MOCK-WAREHOUSE"] = await generateRandomWarehouse("MOCK-WAREHOUSE");
+            for (let i = 0; i < 5; i++) {
+                const id = `MOCK ${i}`;
+                WarehouseManager.warehouses[id] = await generateRandomWarehouse(id, "Chester-le-Street");
+            }
         }
         return WarehouseManager.warehouseList;
     }
@@ -182,7 +186,10 @@ export class WarehouseManager {
 
     public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
         if (typeof WarehouseManager.warehouses[id] === "undefined") {
-            return;
+            await WarehouseManager.loadWarehouses();
+            if (typeof WarehouseManager.warehouses[id] === "undefined") {
+                return;
+            }
         }
         return WarehouseManager.warehouses[id].load(WarehouseModel.tray);
     }

@@ -1,89 +1,210 @@
 import React from "react";
 import {BrowserRouter, Route, Switch} from "react-router-dom";
 
-import SettingsPage from "./SettingsPage";
-import PageNotFoundPage from "./PageNotFoundPage";
-
-import {Settings, SettingsManager} from "./core/Settings";
 import {Warehouse, WarehouseManager} from "./core/WarehouseModel";
-import {LoadingPage} from "./Loading";
 import Popup from "reactjs-popup";
-import ShelfView from "./ShelfView";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {LoadingPage} from "./Loading";
+import ShelfView from "./ShelfView";
 import MainMenu from "./MainMenu";
+import SettingsPage from "./SettingsPage";
+import LoginPage from "./LoginPage";
+import PageNotFoundPage from "./PageNotFoundPage";
 
-/**
- * This interface exists because these are never null together
- */
-interface LoadedContent {
-    warehouse: Warehouse;
-    settings: Settings;
+interface UserSettings {
+    isGood: boolean;
 }
 
+interface WarehouseSettings {
+    isBig: boolean;
+}
+
+type User = {
+    lastWarehouseID?: string;
+} & UserLoadable;
+
+interface UserLoadable {
+    userID: string;
+    name: string;
+    authToken: string;
+    userSettings: UserSettings;
+}
+
+interface WarehouseNotChosen {
+    chosen: false;
+    warehouses: Warehouse[];
+}
+
+interface WarehouseChosen {
+    chosen: true;
+    warehouse: Warehouse;
+    warehouseSettings: WarehouseSettings;
+}
+
+/**
+ * This type represents the states of the login and choose warehouse process, though it is possible to go back and
+ * choose a warehouse.  The states transitions are from left to right in the type definition or otherwise only back from
+ * the last to the penultimate.
+ */
+type LoginState = null | User | (User & WarehouseNotChosen) | (User & WarehouseChosen);
+
 interface AppState {
-    loaded?: LoadedContent;
+    loginState: LoginState;
     dialog?: StandardDialog | null;
 }
 
-class App extends React.Component<any, AppState> {
+class App extends React.Component<unknown, AppState> {
 
-    constructor(props: any) {
+    constructor(props: unknown) {
         super(props);
 
-        this.state = {};
-
-        if (process.env.NODE_ENV !== "test") {
-            const loadPromise = Promise.all([
-                SettingsManager.loadSettings(),
-                WarehouseManager.loadWarehouses()
-            ]);
-
-            loadPromise.then(async (result) => {
-                const [settings, warehouses] = result;
-                console.log("Settings Loaded:", settings);
-                console.log("Warehouse List Loaded: ", warehouses);
-
-                const warehouse: Warehouse | undefined = await WarehouseManager.loadWarehouse("Chester-le-Street");
-                if (warehouse) {
-                    console.log("Warehouse Loaded:", warehouse);
-
-                    this.setState(state => {
-                        return {
-                            ...state,
-                            loaded: {
-                                warehouse: warehouse,
-                                settings: settings,
-                            }
-                        };
-                    });
-                } else {
-                    throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
-                }
-            }).catch(e => {
-                this.openDialog(App.buildErrorDialog(
-                    `Failed to load the warehouse or the settings (${e}).`,
-                    true
-                ));
-            });
+        if (process.env.NODE_ENV === "test") {
+            return;
         }
+        if (typeof (Storage) === "undefined") {
+            throw Error("This browser isn't supported"); // supported in IE 11, should be fine
+        }
+
+        if (localStorage.getItem("userData") === null) {
+            this.state = { // loginState = null
+                loginState: null
+            };
+        } else {
+
+            const isUserData = (data: any): data is User =>
+                typeof data.userID === "string" &&
+                typeof data.name === "string" &&
+                typeof data.authToken === "string" &&
+                (data.lastWarehouseID === undefined || typeof data?.lastWarehouseID === "string");
+
+            const userData: User | any = JSON.parse(localStorage.getItem("userData") ?? "undefined");
+            console.log(JSON.stringify(userData));
+            if (!isUserData(userData)) {
+                localStorage.removeItem("userData");
+                throw Error("Invalid stored user data, it has been cleared");
+            }
+
+            if (userData.lastWarehouseID !== undefined) {
+                // try make loginState User & WarehouseChosen, e.g. fail if auth is invalid or warehouse doesn't exist
+
+                // todo fixme load user from wherever
+                const loadUserData = async () => new Promise<UserLoadable>((accept, _) => accept({
+                    userID: userData.userID,
+                    name: userData.name,
+                    authToken: userData.authToken,
+                    userSettings: {isGood: false}
+                }));
+
+                Promise.all([
+                    loadUserData(),
+                    WarehouseManager.loadWarehouseByID(userData.lastWarehouseID)
+                ]).then((result: [
+                    User | undefined,
+                    Warehouse | undefined
+                ]) => {
+
+                    const [user, warehouse] = result;
+                    if (user === undefined) {
+                        this.openDialog(App.buildErrorDialog(
+                            "Login Failed",
+                            "Stored login details are no longer valid",
+                            false
+                        ));
+                        // props.history.replace("/login");
+
+                    } else if (warehouse === undefined) {
+                        this.openDialog(App.buildErrorDialog(
+                            "Load Failed",
+                            "Couldn't open the previous warehouse",
+                            false
+                        ));
+                        this.setState({ // User
+                            loginState: {
+                                userID: user.userID,
+                                name: user.name,
+                                authToken: user.authToken,
+                                userSettings: user.userSettings,
+                                lastWarehouseID: undefined,
+                            }
+                        });
+                        // props.history.replace("/login");
+                    } else {
+                        this.setState({ // (User & WarehouseChosen)
+                            loginState: {
+                                userID: user.userID,
+                                name: user.name,
+                                authToken: user.authToken,
+                                userSettings: user.userSettings,
+                                lastWarehouseID: warehouse.id,
+
+                                chosen: true,
+                                warehouse: warehouse,
+                                warehouseSettings: {isBig: true}, // todo fixme this should come from the db
+                            }
+                        });
+                    }
+                });
+            } else {
+                // try make loginState User & WarehouseNotChosen, e.g. fail if auth is invalid
+                this.state = { // loginState = null
+                    loginState: null
+                };
+            }
+
+        }
+
+        // Promise.all([
+        //     SettingsManager.loadSettings(),
+        //     WarehouseManager.loadWarehouse("Chester-le-Street")
+        // ]).then((result: [Settings | undefined, Warehouse | undefined]) => {
+        //     const [settings, warehouse] = result;
+        //     console.log("Settings Loaded:", settings);
+        //     console.log("Warehouse Loaded: ", warehouse);
+        //
+        //     if (warehouse && settings) {
+        //         this.setState(state => {
+        //             return {
+        //                 ...state,
+        //                 loaded: {
+        //                     warehouse: warehouse,
+        //                     settings: settings,
+        //                 }
+        //             };
+        //         });
+        //     } else if (settings) {
+        //         // back to login screen
+        //         throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
+        //     } else {
+        //         throw new Error("Settings is undefined (the desired settings could not be found)");
+        //     }
+        // }).catch(e => {
+        //     this.openDialog(App.buildErrorDialog(
+        //         "Failed to load",
+        //         `The warehouse or the settings couldn't be loaded \n${e}`,
+        //         true
+        //     ));
+        // });
+
     }
 
     render(): React.ReactNode {
+        console.log(this.state);
         return <>
-            {this.state.loaded === undefined ? <LoadingPage/> : (
-                <BrowserRouter> {((loaded: LoadedContent) => {
-                    return <Switch>
-                        <Route path="/" component={() =>
-                            <ShelfView
-                                openDialog={this.openDialog.bind(this)}
-                                settings={loaded.settings}
-                                warehouse={loaded.warehouse}
-                            />
-                        } exact/>
+
+            {this.state === null || this.state.loginState === null ? <LoadingPage/> : (
+                <BrowserRouter>
+                    <Switch>
+                        <Route path="/" component={((loginState: LoginState) =>
+                                <ShelfView
+                                    openDialog={this.openDialog.bind(this)}
+                                    settings={{sampleSetting: ""}}
+                                    warehouse={(loginState as User & WarehouseChosen).warehouse}
+                                />
+                        ).bind(this, this.state.loginState)} exact/>
                         <Route path="/menu" component={() =>
                             <MainMenu
-                                warehouse={loaded.warehouse}
+                                warehouse={(this.state.loginState as User & WarehouseChosen).warehouse}
                                 openDialog={this.openDialog.bind(this)}
                                 expiryAmount={5}
                             />
@@ -91,12 +212,14 @@ class App extends React.Component<any, AppState> {
                         <Route path="/settings" component={() =>
                             <SettingsPage openDialog={this.openDialog.bind(this)}/>
                         }/>
+                        <Route path="/login" component={() =>
+                            <LoginPage openDialog={this.openDialog.bind(this)}/>
+                        }/>
                         <Route component={PageNotFoundPage}/>
-                    </Switch>;
-
-                })(this.state.loaded)}
+                    </Switch>
                 </BrowserRouter>
             )}
+
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
                 closeOnDocumentClick={false}
@@ -149,13 +272,15 @@ class App extends React.Component<any, AppState> {
 
     /**
      * This method builds a dialog function for a standard error message.
+     * @param title THe title of the error dialog
      * @param message The body of the dialog
      * @param forceReload If the dialog forces the page to be reloaded
      */
-    static buildErrorDialog(message: string, forceReload: boolean): (close: () => void) => StandardDialog {
+    static buildErrorDialog(
+        title: string, message: string, forceReload: boolean): (close: () => void) => StandardDialog {
         return (close: () => void) => {
             return {
-                title: "Error",
+                title: title,
                 iconProps: {
                     icon: warningIcon,
                     color: "red"

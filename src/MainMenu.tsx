@@ -5,7 +5,8 @@ import "./styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExchangeAlt, faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import {StandardDialog} from "./App";
-import {Warehouse} from "./core/MockWarehouse";
+import {Warehouse} from "./core/WarehouseModel";
+
 
 /**
  * expiryAmount is the number of items expiring soon
