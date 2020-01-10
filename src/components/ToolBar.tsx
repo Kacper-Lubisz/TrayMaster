@@ -8,6 +8,7 @@ import {KeyboardButtonProps} from "./Keyboard";
  * @see ToolBar
  */
 interface ToolBarProps {
+    disabled: boolean;
 
     /** List of toolbar buttons */
     toolbar: KeyboardButtonProps[];
@@ -32,7 +33,7 @@ export class ToolBar extends React.Component<ToolBarProps> {
                     key={toolIndex}
                     name={tool.name}
                     onClick={tool.onClick}
-                    disabled={tool.disabled}
+                    disabled={this.props.disabled || tool.disabled}
                 >{
                     tool.icon ? <FontAwesomeIcon style={{width: "100%", height: "100%"}} icon={tool.icon}/> : tool.name
                 }</button>

@@ -695,17 +695,19 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         current={this.state.currentView}
                         isShelfEdit={this.state.isEditShelf}
                     />
-                    <ToolBar toolbar={[
-                        (() => {
-                            const selected = this.getSelectedTrayCells();
+                    <ToolBar
+                        disabled={this.state.isEditShelf}
+                        toolbar={[
+                            (() => {
+                                const selected = this.getSelectedTrayCells();
 
-                            if (selected.length === 0 || (selected.every(cell => cell instanceof Tray)
-                                && this.getTrayCells().filter(cell => cell instanceof Tray).length !== selected.length)) {
-                                return {
-                                    name: "Select Trays",
-                                    icon: tickRegular,
-                                    onClick: this.selectAll.bind(this, "trays")
-                                };
+                                if (selected.length === 0 || (selected.every(cell => cell instanceof Tray)
+                                    && this.getTrayCells().filter(cell => cell instanceof Tray).length !== selected.length)) {
+                                    return {
+                                        name: "Select Trays",
+                                        icon: tickRegular,
+                                        onClick: this.selectAll.bind(this, "trays")
+                                    };
                             } else if (selected.length === this.getTrayCells().length) {
                                 return {
                                     name: "Deselect All",
