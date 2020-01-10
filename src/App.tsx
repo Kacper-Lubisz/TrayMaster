@@ -1,5 +1,6 @@
 import React from "react";
 import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {Redirect} from "react-router";
 
 import {Warehouse, WarehouseManager} from "./core/WarehouseModel";
 import Popup from "reactjs-popup";
@@ -47,7 +48,7 @@ interface WarehouseChosen {
  * choose a warehouse.  The states transitions are from left to right in the type definition or otherwise only back from
  * the last to the penultimate.
  */
-type LoginState = null | User | (User & WarehouseNotChosen) | (User & WarehouseChosen);
+export type LoginState = null | User | (User & WarehouseNotChosen) | (User & WarehouseChosen);
 
 interface AppState {
     loginState: LoginState;
@@ -85,16 +86,46 @@ class App extends React.Component<unknown, AppState> {
                 throw Error("Invalid stored user data, it has been cleared");
             }
 
-            if (userData.lastWarehouseID !== undefined) {
-                // try make loginState User & WarehouseChosen, e.g. fail if auth is invalid or warehouse doesn't exist
-
-                // todo fixme load user from wherever
-                const loadUserData = async () => new Promise<UserLoadable>((accept, _) => accept({
+            // todo fixme load user from wherever
+            const loadUserData = async () => {
+                return {
                     userID: userData.userID,
                     name: userData.name,
                     authToken: userData.authToken,
                     userSettings: {isGood: false}
-                }));
+                };
+            };
+
+            if (userData.lastWarehouseID === undefined) {
+                // try make loginState User & WarehouseNotChosen, e.g. fail if auth is invalid
+
+                loadUserData().then(user => {
+                    if (user === undefined) {
+                        this.openDialog(App.buildErrorDialog(
+                            "Login Failed",
+                            "Stored login details are no longer valid",
+                            false
+                        ));
+                    } else {
+                        this.openDialog(App.buildErrorDialog(
+                            "Load Failed",
+                            "Couldn't open the previous warehouse",
+                            false
+                        ));
+                        this.setState({ // User
+                            loginState: {
+                                userID: user.userID,
+                                name: user.name,
+                                authToken: user.authToken,
+                                userSettings: user.userSettings,
+                                lastWarehouseID: undefined,
+                            }
+                        });
+                    }
+                });
+
+            } else {
+                // try make loginState User & WarehouseChosen, e.g. fail if auth is invalid or warehouse doesn't exist
 
                 Promise.all([
                     loadUserData(),
@@ -145,81 +176,53 @@ class App extends React.Component<unknown, AppState> {
                         });
                     }
                 });
-            } else {
-                // try make loginState User & WarehouseNotChosen, e.g. fail if auth is invalid
-                this.state = { // loginState = null
-                    loginState: null
-                };
             }
 
         }
 
-        // Promise.all([
-        //     SettingsManager.loadSettings(),
-        //     WarehouseManager.loadWarehouse("Chester-le-Street")
-        // ]).then((result: [Settings | undefined, Warehouse | undefined]) => {
-        //     const [settings, warehouse] = result;
-        //     console.log("Settings Loaded:", settings);
-        //     console.log("Warehouse Loaded: ", warehouse);
-        //
-        //     if (warehouse && settings) {
-        //         this.setState(state => {
-        //             return {
-        //                 ...state,
-        //                 loaded: {
-        //                     warehouse: warehouse,
-        //                     settings: settings,
-        //                 }
-        //             };
-        //         });
-        //     } else if (settings) {
-        //         // back to login screen
-        //         throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
-        //     } else {
-        //         throw new Error("Settings is undefined (the desired settings could not be found)");
-        //     }
-        // }).catch(e => {
-        //     this.openDialog(App.buildErrorDialog(
-        //         "Failed to load",
-        //         `The warehouse or the settings couldn't be loaded \n${e}`,
-        //         true
-        //     ));
-        // });
-
     }
 
     render(): React.ReactNode {
-        console.log(this.state);
         return <>
-
-            {this.state === null || this.state.loginState === null ? <LoadingPage/> : (
-                <BrowserRouter>
-                    <Switch>
-                        <Route path="/" component={((loginState: LoginState) =>
-                                <ShelfView
-                                    openDialog={this.openDialog.bind(this)}
-                                    settings={{sampleSetting: ""}}
-                                    warehouse={(loginState as User & WarehouseChosen).warehouse}
-                                />
-                        ).bind(this, this.state.loginState)} exact/>
-                        <Route path="/menu" component={() =>
-                            <MainMenu
-                                warehouse={(this.state.loginState as User & WarehouseChosen).warehouse}
-                                openDialog={this.openDialog.bind(this)}
-                                expiryAmount={5}
-                            />
-                        }/>
-                        <Route path="/settings" component={() =>
-                            <SettingsPage openDialog={this.openDialog.bind(this)}/>
-                        }/>
-                        <Route path="/login" component={() =>
-                            <LoginPage openDialog={this.openDialog.bind(this)}/>
-                        }/>
-                        <Route component={PageNotFoundPage}/>
-                    </Switch>
-                </BrowserRouter>
-            )}
-
+            {this.state === null ? <LoadingPage/>
+                                 : <BrowserRouter>
+                 <Switch>
+                     <Route path="/" component={() =>
+                         this.state.loginState === null || (this.state.loginState as
+                             (User & WarehouseNotChosen) | (User & WarehouseChosen)).chosen
+                         ? <Redirect to="/login"/> : <ShelfView
+                             openDialog={this.openDialog.bind(this)}
+                             settings={{sampleSetting: ""}}
+                             warehouse={(this.state.loginState as User & WarehouseChosen).warehouse}
+                         />
+                     } exact/>
+                     <Route path="/menu" component={() =>
+                         this.state.loginState === null || (this.state.loginState as
+                             (User & WarehouseNotChosen) | (User & WarehouseChosen)).chosen === undefined
+                         ? <Redirect to="/login"/> : <MainMenu
+                             warehouse={(this.state.loginState as User & WarehouseChosen).warehouse}
+                             openDialog={this.openDialog.bind(this)}
+                             expiryAmount={5}
+                         />
+                     }/>
+                     <Route path="/settings" component={() =>
+                         this.state.loginState === null ? <Redirect to="/login"/> : <SettingsPage
+                             openDialog={this.openDialog.bind(this)}
+                         />
+                     }/>
+                     <Route path="/login" component={() =>
+                         <LoginPage
+                             loginState={this.state.loginState}
+                             setLoginState={(newLoginState: LoginState) => this.setState(state => {
+                                 return {...state, newLoginState};
+                             })}
+                             openDialog={this.openDialog.bind(this)}
+                         />
+                     }/>
+                     <Route component={PageNotFoundPage}/>
+                 </Switch>
+             </BrowserRouter>
+            }
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
                 closeOnDocumentClick={false}

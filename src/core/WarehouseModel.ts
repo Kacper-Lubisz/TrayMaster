@@ -186,6 +186,7 @@ export class WarehouseManager {
 
     public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
         if (typeof WarehouseManager.warehouses[id] === "undefined") {
+            // todo fixme optimise this so that calls are not chained
             await WarehouseManager.loadWarehouses();
             if (typeof WarehouseManager.warehouses[id] === "undefined") {
                 return;

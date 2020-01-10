@@ -59,7 +59,7 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
 
                 <div id="menu-warehouse-switcher">
                     <h1>{this.props.warehouse.name}</h1>
-                    <button>
+                    <button onClick={() => this.props.history.replace("/login")}>
                         <FontAwesomeIcon icon={faExchangeAlt}/>
                     </button>
                 </div>
