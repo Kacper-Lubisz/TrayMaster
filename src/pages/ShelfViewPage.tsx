@@ -89,9 +89,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.state = {
             selected: new Map(),
             currentKeyboard: "category",
-            currentView: this.props.warehouse.zones.length === 0 ? this.props.warehouse :
-                         this.props.warehouse.shelves.length === 0 ? this.props.warehouse.zones[0]
-                                                                   : this.props.warehouse.shelves[0],
+            currentView: (() => {
+                if (this.props.warehouse.zones.length === 0) {
+                    return this.props.warehouse;
+                } else if (this.props.warehouse.shelves.length === 0) {
+                    return this.props.warehouse.zones[0];
+                } else {
+                    return this.props.warehouse.shelves[0];
+                }
+            })(),
             draftWeight: undefined,
             isEditShelf: false,
             isNavModalOpen: false // change this to true when editing NavModal
@@ -367,14 +373,20 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     // }
 
     /**
+     * Returns all cells in the current view
+     */
+    getTrayCells(): TrayCell[] {
+        return this.state.currentView instanceof Shelf ? this.state.currentView.cells : [];
+    }
+
+    /**
      * This provisionally gets all selected TrayCells _before they're converted to Trays_ and
      * without any side effects or manipulating state. This is important for BottomPanel's keyboards to know the number
      * of TrayCells selected, and for expiry keyboard to highlight active year, and for ViewPort to know whether still
      * in multiselect. It simply returns all selected TrayCells, including air spaces.
      */
     getSelectedTrayCells(): TrayCell[] {
-        return Array.from(this.state.selected.entries())
-                    .filter(([_, value]) => value).map(([a, _]) => a);
+        return this.getTrayCells().filter(cell => this.state.selected.get(cell));
     }
 
     /**
@@ -613,14 +625,21 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * Sets the selection of all trays and tray spaces in the shelf.
+     * Sets the selection of all trays and tray spaces in the shelf.  If
      * @param select if all should be  selected or deslected
      */
-    setSelectAll(select: boolean): void {
+    selectAll(select: "none" | "trays" | "all"): void {
         if (this.state.currentView instanceof Shelf) {
-            this.setSelected(new Map<TrayCell, boolean>(this.state.currentView.columns.flatMap(column =>
-                column.getPaddedTrays().map(cell => [cell, select])
-            )));
+            if (select === "none") {
+                this.setSelected(new Map());
+            } else if (select === "trays") {
+                this.setSelected(new Map(this.getTrayCells()
+                                             .filter(cell => cell instanceof Tray)
+                                             .map(tray => [tray, true])));
+            } else { // all
+                this.setSelected(new Map(this.getTrayCells()
+                                             .map(tray => [tray, true])));
+            }
         } else {
             throw Error("Select/Deselect all can't be performed while not looking at a shelf");
         }
@@ -677,9 +696,30 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         isShelfEdit={this.state.isEditShelf}
                     />
                     <ToolBar toolbar={[
-                        this.getSelectedTrayCells().length === 0 ?
-                            {name: "Select All", icon: tickRegular, onClick: this.setSelectAll.bind(this, true)} :
-                            {name: "Deselect All", icon: tickSolid, onClick: this.setSelectAll.bind(this, false)},
+                        (() => {
+                            const selected = this.getSelectedTrayCells();
+
+                            if (selected.length === 0 || (selected.every(cell => cell instanceof Tray)
+                                && this.getTrayCells().filter(cell => cell instanceof Tray).length !== selected.length)) {
+                                return {
+                                    name: "Select Trays",
+                                    icon: tickRegular,
+                                    onClick: this.selectAll.bind(this, "trays")
+                                };
+                            } else if (selected.length === this.getTrayCells().length) {
+                                return {
+                                    name: "Deselect All",
+                                    icon: tickSolid,
+                                    onClick: this.selectAll.bind(this, "none")
+                                };
+                            } else {
+                                return {
+                                    name: "Select All",
+                                    icon: tickSolid,
+                                    onClick: this.selectAll.bind(this, "all")
+                                };
+                            }
+                        })(),
                         {
                             name: "Edit Custom",
                             icon: faCommentAlt,

@@ -587,6 +587,10 @@ export class Shelf implements UpperLayer {
         return this.columns.flatMap(column => column.trays);
     }
 
+    get cells(): TrayCell[] {
+        return this.columns.flatMap(column => column.getPaddedTrays());
+    }
+
     //#endregion
 
     //#region Parent Getters
