@@ -3,8 +3,9 @@ import {RouteComponentProps} from "react-router-dom";
 import {withRouter} from "react-router";
 import "./styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {faExchangeAlt, faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import {StandardDialog} from "./App";
+import {Warehouse} from "./core/MockWarehouse";
 
 /**
  * expiryAmount is the number of items expiring soon
@@ -12,6 +13,7 @@ import {StandardDialog} from "./App";
  */
 interface MainMenuProps {
     openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+    warehouse: Warehouse;
     expiryAmount: number;
 }
 
@@ -52,6 +54,13 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
                             onClick={() => this.props.history.push("/settings")}><p>Settings</p>
                     </button>
 
+                </div>
+
+                <div id="menu-warehouse-switcher">
+                    <h1>{this.props.warehouse.name}</h1>
+                    <button>
+                        <FontAwesomeIcon icon={faExchangeAlt}/>
+                    </button>
                 </div>
 
             </div>

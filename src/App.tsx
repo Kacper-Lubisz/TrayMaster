@@ -64,22 +64,31 @@ class App extends React.Component<any, AppState> {
     render(): React.ReactNode {
         return <>
             {this.state.loaded === undefined ? <LoadingPage/> : (
-                <BrowserRouter>
-                    <Switch>
-                        <Route path="/" component={((loaded: LoadedContent) => {
-                            return <ShelfView
+                <BrowserRouter> {((loaded: LoadedContent) => {
+                    return <Switch>
+                        <Route path="/" component={() =>
+                            <ShelfView
                                 openDialog={this.openDialog.bind(this)}
                                 settings={loaded.settings}
                                 warehouse={loaded.warehouse}
-                            />;
-                        }).bind(this, this.state.loaded)} exact/>
-                        <Route path="/menu"
-                               component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
-                        <Route path="/settings"
-                               component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
+                            />
+                        } exact/>
+                        <Route path="/menu" component={() =>
+                            <MainMenu
+                                warehouse={loaded.warehouse}
+                                openDialog={this.openDialog.bind(this)}
+                                expiryAmount={5}
+                            />
+                        }/>
+                        <Route path="/settings" component={() =>
+                            <SettingsPage openDialog={this.openDialog.bind(this)}/>
+                        }/>
                         <Route component={PageNotFoundPage}/>
-                    </Switch>
-                </BrowserRouter>)}
+                    </Switch>;
+
+                })(this.state.loaded)}
+                </BrowserRouter>
+            )}
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
                 closeOnDocumentClick={false}

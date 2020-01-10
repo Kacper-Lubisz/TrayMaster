@@ -30,6 +30,22 @@
 
 }
 
+#menu-warehouse-switcher {
+  display: flex;
+  flex-direction: row;
+
+  position: fixed;
+  right: 15px;
+  bottom: 15px;
+
+  > button {
+    font-size: 2em;
+    margin: .33em;
+    padding: 14px 16px 14px 16px;
+  }
+
+}
+
 .alert {
   //container for the alert
   position: fixed;
