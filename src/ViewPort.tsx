@@ -8,7 +8,7 @@ import {
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, warehouse, Warehouse, Zone} from "./core/WarehouseModel";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/WarehouseModel";
 import classNames from "classnames/bind";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 import {getExpiryColor} from "./utils/getExpiryColor";
@@ -316,7 +316,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
+        column.maxHeight = Math.max(change + column.maxHeight, 1);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -345,7 +345,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const change = changeType === "inc" ? 1
                                             : -1;
 
-        const traySizes = warehouse.traySizes;
+        const traySizes = column.parentWarehouse.traySizes;
         const medianIndex = Math.floor(traySizes.length / 2);
 
         const currentIndex = traySizes.indexOf(column.traySize ?? traySizes[medianIndex]);
@@ -362,7 +362,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
     getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
-        const traySizes = warehouse.traySizes;
+        const traySizes = column.parentWarehouse.traySizes;
 
         if (column.traySize) {
             const currentIndex = traySizes.indexOf(column.traySize);
@@ -401,7 +401,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             className="column"
             key={order}
         >{
-            column.getPaddedTrays(1).map((tray, index) => {
+            column.getPaddedTrays().map((tray, index) => {
                 let expiryStyle;
                 if (tray instanceof Tray) {
                     const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";

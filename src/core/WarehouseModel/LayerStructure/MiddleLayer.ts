@@ -15,6 +15,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
     public parent: TParent;
     public children: TChildren[];
     public childrenLoaded: boolean;
+    public childLoadComplete?: () => void;
 
     protected constructor(id: string, fields: TFields, parent: TParent, children?: TChildren[]) {
         super(id, fields);
@@ -104,7 +105,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
      * @async
      * @param minLayer - The number of the layer to load down to
      */
-    protected async breadthFirstLoad(minLayer: WarehouseModel = 0): Promise<void> {
+    protected async breadthFirstLoad(minLayer: WarehouseModel = this.layerID): Promise<void> {
         this.loadLayer();
         this.childrenLoaded = minLayer < this.layerID;
 
@@ -135,6 +136,8 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
                     const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
+                    child.loaded = true;
+                    child.loadComplete?.call(child);
                     childMap.get(currentState.childCollectionName)?.set(document.id, child);
                     parent.children.push(child);
                     if (child instanceof MiddleLayer && !nextState) {
@@ -154,6 +157,12 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
                 break;
             }
         }
+
+        this.dfs(layer => {
+            if (!(layer instanceof BottomLayer)) {
+                layer.childLoadComplete?.call(layer);
+            }
+        });
     }
 
     public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
@@ -174,13 +183,13 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         return this;
     }
 
-    public async save(
-        forceSave = false, recurse = false, commitAtEnd = false): Promise<void> {
-        await this.saveLayer(forceSave);
+    public async stage(
+        forceStage = false, commitAtEnd = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
+        await this.stageLayer(forceStage);
 
-        if (recurse) {
+        if (this.layerID >= minLayer) {
             for (const child of this.children) {
-                await child.save(forceSave, recurse, false);
+                await child.stage(forceStage, false, minLayer);
             }
         }
 

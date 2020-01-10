@@ -14,10 +14,7 @@ Warehouse
 >   Trays
  */
 
-/**
- * Generic queue
- */
-export class Queue<T> {
+export abstract class Collection<T> {
     protected items: T[];
 
     public constructor(items?: T[]) {
@@ -32,6 +29,16 @@ export class Queue<T> {
         return this.length === 0;
     }
 
+    public abstract add(item: T): void;
+
+    public abstract remove(): T | undefined;
+}
+
+/**
+ * Generic queue
+ */
+export class Queue<T> extends Collection<T> {
+
     public enqueue(item: T): void {
         this.items.push(item);
     }
@@ -43,26 +50,20 @@ export class Queue<T> {
     public clear(): void {
         this.items = [];
     }
+
+    public add(item: T): void {
+        this.enqueue(item);
+    }
+
+    public remove(): T | undefined {
+        return this.dequeue();
+    }
 }
 
 /**
  * Generic stack
  */
-export class Stack<T> {
-    private items: T[];
-
-    public constructor(items?: T[]) {
-        this.items = items ?? [];
-    }
-
-    public get length(): number {
-        return this.items.length;
-    }
-
-    public get empty(): boolean {
-        return this.length === 0;
-    }
-
+export class Stack<T> extends Collection<T> {
     public push(item: T): void {
         this.items.push(item);
     }
@@ -73,6 +74,14 @@ export class Stack<T> {
 
     public clear(): void {
         this.items = [];
+    }
+
+    public add(item: T): void {
+        this.push(item);
+    }
+
+    public remove(): T | undefined {
+        return this.pop();
     }
 }
 

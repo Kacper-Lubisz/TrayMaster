@@ -1,15 +1,5 @@
 import {BottomLayer} from "../LayerStructure/BottomLayer";
-import {
-    Bay,
-    Category,
-    Column,
-    ExpiryRange,
-    Shelf,
-    Warehouse,
-    warehouse,
-    WarehouseModel,
-    Zone
-} from "../../WarehouseModel";
+import {Bay, Category, Column, ExpiryRange, Shelf, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 
 interface TrayFields {
@@ -37,7 +27,7 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     ): Tray {
         return new Tray(Utils.generateRandomId(), {
             index,
-            categoryId: warehouse.getCategoryID(category),
+            categoryId: parent.parentWarehouse.getCategoryID(category),
             expiry: expiry ?? null,
             weight: weight ?? null,
             customField: customField ?? null
@@ -49,9 +39,8 @@ export class Tray extends BottomLayer<Column, TrayFields> {
      * @param fields - The tray fields
      * @param parent - The parent column
      */
-    public static createFromFields(id: string, fields: unknown, parent: Column): Tray {
-        return new Tray(id, fields as TrayFields, parent);
-    }
+    public static createFromFields = (id: string, fields: unknown, parent: Column): Tray =>
+        new Tray(id, fields as TrayFields, parent);
 
     public toString(): string {
         return `Tray(${this.index}, ${this.category?.name}, ${this.expiry?.label}, ${this.weight} kg, "${this.customField}")`;
@@ -67,11 +56,11 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     }
 
     public get category(): Category | undefined {
-        return warehouse.getCategoryByID(this.fields.categoryId);
+        return this.parentWarehouse.getCategoryByID(this.fields.categoryId);
     }
 
     public set category(category: Category | undefined) {
-        this.fields.categoryId = warehouse.getCategoryID(category);
+        this.fields.categoryId = this.parentWarehouse.getCategoryID(category);
     }
 
     public get expiry(): ExpiryRange | undefined {

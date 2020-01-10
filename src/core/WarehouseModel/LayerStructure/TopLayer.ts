@@ -1,6 +1,6 @@
 import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
 import database from "../Database";
-import Utils, {Queue} from "../Utils";
+import Utils, {Collection, Queue, Stack} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
@@ -14,6 +14,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
     public abstract readonly childCollectionName: string = "";
     public children: TChildren[];
     public childrenLoaded: boolean;
+    public childLoadComplete?: () => void;
 
     protected constructor(id: string, fields: TFields, children?: TChildren[]) {
         super(id, fields);
@@ -54,21 +55,25 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         return refs;
     }
 
-    public dfs(callback: (layer: Layers) => void, minLayer = 0): void {
-        callback(this);
-        if (minLayer <= this.layerID) {
-            for (const child of this.children) {
-                child.dfs(callback, minLayer);
-            }
-        }
+    public dfs(callback: (layer: Layers) => void, minLayer: WarehouseModel = 0): void {
+        this.search<Stack<LowerLayer>>(new Stack<LowerLayer>(), callback, minLayer);
     }
 
-    public bfs(callback: (layer: Layers) => void): void {
+    public bfs(callback: (layer: Layers) => void, minLayer: WarehouseModel = 0): void {
+        this.search<Queue<LowerLayer>>(new Queue<LowerLayer>(), callback, minLayer);
+    }
+
+    protected search<TCollection extends Collection<LowerLayer>>(
+        layerSet: TCollection, callback: (layer: Layers) => void, minLayer: WarehouseModel): void {
         const layerQueue: Queue<LowerLayer> = new Queue<LowerLayer>(this.children);
         callback(this);
-        while (!layerQueue.empty) {
-            const layer: Layers | undefined = layerQueue.dequeue();
+        while (!layerSet.empty) {
+            const layer: Layers | undefined = layerSet.remove();
             if (layer) {
+                if (layer.layerID < minLayer) {
+                    break;
+                }
+
                 callback(layer);
 
                 if (layer instanceof MiddleLayer) {
@@ -119,6 +124,8 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
                     const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
+                    child.loaded = true;
+                    child.loadComplete?.call(child);
                     childMap.get(currentState.childCollectionName)?.set(document.id, child);
                     parent.children.push(child);
                     if (child instanceof MiddleLayer && !nextState) {
@@ -138,6 +145,12 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                 break;
             }
         }
+
+        this.dfs(layer => {
+            if (!(layer instanceof BottomLayer)) {
+                layer.childLoadComplete?.call(layer);
+            }
+        });
     }
 
     public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
@@ -158,13 +171,13 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         return this;
     }
 
-    public async save(
-        forceSave = false, recurse = false, commitAtEnd = false): Promise<void> {
-        await this.saveLayer(forceSave);
+    public async stage(
+        forceStage = false, commitAtEnd = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
+        await this.stageLayer(forceStage);
 
-        if (recurse) {
+        if (this.layerID >= minLayer) {
             for (const child of this.children) {
-                await child.save(forceSave, recurse, false);
+                await child.stage(forceStage, false, minLayer);
             }
         }
 

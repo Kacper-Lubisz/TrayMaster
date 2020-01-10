@@ -13,6 +13,11 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
     public readonly collectionName = "zones";
     public readonly childCollectionName = "bays";
 
+    protected constructor(id: string, fields: ZoneFields, parent: Warehouse) {
+        super(id, fields, parent);
+        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
+    }
+
     /**
      * @param name - The name of the zone
      * @param color - The hex colour of the zone
@@ -27,11 +32,9 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
      * @param fields - The zone fields
      * @param parent - The parent warehouse
      */
-    public static createFromFields(id: string, fields: unknown, parent: Warehouse): Zone {
-        return new Zone(id, fields as ZoneFields, parent);
-    }
+    public static createFromFields = (id: string, fields: unknown, parent: Warehouse): Zone =>
+        new Zone(id, fields as ZoneFields, parent);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Bay.createFromFields;
 
     public toString(): string {

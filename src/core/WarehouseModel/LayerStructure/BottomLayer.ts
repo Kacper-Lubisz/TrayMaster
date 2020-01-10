@@ -54,9 +54,9 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
         return this;
     }
 
-    public async save(
-        forceSave = false, commitAtEnd = false): Promise<void> {
-        await this.saveLayer(forceSave);
+    public async stage(
+        forceStage = false, commitAtEnd = false): Promise<void> {
+        await this.stageLayer(forceStage);
 
         if (commitAtEnd) {
             await database.commit();

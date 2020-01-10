@@ -5,7 +5,7 @@ import {Shelf} from "./WarehouseModel/Layers/Shelf";
 import {Column} from "./WarehouseModel/Layers/Column";
 import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
-import {ONLINE} from "./WarehouseModel/Database";
+import database, {DatabaseDocument, ONLINE} from "./WarehouseModel/Database";
 
 /**
  * Represents the order of (and IDs of) each layer in the warehouse model
@@ -49,7 +49,7 @@ export interface TraySize {
  */
 export interface Category {
     name: string;
-    shortName: string;
+    shortName: string | null;
 }
 
 /**
@@ -104,12 +104,12 @@ const trayExpiries: ExpiryRange[] = [
  * @async
  * @param id - The ID of the warehouse
  */
-async function generateRandomWarehouse(id: string): Promise<void> {
-    warehouse = await Warehouse.create(id, "Chester-le-Street").loadDepthFirst();
-    for (let i = 0; i < zoneColors.length; i++) {
-        const zone = Zone.create(zoneColors[i].name, zoneColors[i].color, warehouse);
+async function generateRandomWarehouse(id: string): Promise<Warehouse> {
+    const warehouse = await Warehouse.create(id, "Chester-le-Street").loadDepthFirst();
+    for (const zoneColor of zoneColors) {
+        const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
         for (let j = 0; j < 3; j++) {
-            const bay = Bay.create(j, String.fromCharCode(65 + i), zone);
+            const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
             for (let k = 0; k < 3; k++) {
                 const shelf = Shelf.create(k, `${k + 1}`, bay);
                 for (let l = 0; l < 4; l++) {
@@ -128,29 +128,64 @@ async function generateRandomWarehouse(id: string): Promise<void> {
         }
         warehouse.zones.push(zone);
     }
+    return warehouse;
 }
 
 /**
- * The active instance of the warehouse
+ * The active instances of the warehouses
  */
-export let warehouse: Warehouse, warehouseLoaded = false;
+interface Warehouses {
+    [id: string]: Warehouse;
+}
 
-/**
- * Load the warehouse
- * @async
- * @param id - The database ID of the warehouse to load
- * @returns The active instance of the warehouse
- */
-export async function loadWarehouse(id: string): Promise<Warehouse> {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (ONLINE) {
-        warehouse = await Warehouse.create(id).load(WarehouseModel.tray);
-    } else {
-        await generateRandomWarehouse(id);
-        //await warehouse.save(true, true, true).then(() => console.log("Done."));
+export class WarehouseManager {
+    private static readonly warehouses: Warehouses = {};
+    private static currentWarehouseId = "";
+
+    public static get currentWarehouse(): Warehouse {
+        return WarehouseManager.warehouses[WarehouseManager.currentWarehouseId];
     }
-    warehouseLoaded = true;
-    return warehouse;
+
+    public static get warehouseList(): Warehouse[] {
+        return Object.values(WarehouseManager.warehouses);
+    }
+
+    /**
+     * Load the warehouses
+     */
+    public static async loadWarehouses(): Promise<Warehouse[]> {
+        if (ONLINE) {
+            const warehouseDocuments: DatabaseDocument<unknown>[] = await database.loadCollection<unknown>("warehouses");
+            for (const warehouseDocument of warehouseDocuments) {
+                WarehouseManager.warehouses[warehouseDocument.id] =
+                    Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
+            }
+        } else {
+            WarehouseManager.warehouses["MOCK-WAREHOUSE"] = await generateRandomWarehouse("MOCK-WAREHOUSE");
+        }
+        return WarehouseManager.warehouseList;
+    }
+
+    /**
+     * Load a warehouse
+     * @async
+     * @param name - The name of the warehouse to load
+     * @returns The loaded warehouse
+     */
+    public static async loadWarehouse(name: string): Promise<Warehouse | undefined> {
+        for (const [id, warehouse] of Object.entries(WarehouseManager.warehouses)) {
+            if (warehouse.name === name) {
+                return WarehouseManager.loadWarehouseByID(id);
+            }
+        }
+    }
+
+    public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
+        if (typeof WarehouseManager.warehouses[id] === "undefined") {
+            return;
+        }
+        return WarehouseManager.warehouses[id].load(WarehouseModel.tray);
+    }
 }
 
 

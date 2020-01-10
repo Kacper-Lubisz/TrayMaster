@@ -12,6 +12,11 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     public readonly collectionName = "shelves";
     public readonly childCollectionName = "columns";
 
+    protected constructor(id: string, fields: ShelfFields, parent: Bay) {
+        super(id, fields, parent);
+        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
+    }
+
     /**
      * @param index - The (ordered) index of the shelf within the bay
      * @param name - The name of the shelf
@@ -26,11 +31,9 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
      * @param fields - The shelf fields
      * @param parent - The parent bay
      */
-    public static createFromFields(id: string, fields: unknown, parent: Bay): Shelf {
-        return new Shelf(id, fields as ShelfFields, parent);
-    }
+    public static createFromFields = (id: string, fields: unknown, parent: Bay): Shelf =>
+        new Shelf(id, fields as ShelfFields, parent);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Column.createFromFields;
 
     public toString(): string {

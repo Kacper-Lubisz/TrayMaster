@@ -12,6 +12,11 @@ export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
     public readonly collectionName = "bays";
     public readonly childCollectionName = "shelves";
 
+    protected constructor(id: string, fields: BayFields, parent: Zone) {
+        super(id, fields, parent);
+        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
+    }
+
     /**
      * @param name - The name of the bay
      * @param index - The (ordered) index of the bay within the zone
@@ -26,15 +31,13 @@ export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
      * @param fields - The bay fields
      * @param parent - The parent zone
      */
-    public static createFromFields(id: string, fields: unknown, parent: Zone): Bay {
-        return new Bay(id, fields as BayFields, parent);
-    }
+    public static createFromFields = (id: string, fields: unknown, parent: Zone): Bay =>
+        new Bay(id, fields as BayFields, parent);
 
     public toString(): string {
         return this.name;
     }
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     public createChild = Shelf.createFromFields;
 
     //#region Field Getters and Setters

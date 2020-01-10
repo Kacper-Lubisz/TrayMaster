@@ -41,9 +41,10 @@ export abstract class Layer<TFields> {
     public abstract readonly layerID: WarehouseModel;
     public abstract readonly collectionName: string;
     public readonly id: string;
+    public loaded: boolean;
+    public loadComplete?: () => void;
     protected fields: TFields;
     protected originalFields: TFields;
-    protected loaded: boolean;
 
     protected constructor(id: string, fields: TFields) {
         this.id = id;
@@ -101,8 +102,8 @@ export abstract class Layer<TFields> {
         this.originalFields = Object.assign({}, this.fields);
     }
 
-    protected async saveLayer(forceSave = false): Promise<void> {
-        if (this.changed || forceSave) {
+    protected async stageLayer(forceStage = false): Promise<void> {
+        if (this.changed || forceStage) {
             await Promise.all([
                 database.set(this.path, this.fields),
                 database.set(this.topLevelPath, {
@@ -119,17 +120,25 @@ export abstract class Layer<TFields> {
             this.fields = (await database.loadDocument<TFields>(this.path))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
+            this.loadComplete?.call(this);
         }
         return this;
     }
 
     /**
+     * Commit all staged changes to the database
+     */
+    public async commitAllStaged(): Promise<void> {
+        await database.commit();
+    }
+
+    /**
      * Save the object
      * @async
-     * @param forceSave - Save the object regardless of whether fields have changed or not
+     * @param forceStage - Save the object regardless of whether fields have changed or not
      * @param commitAtEnd - Force the database to commit the changes at the end of saving
      */
-    public abstract save(forceSave: boolean, commitAtEnd: boolean): Promise<void>;
+    public abstract stage(forceStage: boolean, commitAtEnd: boolean): Promise<void>;
 
     /**
      * Load the object (breadth first)
