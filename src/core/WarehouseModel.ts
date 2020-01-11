@@ -112,7 +112,7 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
         for (let j = 0; j < 3; j++) {
             const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
             for (let k = 0; k < 3; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, bay);
+                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
                 for (let l = 0; l < 4; l++) {
                     const maxHeight = 2 + Math.round(3 * Math.random()),
                         column = Column.create(l, Utils.randItem(warehouse.traySizes), maxHeight, shelf);

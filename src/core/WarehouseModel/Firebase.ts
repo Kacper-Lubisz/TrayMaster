@@ -26,28 +26,82 @@ type WriteBatch = fb.firestore.WriteBatch;
 type Firestore = fb.firestore.Firestore;
 type Auth = fb.auth.Auth;
 
-export class FirebaseError extends Error {}
+export class FirebaseError extends Error {
+}
 
-export class AuthenticationError extends FirebaseError {}
+export class AuthenticationError extends FirebaseError {
+}
 
-export class DatabaseError extends FirebaseError {}
+export class DatabaseError extends FirebaseError {
+}
+
+interface UserWarehouseSettings {
+    a: boolean;
+}
+
+interface UserFields {
+    isAdmin: boolean;
+    name: string;
+}
+
+export class User {
+    private fields: UserFields;
+    private warehouseSettings: DatabaseCollection<UserWarehouseSettings>;
+
+    public constructor(path: string, fields?: UserFields) {
+        this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(path);
+        this.fields = fields ?? {isAdmin: false, name: ""};
+    }
+
+    public get isAdmin(): boolean {
+        return this.fields.isAdmin;
+    }
+
+    public get accessibleWarehouses(): string[] {
+        return this.warehouseSettings.idList;
+    }
+}
 
 class Authentication {
     public readonly auth: Auth;
+    public onSignIn?: (user: User) => void;
+    public onSignOut?: () => void;
+    public currentUser?: User;
 
     public constructor() {
         this.auth = fb.auth();
+        this.auth.onAuthStateChanged(async userSnapshot => {
+            if (userSnapshot) {
+                console.log("User signed in.");
+                const userPath = Utils.joinPaths("users", userSnapshot.uid);
+                const userFields: UserFields | undefined = (await Firebase.firebase.database.loadDocument<UserFields>(userPath))?.fields;
+                this.currentUser = new User(userPath, userFields);
+                this.onSignIn?.call(this, this.currentUser);
+            } else {
+                console.log("User is signed out.");
+                this.currentUser = undefined;
+                this.onSignOut?.call(this);
+            }
+        });
     }
 
     public async signUp(email: string, password: string): Promise<void> {
-        if (!Utils.isEmailValid(email)) throw new AuthenticationError("Invalid email");
-        if (password.length < 8) throw new AuthenticationError("Password length must be five characters or more.");
-        if (password.toLowerCase() !== password) throw new AuthenticationError("Password must contain at least one lower and upper case character.");
+        if (!Utils.isEmailValid(email)) {
+            throw new AuthenticationError("Invalid email");
+        }
+        if (password.length < 8) {
+            throw new AuthenticationError("Password length must be five characters or more.");
+        }
+        if (password.toLowerCase() !== password) {
+            throw new AuthenticationError("Password must contain at least one lower and upper case character.");
+        }
         await this.auth.createUserWithEmailAndPassword(email, password);
     }
 
     public async signIn(email: string, password: string): Promise<void> {
-        if (!Utils.isEmailValid(email)) throw new AuthenticationError("Invalid email");
+        if (!Utils.isEmailValid(email)) {
+            throw new AuthenticationError("Invalid email");
+        }
         await this.auth.signInWithEmailAndPassword(email, password);
     }
 
@@ -55,7 +109,7 @@ class Authentication {
         await this.auth.signOut();
     }
 
-    public get signedIn(): boolean {
+    public get isSignedIn(): boolean {
         return this.auth.currentUser !== null;
     }
 }
@@ -73,7 +127,11 @@ interface DatabaseOperation<T> {
 }
 
 export class DatabaseDocument<TF> {
-    public constructor(public readonly collectionPath: string, public readonly id: string, public readonly fields: TF) {
+    public constructor(
+        public readonly collectionPath: string,
+        public readonly id: string,
+        public readonly fields: TF
+    ) {
     }
 
     public get path(): string {
@@ -96,17 +154,23 @@ class Database {
 
     //#region Writing
     public update<T>(path: string, obj: T): void {
-        if (!Utils.isWhiteSpace(path)) throw new DatabaseError("Invalid path");
+        if (!Utils.isWhiteSpace(path)) {
+            throw new DatabaseError("Invalid path");
+        }
         this.dbChangeQueue.enqueue({type: WriteOperation.update, path: path, obj: obj});
     }
 
     public set<T>(path: string, obj: T): void {
-        if (!Utils.isWhiteSpace(path)) throw new DatabaseError("Invalid path");
+        if (!Utils.isWhiteSpace(path)) {
+            throw new DatabaseError("Invalid path");
+        }
         this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path, obj: obj});
     }
 
     public delete(path: string): void {
-        if (!Utils.isWhiteSpace(path)) throw new DatabaseError("Invalid path");
+        if (!Utils.isWhiteSpace(path)) {
+            throw new DatabaseError("Invalid path");
+        }
         this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path});
     }
 
@@ -244,6 +308,10 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
 
     public get itemList(): TF[] {
         return Array.from(this).map(([_, category]) => category);
+    }
+
+    public get idList(): string[] {
+        return Array.from(this).map(([id, _]) => id);
     }
 
     public getItemId(item?: TF): string {
