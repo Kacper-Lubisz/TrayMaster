@@ -23,20 +23,17 @@ export class ToolBar extends React.Component<ToolBarProps> {
         return <div id="toolBar">{
             this.props.toolbar.map((tool, toolIndex) =>
                 <button
-                    style={{ //todo fixme restyle this
-                        width: "52px",
-                        height: "52px",
-                        marginTop: "3px"
-                    }}
-
                     className="tool"
                     key={toolIndex}
                     name={tool.name}
                     onClick={tool.onClick}
                     disabled={this.props.disabled || tool.disabled}
-                >{
-                    tool.icon ? <FontAwesomeIcon style={{width: "100%", height: "100%"}} icon={tool.icon}/> : tool.name
-                }</button>
+                    title={tool.name}
+                >
+                    <div>{// extra div needed to keep button square}{
+                        tool.icon ? <FontAwesomeIcon icon={tool.icon}/> : tool.name
+                    }</div>
+                </button>
             )
         }</div>;
     }

@@ -4,11 +4,6 @@
 @import "./variables";
 
 
-#sizeControls, #heightControls { // todo fixme revise this style
-  width: 100%;
-  display: inline;
-}
-
 // Shelf
 #shelf {
   // Layout
@@ -17,8 +12,8 @@
   flex-wrap: nowrap;
   justify-content: space-around;
   align-items: stretch;
-  margin: .5% .5%;
-  height: 98%;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
 
   // Disable text selection: makes clicking and dragging feel less janky
   user-select: none;
@@ -48,10 +43,6 @@
     border: 1px solid white;
     text-align: center;
     background-color: #eee;
-
-    .tray:last-child {
-      margin: 0;
-    }
 
     // Children of column should have all of their pointer events
     > * {
@@ -95,7 +86,7 @@
       }
 
       // The first empty space a tray can take above
-      &.traySpace.firstTraySpace { //todo this needs to be completely restyled
+      &.traySpace.firstTraySpace {
         background-color: #00000011;
         border-color: #888;
       }
@@ -103,11 +94,6 @@
       &.traySpace {
         background-color: #00000011;
         border-color: #8880;
-      }
-
-      &.traySpace.selected { //todo this needs to be completely restyled
-        background-color: #00000011;
-        border-color: #888;
       }
 
       // Everything inside a tray
@@ -149,7 +135,7 @@
         font-size: 30px;
         text-align: left;
 
-        // Truncate long categories: TODO make this work properly on all screen & tray sizes
+        // Truncate long categories
         width: 60%;
         white-space: nowrap;
         overflow: hidden;
