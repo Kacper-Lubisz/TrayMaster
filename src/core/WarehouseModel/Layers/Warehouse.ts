@@ -1,7 +1,7 @@
 import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
-import database, {DatabaseCollection} from "../Database";
+import Firebase, {DatabaseCollection} from "../Firebase";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
@@ -56,8 +56,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database.db.collection(this.topLevelChildCollectionPath);
-            this.children = (await database.loadQuery<unknown>(query))
+            const query = Firebase.database.db.collection(this.topLevelChildCollectionPath);
+            this.children = (await Firebase.database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
@@ -148,7 +148,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         await this.traySizeCollection.stage(forceStage);
 
         if (this.changed || forceStage) {
-            database.set(this.path, this.fields);
+            Firebase.database.set(this.path, this.fields);
             this.fieldsSaved();
         }
     }

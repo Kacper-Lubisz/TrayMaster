@@ -6,7 +6,6 @@ import "path";
 import Utils, {Queue} from "./Utils";
 import deepEqual from "deep-equal";
 
-
 /**
  * If true, use firebase to load and save the warehouse model to and from the database
  * If false, generate a randomised offline mock warehouse
@@ -21,14 +20,45 @@ import deepEqual from "deep-equal";
  */
 export const ONLINE = process.env.REACT_APP_ONLINE === "true" && !process.env.CI;
 
-
 type DocumentSnapshot = fb.firestore.DocumentSnapshot;
 type Query = fb.firestore.Query;
 type WriteBatch = fb.firestore.WriteBatch;
 type Firestore = fb.firestore.Firestore;
+type Auth = fb.auth.Auth;
 
-//type Authentication = fb.auth.Auth; // todo: authentication
+export class FirebaseError extends Error {}
 
+export class AuthenticationError extends FirebaseError {}
+
+export class DatabaseError extends FirebaseError {}
+
+class Authentication {
+    public readonly auth: Auth;
+
+    public constructor() {
+        this.auth = fb.auth();
+    }
+
+    public async signUp(email: string, password: string): Promise<void> {
+        if (!Utils.isEmailValid(email)) throw new AuthenticationError("Invalid email");
+        if (password.length < 8) throw new AuthenticationError("Password length must be five characters or more.");
+        if (password.toLowerCase() !== password) throw new AuthenticationError("Password must contain at least one lower and upper case character.");
+        await this.auth.createUserWithEmailAndPassword(email, password);
+    }
+
+    public async signIn(email: string, password: string): Promise<void> {
+        if (!Utils.isEmailValid(email)) throw new AuthenticationError("Invalid email");
+        await this.auth.signInWithEmailAndPassword(email, password);
+    }
+
+    public async signOut(): Promise<void> {
+        await this.auth.signOut();
+    }
+
+    public get signedIn(): boolean {
+        return this.auth.currentUser !== null;
+    }
+}
 
 enum WriteOperation {
     set,
@@ -51,25 +81,11 @@ export class DatabaseDocument<TF> {
     }
 }
 
-class Firebase {
-    public static firebase: Firebase = new Firebase();
-
+class Database {
     public readonly db: Firestore;
     protected readonly dbChangeQueue: Queue<DatabaseOperation<any>>;
 
     public constructor() {
-        const firebaseConfig = {
-            apiKey: "AIzaSyDR3NWkFU7G9F5CZNrZ1GvSz0GXZ3qcj9w",
-            authDomain: "shelfmaster-b719c.firebaseapp.com",
-            databaseURL: "https://shelfmaster-b719c.firebaseio.com",
-            projectId: "shelfmaster-b719c",
-            storageBucket: "shelfmaster-b719c.appspot.com",
-            messagingSenderId: "94491668696",
-            appId: "1:94491668696:web:66c6e469d7bc1167b827ad"
-        };
-
-        fb.initializeApp(firebaseConfig);
-
         this.db = fb.firestore();
         if (ONLINE) {
             this.db.enablePersistence().catch(err => console.log(err));
@@ -80,14 +96,17 @@ class Firebase {
 
     //#region Writing
     public update<T>(path: string, obj: T): void {
+        if (!Utils.isWhiteSpace(path)) throw new DatabaseError("Invalid path");
         this.dbChangeQueue.enqueue({type: WriteOperation.update, path: path, obj: obj});
     }
 
     public set<T>(path: string, obj: T): void {
+        if (!Utils.isWhiteSpace(path)) throw new DatabaseError("Invalid path");
         this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path, obj: obj});
     }
 
     public delete(path: string): void {
+        if (!Utils.isWhiteSpace(path)) throw new DatabaseError("Invalid path");
         this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path});
     }
 
@@ -158,6 +177,29 @@ class Firebase {
     //#endregion
 }
 
+export class Firebase {
+    public static readonly firebase: Firebase = new Firebase();
+
+    public readonly auth: Authentication;
+    public readonly database: Database;
+
+    public constructor() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDR3NWkFU7G9F5CZNrZ1GvSz0GXZ3qcj9w",
+            authDomain: "shelfmaster-b719c.firebaseapp.com",
+            databaseURL: "https://shelfmaster-b719c.firebaseio.com",
+            projectId: "shelfmaster-b719c",
+            storageBucket: "shelfmaster-b719c.appspot.com",
+            messagingSenderId: "94491668696",
+            appId: "1:94491668696:web:66c6e469d7bc1167b827ad"
+        };
+
+        fb.initializeApp(firebaseConfig);
+
+        this.auth = new Authentication();
+        this.database = new Database();
+    }
+}
 
 export class DatabaseCollection<TF> extends Map<string, TF> {
     protected readonly collectionPath: string;
@@ -179,7 +221,7 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
 
     public async load(forceLoad = false): Promise<void> {
         if (!this.loaded || forceLoad) {
-            (await Firebase.firebase.loadCollection<TF>(this.collectionPath))
+            (await Firebase.firebase.database.loadCollection<TF>(this.collectionPath))
                 .forEach(document => super.set(document.id, document.fields));
             this.loaded = true;
         }
@@ -188,15 +230,15 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
     public async stage(forceStage = false, commit = false): Promise<void> {
         if (this.changed || forceStage) {
             for (const id of Array.from(this.deleted)) {
-                Firebase.firebase.delete(Utils.joinPaths(this.collectionPath, id));
+                Firebase.firebase.database.delete(Utils.joinPaths(this.collectionPath, id));
             }
             this.deleted.clear();
             for (const [id, item] of Array.from(this)) {
-                Firebase.firebase.set(Utils.joinPaths(this.collectionPath, id), item);
+                Firebase.firebase.database.set(Utils.joinPaths(this.collectionPath, id), item);
             }
         }
         if (commit) {
-            await Firebase.firebase.commit();
+            await Firebase.firebase.database.commit();
         }
     }
 

@@ -5,7 +5,7 @@ import {Shelf} from "./WarehouseModel/Layers/Shelf";
 import {Column} from "./WarehouseModel/Layers/Column";
 import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
-import database, {DatabaseDocument, ONLINE} from "./WarehouseModel/Database";
+import firebase, {DatabaseDocument, ONLINE} from "./WarehouseModel/Firebase";
 
 /**
  * Represents the order of (and IDs of) each layer in the warehouse model
@@ -156,7 +156,7 @@ export class WarehouseManager {
      */
     public static async loadWarehouses(): Promise<Warehouse[]> {
         if (ONLINE) {
-            const warehouseDocuments: DatabaseDocument<unknown>[] = await database.loadCollection<unknown>("warehouses");
+            const warehouseDocuments: DatabaseDocument<unknown>[] = await firebase.database.loadCollection<unknown>("warehouses");
             for (const warehouseDocument of warehouseDocuments) {
                 WarehouseManager.warehouses[warehouseDocument.id] =
                     Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
