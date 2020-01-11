@@ -31,6 +31,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import {faCheckCircle as tickRegular} from "@fortawesome/free-regular-svg-icons";
+// todo fixme decide if to replace this icon, if this icon is removed then remove this package too
 import Popup from "reactjs-popup";
 import classNames from "classnames";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -40,7 +41,6 @@ import {properMod} from "../utils/properMod";
 import App, {Dialog, DialogButtons, DialogTitle} from "../core/App";
 import {ToolBar} from "../components/ToolBar";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-// todo fixme decide if to replace this icon, if this icon is removed then remove this package too
 
 
 /**
