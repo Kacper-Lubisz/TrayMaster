@@ -1,8 +1,8 @@
 import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer} from "./Layer";
-import database from "../Database";
 import Utils, {Queue} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {BottomLayer} from "./BottomLayer";
+import Firebase from "../Firebase";
 
 /**
  * Represents a middle layer in the object model (that has children and a parent)
@@ -91,9 +91,9 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
      */
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database.db.collection(this.topLevelChildCollectionPath)
+            const query = Firebase.database.db.collection(this.topLevelChildCollectionPath)
                                   .where(`layerIdentifiers.${this.collectionName}`, "==", this.id);
-            this.children = (await database.loadQuery<unknown>(query))
+            this.children = (await Firebase.database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
@@ -131,7 +131,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            for (const document of (await Firebase.database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
@@ -194,7 +194,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         }
 
         if (commitAtEnd) {
-            await database.commit();
+            await Firebase.database.commit();
         }
     }
 

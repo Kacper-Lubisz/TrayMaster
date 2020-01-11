@@ -1,9 +1,9 @@
 import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
-import database from "../Database";
 import Utils, {Collection, Queue, Stack} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
+import Firebase from "../Firebase";
 
 /**
  * Represents the top layer in the object model (that has children)
@@ -119,7 +119,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            for (const document of (await Firebase.database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
@@ -182,7 +182,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         }
 
         if (commitAtEnd) {
-            await database.commit();
+            await Firebase.database.commit();
         }
     }
 

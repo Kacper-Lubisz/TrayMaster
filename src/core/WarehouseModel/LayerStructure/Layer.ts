@@ -1,10 +1,10 @@
 import Utils from "../Utils";
 import deepEqual from "deep-equal";
-import database from "../Database";
 import {TopLayer} from "./TopLayer";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
 import {WarehouseModel} from "../../WarehouseModel";
+import Firebase from "../Firebase";
 
 /**
  * Represents additional metadata for the top-level database model
@@ -105,8 +105,8 @@ export abstract class Layer<TFields> {
     protected async stageLayer(forceStage = false): Promise<void> {
         if (this.changed || forceStage) {
             await Promise.all([
-                database.set(this.path, this.fields),
-                database.set(this.topLevelPath, {
+                Firebase.database.set(this.path, this.fields),
+                Firebase.database.set(this.topLevelPath, {
                     ...this.fields,
                     layerIdentifiers: this.layerIdentifiers
                 })
@@ -117,7 +117,7 @@ export abstract class Layer<TFields> {
 
     protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
-            this.fields = (await database.loadDocument<TFields>(this.path))?.fields ?? this.fields;
+            this.fields = (await Firebase.database.loadDocument<TFields>(this.path))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
             this.loadComplete?.call(this);
@@ -129,7 +129,7 @@ export abstract class Layer<TFields> {
      * Commit all staged changes to the database
      */
     public async commitAllStaged(): Promise<void> {
-        await database.commit();
+        await Firebase.database.commit();
     }
 
     /**
