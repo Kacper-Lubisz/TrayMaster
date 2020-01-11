@@ -51,7 +51,7 @@ export class User {
 
     public constructor(path: string, fields?: UserFields) {
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths(path, "warehouses"));
-        this.fields = fields ?? {isAdmin: false, name: "Bobman", lastWarehouseID: ""};
+        this.fields = fields ?? {isAdmin: false, name: "Bobman", lastWarehouseID: "MOCK 0"};
     }
 
     public async load(forceLoad = false): Promise<this> {
