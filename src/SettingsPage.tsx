@@ -4,9 +4,11 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 import {StandardDialog} from "./App";
+import {Warehouse} from "./core/WarehouseModel/Layers/Warehouse";
 
 interface SettingsProps {
     openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+    warehouse: Warehouse | undefined;
 }
 
 /**

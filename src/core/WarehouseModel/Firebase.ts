@@ -42,6 +42,7 @@ interface UserWarehouseSettings {
 interface UserFields {
     isAdmin: boolean;
     name: string;
+    lastWarehouseID: string;
 }
 
 export class User {
@@ -50,7 +51,7 @@ export class User {
 
     public constructor(path: string, fields?: UserFields) {
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths(path, "warehouses"));
-        this.fields = fields ?? {isAdmin: false, name: ""};
+        this.fields = fields ?? {isAdmin: false, name: "Bobman", lastWarehouseID: ""};
     }
 
     public async load(forceLoad = false): Promise<this> {
@@ -61,6 +62,19 @@ export class User {
     public get isAdmin(): boolean {
         return this.fields.isAdmin;
     }
+
+    public get accessibleWarehouses(): string[] {
+        return this.warehouseSettings.idList;
+    }
+
+    public get lastWarehouseID(): string | null {
+        return this.fields.lastWarehouseID === "" ? null : this.fields.lastWarehouseID;
+    }
+
+    public get name(): string {
+        return this.fields.name;
+    }
+
 }
 
 class Authentication {

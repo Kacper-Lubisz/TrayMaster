@@ -30,18 +30,26 @@
 
 }
 
-#menu-warehouse-switcher {
+#menu-warehouse-user-area {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 
   position: fixed;
   right: 15px;
   bottom: 15px;
 
-  > button {
-    font-size: 2em;
-    margin: .33em;
-    padding: 14px 16px 14px 16px;
+  > div {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    > button {
+      font-size: 2em;
+      margin: .33em;
+      padding: 14px 16px 14px 16px;
+    }
+
   }
 
 }

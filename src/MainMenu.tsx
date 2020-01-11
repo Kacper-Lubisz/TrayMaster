@@ -3,9 +3,15 @@ import {RouteComponentProps} from "react-router-dom";
 import {withRouter} from "react-router";
 import "./styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faExchangeAlt, faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {
+    faExchangeAlt,
+    faExclamationTriangle as warningIcon,
+    faSignInAlt,
+    faSignOutAlt
+} from "@fortawesome/free-solid-svg-icons";
 import {StandardDialog} from "./App";
 import {Warehouse} from "./core/WarehouseModel";
+import {User} from "./core/WarehouseModel/Firebase";
 
 
 /**
@@ -14,8 +20,14 @@ import {Warehouse} from "./core/WarehouseModel";
  */
 interface MainMenuProps {
     openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+
     changeWarehouse: () => void;
-    warehouse: Warehouse;
+    showSignIn: () => void;
+    signOut: () => void;
+
+    warehouse: Warehouse | undefined;
+    user?: User;
+
     expiryAmount: number;
 }
 
@@ -29,6 +41,7 @@ interface MainMenuProps {
 class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
 
     render(): React.ReactNode {
+
         return (
             <div className="main-menu">
                 <div className="menu-header">
@@ -44,8 +57,8 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
                 }
 
                 <div className="menu-btn-container">
-                    <button className="key-btn" onClick={() => this.props.history.push("/")}>
-                        <p>Back to Shelf View</p></button>
+                    {this.props.warehouse ? <button className="key-btn" onClick={() => this.props.history.push("/")}>
+                        <p>Back to Shelf View</p></button> : undefined}
                     <button className="key-btn"
                             onClick={() => alert("Search")}><p>Search</p>
                     </button>
@@ -58,11 +71,21 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
 
                 </div>
 
-                <div id="menu-warehouse-switcher">
-                    <h1>{this.props.warehouse.name}</h1>
-                    <button onClick={this.props.changeWarehouse}>
-                        <FontAwesomeIcon icon={faExchangeAlt}/>
-                    </button>
+                <div id="menu-warehouse-user-area">
+                    <div>
+                        <h1>{this.props.user?.name ?? "Not Signed in"}</h1>
+                        <button onClick={this.props.user === null ? this.props.showSignIn :
+                                         this.props.signOut}>
+                            <FontAwesomeIcon icon={this.props.user === null ? faSignInAlt :
+                                                   faSignOutAlt}/>
+                        </button>
+                    </div>
+                    {this.props.user === undefined ? undefined : <div>
+                        <h1>{this.props.warehouse?.name ?? "No Warehouse Open"}</h1>
+                        <button onClick={this.props.changeWarehouse}>
+                            <FontAwesomeIcon icon={faExchangeAlt}/>
+                        </button>
+                    </div>}
                 </div>
 
             </div>

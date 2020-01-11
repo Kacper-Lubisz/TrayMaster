@@ -10,16 +10,14 @@ import {LoadingPage} from "./Loading";
 import ShelfView from "./ShelfView";
 import MainMenu from "./MainMenu";
 import SettingsPage from "./SettingsPage";
-import LoginPage from "./LoginPage";
-import PageNotFoundPage from "./PageNotFoundPage";
 
-class User2 {
-}
+import PageNotFoundPage from "./PageNotFoundPage";
+import firebase, {User} from "./core/WarehouseModel/Firebase";
+
 
 interface AppState {
-    user2?: User2;
+    user?: User | undefined;
     warehouse?: Warehouse;
-    warehouses?: Warehouse[];
     dialog?: StandardDialog | null;
 }
 
@@ -35,60 +33,110 @@ class App extends React.Component<unknown, AppState> {
             throw Error("This browser isn't supported"); // supported in IE 11, should be fine
         }
 
+        firebase.auth.onSignIn = (user: User) => {
+            console.log("signed in");
+            if (user.lastWarehouseID === null) {
+                this.setState({
+                    user: user,
+                });
+            } else {
+                // WarehouseManager.loadWarehouseByID(user.lastWarehouseID).then(warehouse => {
+                //     this.setState({
+                //         user: user,
+                //         warehouse: warehouse
+                //     });
+                // }).catch((reason) => {
+                //     this.openDialog(App.buildErrorDialog(
+                //         "Load Failed",
+                //         `Failed to load last warehouse ${reason}`,
+                //         false
+                //     ));
+                // });
+            }
+        };
+        firebase.auth.onSignOut = () => {
+            // this.setState({
+            //     user: undefined,
+            // });
+        };
+        if (!firebase.auth.isSignedIn) {
+            this.state = {};
+        }
+
     }
 
     render(): React.ReactNode {
-        console.log(this.state);
         return <>
-            {this.state === null ? <LoadingPage/>
-                                 : <BrowserRouter>
-                 <Switch>
-                     <Route path="/" component={() =>
-                         this.state.user2 && this.state.warehouse ? <ShelfView
-                             openDialog={this.openDialog.bind(this)}
-                             settings={{sampleSetting: ""}}
-                             warehouse={this.state.warehouse}
-                         /> : <Redirect to="/login"/>
-                     } exact/>
-                     <Route path="/menu" component={() =>
-                         this.state.user2 && this.state.warehouse ? <MainMenu
-                             changeWarehouse={() => {
-                                 // this.setState((state) => {
-                                 //     return null;
-                                 // });
-                                 // WarehouseManager.loadWarehouses().then(warehouses => {
-                                 //     this.setState((state) => {
-                                 //         return {
-                                 //             ...state,
-                                 //             loginState: new WarehouseNotChosen(warehouseChosen.user, warehouses)
-                                 //         };
-                                 //     });
-                                 // }).catch(error => {
-                                 //     this.openDialog(App.buildErrorDialog(
-                                 //         "Load Failed",
-                                 //         error.toString(),
-                                 //         false
-                                 //     ));
-                                 // });
-                             }}
-                             warehouse={this.state.warehouse}
-                             openDialog={this.openDialog.bind(this)}
-                             expiryAmount={5}
-                         /> : <Redirect to="/login"/>
-                     }/>
-                     <Route path="/settings" component={() =>
-                         this.state.user2 === null ? <Redirect to="/login"/> : <SettingsPage
-                             openDialog={this.openDialog.bind(this)}
-                         />
-                     }/>
-                     <Route path="/login" component={() =>
-                         this.state.user2 ? <Redirect to="/"/> : <LoginPage
-                             openDialog={this.openDialog.bind(this)}
-                         />
-                     }/>
-                     <Route component={PageNotFoundPage}/>
-                 </Switch>
-             </BrowserRouter>
+            {this.state === null ? <LoadingPage/> : <BrowserRouter><Switch>
+                <Route path="/" component={() =>
+                    this.state.user && this.state.warehouse ? <ShelfView
+                        openDialog={this.openDialog.bind(this)}
+                        settings={{sampleSetting: ""}}
+                        warehouse={this.state.warehouse}
+                    /> : <Redirect to="/menu"/>
+                } exact/>
+                <Route path="/menu" component={() =>
+                    <MainMenu
+                        changeWarehouse={() => {
+                        }}
+                        showSignIn={() => {
+                            const loginPage = <div>
+                                <h1>Sign In</h1>
+                                Email: <br/>
+                                <input type="text" placeholder={"email"}/> <br/>
+                                Password: <br/>
+                                <input type="password" placeholder={"email"}/> <br/>
+
+                                <button>Sign In</button>
+                                <button>Reset Password</button>
+                                <br/>
+
+                                <button onClick={() => {
+                                    localStorage.setItem("userData", JSON.stringify({
+                                        userID: "a",
+                                        name: "bobman",
+                                        authToken: "a",
+                                        lastWarehouseID: "MOCK 0"
+                                    }));
+                                    window.location.reload();
+                                }}>
+                                    Set userData to
+                                    "{"{\"userID\":\"a\",\"name\":\"bobman\",\"authToken\":\"a\",\"lastWarehouseID\":\"MOCK 0\"}"}"
+                                </button>
+                            </div>;
+
+                            // this.openDialog((close)=>{
+                            //     return {
+                            //         closeOnDocumentClick:true,
+                            //
+                            //     }
+                            // })
+
+                        }}
+                        signOut={async () => {
+                            await firebase.auth.signOut();
+                            this.setState(state => {
+                                return {
+                                    dialog: state.dialog,
+                                    user: undefined
+                                };
+                            });
+                        }}
+                        user={this.state.user}
+                        warehouse={this.state.warehouse}
+                        openDialog={this.openDialog.bind(this)}
+                        expiryAmount={5} //todo fixme
+                    />
+                }/>
+                <Route path="/settings" component={() =>
+                    this.state.user === null ? <Redirect to="/login"/> : <SettingsPage
+                        warehouse={this.state.warehouse}
+                        openDialog={this.openDialog.bind(this)}
+                    />
+                }/>
+                <Route component={PageNotFoundPage}/>
+            </Switch>
+            </BrowserRouter>
             }
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
