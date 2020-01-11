@@ -49,16 +49,17 @@ export class User {
     private warehouseSettings: DatabaseCollection<UserWarehouseSettings>;
 
     public constructor(path: string, fields?: UserFields) {
-        this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(path);
+        this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths(path, "warehouses"));
         this.fields = fields ?? {isAdmin: false, name: ""};
+    }
+
+    public async load(forceLoad = false): Promise<this> {
+        await this.warehouseSettings.load(forceLoad);
+        return this;
     }
 
     public get isAdmin(): boolean {
         return this.fields.isAdmin;
-    }
-
-    public get accessibleWarehouses(): string[] {
-        return this.warehouseSettings.idList;
     }
 }
 
@@ -72,13 +73,13 @@ class Authentication {
         this.auth = fb.auth();
         this.auth.onAuthStateChanged(async userSnapshot => {
             if (userSnapshot) {
-                console.log("User signed in.");
                 const userPath = Utils.joinPaths("users", userSnapshot.uid);
-                const userFields: UserFields | undefined = (await Firebase.firebase.database.loadDocument<UserFields>(userPath))?.fields;
-                this.currentUser = new User(userPath, userFields);
+                this.currentUser = await new User(
+                    userPath,
+                    (await Firebase.firebase.database.loadDocument<UserFields>(userPath))?.fields
+                ).load();
                 this.onSignIn?.call(this, this.currentUser);
             } else {
-                console.log("User is signed out.");
                 this.currentUser = undefined;
                 this.onSignOut?.call(this);
             }
