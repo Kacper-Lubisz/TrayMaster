@@ -27,7 +27,6 @@ interface AppState {
 }
 
 class App extends React.Component<any, AppState> {
-    mounted = false;
 
     constructor(props: any) {
         super(props);
@@ -68,15 +67,6 @@ class App extends React.Component<any, AppState> {
                 ));
             });
         }
-    }
-
-    async componentDidMount() {
-        this.mounted = true;
-        await this.loadWarehouse();
-    }
-
-    componentWillUnmount(): void {
-        this.mounted = false;
     }
 
     render(): React.ReactNode {
