@@ -4,8 +4,8 @@ import {BrowserRouter, Route, Switch} from "react-router-dom";
 import SettingsPage from "./SettingsPage";
 import PageNotFoundPage from "./PageNotFoundPage";
 
-import {Settings, SettingsManager} from "./core/MockSettings";
-import {Warehouse} from "./core/MockWarehouse";
+import {Settings, SettingsManager} from "./core/Settings";
+import {Warehouse, WarehouseManager} from "./core/WarehouseModel";
 import {LoadingPage} from "./Loading";
 import Popup from "reactjs-popup";
 import ShelfView from "./ShelfView";
@@ -34,36 +34,40 @@ class App extends React.Component<any, AppState> {
 
         this.state = {};
 
-        this.loadWarehouse();
-    }
+        if (process.env.NODE_ENV !== "test") {
+            const loadPromise = Promise.all([
+                SettingsManager.loadSettings(),
+                WarehouseManager.loadWarehouses()
+            ]);
 
-    async loadWarehouse() {
-        const loadPromise = Promise.all([
-            SettingsManager.loadSettings(),
-            Warehouse.loadWarehouse("ABCD")
-        ]);
-        loadPromise.then((result) => {
-            if (this.mounted) {
-                const [settings, warehouse] = result;
-                console.log(`Settings Loaded:`, settings);
-                console.log(`Warehouse Loaded:`, warehouse);
-                this.setState(state => {
-                    return {
-                        ...state,
-                        loaded: {
-                            warehouse: warehouse,
-                            settings: settings,
-                        }
-                    };
-                });
-            }
+            loadPromise.then(async (result) => {
+                const [settings, warehouses] = result;
+                console.log("Settings Loaded:", settings);
+                console.log("Warehouse List Loaded: ", warehouses);
 
-        }).catch(() => {
-            this.openDialog(App.buildErrorDialog(
-                "Failed to load the warehouse or the settings",
-                true
-            ));
-        });
+                const warehouse: Warehouse | undefined = await WarehouseManager.loadWarehouse("Chester-le-Street");
+                if (warehouse) {
+                    console.log("Warehouse Loaded:", warehouse);
+
+                    this.setState(state => {
+                        return {
+                            ...state,
+                            loaded: {
+                                warehouse: warehouse,
+                                settings: settings,
+                            }
+                        };
+                    });
+                } else {
+                    throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
+                }
+            }).catch(e => {
+                this.openDialog(App.buildErrorDialog(
+                    `Failed to load the warehouse or the settings (${e}).`,
+                    true
+                ));
+            });
+        }
     }
 
     async componentDidMount() {
@@ -80,13 +84,13 @@ class App extends React.Component<any, AppState> {
             {this.state.loaded === undefined ? <LoadingPage/> : (
                 <BrowserRouter>
                     <Switch>
-                        <Route path="/" component={() => this.state.loaded ?
-                                                         <ShelfView
-                                                             openDialog={this.openDialog.bind(this)}
-                                                             settings={this.state.loaded.settings}
-                                                             warehouse={this.state.loaded.warehouse}
-                                                         /> : <></>
-                        } exact/>
+                        <Route path="/" component={((loaded: LoadedContent) => {
+                            return <ShelfView
+                                openDialog={this.openDialog.bind(this)}
+                                settings={loaded.settings}
+                                warehouse={loaded.warehouse}
+                            />;
+                        }).bind(this, this.state.loaded)} exact/>
                         <Route path="/menu"
                                component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
                         <Route path="/settings"
@@ -102,19 +106,19 @@ class App extends React.Component<any, AppState> {
                 <> {/*empty tag because for some reason Popup overrides the type of the child props.  Making it so that a
             boolean can't be a child, which is otherwise usually legal.  Boolean because the conditionals may evaluate
             to a boolean or an Element*/}
-                    {this.state?.dialog?.title !== undefined && <h1>
+                    {this.state?.dialog?.title ? <h1>
                         <FontAwesomeIcon {...this.state.dialog.iconProps}/> {this.state.dialog.title}
-                    </h1>}
-                    {this.state?.dialog?.message !== undefined && <p>{
+                    </h1> : null}
+                    {this.state?.dialog?.message ? <p>{
                         this.state.dialog.message
-                    }</p>}
+                    }</p> : null}
 
-                    {this.state?.dialog?.buttons !== undefined &&
-                    <div style={{float: "right"}} id={"popupButtons"}>{
-                        this.state.dialog.buttons.map((button, index) =>
-                            <button key={index} {...button.buttonProps}>{button.name}</button>
-                        )}
-                    </div>}
+                    {this.state?.dialog?.buttons ?
+                     <div style={{float: "right"}} id={"popupButtons"}>{
+                         this.state.dialog.buttons.map((button, index) =>
+                             <button key={index} {...button.buttonProps}>{button.name}</button>
+                         )}
+                     </div> : null}
                 </>
             </Popup>
         </>;

@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/require-await */
 // TODO: Agree on which settings to be used
 
+import {Settings} from "../Settings";
+
 // Offline mock settings
 let settingsMap: Settings = {
     sampleSetting: "Custom setting"
@@ -43,12 +45,4 @@ export class SettingsManager {
     public static getSettings(): Settings {
         return this.settings;
     }
-}
-
-
-/**
- * Represents the firebase settings map
- */
-export interface Settings {
-    sampleSetting: string;
 }

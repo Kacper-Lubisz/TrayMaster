@@ -8,7 +8,7 @@ import {
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/MockWarehouse";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/WarehouseModel";
 import classNames from "classnames/bind";
 import {getTextColorForBackground} from "./utils/getTextColorForBackground";
 import {getExpiryColor} from "./utils/getExpiryColor";
@@ -78,7 +78,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 selectedBefore: selectedBefore,
             } : undefined,
         }, () => {
-            return this.state.longPress ? this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom) : undefined;
+            if (this.state.longPress) {
+                this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom);
+            }
         });
     }
 
@@ -134,19 +136,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
             if (a.columnIndex < b.columnIndex) {
                 return -1;
-            }
-            if (a.columnIndex > b.columnIndex) {
+            } else if (a.columnIndex > b.columnIndex) {
                 return 1;
-            }
-
-            if (a.trayIndex < b.trayIndex) {
+            } else if (a.trayIndex < b.trayIndex) {
                 return 1;
-            }
-            if (a.trayIndex > b.trayIndex) {
+            } else if (a.trayIndex > b.trayIndex) {
                 return -1;
+            } else {
+                return 0;
             }
 
-            return 0;
         })).map(it => it.tray);
 
         // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
@@ -317,7 +316,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
+        column.maxHeight = Math.max(change + column.maxHeight, 1);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -345,17 +344,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     changeColumnSize(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        if (column.parentWarehouse) {
-            const columnSizes = column.parentWarehouse.columnSizes;
-            const medianIndex = Math.floor(columnSizes.length / 2);
 
-            const currentIndex = columnSizes.indexOf(column.size ?? columnSizes[medianIndex]);
+        const traySizes = column.parentWarehouse.traySizes;
+        const medianIndex = Math.floor(traySizes.length / 2);
 
-            const newIndex = Math.min(Math.max(change + currentIndex, 0), columnSizes.length - 1);
-            column.size = columnSizes[newIndex];
+        const currentIndex = traySizes.indexOf(column.traySize ?? traySizes[medianIndex]);
 
-            this.forceUpdate();
-        }
+        const newIndex = Math.min(Math.max(change + currentIndex, 0), traySizes.length - 1);
+        column.traySize = traySizes[newIndex];
+
+        this.forceUpdate();
     }
 
     /**
@@ -364,18 +362,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
     getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
+        const traySizes = column.parentWarehouse.traySizes;
 
-        if (column.parentWarehouse) {
-            const columnSizes = column.parentWarehouse.columnSizes;
-
-            if (column.size) {
-                const currentIndex = columnSizes.indexOf(column.size);
-                return {inc: currentIndex !== columnSizes.length - 1, dec: currentIndex !== 0};
-            } else {
-                return {inc: true, dec: true};
-            }
+        if (column.traySize) {
+            const currentIndex = traySizes.indexOf(column.traySize);
+            return {inc: currentIndex !== traySizes.length - 1, dec: currentIndex !== 0};
         } else {
-            return {inc: false, dec: false};
+            return {inc: true, dec: true};
         }
     }
 
@@ -384,14 +377,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column to remove
      */
     removeColumn(column: Column): void {
-        const shelf: Shelf | undefined = column.parentShelf;
-        if (shelf) {
-            const index = shelf.columns.indexOf(column);
-            shelf.columns.splice(index, 1);
-        } else {
-            throw Error("Shelf undefined");
-        }
-
+        const index = column.parentShelf.columns.indexOf(column);
+        column.parentShelf.columns.splice(index, 1);
         this.forceUpdate();
     }
 
@@ -409,12 +396,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         return <div
             style={{
                 order: order,
-                flexGrow: column.size?.sizeRatio ?? 1
+                flexGrow: column.traySize?.sizeRatio ?? 1
             }}
             className="column"
             key={order}
         >{
-            column.getPaddedTrays(1).map((tray, index) => {
+            column.getPaddedTrays().map((tray, index) => {
                 let expiryStyle;
                 if (tray instanceof Tray) {
                     const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";
@@ -441,17 +428,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             "tick-selected": this.props.isTraySelected(tray)
                         })}
                         icon={tickSolid}/>
-                    {tray instanceof Tray && <>
+                    {tray instanceof Tray ? <>
                         <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
                         <div className="trayWeight">{tray.weight ?? "?"}kg</div>
                         <div className="trayCustomField">{tray.customField ?? ""}</div>
-                    </>}
-                    {!(tray instanceof Tray) && index === column.trays.length && <>
+                    </> : null}
+                    {!(tray instanceof Tray) && index === column.trays.length ? <>
                         <p>EMPTY TRAY {tray.index}</p>
-                    </>}
+                    </> : null}
                 </div>;
             })}
             {this.props.isShelfEdit ? <div className="edit-shelf-column">
@@ -470,7 +457,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         >
                             <FontAwesomeIcon icon={plus}/>
                         </button>
-                        <div className="colHeightValue">{column.maxHeight ?? "?"}</div>
+                        <div className="colHeightValue">{column.maxHeight}</div>
                         <button
                             disabled={!possibleHeightChange.dec}
                             onClick={this.changeColumnHeight.bind(this, column, "dec")}
@@ -482,7 +469,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                 <div className="colWidth">
                     <div className="colControlHeader">Tray Width:&nbsp;
-                        <span className="colWidthValue">{stringToTitleCase(column.size?.label ?? "?")}</span>
+                        <span className="colWidthValue">{stringToTitleCase(column.traySize?.label ?? "?")}</span>
                     </div>
                     <div className="colWidthControls">
                         <button
