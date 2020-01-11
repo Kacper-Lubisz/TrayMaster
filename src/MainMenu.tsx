@@ -14,6 +14,7 @@ import {Warehouse} from "./core/WarehouseModel";
  */
 interface MainMenuProps {
     openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+    changeWarehouse: () => void;
     warehouse: Warehouse;
     expiryAmount: number;
 }
@@ -59,7 +60,7 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
 
                 <div id="menu-warehouse-switcher">
                     <h1>{this.props.warehouse.name}</h1>
-                    <button onClick={() => this.props.history.replace("/login")}>
+                    <button onClick={this.props.changeWarehouse}>
                         <FontAwesomeIcon icon={faExchangeAlt}/>
                     </button>
                 </div>

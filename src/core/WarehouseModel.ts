@@ -162,7 +162,7 @@ export class WarehouseManager {
                     Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
             }
         } else {
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 1; i++) {
                 const id = `MOCK ${i}`;
                 WarehouseManager.warehouses[id] = await generateRandomWarehouse(id, "Chester-le-Street");
             }
@@ -176,21 +176,19 @@ export class WarehouseManager {
      * @param name - The name of the warehouse to load
      * @returns The loaded warehouse
      */
-    public static async loadWarehouse(name: string): Promise<Warehouse | undefined> {
+    public static async loadWarehouse(name: string): Promise<Warehouse> {
         for (const [id, warehouse] of Object.entries(WarehouseManager.warehouses)) {
             if (warehouse.name === name) {
                 return WarehouseManager.loadWarehouseByID(id);
             }
         }
+        throw Error("Failed to load warehouse");
     }
 
-    public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
+    public static async loadWarehouseByID(id: string): Promise<Warehouse> {
+        await WarehouseManager.loadWarehouses();
         if (typeof WarehouseManager.warehouses[id] === "undefined") {
-            // todo fixme optimise this so that calls are not chained
-            await WarehouseManager.loadWarehouses();
-            if (typeof WarehouseManager.warehouses[id] === "undefined") {
-                return;
-            }
+            throw Error("Failed to load warehouse");
         }
         return WarehouseManager.warehouses[id].load(WarehouseModel.tray);
     }
