@@ -20,7 +20,7 @@ import {User} from "../core/WarehouseModel/Firebase";
 interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
 
-    changeWarehouse: () => void;
+    changeWarehouse: (user: User) => void;
     showSignIn: () => void;
     signOut: () => void;
 
@@ -45,7 +45,8 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                 <div className="menu-header">
                     <h1>Shelfmaster</h1>
                 </div>
-                {this.props.expiryAmount === 0 ? undefined : <div className="alert">
+                {/*todo fixme the expiry amount ought to be derived from warehouse*/}
+                {this.props.expiryAmount === 0 || !this.props.warehouse ? undefined : <div className="alert">
                     <div className="alert-header">
                         <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
                         <h2>Expiry Imminent</h2>
@@ -54,9 +55,9 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                 </div>
                 }
 
-                <div className="menu-btn-container">
-                    {this.props.warehouse ? <button className="key-btn" onClick={() => this.props.history.push("/")}>
-                        <p>Back to Shelf View</p></button> : undefined}
+                {this.props.warehouse ? <div className="menu-btn-container">
+                    <button className="key-btn" onClick={() => this.props.history.push("/")}>
+                        <p>Back to Shelf View</p></button>
                     <button className="key-btn"
                             onClick={() => alert("Search")}><p>Search</p>
                     </button>
@@ -67,8 +68,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                             onClick={() => this.props.history.push("/settings")}><p>Settings</p>
                     </button>
 
-                </div>
-
+                </div> : undefined}
                 <div id="menu-warehouse-user-area">
                     <div>
                         <h1>{this.props.user?.name ?? "Not Signed in"}</h1>
@@ -79,7 +79,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                     </div>
                     {this.props.user === undefined ? undefined : <div>
                         <h1>{this.props.warehouse?.name ?? "No Warehouse Open"}</h1>
-                        <button onClick={this.props.changeWarehouse}>
+                        <button onClick={this.props.changeWarehouse.bind(undefined, this.props.user)}>
                             <FontAwesomeIcon icon={faExchangeAlt}/>
                         </button>
                     </div>}

@@ -5,7 +5,7 @@ import {Redirect} from "react-router";
 import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
 import Popup from "reactjs-popup";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
-import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {faExclamationTriangle as warningIcon, faHome} from "@fortawesome/free-solid-svg-icons";
 
 import MainMenu from "../pages/MainMenu";
 import firebase, {User} from "../core/WarehouseModel/Firebase";
@@ -97,25 +97,16 @@ class App extends React.Component<unknown, AppState> {
                 } exact/>
                 <Route path="/menu" component={() =>
                     <MainMenu
-                        changeWarehouse={() => {
+                        changeWarehouse={(user: User) => {
                             this.openDialog({
                                 closeOnDocumentClick: true,
-                                dialog: (close) => <div>
-                                    <p>{this.state.user?.accessibleWarehouses}</p>
-                                    {this.state.user?.accessibleWarehouses.map((warehouseID, index) =>
-                                        <button key={index} onClick={async () => {
-                                            // const warehouse: Warehouse = await
-                                            // WarehouseManager.loadWarehouseByID(warehouseID); this.setState((state)
-                                            // => { return { ...state, warehouse: warehouse }; });
-                                        }}>{warehouseID}</button>
-                                    )}
-                                </div>
+                                dialog: (close) => <ChangeWarehouseDialog close={close} user={user}/>
                             });
                         }}
                         showSignIn={() => {
                             this.openDialog({
                                 closeOnDocumentClick: true,
-                                dialog: (close) => <SignInDialog close={close}/>
+                                dialog: (close) => <SignInDialog close={close} signIn={this.signIn.bind(this)}/>
                             });
                         }}
                         signOut={async () => {
@@ -154,6 +145,35 @@ class App extends React.Component<unknown, AppState> {
 
     }
 
+    private async signIn(email: string | undefined, password: string | undefined, close: () => void): Promise<void> {
+        if (email && password) {
+            try {
+                this.setState((state) => {
+                    return {...state, loading: true};
+                });
+                await firebase.auth.signIn(email, password);
+                close();
+            } catch (e) {
+                this.setState((state) => {
+                    return {
+                        ...state,
+                        feedback: e.toString(),
+                        loading: false
+                    };
+                });
+            }
+        } else {
+            this.setState((state) => {
+                return {
+                    ...state,
+                    feedback: `${email ? "emailField is undefined " : ""}
+                    ${password ? "emailField is undefined " : ""}`
+                };
+            });
+        }
+    }
+
+
     /**
      * This method opens a dialog.  The dialog is passed as a function which generates the dialog given a function which
      * will close the dialog.  Only one dialog can be open at a time.
@@ -188,7 +208,6 @@ class App extends React.Component<unknown, AppState> {
      */
     static buildErrorDialog(title: string, message: string, forceReload: boolean): Dialog {
 
-
         return {
             closeOnDocumentClick: !forceReload,
             dialog: (close: () => void) => <>
@@ -213,14 +232,47 @@ class App extends React.Component<unknown, AppState> {
 
 }
 
+interface ChangeWarehouseDialogProps {
+    user: User;
+    close: () => void;
+}
+
+
+class ChangeWarehouseDialog extends React.Component<ChangeWarehouseDialogProps> {
+    render(): React.ReactNode {
+        return <div>
+            <h1>Change Warehouse</h1>
+
+            {this.props.user.accessibleWarehouses.length === 0 ? <p>
+                You don't have access to any warehouse! Contact your administrator, more info in the manual
+            </p> : <div id="warehouseList">{
+                this.props.user.accessibleWarehouses.map((warehouseID, index) =>
+                    <div key={index} onClick={async () => {
+                        const warehouse: Warehouse = await
+                            WarehouseManager.loadWarehouseByID(warehouseID); // todo fixme make this show the name
+                        this.setState((state) => {
+                            return {...state, warehouse: warehouse};
+                        });
+                        this.props.close();
+                    }}>
+                        <FontAwesomeIcon icon={faHome}/>
+                        <p>{warehouseID}</p>
+                    </div>
+                )
+            }</div>}
+        </div>;
+    }
+}
+
 interface SignInDialogProps {
     close: () => void;
+    signIn: (email: string | undefined, password: string | undefined, close: () => void) => void;
+    feedback?: string;
 }
 
 interface SignInDialogState {
     emailField?: string;
     passwordField?: string;
-    feedback?: string;
 }
 
 class SignInDialog extends React.Component<SignInDialogProps, SignInDialogState> {
@@ -234,7 +286,7 @@ class SignInDialog extends React.Component<SignInDialogProps, SignInDialogState>
             <h1>Sign In</h1>
             <form onSubmit={(event) => {
                 event.preventDefault();
-                this.signIn();
+                this.props.signIn(this.state.emailField, this.state.passwordField, this.props.close);
             }}>
                 Email:
                 <input
@@ -268,40 +320,18 @@ class SignInDialog extends React.Component<SignInDialogProps, SignInDialogState>
                 /> <br/>
             </form>
 
-            {this.state.feedback ? <h1 style={{color: "red"}}>{this.state.feedback}</h1> : undefined}
+            {this.props.feedback ? <h1 style={{color: "red"}}>{this.props.feedback}</h1> : undefined}
 
-            <button onClick={this.signIn.bind(this)}>Sign In
+            <button onClick={this.props.signIn.bind(
+                undefined,
+                this.state.emailField,
+                this.state.passwordField,
+                this.props.close
+            )}>Sign In
             </button>
             <button>Reset Password</button>
             <br/>
         </>;
-    }
-
-    private async signIn(): Promise<void> {
-        if (this.state.emailField && this.state.passwordField) {
-            try {
-                await firebase.auth.signIn(this.state.emailField, this.state.passwordField);
-                this.props.close();
-            } catch (e) {
-                console.log(e);
-                this.setState((state) => {
-                    return {
-                        ...state,
-                        feedback: e.toString()
-                    };
-                });
-            }
-        } else {
-            this.setState((state) => {
-                return {
-                    ...state,
-                    feedback: `${this.state.emailField ? "emailField is undefined "
-                                                       : ""}${this.state.passwordField
-                                                              ? "emailField is undefined "
-                                                              : ""}`
-                };
-            });
-        }
     }
 
 }
