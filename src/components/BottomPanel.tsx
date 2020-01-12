@@ -1,7 +1,7 @@
 import React from "react";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
-import {Category, ExpiryRange, Tray, TrayCell} from "../core/MockWarehouse";
+import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 

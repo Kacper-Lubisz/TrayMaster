@@ -14,8 +14,8 @@ import {
     TraySpace,
     Warehouse,
     Zone
-} from "../core/MockWarehouse";
-import {Settings} from "../core/MockSettings";
+} from "../core/WarehouseModel";
+import {Settings} from "../core/Settings";
 import {
     faArrowDown as downArrow,
     faArrowLeft as leftArrow,
@@ -125,42 +125,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * This method returns all the parents of a shelf and the indices of all of them within each other
-     * @param shelf The shelf in question
-     */
-    private static currentShelfParentsAndIndices(shelf: Shelf): { warehouse: Warehouse; zone: Zone; bay: Bay; zoneIndex: number; bayIndex: number; shelfIndex: number } {
-        const warehouse: Warehouse | undefined = shelf.parentWarehouse;
-        const zone: Zone | undefined = shelf.parentZone;
-        const bay: Bay | undefined = shelf.parentBay;
-
-        if (!bay || !zone || !warehouse) {
-            throw Error("Failed to get parent (either bay, zone or warehouse) of current shelf");
-            //todo ensure that this is not nullable
-        }
-
-        const zoneIndex = warehouse.zones.indexOf(zone); // this is never null, it returns -1 if it can't be found
-        const bayIndex = zone.bays.indexOf(bay);
-        const shelfIndex = bay.shelves.indexOf(shelf);
-        // this might need changing if these lists become unsorted
-
-        if (zoneIndex === -1 || bayIndex === -1 || shelfIndex === -1) {
-
-            throw Error("Failed to get the indices of children from warehouse to current shelf (zone, bay or, shelf)");
-            //todo ensure that this is not nullable
-        }
-
-        return {
-            warehouse: warehouse,
-            zone: zone,
-            bay: bay,
-            zoneIndex: zoneIndex,
-            bayIndex: bayIndex,
-            shelfIndex: shelfIndex
-        };
-
-    }
-
-    /**
      * This method changes the current shelf that is displayed in shelf view.  The shelf can be changed to a specific
      * shelf or can derive a new shelf from the current shelf and a direction.  The method throws an error if the
      * direction can't be moved in.  If moving to another zone the method will choose the first shelf or otherwise
@@ -221,10 +185,13 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 });
             }
         } else { // moving from a shelf
-            const {
-                warehouse, zone: currentZone, bay: currentBay,
-                zoneIndex, bayIndex, shelfIndex,
-            } = ShelfViewPage.currentShelfParentsAndIndices(this.state.currentView);
+            const
+                currentShelf = this.state.currentView,
+                currentBay: Bay = currentShelf.parent,
+                currentZone: Zone = currentBay.parent,
+                shelfIndex: number = currentShelf.index,
+                bayIndex: number = currentBay.index,
+                zoneIndex: number = currentZone.indexInParent;
 
             if (direction === "up" || direction === "down") { // vertical
 
@@ -291,7 +258,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     });
                 } else { // increment zone
 
-                    const newZone = warehouse.zones[properMod(zoneIndex + increment, warehouse.zones.length)];
+                    const newZone = currentZone.parent.zones[properMod(zoneIndex + increment,
+                        currentZone.parent.zones.length)];
 
                     if (newZone.bays.length === 0) {
                         this.setState({
@@ -335,19 +303,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             ]);
         }
 
-        const {
-            warehouse, zone, bay, bayIndex, shelfIndex,
-        } = ShelfViewPage.currentShelfParentsAndIndices(location);
-
         return new Map([
-            ["left", bayIndex - 1 !== -1],
-            ["right", bayIndex + 1 !== zone.bays.length],
-            ["up", shelfIndex + 1 !== bay.shelves.length],
-            ["down", shelfIndex - 1 !== -1],
-            ["nextShelf", warehouse.shelves.length > 1],
-            ["previousShelf", warehouse.shelves.length > 1],
-            ["nextZone", warehouse.zones.length > 1],
-            ["previousZone", warehouse.zones.length > 1],
+            ["left", location.parentBay.index - 1 !== -1],
+            ["right", location.parentBay.index + 1 !== location.parentZone.bays.length],
+            ["up", location.index + 1 !== location.parentBay.shelves.length],
+            ["down", location.index - 1 !== -1],
+            ["nextShelf", location.parentWarehouse.shelves.length > 1],
+            ["previousShelf", location.parentWarehouse.shelves.length > 1],
+            ["nextZone", location.parentWarehouse.zones.length > 1],
+            ["previousZone", location.parentWarehouse.zones.length > 1],
         ]);
     }
 
@@ -415,12 +379,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             const newTrays = spaces.map(space => {
                 if (!ignoreAirSpaces || space.index === space.column.trays.length) {
                     const newTray = Tray.create(
-                        undefined,
-                        undefined,
-                        undefined,
-                        undefined,
+                        space.column,
                         space.index,
-                        space.column);
+                        undefined,
+                        undefined,
+                        undefined);
                     space.column.trays.push(newTray);
                     newSelection.set(newTray, true);
                     newSelection.delete(space);
@@ -532,11 +495,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     addColumn(shelf: Shelf): void {
         shelf.columns.push(Column.create(
-            [],
             shelf.columns.length,
-            shelf,
-            this.props.warehouse.columnSizes[1], //fixme set a default
-            3
+            this.props.warehouse.traySizes[1], //fixme set a default
+            3,
+            shelf
         ));
         this.forceUpdate();
     }
@@ -604,16 +566,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (selected) {
                 newSelectedMap.set(tray, false);
                 if (tray instanceof Tray) {
-                    const column = tray.parentColumn;
-                    if (!column) {
-                        throw Error("Tray has no parent column");
-                    }
-
-                    const trayIndex = column.trays.indexOf(tray);
-                    column.trays.splice(trayIndex, 1);
-
-                    reindexColumns.add(column);
-
+                    const trayIndex = tray.parentColumn.trays.indexOf(tray);
+                    tray.parentColumn.trays.splice(trayIndex, 1);
+                    reindexColumns.add(tray.parentColumn);
                 }
             }
         });
@@ -676,7 +631,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (this.state.currentView instanceof Zone) {
                 return this.state.currentView.color;
             } else if (this.state.currentView instanceof Shelf) {
-                return this.state.currentView.parentZone?.color ?? "#ffffff";
+                return this.state.currentView.parentZone.color ?? "#ffffff";
             } else {
                 return "#ffffff";
             }
@@ -821,7 +776,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     >
                         <FontAwesomeIcon icon={leftArrow}/> &nbsp; Previous
                     </button>
-                    <p className="centerText">{`${zone?.name ?? "?"} Zone`}</p>
+                    <p className="centerText">{`${zone.name} Zone`}</p>
                     <button
                         id="nextZone"
                         onClick={this.changeView.bind(this, "nextZone")}
@@ -833,10 +788,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                 {/* Grid of shelves in zone */}
                 <div id="nav-zone">{
-                    zone?.bays.length ? (() => {
+                    zone.bays.length ? (() => {
                         const textColor = getTextColorForBackground(zone.color);
                         return zone.bays.flatMap((bay, bayIndex) =>
-                            <div className="nav-bay">
+                            <div className="nav-bay" key={bayIndex}>
                                 {bay.shelves.map((shelf, shelfIndex) =>
                                     <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
                                          className={classNames("nav-shelf", {
@@ -862,10 +817,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                      <p
                          id="arrow-area-label"
                          style={{
-                             backgroundColor: zone?.color,
-                             color: getTextColorForBackground(
-                                 zone?.color ?? "#ffffff"
-                             )
+                             backgroundColor: zone.color,
+                             color: getTextColorForBackground(zone.color)
                          }}
                      >{`Current Shelf: ${this.state.currentView.toString()}`}</p> : undefined
                     }
