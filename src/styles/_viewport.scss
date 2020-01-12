@@ -96,6 +96,11 @@
         border-color: #8880;
       }
 
+      // only give trays with items above them the top margin
+      &:last-child {
+        margin: 0;
+      }
+
       // Everything inside a tray
       > * {
         // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
