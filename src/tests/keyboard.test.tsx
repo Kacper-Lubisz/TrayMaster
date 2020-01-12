@@ -11,7 +11,7 @@ import {
     faSolarPanel as icon3,
     faSpider as icon2
 } from "@fortawesome/free-solid-svg-icons";
-import {Keyboard} from "../keyboard";
+import {Keyboard} from "../components/Keyboard";
 
 // configure Enzyme to use React 16
 Enzyme.configure({adapter: new React16Adapter()});
@@ -316,7 +316,6 @@ describe("Keyboard matches snapshots:", () => {
             id: "BigBoy"
         };
 
-        // @ts-ignore
         const kbRenderer = new ShallowRenderer(); // shallow render needed because FontAwesomeIcons change between runs
         kbRenderer.render(<Keyboard {...props} />);
         expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
@@ -478,7 +477,6 @@ describe("Keyboard matches snapshots:", () => {
             id: "BigBoy"
         };
 
-        // @ts-ignore
         const kbRenderer = new ShallowRenderer(); // shallow render needed because FontAwesomeIcons change between runs
         kbRenderer.render(<Keyboard {...props} />);
         expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
