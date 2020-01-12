@@ -888,7 +888,6 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
         super(props);
         this.state = {draft: this.props.draft};
     }
-
     render(): React.ReactElement {
         return <>
             <DialogTitle title="Edit Comment"/>

@@ -15,12 +15,10 @@ import PageNotFoundPage from "../pages/PageNotFoundPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 
 interface AppState {
+    loading: boolean;
     user?: User | undefined;
     warehouse?: Warehouse;
-    dialog?: Dialog | null;
-
-    emailField?: string;
-    passwordField?: string;
+    dialog?: StoredDialog | null;
 }
 
 class App extends React.Component<unknown, AppState> {
@@ -41,6 +39,7 @@ class App extends React.Component<unknown, AppState> {
                     return {
                         ...state,
                         user: user,
+                        loading: false
                     };
                 });
                 (async () => {
@@ -51,6 +50,7 @@ class App extends React.Component<unknown, AppState> {
                             ...state,
                             warehouse: warehouse,
                             user: user,
+                            loading: false
                         };
                     });
                 })();
@@ -58,7 +58,8 @@ class App extends React.Component<unknown, AppState> {
                 WarehouseManager.loadWarehouseByID(user.lastWarehouseID).then(warehouse => {
                     this.setState({
                         user: user,
-                        warehouse: warehouse
+                        warehouse: warehouse,
+                        loading: false
                     });
                 }).catch((reason) => {
                     this.openDialog(App.buildErrorDialog(
@@ -72,17 +73,21 @@ class App extends React.Component<unknown, AppState> {
         firebase.auth.onSignOut = () => {
             this.setState({
                 user: undefined,
+                loading: false
             });
         };
-        if (!firebase.auth.isSignedIn) {
-            this.state = {};
-        }
+        // if (!firebase.auth.isSignedIn)
+
+
+        this.state = {
+            loading: true
+        };
 
     }
 
     render(): React.ReactNode {
         return <>
-            {this.state === null ? <LoadingPage/> : <BrowserRouter><Switch>
+            {this.state === null || this.state.loading ? <LoadingPage/> : <BrowserRouter><Switch>
                 <Route path="/" component={() =>
                     this.state.user && this.state.warehouse ? <ShelfViewPage
                         openDialog={this.openDialog.bind(this)}
@@ -99,13 +104,9 @@ class App extends React.Component<unknown, AppState> {
                                     <p>{this.state.user?.accessibleWarehouses}</p>
                                     {this.state.user?.accessibleWarehouses.map((warehouseID, index) =>
                                         <button key={index} onClick={async () => {
-                                            const warehouse: Warehouse = await WarehouseManager.loadWarehouseByID(warehouseID);
-                                            this.setState((state) => {
-                                                return {
-                                                    ...state,
-                                                    warehouse: warehouse
-                                                };
-                                            });
+                                            // const warehouse: Warehouse = await
+                                            // WarehouseManager.loadWarehouseByID(warehouseID); this.setState((state)
+                                            // => { return { ...state, warehouse: warehouse }; });
                                         }}>{warehouseID}</button>
                                     )}
                                 </div>
@@ -114,59 +115,16 @@ class App extends React.Component<unknown, AppState> {
                         showSignIn={() => {
                             this.openDialog({
                                 closeOnDocumentClick: true,
-                                dialog: (close) => <div>
-                                    <h1>Sign In</h1>
-                                    Email: <br/>
-                                    <input
-                                        onChange={(event) => {
-                                            console.log(event);
-                                            this.setState((state) => {
-                                                return {
-                                                    ...state,
-                                                    emailField: event.target?.value
-                                                };
-                                            });
-                                        }}
-                                        value={this.state.emailField}
-                                        type="text"
-                                        placeholder={"Email"}
-                                    /> <br/>
-                                    Password: <br/>
-                                    <input
-                                        onChange={(event) => {
-                                            this.setState((state) => {
-                                                return {
-                                                    ...state,
-                                                    passwordField: event.target?.value
-                                                };
-                                            });
-                                        }}
-                                        value={this.state.passwordField ?? ""}
-                                        type="password"
-                                        placeholder={"Password"}
-                                    /> <br/>
-
-                                    <button onClick={async () => {
-                                        await firebase.auth.signIn("software@engineering.com", "craigstewart");
-                                        if (this.state.emailField && this.state.passwordField) {
-                                            await firebase.auth.signIn(this.state.emailField, this.state.passwordField);
-                                        }
-                                        close();
-                                    }}>Sign In
-                                    </button>
-                                    <button>Reset Password</button>
-                                    <br/>
-                                </div>
-
+                                dialog: (close) => <SignInDialog close={close}/>
                             });
-
                         }}
                         signOut={async () => {
                             await firebase.auth.signOut();
                             this.setState(state => {
                                 return {
                                     dialog: state.dialog,
-                                    user: undefined
+                                    user: undefined,
+                                    warehouse: undefined
                                 };
                             });
                         }}
@@ -190,7 +148,7 @@ class App extends React.Component<unknown, AppState> {
                 open={!!this.state?.dialog} //double negate because of falsy magic
                 closeOnDocumentClick={this.state?.dialog?.closeOnDocumentClick}
                 onClose={this.closeDialog.bind(this)}
-            ><>{this.state.dialog?.dialog(this.closeDialog.bind(this))}</>
+            ><>{this.state.dialog?.dialog}</>
             </Popup>
         </>;
 
@@ -203,7 +161,13 @@ class App extends React.Component<unknown, AppState> {
      */
     public openDialog(dialog: Dialog): void {
         this.setState((state) => {
-            return {...state, dialog: dialog};
+            return {
+                ...state,
+                dialog: {
+                    dialog: dialog.dialog(this.closeDialog.bind(this)),
+                    closeOnDocumentClick: dialog.closeOnDocumentClick
+                }
+            };
         });
     }
 
@@ -249,8 +213,106 @@ class App extends React.Component<unknown, AppState> {
 
 }
 
+interface SignInDialogProps {
+    close: () => void;
+}
+
+interface SignInDialogState {
+    emailField?: string;
+    passwordField?: string;
+    feedback?: string;
+}
+
+class SignInDialog extends React.Component<SignInDialogProps, SignInDialogState> {
+    constructor(props: SignInDialogProps) {
+        super(props);
+        this.state = {};
+    }
+
+    render(): React.ReactNode {
+        return <>
+            <h1>Sign In</h1>
+            <form onSubmit={(event) => {
+                event.preventDefault();
+                this.signIn();
+            }}>
+                Email:
+                <input
+                    onChange={(event) => {
+                        const newEmail = event.target.value;
+                        this.setState((state) => {
+                            return {
+                                ...state,
+                                emailField: newEmail
+                            };
+                        });
+                    }}
+                    value={this.state?.emailField ?? ""}
+                    type="text"
+                    placeholder={"Email"}
+                /> <br/>
+                Password:
+                <input
+                    onChange={(event) => {
+                        const newPassword = event.target.value;
+                        this.setState((state) => {
+                            return {
+                                ...state,
+                                passwordField: newPassword
+                            };
+                        });
+                    }}
+                    value={this.state?.passwordField ?? ""}
+                    type="password"
+                    placeholder={"Password"}
+                /> <br/>
+            </form>
+
+            {this.state.feedback ? <h1 style={{color: "red"}}>{this.state.feedback}</h1> : undefined}
+
+            <button onClick={this.signIn.bind(this)}>Sign In
+            </button>
+            <button>Reset Password</button>
+            <br/>
+        </>;
+    }
+
+    private async signIn(): Promise<void> {
+        if (this.state.emailField && this.state.passwordField) {
+            try {
+                await firebase.auth.signIn(this.state.emailField, this.state.passwordField);
+                this.props.close();
+            } catch (e) {
+                console.log(e);
+                this.setState((state) => {
+                    return {
+                        ...state,
+                        feedback: e.toString()
+                    };
+                });
+            }
+        } else {
+            this.setState((state) => {
+                return {
+                    ...state,
+                    feedback: `${this.state.emailField ? "emailField is undefined "
+                                                       : ""}${this.state.passwordField
+                                                              ? "emailField is undefined "
+                                                              : ""}`
+                };
+            });
+        }
+    }
+
+}
+
 export type Dialog = {
     dialog: (close: () => void) => ReactNode;
+    closeOnDocumentClick: boolean;
+};
+
+type StoredDialog = {
+    dialog: ReactNode;
     closeOnDocumentClick: boolean;
 };
 

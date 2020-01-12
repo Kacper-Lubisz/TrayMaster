@@ -113,11 +113,11 @@ class Authentication {
         await this.auth.createUserWithEmailAndPassword(email, password);
     }
 
-    public async signIn(email: string, password: string): Promise<void> {
+    public async signIn(email: string, password: string): Promise<firebase.auth.UserCredential> {
         if (!Utils.isEmailValid(email)) {
             throw new AuthenticationError("Invalid email");
         }
-        await this.auth.signInWithEmailAndPassword(email, password);
+        return await this.auth.signInWithEmailAndPassword(email, password);
     }
 
     public async signOut(): Promise<void> {
