@@ -1,17 +1,17 @@
-import React from "react";
+import React, {ReactNode} from "react";
 import {BrowserRouter, Route, Switch} from "react-router-dom";
 
-import SettingsPage from "./SettingsPage";
-import PageNotFoundPage from "./PageNotFoundPage";
+import SettingsPage from "../pages/SettingsPage";
+import PageNotFoundPage from "../pages/PageNotFoundPage";
 
-import {Settings, SettingsManager} from "./core/Settings";
-import {Warehouse, WarehouseManager} from "./core/WarehouseModel";
-import {LoadingPage} from "./Loading";
+import {Settings, SettingsManager} from "./Settings";
+import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
+import {LoadingPage} from "../pages/Loading";
 import Popup from "reactjs-popup";
-import ShelfView from "./ShelfView";
+import ShelfView from "../pages/ShelfViewPage";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
-import MainMenu from "./MainMenu";
+import MainMenu from "../pages/MainMenu";
 
 /**
  * This interface exists because these are never null together
@@ -23,7 +23,7 @@ interface LoadedContent {
 
 interface AppState {
     loaded?: LoadedContent;
-    dialog?: StandardDialog | null;
+    dialog?: Dialog | null;
 }
 
 class App extends React.Component<any, AppState> {
@@ -45,7 +45,9 @@ class App extends React.Component<any, AppState> {
                 console.log("Warehouse List Loaded: ", warehouses);
 
                 const warehouse: Warehouse | undefined = await WarehouseManager.loadWarehouse("Chester-le-Street");
-                if (warehouse) {
+                if (warehouse === undefined) {
+                    throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
+                } else {
                     console.log("Warehouse Loaded:", warehouse);
 
                     this.setState(state => {
@@ -57,8 +59,6 @@ class App extends React.Component<any, AppState> {
                             }
                         };
                     });
-                } else {
-                    throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
                 }
             }).catch(e => {
                 this.openDialog(App.buildErrorDialog(
@@ -90,26 +90,9 @@ class App extends React.Component<any, AppState> {
                 </BrowserRouter>)}
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
-                closeOnDocumentClick={false}
+                closeOnDocumentClick={this.state?.dialog?.closeOnDocumentClick}
                 onClose={this.closeDialog.bind(this)}
-            >
-                <> {/*empty tag because for some reason Popup overrides the type of the child props.  Making it so that a
-            boolean can't be a child, which is otherwise usually legal.  Boolean because the conditionals may evaluate
-            to a boolean or an Element*/}
-                    {this.state?.dialog?.title ? <h1>
-                        <FontAwesomeIcon {...this.state.dialog.iconProps}/> {this.state.dialog.title}
-                    </h1> : null}
-                    {this.state?.dialog?.message ? <p>{
-                        this.state.dialog.message
-                    }</p> : null}
-
-                    {this.state?.dialog?.buttons ?
-                     <div style={{float: "right"}} id={"popupButtons"}>{
-                         this.state.dialog.buttons.map((button, index) =>
-                             <button key={index} {...button.buttonProps}>{button.name}</button>
-                         )}
-                     </div> : null}
-                </>
+            ><>{this.state.dialog?.dialog(this.closeDialog.bind(this))}</>
             </Popup>
         </>;
 
@@ -120,12 +103,9 @@ class App extends React.Component<any, AppState> {
      * will close the dialog.  Only one dialog can be open at a time.
      * @param dialog The dialog to be displayed
      */
-    public openDialog(dialog: ((close: () => void) => StandardDialog)): void {
+    public openDialog(dialog: Dialog): void {
         this.setState((state) => {
-            return {
-                ...state,
-                dialog: dialog.call(undefined, this.closeDialog.bind(this))
-            };
+            return {...state, dialog: dialog};
         });
     }
 
@@ -143,16 +123,15 @@ class App extends React.Component<any, AppState> {
      * @param message The body of the dialog
      * @param forceReload If the dialog forces the page to be reloaded
      */
-    static buildErrorDialog(message: string, forceReload: boolean): (close: () => void) => StandardDialog {
-        return (close: () => void) => {
-            return {
-                title: "Error",
-                iconProps: {
-                    icon: warningIcon,
-                    color: "red"
-                },
-                message: message,
-                buttons: [
+    static buildErrorDialog(message: string, forceReload: boolean): Dialog {
+
+
+        return {
+            closeOnDocumentClick: !forceReload,
+            dialog: (close: () => void) => <>
+                <DialogTitle title="Error" iconProps={{icon: warningIcon, color: "red"}}/>
+                <p>{message}</p>
+                <DialogButtons buttons={[
                     {
                         name: "Reload", buttonProps: {
                             onClick: () => window.location.reload(),
@@ -161,15 +140,33 @@ class App extends React.Component<any, AppState> {
                     }
                 ].concat(forceReload ? [] : {
                     name: "Ok", buttonProps: {
-                        onClick: () => close(),
+                        onClick: close,
                         style: {borderColor: "red"}
                     }
-                }),
-                closeOnDocumentClick: !forceReload
-            };
+                })}/>
+            </>
         };
     }
 
+}
+
+export type Dialog = {
+    dialog: (close: () => void) => ReactNode;
+    closeOnDocumentClick: boolean;
+};
+
+export type DialogTitleProps = { title: string; iconProps?: FontAwesomeIconProps };
+
+/**
+ * The standard dialog sub component which contains the title and icon
+ */
+export class DialogTitle extends React.Component<DialogTitleProps> {
+    render(): React.ReactNode {
+        return <h1 className={"dialogTitle"}> {this.props.iconProps ?
+                                               <FontAwesomeIcon {...this.props.iconProps}/> : null}
+            {this.props.title}
+        </h1>;
+    }
 }
 
 /**
@@ -180,15 +177,18 @@ export interface DialogButton {
     buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
+
+export type DialogButtonsProps = { buttons: DialogButton[] };
+
 /**
- * This interface represents all possible dialogs that can be displayed
+ * The standard dialog sub component which contains buttons
  */
-export interface StandardDialog {
-    title?: string;
-    iconProps: FontAwesomeIconProps;
-    message?: string;
-    buttons?: DialogButton[];
-    closeOnDocumentClick: boolean;
+export class DialogButtons extends React.Component<DialogButtonsProps> {
+    render(): React.ReactNode {
+        return <div className="dialogButtons">{this.props.buttons.map((button, index) =>
+            <button key={index} {...button.buttonProps}>{button.name}</button>
+        )}</div>;
+    }
 }
 
 export default App;

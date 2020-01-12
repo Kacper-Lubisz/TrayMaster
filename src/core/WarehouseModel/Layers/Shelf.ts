@@ -1,5 +1,5 @@
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
-import {Bay, Column, Tray, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {Bay, Column, Tray, TrayCell, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 
 interface ShelfFields {
@@ -81,6 +81,10 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
 
     public get trays(): Tray[] {
         return this.columns.flatMap(column => column.trays);
+    }
+
+    public get cells(): TrayCell[] {
+        return this.columns.flatMap(column => column.getPaddedTrays());
     }
 
     //#endregion

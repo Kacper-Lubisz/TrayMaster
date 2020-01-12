@@ -1,17 +1,17 @@
 import React from "react";
 import {RouteComponentProps} from "react-router-dom";
 import {withRouter} from "react-router";
-import "./styles/mainmenu.scss";
+import "../styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
-import {StandardDialog} from "./App";
+import {Dialog} from "../core/App";
 
 /**
  * expiryAmount is the number of items expiring soon
  * TODO needs to be fetched from db
  */
 interface MainMenuProps {
-    openDialog: (dialog: ((close: () => void) => StandardDialog)) => void;
+    openDialog: (dialog: Dialog) => void;
     expiryAmount: number;
 }
 

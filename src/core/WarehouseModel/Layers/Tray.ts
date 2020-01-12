@@ -7,7 +7,7 @@ interface TrayFields {
     categoryId: string;
     expiry: ExpiryRange | null;
     weight: number | null;
-    customField: string | null;
+    comment: string | null;
 }
 
 export class Tray extends BottomLayer<Column, TrayFields> {
@@ -20,17 +20,17 @@ export class Tray extends BottomLayer<Column, TrayFields> {
      * @param category - The tray's (nullable) category
      * @param expiry - The tray's (nullable) expiry range
      * @param weight - The tray's (nullable) weight
-     * @param customField - The tray's (nullable) custom field
+     * @param comment - The tray's (nullable) custom field
      */
     public static create(parent: Column, index: number, category?: Category, expiry?: ExpiryRange, weight?: number,
-                         customField?: string
+                         comment?: string
     ): Tray {
         return new Tray(Utils.generateRandomId(), {
             index,
             categoryId: parent.parentWarehouse.getCategoryID(category),
             expiry: expiry ?? null,
             weight: weight ?? null,
-            customField: customField ?? null
+            comment: comment ?? null
         }, parent);
     }
 
@@ -43,7 +43,7 @@ export class Tray extends BottomLayer<Column, TrayFields> {
         new Tray(id, fields as TrayFields, parent);
 
     public toString(): string {
-        return `Tray(${this.index}, ${this.category?.name}, ${this.expiry?.label}, ${this.weight} kg, "${this.customField}")`;
+        return `Tray(${this.index}, ${this.category?.name}, ${this.expiry?.label}, ${this.weight} kg, "${this.comment}")`;
     }
 
     //#region Field Getters and Setters
@@ -79,12 +79,12 @@ export class Tray extends BottomLayer<Column, TrayFields> {
         this.fields.weight = weight ?? null;
     }
 
-    public get customField(): string | undefined {
-        return this.fields.customField ?? undefined;
+    public get comment(): string | undefined {
+        return this.fields.comment ?? undefined;
     }
 
-    public set customField(customField: string | undefined) {
-        this.fields.customField = customField ?? null;
+    public set comment(comment: string | undefined) {
+        this.fields.comment = comment ?? null;
     }
 
     //#endregion
