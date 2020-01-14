@@ -1,13 +1,13 @@
 import React from "react";
-import {SearchQuery, Tray, Warehouse} from "./core/MockWarehouse";
-import {Settings} from "./core/MockSettings";
-import "./styles/search.scss";
+import {Tray, Warehouse} from "../core/WarehouseModel";
+import {Settings} from "../core/Settings";
+import "../styles/search.scss";
 
 interface SearchPageProps {
-    warehouse: Warehouse;
-    settings: Settings;
-    query?: SearchQuery;
-    setQuery: (query: SearchQuery) => void;
+    warehouse?: Warehouse;
+    settings?: Settings;
+    query?: any; // fixme sort this out when we have a proper search interface
+    setQuery: (query: any) => void;
 }
 
 export interface SearchPanelProps {
@@ -35,9 +35,9 @@ export class SearchPage extends React.Component<SearchPageProps, SearchPageState
 
     constructor(props: SearchPageProps) {
         super(props);
-
+        // fixme sort this out when we have a proper search interface
         if (this.props.query) {
-            this.props.warehouse.traySearch(this.props.query).then((results) => {
+            this.props.warehouse?.traySearch ? (this.props.query).then((results) => {
                 this.setState({
                     ...this.state,
                     results: results
@@ -102,7 +102,7 @@ export class SearchPage extends React.Component<SearchPageProps, SearchPageState
     /**
      * This method opens a search a for the specified query
      */
-    static openSearch(query: SearchQuery): undefined {
+    static openSearch(query): undefined {
         throw Error("Unimplemented method stub");
         // window.history.pushState(query, "", "/search");
         // todo navigate to the search page

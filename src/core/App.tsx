@@ -6,6 +6,7 @@ import PageNotFoundPage from "../pages/PageNotFoundPage";
 
 import {Settings, SettingsManager} from "./Settings";
 import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
+import {SearchPage} from "../pages/SearchPage";
 import {LoadingPage} from "../pages/Loading";
 import Popup from "reactjs-popup";
 import ShelfView from "../pages/ShelfViewPage";
@@ -85,6 +86,8 @@ class App extends React.Component<any, AppState> {
                                component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
                         <Route path="/settings"
                                component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
+                        <Route path="search" component={() =>
+                            <SearchPage /*fixme implement this when we have a search interface */ />}/>
                         <Route component={PageNotFoundPage}/>
                     </Switch>
                 </BrowserRouter>)}
