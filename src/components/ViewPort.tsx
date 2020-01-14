@@ -1,6 +1,6 @@
 import React from "react";
 import "pepjs";
-import "./styles/shelfview.scss";
+import "../styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle as tickSolid,
@@ -8,10 +8,10 @@ import {
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/WarehouseModel";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import classNames from "classnames/bind";
-import {getTextColorForBackground} from "./utils/getTextColorForBackground";
-import {getExpiryColor} from "./utils/getExpiryColor";
+import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getExpiryColor} from "../utils/getExpiryColor";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;
@@ -181,9 +181,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * onPointerUp.  This method controls the selecting behaviour of a singular TrayCell.  Notably, this method is also
      * called after a pointer drag event if the event ends on the same TrayCell as it started.
      * @param trayCell The TrayCell that is clicked
-     * @param e The react event object which triggered this listener
      */
-    onTrayClick(trayCell: TrayCell, e: React.PointerEvent<HTMLDivElement>): void {
+    onTrayClick(trayCell: TrayCell): void {
 
         // Shallow clone the selected map from props, which we will mutate
         const newSelectedMap = new Map(this.props.selected);
@@ -229,9 +228,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when the pointer button is released over a tray, this either cancels the new drag event
      * timeout, finalises a current dragging event or performs a pointer click.
      * @param tray The tray over which the even is triggered
-     * @param e The react pointer event that triggered this call
      */
-    onTrayPointerUp(tray: TrayCell, e: React.PointerEvent<HTMLDivElement>): void {
+    onTrayPointerUp(tray: TrayCell): void {
 
         if (this.state.longPress) {
             if (this.state.longPress.isHappening) {
@@ -242,7 +240,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     ...this.state,
                     longPress: null
                 });
-                this.onTrayClick(tray, e);
+                this.onTrayClick(tray);
             }
         }
 
@@ -251,9 +249,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     /**
      * This method is called when the pointer leaves the DOM element which represents any tray.  This method stops a
      * pointer down event from starting a drag event if the pointer leaves that tray.
-     * @param e The react pointer event that triggered this call
      */
-    onTrayPointerLeave(e: React.PointerEvent<HTMLDivElement>): void {
+    onTrayPointerLeave(): void {
 
         if (this.state.longPress && !this.state.longPress.isHappening) {
             // is between pointer down and drag start
@@ -284,8 +281,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         if (this.props.current instanceof Warehouse) {
             return <div id="viewPort">
-                <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
-                <p>todo add a button to go to settings or wherever this can be changed</p>
+                <div>{/* container needed to centre text inside viewport properly */}
+                    <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
+                    <p>todo add a button to go to settings or wherever this can be changed</p>
+                </div>
             </div>;
         } else if (this.props.current instanceof Zone) {
             return <div id="viewPort">
@@ -434,7 +433,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
                         <div className="trayWeight">{tray.weight ?? "?"}kg</div>
-                        <div className="trayCustomField">{tray.customField ?? ""}</div>
+                        <div className="trayCustomField">{tray.comment ?? ""}</div>
                     </> : null}
                     {!(tray instanceof Tray) && index === column.trays.length ? <>
                         <p>EMPTY TRAY {tray.index}</p>
@@ -495,7 +494,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method clears the tray spaces if the shelf that is being displayed is changed.
      * @inheritDoc
      */
-    componentDidUpdate(prevProps: Readonly<ViewPortProps>, prevState: Readonly<ViewPortState>, snapshot?: any): void {
+    componentDidUpdate(prevProps: Readonly<ViewPortProps>): void {
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
         }
