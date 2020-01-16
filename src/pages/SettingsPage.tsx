@@ -34,7 +34,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                             onClick={() => alert("General")}><p>General</p>
                     </button>
                     <hr className="line"/>
-                    <button className="key-btn" onClick={() => this.props.history.push("/menu")}>
+                    <button className="key-btn" onClick={() => this.props.history.goBack()}>
                         <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                         <p>Back</p>
                     </button>
