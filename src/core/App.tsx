@@ -12,6 +12,7 @@ import ShelfView from "../pages/ShelfViewPage";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import MainMenu from "../pages/MainMenu";
+import ErrorHandler from "./ErrorHandler";
 
 /**
  * This interface exists because these are never null together
@@ -73,6 +74,7 @@ class App extends React.Component<any, AppState> {
         return <>
             {this.state.loaded === undefined ? <LoadingPage/> : (
                 <BrowserRouter>
+                    <ErrorHandler>
                     <Switch>
                         <Route path="/" component={((loaded: LoadedContent) => {
                             return <ShelfView
@@ -87,6 +89,7 @@ class App extends React.Component<any, AppState> {
                                component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
                         <Route component={PageNotFoundPage}/>
                     </Switch>
+                </ErrorHandler>
                 </BrowserRouter>)}
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
