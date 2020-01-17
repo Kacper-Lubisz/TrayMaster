@@ -8,7 +8,7 @@ import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawes
 import {faExclamationTriangle as warningIcon, faHome} from "@fortawesome/free-solid-svg-icons";
 
 import MainMenu from "../pages/MainMenu";
-import firebase, {User} from "../core/WarehouseModel/Firebase";
+import firebase, {User} from "./Firebase";
 import {LoadingPage} from "../pages/Loading";
 import SettingsPage from "../pages/SettingsPage";
 import PageNotFoundPage from "../pages/PageNotFoundPage";

@@ -5,7 +5,8 @@ import {Shelf} from "./WarehouseModel/Layers/Shelf";
 import {Column} from "./WarehouseModel/Layers/Column";
 import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
-import firebase, {DatabaseDocument, ONLINE} from "./WarehouseModel/Firebase";
+import {DatabaseDocument} from "./Firebase/Database";
+import firebase, {ONLINE} from "./Firebase";
 
 /**
  * Represents the order of (and IDs of) each layer in the warehouse model

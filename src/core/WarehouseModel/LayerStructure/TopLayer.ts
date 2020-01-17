@@ -3,7 +3,7 @@ import Utils, {Collection, Queue, Stack} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
-import Firebase from "../Firebase";
+import Firebase from "../../Firebase";
 
 /**
  * Represents the top layer in the object model (that has children)
@@ -171,8 +171,15 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         return this;
     }
 
+    /**
+     * Stage changes to the object to the database
+     * @async
+     * @param forceStage - Stage the object regardless of whether fields have changed or not
+     * @param commit - Get the database to commit the changes at the end of staging
+     * @param minLayer - The minimum layer to stage down to
+     */
     public async stage(
-        forceStage = false, commitAtEnd = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
+        forceStage = false, commit = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
         await this.stageLayer(forceStage);
 
         if (this.layerID >= minLayer) {
@@ -181,7 +188,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             }
         }
 
-        if (commitAtEnd) {
+        if (commit) {
             await Firebase.database.commit();
         }
     }

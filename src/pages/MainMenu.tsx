@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {Dialog} from "../core/App";
 import {Warehouse} from "../core/WarehouseModel";
-import {User} from "../core/WarehouseModel/Firebase";
+import {User} from "../core/Firebase";
 
 /**
  * expiryAmount is the number of items expiring soon

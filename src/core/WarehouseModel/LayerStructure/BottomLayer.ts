@@ -1,6 +1,6 @@
 import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
 import Utils from "../Utils";
-import Firebase from "../Firebase";
+import Firebase from "../../Firebase";
 
 /**
  * Represents the bottom layer in the object model (that has a parent)
@@ -54,11 +54,17 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
         return this;
     }
 
+    /**
+     * Stage changes to the object to the database
+     * @async
+     * @param forceStage - Stage the object regardless of whether fields have changed or not
+     * @param commit - Get the database to commit the changes at the end of staging
+     */
     public async stage(
-        forceStage = false, commitAtEnd = false): Promise<void> {
+        forceStage = false, commit = false): Promise<void> {
         await this.stageLayer(forceStage);
 
-        if (commitAtEnd) {
+        if (commit) {
             await Firebase.database.commit();
         }
     }
