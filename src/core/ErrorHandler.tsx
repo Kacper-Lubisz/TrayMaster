@@ -7,6 +7,14 @@ interface ErrorHandlerState {
     error?: Error | null;
 }
 
+/**
+This class is wrapped around all app components in App.tsx to catch errors
+ and provide a nice UI when it happens
+ Can only catch errors in components below itself in the hierarchy
+
+ In development the usual React error page will be showed on top of this,
+ can easily just be dismissed
+ */
 
 class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerState> {
 
@@ -18,7 +26,10 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
         };
     }
 
-
+/**
+This function catches the error and saves the information
+ on what type of error in state
+ */
     componentDidCatch(error: Error): void {
 
         this.setState({
@@ -28,7 +39,10 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
         });
     }
 
-    exitError(): void {
+    /**
+     * This function is called when the button to reload the page is called
+     */
+    private exitError(): void {
         window.location.reload();
     }
 
@@ -44,8 +58,9 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
                     </button>
                 </div>
             );
+        } else {
+            return this.props.children;
         }
-        return this.props.children;
     }
 }
 

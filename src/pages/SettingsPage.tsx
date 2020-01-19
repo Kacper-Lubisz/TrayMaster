@@ -17,8 +17,6 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
 
     render(): React.ReactNode {
 
-        //throw new Error("I crashed!");
-
         return (
             <div className="settings">
                 <div className="settings-header">
