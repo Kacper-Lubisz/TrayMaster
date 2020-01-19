@@ -36,14 +36,12 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
                         <h2>Expiry Imminent</h2>
                     </div>
                     <p>There are {this.props.expiryAmount} items expiring soon! Click here to see them.</p>
-                </div>
-                }
-
+                </div>}
                 <div className="menu-btn-container">
                     <button className="key-btn" onClick={() => this.props.history.push("/")}>
                         <p>Back to Shelf View</p></button>
                     <button className="key-btn"
-                            onClick={() => alert("Search")}><p>Search</p>
+                            onClick={() => this.props.history.push("/search")}><p>Search</p>
                     </button>
                     <button className="key-btn"
                             onClick={() => alert("Report")}><p>Report</p>

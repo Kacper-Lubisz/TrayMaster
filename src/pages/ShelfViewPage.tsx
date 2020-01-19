@@ -41,6 +41,7 @@ import {properMod} from "../utils/properMod";
 import App, {Dialog, DialogButtons, DialogTitle} from "../core/App";
 import {ToolBar} from "../components/ToolBar";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {SearchQuery} from "./SearchPage";
 
 
 /**
@@ -68,6 +69,7 @@ interface ShelfViewProps {
      * @param dialog A dialog builder function which takes the function that closes the dialog.
      */
     openDialog: (dialog: Dialog) => void;
+    setSearch: (query: SearchQuery) => void;
     warehouse: Warehouse;
     settings: Settings;
 }
@@ -624,6 +626,21 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     }
 
+    private makeSearch(): void {
+
+        const categories = this.getSelectedTrays(false, false)
+                               .map(tray => tray.category ?? null);
+        const distinctCategories = Array.from(new Set(categories));
+
+        this.props.setSearch({
+            categories: distinctCategories,
+            sortBy: "expiry",
+            weight: undefined
+        });
+
+        this.props.history.push("/search"); //todo fixme find a better way to do this?
+    }
+
     render(): React.ReactNode {
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
@@ -631,7 +648,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (this.state.currentView instanceof Zone) {
                 return this.state.currentView.color;
             } else if (this.state.currentView instanceof Shelf) {
-                return this.state.currentView.parentZone.color ?? "#ffffff";
+                return this.state.currentView.parentZone.color;
             } else {
                 return "#ffffff";
             }
@@ -663,39 +680,39 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                                         icon: tickRegular,
                                         onClick: this.selectAll.bind(this, "trays")
                                     };
-                            } else if (selected.length === this.getTrayCells().length) {
-                                return {
-                                    name: "Deselect All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "none")
-                                };
-                            } else {
-                                return {
-                                    name: "Select All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "all")
-                                };
+                                } else if (selected.length === this.getTrayCells().length) {
+                                    return {
+                                        name: "Deselect All",
+                                        icon: tickSolid,
+                                        onClick: this.selectAll.bind(this, "none")
+                                    };
+                                } else {
+                                    return {
+                                        name: "Select All",
+                                        icon: tickSolid,
+                                        onClick: this.selectAll.bind(this, "all")
+                                    };
+                                }
+                            })(),
+                            {
+                                name: "Edit Custom",
+                                icon: faCommentAlt,
+                                onClick: this.editTrayComment.bind(this),
+                                disabled: this.getSelectedTrays(false, false).length !== 1
+                            },
+                            {
+                                name: "Clear Trays",
+                                icon: faEraser,
+                                onClick: this.clearTrays.bind(this),
+                                disabled: this.getSelectedTrayCells().length === 0
+                            },
+                            { /*This code adds a button which opens a test dialog*/
+                                name: "Test Error", onClick: this.props.openDialog.bind(undefined,
+                                    App.buildErrorDialog("this is a big test", true)
+                                )
                             }
-                        })(),
-                        {
-                            name: "Edit Custom",
-                            icon: faCommentAlt,
-                            onClick: this.editTrayComment.bind(this),
-                            disabled: this.getSelectedTrays(false, false).length !== 1
-                        },
-                        {
-                            name: "Clear Trays",
-                            icon: faEraser,
-                            onClick: this.clearTrays.bind(this),
-                            disabled: this.getSelectedTrayCells().length === 0
-                        },
-                        { /*This code adds a button which opens a test dialog*/
-                            name: "Test Error", onClick: this.props.openDialog.bind(undefined,
-                                App.buildErrorDialog("this is a big test", true)
-                            )
-                        }
 
-                    ]}/>
+                        ]}/>
                     <SideBar
                         zoneColor={zoneColor}
                         locationString={locationString}
@@ -704,11 +721,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                             {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                         ] : [ // Generate sidebar buttons
+                            {name: "Search", onClick: this.makeSearch.bind(this)},
                             {name: "Settings", onClick: () => this.props.history.push("/settings")},
                             {name: "Home", onClick: () => this.props.history.push("/menu")},
                             {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
-                            {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a
-                                                                                         // warehouse
+                            {name: "Navigator", onClick: this.openNavigator.bind(this)},
+                            // disable if view is a warehouse
                             // enabled = possibleMoveDirections.previousTray
                             {name: "Next", onClick: this.changeView.bind(this, "next")},
                             // enabled = possibleMoveDirections.nextTray

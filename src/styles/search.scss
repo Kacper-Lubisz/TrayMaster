@@ -15,11 +15,27 @@
   box-shadow: 0 -20px 15px 10px #000000;
 
   #searchSentence {
-    font-size: 30px;
+    font-size: 24px;
+
+    span.searchMessage {
+      padding: 2px;
+      margin-right: 10px;
+    }
 
     span.searchField {
-      color: $accent-color;
+      padding: 2px;
+      background-color: $accent-color;
+      border-radius: 10px;
+      margin-right: 10px;
     }
+
+    span.searchEdit {
+      padding: 2px;
+      background-color: #aaaaaa;
+      border-radius: 10px;
+      margin-right: 10px;
+    }
+
   }
 }
 
@@ -32,15 +48,15 @@
     margin: 15px 0;
 
     th {
-      border-bottom: 1px solid #000000;
+      border-bottom: 1px solid #aaaaaa;
     }
 
     tr > * {
       padding: 5px;
 
       &:not(:first-child):not(:last-child) {
-        border-left: 1px solid #000000;
-        border-right: 1px solid #000000;
+        border-left: 1px solid #aaaaaa;
+        border-right: 1px solid #aaaaaa;
       }
     }
   }

@@ -6,13 +6,14 @@ import PageNotFoundPage from "../pages/PageNotFoundPage";
 
 import {Settings, SettingsManager} from "./Settings";
 import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
-import {SearchPage} from "../pages/SearchPage";
+import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
 import {LoadingPage} from "../pages/Loading";
 import Popup from "reactjs-popup";
 import ShelfView from "../pages/ShelfViewPage";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import MainMenu from "../pages/MainMenu";
+
 
 /**
  * This interface exists because these are never null together
@@ -23,6 +24,7 @@ interface LoadedContent {
 }
 
 interface AppState {
+    search?: SearchResults;
     loaded?: LoadedContent;
     dialog?: Dialog | null;
 }
@@ -77,6 +79,7 @@ class App extends React.Component<any, AppState> {
                     <Switch>
                         <Route path="/" component={((loaded: LoadedContent) => {
                             return <ShelfView
+                                setSearch={this.setSearch.bind(this)}
                                 openDialog={this.openDialog.bind(this)}
                                 settings={loaded.settings}
                                 warehouse={loaded.warehouse}
@@ -86,8 +89,13 @@ class App extends React.Component<any, AppState> {
                                component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
                         <Route path="/settings"
                                component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
-                        <Route path="search" component={() =>
-                            <SearchPage /*fixme implement this when we have a search interface */ />}/>
+                        <Route path="/search" component={() => // todo fixme ensure that this is rerouted if there is no search
+                            <SearchPage
+                                warehouse={this.state.loaded?.warehouse}
+                                settings={this.state.loaded?.settings}
+                                search={this.state.search}
+                                setQuery={this.setSearch.bind(this)}
+                            />}/>
                         <Route component={PageNotFoundPage}/>
                     </Switch>
                 </BrowserRouter>)}
@@ -99,6 +107,29 @@ class App extends React.Component<any, AppState> {
             </Popup>
         </>;
 
+    }
+
+    /**
+     * This method allows for setting the search query
+     * @param query
+     */
+    private setSearch(query: SearchQuery): void {
+        if (this.state.loaded) {
+            const loaded = this.state.loaded;
+            this.setState(state => {
+                return {
+                    ...state,
+                    search: {
+                        query: query,
+                        results: loaded.warehouse.traySearch(query)
+                        //todo fixme finalise how and where this search is going to be performed
+                        // an alternative is to keep results null until this promise resolves.
+                    }
+                };
+            });
+        } else {
+            throw new Error("Can't perform search when the warehouse is undefined");
+        }
     }
 
     /**
@@ -127,7 +158,6 @@ class App extends React.Component<any, AppState> {
      * @param forceReload If the dialog forces the page to be reloaded
      */
     static buildErrorDialog(message: string, forceReload: boolean): Dialog {
-
 
         return {
             closeOnDocumentClick: !forceReload,

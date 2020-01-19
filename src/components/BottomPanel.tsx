@@ -118,9 +118,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     selectYear(year: number): void {
         this.selectedYear = year;
+
+        const from = new Date(year, 0).getTime();
+        const to = new Date(year + 1, 0).getTime();
+
         this.props.expirySelected({
-            from: new Date(year, 0).getTime(),
-            to: new Date(year + 1, 0).getTime(),
+            range: {from: from, to: to},
             label: year.toString()
         });
     }
@@ -132,10 +135,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     selectQuarter(quarter: number): void {
         if (this.selectedYear) {
+
+            const from = new Date(this.selectedYear, quarter * 3).getTime();
+            const to = new Date(this.selectedYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
+
             this.props.expirySelected({
-                from: new Date(this.selectedYear, quarter * 3).getTime(),
-                to: new Date(quarter === 3 ? this.selectedYear + 1
-                                           : this.selectedYear, (quarter + 1) * 3 % 4).getTime(),
+                range: {from: from, to: to},
                 label: `${this.quartersTranslator[quarter]} ${this.selectedYear.toString()}`
             });
         }
@@ -148,9 +153,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     selectMonth(month: number): void {
         if (this.selectedYear) {
+
+            const from = new Date(this.selectedYear, month).getTime();
+            const to = new Date(month === 11 ? this.selectedYear + 1 : this.selectedYear, (month + 1) % 12).getTime();
+
             this.props.expirySelected({
-                from: new Date(this.selectedYear, month).getTime(),
-                to: new Date(month === 11 ? this.selectedYear + 1 : this.selectedYear, (month + 1) % 12).getTime(),
+                range: {from: from, to: to},
                 label: `${this.monthsTranslator[month]} ${this.selectedYear.toString()}`
             });
         }
@@ -182,11 +190,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else if (this.props.keyboardState === "expiry") {
 
-            const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
+            const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.range?.from;
             const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
-            const commonYear = firstYear === undefined ? undefined
-                                                       : traysOnly.every(item => item.expiry?.from === undefined || new Date(item.expiry.from).getFullYear() === firstYear)
-                                                         ? firstYear : undefined;
+
+            const commonYear = firstYear !== undefined && traysOnly.every(item =>
+                item.expiry?.range?.from === undefined || new Date(item.expiry.range.from).getFullYear() === firstYear
+            ) ? firstYear : undefined;
 
             // update object-level selectedYear
             this.selectedYear = commonYear;

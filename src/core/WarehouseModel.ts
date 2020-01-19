@@ -23,8 +23,7 @@ export enum WarehouseModel {
  * Represents a tray expiry range
  */
 export interface ExpiryRange {
-    from: number;
-    to: number;
+    range: { from: number; to: number } | null;
     label: string;
 }
 
@@ -66,38 +65,42 @@ const zoneColors = [
 /**
  * Mock warehouse tray expiries
  */
-const trayExpiries: ExpiryRange[] = [
+const trayExpires: ExpiryRange[] = [
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
+        range: null,
+        label: "Indefinite"
+    },
+    {
+        range: {from: new Date(2020, 1).getTime(), to: new Date(2020, 2).getTime()},
         label: "Jan 2020"
     },
     {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
+        range: {from: new Date(2020, 2).getTime(), to: new Date(2020, 3).getTime()},
         label: "Feb 2020"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
+        range: {from: new Date(2020, 1).getTime(), to: new Date(2020, 4).getTime()},
         label: "Jan-Mar 2020"
     },
     {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
+        range: {from: new Date(2020, 4).getTime(), to: new Date(2020, 7).getTime()},
         label: "Apr-Jun 2020"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
+        range: {from: new Date(2020, 1).getTime(), to: new Date(2021, 1).getTime()},
         label: "2020"
     },
     {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
+        range: {from: new Date(2021, 1).getTime(), to: new Date(2022, 1).getTime()},
         label: "2021"
     },
-];
+].concat(Array(20).fill(0).map(_ => {
+    const j = Math.floor(Math.random() * 10);
+    return {
+        range: {from: new Date(2020 + j, 1).getTime(), to: new Date(2022, 1).getTime()},
+        label: (2020 + j).toString()
+    };
+}));
 
 /**
  * Generate a random warehouse structure down to tray level
@@ -106,19 +109,30 @@ const trayExpiries: ExpiryRange[] = [
  */
 async function generateRandomWarehouse(id: string): Promise<Warehouse> {
     const warehouse = await Warehouse.create(id, "Chester-le-Street").loadDepthFirst();
+
     for (const zoneColor of zoneColors) {
         const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
+
         for (let j = 0; j < 3; j++) {
             const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
+
             for (let k = 0; k < 3; k++) {
                 const shelf = Shelf.create(k, `${k + 1}`, bay);
+
                 for (let l = 0; l < 4; l++) {
                     const maxHeight = 2 + Math.round(3 * Math.random()),
                         column = Column.create(l, Utils.randItem(warehouse.traySizes), maxHeight, shelf);
+
                     for (let m = 0; m < 2 + Math.round((maxHeight - 2) * Math.random()); m++) {
-                        column.trays.push(Tray.create(column, m, Utils.randItem(warehouse.categories),
-                            Utils.randItem(trayExpiries), Number((15 * Math.random()).toFixed(2)),
+
+                        const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
+                        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
+                        const weight = Math.random() < 0.25 ? undefined :
+                                       Number((15 * Math.random()).toFixed(2));
+
+                        column.trays.push(Tray.create(column, m, category, expiry, weight,
                             Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined));
+
                     }
                     shelf.columns.push(column);
                 }

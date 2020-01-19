@@ -2,6 +2,7 @@ import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from
 import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import database, {DatabaseCollection} from "../Database";
+import {SearchQuery} from "../../../pages/SearchPage";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
@@ -186,4 +187,48 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     }
 
     //#endregion
+
+
+    //region saerch
+    public traySearch(query: SearchQuery): Tray[] {
+
+        //todo make this feature full, it's actually a complete mess right now, needs a redoing
+
+        const categorySet = new Set(query.categories);
+        const filteredTrays = this.trays.filter(tray => categorySet.size === 0 || categorySet.has(tray.category ?? null));
+
+
+        // todo fixme this needs to first sort by the thing that is specified in the query, and then if the comparison
+        // resolves to 0 there should be a standard sorting to procede the initial one
+
+        return filteredTrays.sort((a, b) => {
+            if (query.sortBy === "expiry") {
+                if (a.expiry === undefined && b.expiry) {
+                    return -1;
+                } else if (a.expiry && b.expiry === undefined) {
+                    return 1;
+
+                } else if (!a.expiry || !b.expiry) {
+                    return (a.category?.name ?? "") < (b.category?.name ?? "") ? -1 : 1;
+
+                } else if (b.expiry.range === null) {
+                    return -1;
+
+                } else if (a.expiry.range === null) {
+                    return 1;
+                } else if (a.expiry.range.from !== b.expiry.range.from) {
+                    return a.expiry.range.from < b.expiry.range.from ? -1 : 1;
+                } else if (a.expiry.range.to !== b.expiry.range.to) {
+                    return a.expiry.range.to < b.expiry.range.to ? -1 : 1;
+                } else {
+                    return (a.category?.name ?? "") < (b.category?.name ?? "") ? -1 : 1;
+                }
+            } else {
+                return 0;
+            }
+        });
+
+    }
+
+    //endregion
 }
