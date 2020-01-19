@@ -22,12 +22,12 @@ import {
     faArrowRight as rightArrow,
     faArrowUp as upArrow,
     faCheckCircle as tickSolid,
-    faClock,
+    faClock as expiryIcon,
     faCommentAlt,
+    faCube as categoryIcon,
     faEraser,
-    faHome,
     faTimes as cross,
-    faWeightHanging
+    faWeightHanging as weightIcon
 } from "@fortawesome/free-solid-svg-icons";
 
 import {faCheckCircle as tickRegular} from "@fortawesome/free-regular-svg-icons";
@@ -715,9 +715,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             // enabled = possibleMoveDirections.nextTray
                         ]}
                         keyboards={[
-                            {name: "category", icon: faHome},
-                            {name: "expiry", icon: faClock},
-                            {name: "weight", icon: faWeightHanging}
+                            {name: "category", icon: categoryIcon},
+                            {name: "expiry", icon: expiryIcon},
+                            {name: "weight", icon: weightIcon}
                         ]}
                         keyboardSwitcher={this.switchKeyboard.bind(this)}
                         showKeyboardSwitcher={!this.state.isEditShelf}
