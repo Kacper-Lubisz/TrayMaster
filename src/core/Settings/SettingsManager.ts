@@ -1,4 +1,8 @@
+// TODO: Remove this. Temporarily disabled while our functions are not implemented
+/* eslint-disable @typescript-eslint/require-await */
 // TODO: Agree on which settings to be used
+
+import {Settings} from "../Settings";
 
 // Offline mock settings
 let settingsMap: Settings = {
@@ -10,7 +14,7 @@ let settingsMap: Settings = {
  * Static class for fetching, managing and updating application settings
  */
 export class SettingsManager {
-    private static settingsLoaded: boolean = false;
+    private static settingsLoaded = false;
     private static settings: Settings;
 
     /**
@@ -19,8 +23,9 @@ export class SettingsManager {
      * @returns A promise that resolves to the settings when ready
      */
     public static async loadSettings(): Promise<Settings> {
-        if (this.settingsLoaded)
+        if (this.settingsLoaded) {
             return this.settings;
+        }
         this.settingsLoaded = true;
         return this.settings = settingsMap;
     }
@@ -28,9 +33,10 @@ export class SettingsManager {
     /**
      * Save the settings to the server
      */
-    public static saveSettings() {
-        if (this.settingsLoaded)
+    public static saveSettings(): void {
+        if (this.settingsLoaded) {
             settingsMap = this.settings;
+        }
     }
 
     /**
@@ -39,12 +45,4 @@ export class SettingsManager {
     public static getSettings(): Settings {
         return this.settings;
     }
-}
-
-
-/**
- * Represents the firebase settings map
- */
-export interface Settings {
-    sampleSetting: string;
 }

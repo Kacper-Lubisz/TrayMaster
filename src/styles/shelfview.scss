@@ -2,31 +2,31 @@
 
 // Import system-wide variables: we need to know $accent-color here
 @import "./variables";
-// Import shelf view grid layout
-@import "./shelfviewgrid";
 // Import generic keyboard styling
 @import "./keyboard";
-// Import viewport styling
-@import "./viewport";
+// Import shelf view grid layout
+@import "./shelfviewgrid";
+// Import viewport toolbar styling
+@import "./toolbar";
 // Import shelf edit styling
 @import "./shelfedit";
+// Import shelf navigator styling
+@import "./shelfnavigator";
 
-#topBar {
-  background-color: #cccccc;
-  font-size: 20px;
+// todo these styles should probably be broken out into their own files at some point tbh
 
-  // Keep contents centred
+#viewPort {
+  background-color: #bbbbbb;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-#viewPort {
-  background-color: #dddddd;
 
   touch-action: none;
   user-select: none;
   -webkit-touch-callout: none;
+
+  // Import viewport styling
+  @import "./viewport";
 }
 
 #sideBar {

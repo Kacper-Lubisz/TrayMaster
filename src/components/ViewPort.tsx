@@ -1,6 +1,6 @@
 import React from "react";
 import "pepjs";
-import "./styles/shelfview.scss";
+import "../styles/shelfview.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle as tickSolid,
@@ -8,10 +8,10 @@ import {
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "./core/MockWarehouse";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import classNames from "classnames/bind";
-import {getTextColorForBackground} from "./utils/getTextColorForBackground";
-import {getExpiryColor} from "./utils/getExpiryColor";
+import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getExpiryColor} from "../utils/getExpiryColor";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;
@@ -65,20 +65,22 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * released before the timeout finishes.
      * @param shelf The current shelf that is being displayed
      */
-    onDragSelectStart(shelf: Shelf) {
+    onDragSelectStart(shelf: Shelf): void {
         // Shallow clone the selected map from props, which we will save
         const selectedBefore = new Map(this.props.selected);
 
         this.setState({
             ...this.state,
-            longPress: {
+            longPress: this.state.longPress ? {
                 isHappening: true,
                 timeout: undefined,
-                dragFrom: this.state.longPress?.dragFrom!!,
+                dragFrom: this.state.longPress.dragFrom,
                 selectedBefore: selectedBefore,
-            },
+            } : undefined,
         }, () => {
-            this.updateDragSelectionTo(shelf, this.state.longPress?.dragFrom!!);
+            if (this.state.longPress) {
+                this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom);
+            }
         });
     }
 
@@ -89,10 +91,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param shelf The current shelf that is being displayed
      * @param to The tray that the pointer just entered, which triggered this listener
      */
-    updateDragSelectionTo(shelf: Shelf, to: TrayCell) {
+    updateDragSelectionTo(shelf: Shelf, to: TrayCell): void {
 
         // Shallow clone what was previously selected, which we will mutate
-        let newSelectedMap = new Map(this.state.longPress?.selectedBefore ?? new Map<Tray, boolean>());
+        const newSelectedMap = new Map(this.state.longPress?.selectedBefore ?? new Map<Tray, boolean>());
 
         const xor: (a: boolean, b: boolean) => boolean = (a, b) => a ? !b : b;
 
@@ -132,13 +134,18 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
             // this is a multi level sort
 
-            if (a.columnIndex < b.columnIndex) return -1;
-            if (a.columnIndex > b.columnIndex) return 1;
+            if (a.columnIndex < b.columnIndex) {
+                return -1;
+            } else if (a.columnIndex > b.columnIndex) {
+                return 1;
+            } else if (a.trayIndex < b.trayIndex) {
+                return 1;
+            } else if (a.trayIndex > b.trayIndex) {
+                return -1;
+            } else {
+                return 0;
+            }
 
-            if (a.trayIndex < b.trayIndex) return 1;
-            if (a.trayIndex > b.trayIndex) return -1;
-
-            return 0;
         })).map(it => it.tray);
 
         // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
@@ -161,7 +168,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when a drag event is ended by pointer up, or when the pointer leaves the viewport during a
      * drag. After drag finishes and the state is set, the callback is to fix the UI select display mode
      */
-    onDragSelectEnd() {
+    onDragSelectEnd(): void {
 
         this.setState({
             ...this.state,
@@ -174,12 +181,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * onPointerUp.  This method controls the selecting behaviour of a singular TrayCell.  Notably, this method is also
      * called after a pointer drag event if the event ends on the same TrayCell as it started.
      * @param trayCell The TrayCell that is clicked
-     * @param e The react event object which triggered this listener
      */
-    onTrayClick(trayCell: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
+    onTrayClick(trayCell: TrayCell): void {
 
         // Shallow clone the selected map from props, which we will mutate
-        let newSelectedMap = new Map(this.props.selected);
+        const newSelectedMap = new Map(this.props.selected);
 
         // If there's only one trayCell selected, and it's not the clicked-on trayCell
         // then deselect that previously selected trayCell first, before toggling this clicked-on trayCell as normal
@@ -199,7 +205,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param tray The tray on which the pointer is pressed
      * @param e The react pointer event that triggered this call
      */
-    onTrayPointerDown(shelf: Shelf, tray: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
+    onTrayPointerDown(shelf: Shelf, tray: TrayCell, e: React.PointerEvent<HTMLDivElement>): void {
         e.currentTarget.releasePointerCapture(e.pointerId);
         const timeout: number = window.setTimeout(() => { // await hold time
             if (this.state.longPress) { // not interrupted
@@ -222,9 +228,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when the pointer button is released over a tray, this either cancels the new drag event
      * timeout, finalises a current dragging event or performs a pointer click.
      * @param tray The tray over which the even is triggered
-     * @param e The react pointer event that triggered this call
      */
-    onTrayPointerUp(tray: TrayCell, e: React.PointerEvent<HTMLDivElement>) {
+    onTrayPointerUp(tray: TrayCell): void {
 
         if (this.state.longPress) {
             if (this.state.longPress.isHappening) {
@@ -235,7 +240,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     ...this.state,
                     longPress: null
                 });
-                this.onTrayClick(tray, e);
+                this.onTrayClick(tray);
             }
         }
 
@@ -244,9 +249,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     /**
      * This method is called when the pointer leaves the DOM element which represents any tray.  This method stops a
      * pointer down event from starting a drag event if the pointer leaves that tray.
-     * @param e The react pointer event that triggered this call
      */
-    onTrayPointerLeave(e: React.PointerEvent<HTMLDivElement>) {
+    onTrayPointerLeave(): void {
 
         if (this.state.longPress && !this.state.longPress.isHappening) {
             // is between pointer down and drag start
@@ -264,7 +268,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param shelf The current shelf that is being displayed
      * @param tray The tray over which the pointer entered
      */
-    onTrayPointerEnter(shelf: Shelf, tray: TrayCell) {
+    onTrayPointerEnter(shelf: Shelf, tray: TrayCell): void {
         if (this.state.longPress?.isHappening) {
             this.updateDragSelectionTo(shelf, tray);
         }
@@ -273,12 +277,14 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     /**
      * @inheritDoc
      */
-    render() {
+    render(): React.ReactNode {
 
         if (this.props.current instanceof Warehouse) {
             return <div id="viewPort">
-                <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
-                <p>todo add a button to go to settings or wherever this can be changed</p>
+                <div>{/* container needed to centre text inside viewport properly */}
+                    <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
+                    <p>todo add a button to go to settings or wherever this can be changed</p>
+                </div>
             </div>;
         } else if (this.props.current instanceof Zone) {
             return <div id="viewPort">
@@ -306,10 +312,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column to inc/dec
      * @param changeType Either increment or decrement
      */
-    changeColumnHeight(column: Column, changeType: "inc" | "dec") {
+    changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + (column.maxHeight ?? 1), 1);
+        column.maxHeight = Math.max(change + column.maxHeight, 1);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -319,7 +325,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column in question
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
-    getPossibleHeightChanges(column: Column): { inc: boolean, dec: boolean } {
+    getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
         // todo decide if there ought to be max max height
         if (column.maxHeight) {
             return {inc: true, dec: column.maxHeight !== 1};
@@ -334,17 +340,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column to inc/dec
      * @param changeType Either increase or decrease
      */
-    changeColumnSize(column: Column, changeType: "inc" | "dec") {
+    changeColumnSize(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
 
-        const columnSizes = column.parentWarehouse?.columnSizes!!;
-        const medianIndex = Math.floor(columnSizes.length / 2);
+        const traySizes = column.parentWarehouse.traySizes;
+        const medianIndex = Math.floor(traySizes.length / 2);
 
-        const currentIndex = columnSizes.indexOf(column.size ?? columnSizes[medianIndex]);
+        const currentIndex = traySizes.indexOf(column.traySize ?? traySizes[medianIndex]);
 
-        const newIndex = Math.min(Math.max(change + currentIndex, 0), columnSizes.length - 1);
-        column.size = columnSizes[newIndex];
+        const newIndex = Math.min(Math.max(change + currentIndex, 0), traySizes.length - 1);
+        column.traySize = traySizes[newIndex];
 
         this.forceUpdate();
     }
@@ -354,12 +360,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column in question
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
-    getPossibleSizeChanges(column: Column): { inc: boolean, dec: boolean } {
+    getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
+        const traySizes = column.parentWarehouse.traySizes;
 
-        const columnSizes = column.parentWarehouse?.columnSizes!!;
-        if (column.size) {
-            const currentIndex = columnSizes.indexOf(column.size);
-            return {inc: currentIndex !== columnSizes.length - 1, dec: currentIndex !== 0};
+        if (column.traySize) {
+            const currentIndex = traySizes.indexOf(column.traySize);
+            return {inc: currentIndex !== traySizes.length - 1, dec: currentIndex !== 0};
         } else {
             return {inc: true, dec: true};
         }
@@ -369,13 +375,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * The listener for removing a column
      * @param column The column to remove
      */
-    removeColumn(column: Column) {
-        const shelf: Shelf | undefined = column.parentShelf;
-        if (shelf) {
-            const index = shelf.columns.indexOf(column);
-            shelf.columns.splice(index, 1);
-        } else throw Error("Shelf undefined");
-
+    removeColumn(column: Column): void {
+        const index = column.parentShelf.columns.indexOf(column);
+        column.parentShelf.columns.splice(index, 1);
         this.forceUpdate();
     }
 
@@ -385,7 +387,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column to draw
      * @param order The index of the column
      */
-    renderColumn(shelf: Shelf, column: Column, order: number) {
+    renderColumn(shelf: Shelf, column: Column, order: number): React.ReactNode {
         const possibleColumnChanges = this.getPossibleSizeChanges(column);
         const possibleHeightChange = this.getPossibleHeightChanges(column);
 
@@ -393,12 +395,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         return <div
             style={{
                 order: order,
-                flexGrow: column.size?.sizeRatio ?? 1
+                flexGrow: column.traySize?.sizeRatio ?? 1
             }}
             className="column"
             key={order}
         >{
-            column.getPaddedTrays(1).map((tray, index) => {
+            column.getPaddedTrays().map((tray, index) => {
                 let expiryStyle;
                 if (tray instanceof Tray) {
                     const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";
@@ -425,17 +427,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             "tick-selected": this.props.isTraySelected(tray)
                         })}
                         icon={tickSolid}/>
-                    {tray instanceof Tray && <>
+                    {tray instanceof Tray ? <>
                         <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
                         <div className="trayWeight">{tray.weight ?? "?"}kg</div>
-                        <div className="trayCustomField">{tray.customField ?? ""}</div>
-                    </>}
-                    {!(tray instanceof Tray) && index === column.trays.length && <>
+                        <div className="trayCustomField">{tray.comment ?? ""}</div>
+                    </> : null}
+                    {!(tray instanceof Tray) && index === column.trays.length ? <>
                         <p>EMPTY TRAY {tray.index}</p>
-                    </>}
+                    </> : null}
                 </div>;
             })}
             {this.props.isShelfEdit ? <div className="edit-shelf-column">
@@ -454,7 +456,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         >
                             <FontAwesomeIcon icon={plus}/>
                         </button>
-                        <div className="colHeightValue">{column.maxHeight ?? "?"}</div>
+                        <div className="colHeightValue">{column.maxHeight}</div>
                         <button
                             disabled={!possibleHeightChange.dec}
                             onClick={this.changeColumnHeight.bind(this, column, "dec")}
@@ -466,7 +468,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                 <div className="colWidth">
                     <div className="colControlHeader">Tray Width:&nbsp;
-                        <span className="colWidthValue">{stringToTitleCase(column.size?.label ?? "?")}</span>
+                        <span className="colWidthValue">{stringToTitleCase(column.traySize?.label ?? "?")}</span>
                     </div>
                     <div className="colWidthControls">
                         <button
@@ -492,7 +494,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method clears the tray spaces if the shelf that is being displayed is changed.
      * @inheritDoc
      */
-    componentDidUpdate(prevProps: Readonly<ViewPortProps>, prevState: Readonly<ViewPortState>, snapshot?: any): void {
+    componentDidUpdate(prevProps: Readonly<ViewPortProps>): void {
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
         }

@@ -1,5 +1,5 @@
 import dayjs, {Dayjs} from "dayjs";
-import {ExpiryRange} from "../core/MockWarehouse";
+import {ExpiryRange} from "../core/WarehouseModel";
 
 
 /**
@@ -13,7 +13,7 @@ const YEAR_PERIOD = 8;
  * Converts a single member of an rgb(x, x, x) color value into two hex digits
  * @param rgb - one of the three r, g, b, values constituting a color
  */
-function rgbToHex(rgb: number) {
+function rgbToHex(rgb: number): string {
     let hex = Number(rgb).toString(16);
     if (hex.length < 2) {
         hex = `0${hex}`;
@@ -32,7 +32,7 @@ function rgbToHex(rgb: number) {
  * @return  string  The hex code corresponding to the given HSL value
  */
 export function hslToHex(h: number, s: number, l: number): string {
-    let hprime = h / 60;
+    const hprime = h / 60;
     const c = l * s;
     const x = c * (1 - Math.abs(hprime % 2 - 1));
     const m = l - c;
@@ -87,13 +87,23 @@ export function hslToHex(h: number, s: number, l: number): string {
  * @param days - the length of an expiry range in days
  * @return number - the saturation to use for that range
  */
-function getSaturation(days: number) {
-    if (days <= 0) return 1;        // not a valid range - TODO: decide whether to return 1 or 0 here
+function getSaturation(days: number): number {
+    if (days <= 0) {
+        return 1;
+    }        // not a valid range - TODO: decide whether to return 1 or 0 here
     //if (days <= 20) return 1;       // less than a month  TODO: also decide whether we should throw errors for bad nos
-    if (days <= 40) return 1;     // month
-    if (days <= 100) return 0.75;    // quarter
-    if (days <= 183) return 0.6;   // 6 months
-    if (days <= 366) return 0.5;    // year
+    if (days <= 40) {
+        return 1;
+    }     // month
+    if (days <= 100) {
+        return 0.75;
+    }    // quarter
+    if (days <= 183) {
+        return 0.6;
+    }   // 6 months
+    if (days <= 366) {
+        return 0.5;
+    }    // year
     return 0;                       // more than a year
 }
 
@@ -104,7 +114,7 @@ function getSaturation(days: number) {
  * @param range {ExpiryRange} - the expiry range to return a color for
  * @return string - the 7-digit hex value to use for that expiry range
  */
-export function getExpiryColor(range: ExpiryRange) {
+export function getExpiryColor(range: ExpiryRange): string {
     // get a dayjs date corresponding to the from property of the range, to use later
     const djsDate: Dayjs = dayjs(range.from);
 
