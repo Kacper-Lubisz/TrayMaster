@@ -4,7 +4,7 @@ import {KeyboardButtonProps} from "./Keyboard";
 
 
 /**
- * Props to be passed into ToolBar
+ * Props to be passed into SideBar
  * @see ToolBar
  */
 interface ToolBarProps {
@@ -15,7 +15,7 @@ interface ToolBarProps {
 }
 
 /**
- * Main toolbar object
+ * Main sidebar object
  */
 export class ToolBar extends React.Component<ToolBarProps> {
 
@@ -37,4 +37,5 @@ export class ToolBar extends React.Component<ToolBarProps> {
             )
         }</div>;
     }
+
 }
