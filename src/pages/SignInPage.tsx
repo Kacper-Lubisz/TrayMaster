@@ -38,7 +38,7 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
                     <input
                         onChange={(event) => {
                             const newEmail = event.target.value;
-                            this.setState((state) => {
+                            this.setState(state => {
                                 return {
                                     ...state,
                                     emailField: newEmail
@@ -53,7 +53,7 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
                     <input
                         onChange={(event) => {
                             const newPassword = event.target.value;
-                            this.setState((state) => {
+                            this.setState(state => {
                                 return {
                                     ...state,
                                     passwordField: newPassword
@@ -80,7 +80,7 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
     private async signIn(email: string | undefined, password: string | undefined): Promise<void> {
         if (email && password) {
             try {
-                this.setState((state) => {
+                this.setState(state => {
                     return {
                         ...state,
                         loading: true,
@@ -88,7 +88,7 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
                 });
                 await firebase.auth.signIn(email, password);
             } catch (e) {
-                this.setState((state) => {
+                this.setState(state => {
                     return {
                         ...state,
                         feedback: e.toString(),
@@ -97,7 +97,7 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
                 });
             }
         } else {
-            this.setState((state) => {
+            this.setState(state => {
                 return {
                     ...state,
                     feedback: `${email ? "emailField is undefined " : ""}

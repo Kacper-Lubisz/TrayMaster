@@ -69,14 +69,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         // Shallow clone the selected map from props, which we will save
         const selectedBefore = new Map(this.props.selected);
 
-        this.setState({
-            ...this.state,
-            longPress: this.state.longPress ? {
-                isHappening: true,
-                timeout: undefined,
-                dragFrom: this.state.longPress.dragFrom,
-                selectedBefore: selectedBefore,
-            } : undefined,
+        this.setState(state => {
+            return {
+                ...state,
+                longPress: this.state.longPress ? {
+                    isHappening: true,
+                    timeout: undefined,
+                    dragFrom: this.state.longPress.dragFrom,
+                    selectedBefore: selectedBefore,
+                } : undefined,
+            };
         }, () => {
             if (this.state.longPress) {
                 this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom);
@@ -170,9 +172,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     onDragSelectEnd(): void {
 
-        this.setState({
-            ...this.state,
-            longPress: null,
+        this.setState(state => {
+            return {
+                ...state,
+                longPress: null,
+            };
         });
     }
 
@@ -213,14 +217,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             }
         }, LONG_PRESS_TIMEOUT);
 
-        this.setState({
-            ...this.state,
-            longPress: {
-                selectedBefore: new Map(),
-                isHappening: false,
-                timeout: timeout,
-                dragFrom: tray
-            }
+        this.setState(state => {
+            return {
+                ...state,
+                longPress: {
+                    selectedBefore: new Map(),
+                    isHappening: false,
+                    timeout: timeout,
+                    dragFrom: tray
+                }
+            };
         });
     }
 
@@ -236,9 +242,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 this.onDragSelectEnd(); // end of drag
             } else {
                 window.clearTimeout(this.state.longPress?.timeout);
-                this.setState({
-                    ...this.state,
-                    longPress: null
+                this.setState(state => {
+                    return {
+                        ...state,
+                        longPress: null
+                    };
                 });
                 this.onTrayClick(tray);
             }
@@ -256,9 +264,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             // is between pointer down and drag start
             window.clearTimeout(this.state.longPress?.timeout);
 
-            this.setState({ // kills the long press
-                ...this.state,
-                longPress: null
+            this.setState(state => {
+                return { // kills the long press
+                    ...state,
+                    longPress: null
+                };
             });
         }
     }

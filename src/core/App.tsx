@@ -13,7 +13,7 @@ import {LoadingPage} from "../pages/Loading";
 import SettingsPage from "../pages/SettingsPage";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
-import SignInPage from "../pages/LoginPage";
+import SignInPage from "../pages/SignInPage";
 
 interface AppState {
     loading: boolean;
@@ -36,7 +36,7 @@ class App extends React.Component<unknown, AppState> {
 
         firebase.auth.onSignIn = (user: User) => {
             if (user.lastWarehouseID === null) {
-                this.setState((state) => {
+                this.setState(state => {
                     return {
                         ...state,
                         user: user,
@@ -46,7 +46,7 @@ class App extends React.Component<unknown, AppState> {
                 (async () => {
                     await WarehouseManager.loadWarehouses();
                     const warehouse = await WarehouseManager.loadWarehouseByID("MOCK 0");
-                    this.setState((state) => {
+                    this.setState(state => {
                         return {
                             ...state,
                             warehouse: warehouse,
@@ -57,10 +57,13 @@ class App extends React.Component<unknown, AppState> {
                 })();
             } else {
                 WarehouseManager.loadWarehouseByID(user.lastWarehouseID).then(warehouse => {
-                    this.setState({
-                        user: user,
-                        warehouse: warehouse,
-                        loading: false
+                    this.setState(state => {
+                        return {
+                            ...state,
+                            user: user,
+                            warehouse: warehouse,
+                            loading: false
+                        };
                     });
                 }).catch((reason) => {
                     this.openDialog(App.buildErrorDialog(
@@ -72,9 +75,12 @@ class App extends React.Component<unknown, AppState> {
             }
         };
         firebase.auth.onSignOut = () => {
-            this.setState({
-                user: undefined,
-                loading: false
+            this.setState(state => {
+                return {
+                    ...state,
+                    user: undefined,
+                    loading: false
+                };
             });
         };
         // if (!firebase.auth.isSignedIn)
@@ -152,7 +158,7 @@ class App extends React.Component<unknown, AppState> {
      * @param dialog The dialog to be displayed
      */
     public openDialog(dialog: Dialog): void {
-        this.setState((state) => {
+        this.setState(state => {
             return {
                 ...state,
                 dialog: {
@@ -222,7 +228,7 @@ class ChangeWarehouseDialog extends React.Component<ChangeWarehouseDialogProps> 
                     <div key={index} onClick={async () => {
                         const warehouse: Warehouse = await
                             WarehouseManager.loadWarehouseByID(warehouseID); // todo fixme make this show the name
-                        this.setState((state) => {
+                        this.setState(state => {
                             return {...state, warehouse: warehouse};
                         });
                         this.props.close();

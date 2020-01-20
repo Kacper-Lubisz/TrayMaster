@@ -115,7 +115,7 @@ export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
         }
 
         // set state to reflect trays being swapped
-        this.setState((state) => {
+        this.setState(state => {
             return {
                 ...state,
                 animation: {
@@ -129,7 +129,7 @@ export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
 
     componentDidMount(): void {
         // when fully rendered, start swapping :D
-        this.setState((state) => {
+        this.setState(state => {
             return {
                 ...state,
                 traySwapInterval: setInterval(this.swapTrays.bind(this), 250)
