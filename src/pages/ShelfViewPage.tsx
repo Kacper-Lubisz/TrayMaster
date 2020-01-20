@@ -29,8 +29,6 @@ import {
     faTimes as cross,
     faWeightHanging
 } from "@fortawesome/free-solid-svg-icons";
-
-import {faCheckCircle as tickRegular} from "@fortawesome/free-regular-svg-icons";
 // todo fixme decide if to replace this icon, if this icon is removed then remove this package too
 import Popup from "reactjs-popup";
 import classNames from "classnames";
@@ -633,26 +631,17 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     disabled={this.state.isEditShelf}
                     toolbar={[
                         (() => {
-                            const selected = this.getSelectedTrayCells();
-
-                            if (selected.length === 0 || (selected.every(cell => cell instanceof Tray)
-                                && this.getTrayCells().filter(cell => cell instanceof Tray).length !== selected.length)) {
-                                return {
-                                    name: "Select Trays",
-                                    icon: tickRegular,
-                                    onClick: this.selectAll.bind(this, "trays")
-                                };
-                            } else if (selected.length === this.getTrayCells().length) {
-                                return {
-                                    name: "Deselect All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "none")
-                                };
-                            } else {
+                            if (this.getSelectedTrayCells().length === 0) {
                                 return {
                                     name: "Select All",
                                     icon: tickSolid,
                                     onClick: this.selectAll.bind(this, "all")
+                                };
+                            } else {
+                                return {
+                                    name: "Deselect All",
+                                    icon: tickSolid,
+                                    onClick: this.selectAll.bind(this, "none")
                                 };
                             }
                         })(),
