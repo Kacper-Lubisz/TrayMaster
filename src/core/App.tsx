@@ -13,6 +13,7 @@ import {LoadingPage} from "../pages/Loading";
 import SettingsPage from "../pages/SettingsPage";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
+import SignInPage from "../pages/LoginPage";
 
 interface AppState {
     loading: boolean;
@@ -96,18 +97,15 @@ class App extends React.Component<unknown, AppState> {
                     /> : <Redirect to="/menu"/>
                 } exact/>
                 <Route path="/menu" component={() =>
-                    <MainMenu
+                    this.state.user ? <MainMenu
                         changeWarehouse={(user: User) => {
                             this.openDialog({
                                 closeOnDocumentClick: true,
                                 dialog: (close) => <ChangeWarehouseDialog close={close} user={user}/>
                             });
                         }}
-                        showSignIn={() => {
-                            this.openDialog({
-                                closeOnDocumentClick: true,
-                                dialog: (close) => <SignInDialog close={close} signIn={this.signIn.bind(this)}/>
-                            });
+                        signIn={() => {
+                            // this.props.history.push("/login");
                         }}
                         signOut={async () => {
                             await firebase.auth.signOut();
@@ -123,13 +121,16 @@ class App extends React.Component<unknown, AppState> {
                         warehouse={this.state.warehouse}
                         openDialog={this.openDialog.bind(this)}
                         expiryAmount={5} //todo fixme
-                    />
+                    /> : <Redirect to={"/signin"}/>
                 }/>
                 <Route path="/settings" component={() =>
                     this.state.user === null ? <Redirect to="/login"/> : <SettingsPage
                         warehouse={this.state.warehouse}
                         openDialog={this.openDialog.bind(this)}
                     />
+                }/>
+                <Route path="/signin" component={() =>
+                    this.state.user ? <Redirect to={"/menu"}/> : <SignInPage/>
                 }/>
                 <Route component={PageNotFoundPage}/>
             </Switch>
@@ -144,35 +145,6 @@ class App extends React.Component<unknown, AppState> {
         </>;
 
     }
-
-    private async signIn(email: string | undefined, password: string | undefined, close: () => void): Promise<void> {
-        if (email && password) {
-            try {
-                this.setState((state) => {
-                    return {...state, loading: true};
-                });
-                await firebase.auth.signIn(email, password);
-                close();
-            } catch (e) {
-                this.setState((state) => {
-                    return {
-                        ...state,
-                        feedback: e.toString(),
-                        loading: false
-                    };
-                });
-            }
-        } else {
-            this.setState((state) => {
-                return {
-                    ...state,
-                    feedback: `${email ? "emailField is undefined " : ""}
-                    ${password ? "emailField is undefined " : ""}`
-                };
-            });
-        }
-    }
-
 
     /**
      * This method opens a dialog.  The dialog is passed as a function which generates the dialog given a function which
@@ -264,77 +236,6 @@ class ChangeWarehouseDialog extends React.Component<ChangeWarehouseDialogProps> 
     }
 }
 
-interface SignInDialogProps {
-    close: () => void;
-    signIn: (email: string | undefined, password: string | undefined, close: () => void) => void;
-    feedback?: string;
-}
-
-interface SignInDialogState {
-    emailField?: string;
-    passwordField?: string;
-}
-
-class SignInDialog extends React.Component<SignInDialogProps, SignInDialogState> {
-    constructor(props: SignInDialogProps) {
-        super(props);
-        this.state = {};
-    }
-
-    render(): React.ReactNode {
-        return <>
-            <h1>Sign In</h1>
-            <form onSubmit={(event) => {
-                event.preventDefault();
-                this.props.signIn(this.state.emailField, this.state.passwordField, this.props.close);
-            }}>
-                Email:
-                <input
-                    onChange={(event) => {
-                        const newEmail = event.target.value;
-                        this.setState((state) => {
-                            return {
-                                ...state,
-                                emailField: newEmail
-                            };
-                        });
-                    }}
-                    value={this.state?.emailField ?? ""}
-                    type="text"
-                    placeholder={"Email"}
-                /> <br/>
-                Password:
-                <input
-                    onChange={(event) => {
-                        const newPassword = event.target.value;
-                        this.setState((state) => {
-                            return {
-                                ...state,
-                                passwordField: newPassword
-                            };
-                        });
-                    }}
-                    value={this.state?.passwordField ?? ""}
-                    type="password"
-                    placeholder={"Password"}
-                /> <br/>
-            </form>
-
-            {this.props.feedback ? <h1 style={{color: "red"}}>{this.props.feedback}</h1> : undefined}
-
-            <button onClick={this.props.signIn.bind(
-                undefined,
-                this.state.emailField,
-                this.state.passwordField,
-                this.props.close
-            )}>Sign In
-            </button>
-            <button>Reset Password</button>
-            <br/>
-        </>;
-    }
-
-}
 
 export type Dialog = {
     dialog: (close: () => void) => ReactNode;

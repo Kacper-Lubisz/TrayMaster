@@ -71,7 +71,7 @@ interface LoadingSpinnerState {
     animation?: any;
 }
 
-class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
+export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
 
     constructor(props: any) {
         super(props);
@@ -140,20 +140,11 @@ class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
 
     componentWillUnmount(): void {
 
-        this.setState((state) => {
-            if (state.traySwapInterval) {
-                clearInterval(state.traySwapInterval);
-                return {
-                    ...state,
-                    traySwapInterval: null
-                };
-            } else {
-                return state;
-            }
-        });
+        if (this.state.traySwapInterval) {
+            clearInterval(this.state.traySwapInterval);
+        }
 
     }
-
 
     render(): React.ReactNode {
 

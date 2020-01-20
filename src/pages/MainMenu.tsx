@@ -21,7 +21,7 @@ interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
 
     changeWarehouse: (user: User) => void;
-    showSignIn: () => void;
+    signIn: () => void;
     signOut: () => void;
 
     warehouse: Warehouse | undefined;
@@ -40,53 +40,52 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
 
     render(): React.ReactNode {
 
-        return (
-            <div className="main-menu">
-                <div className="menu-header">
-                    <h1>Shelfmaster</h1>
-                </div>
-                {/*todo fixme the expiry amount ought to be derived from warehouse*/}
-                {this.props.expiryAmount === 0 || !this.props.warehouse ? undefined : <div className="alert">
-                    <div className="alert-header">
-                        <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
-                        <h2>Expiry Imminent</h2>
-                    </div>
-                    <p>There are {this.props.expiryAmount} items expiring soon! Click here to see them.</p>
-                </div>
-                }
-
-                {this.props.warehouse ? <div className="menu-btn-container">
-                    <button className="key-btn" onClick={() => this.props.history.push("/")}>
-                        <p>Back to Shelf View</p></button>
-                    <button className="key-btn"
-                            onClick={() => alert("Search")}><p>Search</p>
-                    </button>
-                    <button className="key-btn"
-                            onClick={() => alert("Report")}><p>Report</p>
-                    </button>
-                    <button className="key-btn"
-                            onClick={() => this.props.history.push("/settings")}><p>Settings</p>
-                    </button>
-
-                </div> : undefined}
-                <div id="menu-warehouse-user-area">
-                    <div>
-                        <h1>{this.props.user?.name ?? "Not Signed in"}</h1>
-                        <button onClick={this.props.user === undefined ? this.props.showSignIn :
-                                         this.props.signOut}>
-                            <FontAwesomeIcon icon={this.props.user === undefined ? faSignInAlt : faSignOutAlt}/>
-                        </button>
-                    </div>
-                    {this.props.user === undefined ? undefined : <div>
-                        <h1>{this.props.warehouse?.name ?? "No Warehouse Open"}</h1>
-                        <button onClick={this.props.changeWarehouse.bind(undefined, this.props.user)}>
-                            <FontAwesomeIcon icon={faExchangeAlt}/>
-                        </button>
-                    </div>}
-                </div>
-
+        return <div className="main-menu">
+            <div className="menu-header">
+                <h1>Shelfmaster</h1>
             </div>
-        );
+            {/*todo fixme the expiry amount ought to be derived from warehouse*/}
+            {this.props.expiryAmount === 0 || !this.props.warehouse ? undefined : <div className="alert">
+                <div className="alert-header">
+                    <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
+                    <h2>Expiry Imminent</h2>
+                </div>
+                <p>There are {this.props.expiryAmount} items expiring soon! Click here to see them.</p>
+            </div>
+            }
+
+            {this.props.warehouse ? <div className="menu-btn-container">
+                <button className="key-btn" onClick={() => this.props.history.push("/")}>
+                    <p>Back to Shelf View</p></button>
+                <button className="key-btn"
+                        onClick={() => alert("Search")}><p>Search</p>
+                </button>
+                <button className="key-btn"
+                        onClick={() => alert("Report")}><p>Report</p>
+                </button>
+                <button className="key-btn"
+                        onClick={() => this.props.history.push("/settings")}><p>Settings</p>
+                </button>
+
+            </div> : undefined}
+            <div id="menu-warehouse-user-area">
+                <div>
+                    <h1>{this.props.user?.name ?? "Not Signed in"}</h1>
+                    <button onClick={this.props.user === undefined ? this.props.signIn :
+                                     this.props.signOut}>
+                        <FontAwesomeIcon icon={this.props.user === undefined ? faSignInAlt : faSignOutAlt}/>
+                    </button>
+                </div>
+                {this.props.user === undefined ? undefined : <div>
+                    <h1>{this.props.warehouse?.name ?? "No Warehouse Open"}</h1>
+                    <button onClick={this.props.changeWarehouse.bind(undefined, this.props.user)}>
+                        <FontAwesomeIcon icon={faExchangeAlt}/>
+                    </button>
+                </div>}
+            </div>
+
+        </div>;
+
     }
 }
 
