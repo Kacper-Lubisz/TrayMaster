@@ -145,11 +145,11 @@ export class WarehouseManager {
     private static currentWarehouseId = "";
 
     public static get currentWarehouse(): Warehouse {
-        return WarehouseManager.warehouses[WarehouseManager.currentWarehouseId];
+        return this.warehouses[this.currentWarehouseId];
     }
 
     public static get warehouseList(): Warehouse[] {
-        return Object.values(WarehouseManager.warehouses);
+        return Object.values(this.warehouses);
     }
 
     /**
@@ -159,39 +159,46 @@ export class WarehouseManager {
         if (ONLINE) {
             const warehouseDocuments: DatabaseDocument<unknown>[] = await firebase.database.loadCollection<unknown>("warehouses");
             for (const warehouseDocument of warehouseDocuments) {
-                WarehouseManager.warehouses[warehouseDocument.id] =
+                this.warehouses[warehouseDocument.id] =
                     Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
             }
         } else {
             for (let i = 0; i < 1; i++) {
                 const id = `MOCK ${i}`;
-                WarehouseManager.warehouses[id] = await generateRandomWarehouse(id, "Chester-le-Street");
+                this.warehouses[id] = await generateRandomWarehouse(id, "Chester-le-Street");
             }
         }
-        return WarehouseManager.warehouseList;
+        return this.warehouseList;
+    }
+
+    public static async loadWarehouse(warehouse: Warehouse): Promise<Warehouse> {
+        return await warehouse.load(WarehouseModel.tray);
     }
 
     /**
-     * Load a warehouse
+     * Load a warehouse by its database ID
+     * @async
+     * @param id - The database ID of the warehouse to load
+     * @returns The loaded warehouse
+     */
+    public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
+        return typeof WarehouseManager.warehouses[id] === "undefined" ? undefined
+                                                                      : this.loadWarehouse(this.warehouses[id]);
+    }
+
+    /**
+     * Load a warehouse by its name
      * @async
      * @param name - The name of the warehouse to load
      * @returns The loaded warehouse
      */
-    public static async loadWarehouse(name: string): Promise<Warehouse> {
-        for (const [id, warehouse] of Object.entries(WarehouseManager.warehouses)) {
+    public static async loadWarehouseByName(name: string): Promise<Warehouse | undefined> {
+        for (const [id, warehouse] of Object.entries(this.warehouses)) {
             if (warehouse.name === name) {
-                return WarehouseManager.loadWarehouseByID(id);
+                return await this.loadWarehouseByID(id);
             }
         }
-        throw Error("Failed to load warehouse");
-    }
-
-    public static async loadWarehouseByID(id: string): Promise<Warehouse> {
-        await WarehouseManager.loadWarehouses();
-        if (typeof WarehouseManager.warehouses[id] === "undefined") {
-            throw Error("Failed to load warehouse");
-        }
-        return WarehouseManager.warehouses[id].load(WarehouseModel.tray);
+        return undefined;
     }
 }
 

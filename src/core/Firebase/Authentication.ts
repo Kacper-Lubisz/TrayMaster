@@ -1,10 +1,11 @@
 import * as fb from "firebase/app";
 import "firebase/auth";
 import Utils from "../WarehouseModel/Utils";
-import firebase from "../Firebase";
 import {DatabaseObject} from "./DatabaseObject";
 import {DatabaseCollection} from "./DatabaseCollection";
 import {FirebaseError} from "./FirebaseError";
+import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
+import {WarehouseManager} from "../WarehouseModel";
 
 type Auth = fb.auth.Auth;
 
@@ -31,7 +32,7 @@ export class User extends DatabaseObject<UserFields> {
 
     public async load(forceLoad = false): Promise<this> {
         await this.warehouseSettings.load(forceLoad);
-        return this;
+        return super.load(forceLoad);
     }
 
     public async stage(forceStage = false, commit = false): Promise<void> {
@@ -39,8 +40,12 @@ export class User extends DatabaseObject<UserFields> {
         super.stage(forceStage, commit);
     }
 
-    public get accessibleWarehouses(): string[] {
-        return this.warehouseSettings.idList;
+    public get accessibleWarehouses(): Warehouse[] {
+        const accessibleWarehouses: Warehouse[] = [];
+        for (const warehouse of WarehouseManager.warehouseList)
+            if (this.warehouseSettings.idList.includes(warehouse.id))
+                accessibleWarehouses.push(warehouse);
+        return accessibleWarehouses;
     }
 
     public get lastWarehouseID(): string | null {
@@ -74,11 +79,7 @@ export class Authentication {
         this.auth = fb.auth();
         this.auth.onAuthStateChanged(async userSnapshot => {
             if (userSnapshot) {
-                const userPath = Utils.joinPaths("users", userSnapshot.uid);
-                this.currentUser = await new User(
-                    userPath,
-                    (await firebase.database.loadDocument<UserFields>(userPath))?.fields
-                ).load();
+                this.currentUser = await new User(userSnapshot.uid).load();
                 this.onSignIn?.call(this, this.currentUser);
             } else {
                 this.currentUser = undefined;

@@ -28,7 +28,14 @@ export abstract class DatabaseObject<TFields> {
      */
     public abstract get collectionPath(): string;
 
-    public abstract load(forceLoad: boolean): Promise<this>;
+    public async load(forceLoad = false): Promise<this> {
+        if (!this.loaded || forceLoad) {
+            const fields = (await firebase.database.loadDocument<TFields>(this.path))?.fields;
+            this.fields = fields ?? this.fields;
+            this.loaded = true;
+        }
+        return this;
+    }
 
     public async stage(forceStage = false, commit = false): Promise<void> {
         if (this.changed || forceStage) {

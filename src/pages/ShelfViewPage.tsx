@@ -15,7 +15,6 @@ import {
     Warehouse,
     Zone
 } from "../core/WarehouseModel";
-import {Settings} from "../core/Settings";
 import {
     faArrowDown as downArrow,
     faArrowLeft as leftArrow,
@@ -69,7 +68,6 @@ interface ShelfViewProps {
      */
     openDialog: (dialog: Dialog) => void;
     warehouse: Warehouse;
-    settings: Settings;
 }
 
 interface ShelfViewState {

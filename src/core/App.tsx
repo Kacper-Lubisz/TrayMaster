@@ -98,7 +98,6 @@ class App extends React.Component<unknown, AppState> {
                 <Route path="/" component={() =>
                     this.state.user && this.state.warehouse ? <ShelfViewPage
                         openDialog={this.openDialog.bind(this)}
-                        settings={{sampleSetting: ""}}
                         warehouse={this.state.warehouse}
                     /> : <Redirect to="/menu"/>
                 } exact/>
@@ -224,17 +223,16 @@ class ChangeWarehouseDialog extends React.Component<ChangeWarehouseDialogProps> 
             {this.props.user.accessibleWarehouses.length === 0 ? <p>
                 You don't have access to any warehouse! Contact your administrator, more info in the manual
             </p> : <div id="warehouseList">{
-                this.props.user.accessibleWarehouses.map((warehouseID, index) =>
+                this.props.user.accessibleWarehouses.map((warehouse, index) =>
                     <div key={index} onClick={async () => {
-                        const warehouse: Warehouse = await
-                            WarehouseManager.loadWarehouseByID(warehouseID); // todo fixme make this show the name
+                        //await WarehouseManager.loadWarehouse(warehouse);
                         this.setState(state => {
                             return {...state, warehouse: warehouse};
                         });
                         this.props.close();
                     }}>
                         <FontAwesomeIcon icon={faHome}/>
-                        <p>{warehouseID}</p>
+                        <p>{warehouse.name}</p>
                     </div>
                 )
             }</div>}
