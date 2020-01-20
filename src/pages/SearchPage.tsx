@@ -7,6 +7,7 @@ import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {faPlus as plus, faTrashAlt as trash} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {SearchPanel} from "../components/SearchPanel";
 
 export interface SearchQuery {
     categories: (Category | null)[] | undefined;
@@ -66,7 +67,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
                 </div>
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
-            <SearchPanel keyboardState="yeet"/>
+            <SearchPanel keyboardState="yeet" setQuery={this.props.setQuery}/>
         </div>;
     }
 
@@ -210,19 +211,3 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
 }
 
 export default withRouter(SearchPage);
-
-interface SearchPanelProps {
-    keyboardState: string;
-}
-
-export class SearchPanel extends React.Component<SearchPanelProps> {
-
-    render(): React.ReactNode {
-        // return DOM elements using button structures
-        return (
-            <div id="searchPanel">
-                This is the side panel fellas. keyboardState is "{this.props.keyboardState}"
-            </div>
-        );
-    }
-}
