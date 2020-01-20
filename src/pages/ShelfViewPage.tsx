@@ -36,9 +36,9 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {properMod} from "../utils/properMod";
-import App, {Dialog, DialogButtons, DialogTitle} from "../core/App";
 import {ToolBar} from "../components/ToolBar";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {buildErrorDialog, Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 // todo fixme decide if to replace this icon, if this icon is removed then remove this package too
 
 
@@ -660,7 +660,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (this.state.currentView instanceof Zone) {
                 return this.state.currentView.color;
             } else if (this.state.currentView instanceof Shelf) {
-                return this.state.currentView.parentZone.color ?? "#ffffff";
+                return this.state.currentView.parentZone.color;
             } else {
                 return "#ffffff";
             }
@@ -720,7 +720,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             },
                             { /*This code adds a button which opens a test dialog*/
                                 name: "Test Error", onClick: this.props.openDialog.bind(undefined,
-                                    App.buildErrorDialog("Error Title", "this is a big test", true)
+                                    buildErrorDialog("Error Title", "this is a big test", true)
                                 )
                             }
 

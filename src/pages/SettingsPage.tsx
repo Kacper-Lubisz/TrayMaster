@@ -3,8 +3,8 @@ import "../styles/settings.scss";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
-import {Dialog} from "../core/App";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {Dialog} from "../core/Dialog";
 
 interface SettingsProps {
     openDialog: (dialog: Dialog) => void;

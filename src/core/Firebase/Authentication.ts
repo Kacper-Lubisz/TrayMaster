@@ -42,14 +42,20 @@ export class User extends DatabaseObject<UserFields> {
 
     public get accessibleWarehouses(): Warehouse[] {
         const accessibleWarehouses: Warehouse[] = [];
-        for (const warehouse of WarehouseManager.warehouseList)
-            if (this.warehouseSettings.idList.includes(warehouse.id))
+        for (const warehouse of WarehouseManager.warehouseList) {
+            if (this.warehouseSettings.idList.includes(warehouse.id)) {
                 accessibleWarehouses.push(warehouse);
+            }
+        }
         return accessibleWarehouses;
     }
 
     public get lastWarehouseID(): string | null {
         return this.fields.lastWarehouseID === "" ? null : this.fields.lastWarehouseID;
+    }
+
+    public set lastWarehouseID(lastWarehouseID: string | null) {
+        this.fields.lastWarehouseID = lastWarehouseID ?? "";
     }
 
     public get collectionPath(): string {

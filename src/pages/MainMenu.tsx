@@ -3,15 +3,10 @@ import {RouteComponentProps} from "react-router-dom";
 import {withRouter} from "react-router";
 import "../styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {
-    faExchangeAlt,
-    faExclamationTriangle as warningIcon,
-    faSignInAlt,
-    faSignOutAlt
-} from "@fortawesome/free-solid-svg-icons";
-import {Dialog} from "../core/App";
+import {faExchangeAlt, faExclamationTriangle as warningIcon, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import {Warehouse} from "../core/WarehouseModel";
 import {User} from "../core/Firebase";
+import {Dialog} from "../core/Dialog";
 
 /**
  * expiryAmount is the number of items expiring soon
@@ -21,11 +16,10 @@ interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
 
     changeWarehouse: (user: User) => void;
-    signIn: () => void;
     signOut: () => void;
 
-    warehouse: Warehouse | undefined;
-    user?: User;
+    warehouse: Warehouse;
+    user: User;
     expiryAmount: number;
 }
 
@@ -45,7 +39,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                 <h1>Shelfmaster</h1>
             </div>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
-            {this.props.expiryAmount === 0 || !this.props.warehouse ? undefined : <div className="alert">
+            {this.props.expiryAmount === 0 ? undefined : <div className="alert">
                 <div className="alert-header">
                     <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
                     <h2>Expiry Imminent</h2>
@@ -54,7 +48,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             </div>
             }
 
-            {this.props.warehouse ? <div className="menu-btn-container">
+            <div className="menu-btn-container">
                 <button className="key-btn" onClick={() => this.props.history.push("/")}>
                     <p>Back to Shelf View</p></button>
                 <button className="key-btn"
@@ -67,21 +61,20 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                         onClick={() => this.props.history.push("/settings")}><p>Settings</p>
                 </button>
 
-            </div> : undefined}
+            </div>
             <div id="menu-warehouse-user-area">
                 <div>
-                    <h1>{this.props.user?.name ?? "Not Signed in"}</h1>
-                    <button onClick={this.props.user === undefined ? this.props.signIn :
-                                     this.props.signOut}>
-                        <FontAwesomeIcon icon={this.props.user === undefined ? faSignInAlt : faSignOutAlt}/>
+                    <h1>{this.props.user.name}</h1>
+                    <button onClick={this.props.signOut}>
+                        <FontAwesomeIcon icon={faSignOutAlt}/>
                     </button>
                 </div>
-                {this.props.user === undefined ? undefined : <div>
-                    <h1>{this.props.warehouse?.name ?? "No Warehouse Open"}</h1>
+                <div>
+                    <h1>{this.props.warehouse.name}</h1>
                     <button onClick={this.props.changeWarehouse.bind(undefined, this.props.user)}>
                         <FontAwesomeIcon icon={faExchangeAlt}/>
                     </button>
-                </div>}
+                </div>
             </div>
 
         </div>;

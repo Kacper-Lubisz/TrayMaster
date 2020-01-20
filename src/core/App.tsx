@@ -1,11 +1,9 @@
-import React, {ReactNode} from "react";
+import React from "react";
 import {BrowserRouter, Route, Switch} from "react-router-dom";
 import {Redirect} from "react-router";
 
 import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
 import Popup from "reactjs-popup";
-import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
-import {faExclamationTriangle as warningIcon, faHome} from "@fortawesome/free-solid-svg-icons";
 
 import MainMenu from "../pages/MainMenu";
 import firebase, {User} from "./Firebase";
@@ -14,11 +12,13 @@ import SettingsPage from "../pages/SettingsPage";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
+import WarehouseSwitcher from "../pages/WarehouseSwitcher";
+import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
 
 interface AppState {
     loading: boolean;
-    user?: User | undefined;
-    warehouse?: Warehouse;
+    user?: User | null;
+    warehouse?: Warehouse | null;
     dialog?: StoredDialog | null;
 }
 
@@ -66,7 +66,7 @@ class App extends React.Component<unknown, AppState> {
                         };
                     });
                 }).catch((reason) => {
-                    this.openDialog(App.buildErrorDialog(
+                    this.openDialog(buildErrorDialog(
                         "Load Failed",
                         `Failed to load last warehouse ${reason}`,
                         false
@@ -101,42 +101,69 @@ class App extends React.Component<unknown, AppState> {
                         warehouse={this.state.warehouse}
                     /> : <Redirect to="/menu"/>
                 } exact/>
-                <Route path="/menu" component={() =>
-                    this.state.user ? <MainMenu
-                        changeWarehouse={(user: User) => {
-                            this.openDialog({
-                                closeOnDocumentClick: true,
-                                dialog: (close) => <ChangeWarehouseDialog close={close} user={user}/>
-                            });
-                        }}
-                        signIn={() => {
-                            // this.props.history.push("/login");
-                        }}
-                        signOut={async () => {
-                            await firebase.auth.signOut();
-                            this.setState(state => {
-                                return {
-                                    dialog: state.dialog,
-                                    user: undefined,
-                                    warehouse: undefined
-                                };
-                            });
-                        }}
-                        user={this.state.user}
-                        warehouse={this.state.warehouse}
-                        openDialog={this.openDialog.bind(this)}
-                        expiryAmount={5} //todo fixme
-                    /> : <Redirect to={"/signin"}/>
-                }/>
-                <Route path="/settings" component={() =>
-                    this.state.user === null ? <Redirect to="/login"/> : <SettingsPage
-                        warehouse={this.state.warehouse}
-                        openDialog={this.openDialog.bind(this)}
-                    />
-                }/>
+                <Route path="/menu" component={() => (() => {
+                    if (this.state.user && this.state.warehouse) {
+                        return <MainMenu
+                            changeWarehouse={() => {
+                                this.setState(state => {
+                                    return {
+                                        ...state,
+                                        warehouse: undefined
+                                    };
+                                });
+                            }}
+                            signOut={async () => {
+                                await firebase.auth.signOut();
+                                this.setState(state => {
+                                    return {
+                                        ...state,
+                                        dialog: state.dialog,
+                                        user: null,
+                                        warehouse: null
+                                    };
+                                });
+                            }}
+                            user={this.state.user}
+                            warehouse={this.state.warehouse}
+                            openDialog={this.openDialog.bind(this)}
+                            expiryAmount={5} //todo fixme
+                        />;
+
+                    } else if (!this.state.user) {
+                        return <Redirect to={"/signin"}/>;
+
+                    } else {
+                        return <Redirect to={"/warehouses"}/>;
+
+                    }
+                })()}/>
+                <Route path="/settings" component={() => (() => {
+                    if (!this.state.user) {
+                        return <Redirect to={"/signin"}/>;
+                    } else if (!this.state.warehouse) {
+                        return <Redirect to={"/warehouses"}/>;
+                    } else {
+                        return <SettingsPage
+                            warehouse={this.state.warehouse}
+                            openDialog={this.openDialog.bind(this)}
+                        />;
+                    }
+                })()}/>
                 <Route path="/signin" component={() =>
                     this.state.user ? <Redirect to={"/menu"}/> : <SignInPage/>
                 }/>
+                <Route path="/warehouses" component={() => (() => {
+                    if (this.state.user && this.state.warehouse) {
+                        return <Redirect to={"/menu"}/>;
+                    } else if (!this.state.user) {
+                        return <Redirect to={"/signin"}/>;
+                    } else {
+                        return <WarehouseSwitcher
+                            user={this.state.user}
+                            setWarehouse={this.setWarehouse.bind(this)}
+                        />;
+                    }
+                })()}/>
                 <Route component={PageNotFoundPage}/>
             </Switch>
             </BrowserRouter>
@@ -149,6 +176,25 @@ class App extends React.Component<unknown, AppState> {
             </Popup>
         </>;
 
+    }
+
+    /**
+     * This method sets the current warehouse
+     * @param warehouse The warehouse to be set
+     */
+    private setWarehouse(warehouse: Warehouse): void {
+        this.setState(state => {
+            if (state.user) {
+                state.user.lastWarehouseID = warehouse.id;
+                // noinspection JSIgnoredPromiseFromCall
+                // state.user.stage(false, true);
+            }
+            //todo decide if this needs to call any load the warehouse or anything like that
+            return {
+                ...state,
+                warehouse: warehouse
+            };
+        });
     }
 
     /**
@@ -177,114 +223,6 @@ class App extends React.Component<unknown, AppState> {
         });
     }
 
-    /**
-     * This method builds a dialog function for a standard error message.
-     * @param title THe title of the error dialog
-     * @param message The body of the dialog
-     * @param forceReload If the dialog forces the page to be reloaded
-     */
-    static buildErrorDialog(title: string, message: string, forceReload: boolean): Dialog {
-
-        return {
-            closeOnDocumentClick: !forceReload,
-            dialog: (close: () => void) => <>
-                <DialogTitle title={title} iconProps={{icon: warningIcon, color: "red"}}/>
-                <p>{message}</p>
-                <DialogButtons buttons={[
-                    {
-                        name: "Reload", buttonProps: {
-                            onClick: () => window.location.reload(),
-                            style: {borderColor: "red"}
-                        }
-                    }
-                ].concat(forceReload ? [] : {
-                    name: "Ok", buttonProps: {
-                        onClick: close,
-                        style: {borderColor: "red"}
-                    }
-                })}/>
-            </>
-        };
-    }
-
-}
-
-interface ChangeWarehouseDialogProps {
-    user: User;
-    close: () => void;
-}
-
-
-class ChangeWarehouseDialog extends React.Component<ChangeWarehouseDialogProps> {
-    render(): React.ReactNode {
-        return <div>
-            <h1>Change Warehouse</h1>
-
-            {this.props.user.accessibleWarehouses.length === 0 ? <p>
-                You don't have access to any warehouse! Contact your administrator, more info in the manual
-            </p> : <div id="warehouseList">{
-                this.props.user.accessibleWarehouses.map((warehouse, index) =>
-                    <div key={index} onClick={async () => {
-                        //await WarehouseManager.loadWarehouse(warehouse);
-                        this.setState(state => {
-                            return {...state, warehouse: warehouse};
-                        });
-                        this.props.close();
-                    }}>
-                        <FontAwesomeIcon icon={faHome}/>
-                        <p>{warehouse.name}</p>
-                    </div>
-                )
-            }</div>}
-        </div>;
-    }
-}
-
-
-export type Dialog = {
-    dialog: (close: () => void) => ReactNode;
-    closeOnDocumentClick: boolean;
-};
-
-type StoredDialog = {
-    dialog: ReactNode;
-    closeOnDocumentClick: boolean;
-};
-
-export type DialogTitleProps = { title: string; iconProps?: FontAwesomeIconProps };
-
-/**
- * The standard dialog sub component which contains the title and icon
- */
-export class DialogTitle extends React.Component<DialogTitleProps> {
-    render(): React.ReactNode {
-        return <h1 className={"dialogTitle"}> {this.props.iconProps ?
-                                               <FontAwesomeIcon {...this.props.iconProps}/> : null}
-            {this.props.title}
-        </h1>;
-    }
-}
-
-/**
- * This is the interface to represent the buttons of a dialog
- */
-export interface DialogButton {
-    name: string;
-    buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
-}
-
-
-export type DialogButtonsProps = { buttons: DialogButton[] };
-
-/**
- * The standard dialog sub component which contains buttons
- */
-export class DialogButtons extends React.Component<DialogButtonsProps> {
-    render(): React.ReactNode {
-        return <div className="dialogButtons">{this.props.buttons.map((button, index) =>
-            <button key={index} {...button.buttonProps}>{button.name}</button>
-        )}</div>;
-    }
 }
 
 export default App;
