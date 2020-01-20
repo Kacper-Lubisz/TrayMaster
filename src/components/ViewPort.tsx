@@ -12,6 +12,7 @@ import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseM
 import classNames from "classnames/bind";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {getExpiryColor} from "../utils/getExpiryColor";
+import {trayComparisonFunction} from "../utils/sortCells";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;
@@ -100,53 +101,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         const from = this.state.longPress?.dragFrom;
 
-        const boundIndices = {
-            from: {
-                column: -1,
-                tray: -1
-            },
-            to: {
-                column: -1,
-                tray: -1
-            }
-        };
-
         // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
         // After they have been sorted into any order, anything between the from and to trays is then marked as selected
-        const trayOrdered = shelf.columns.flatMap((column, columnIndex) =>
-            column.getPaddedTrays().map((tray: TrayCell, trayIndex) => {
-                if (tray === from) {
-                    boundIndices.from.column = columnIndex;
-                    boundIndices.from.tray = trayIndex;
-                }
-                if (tray === to) {
-                    boundIndices.to.column = columnIndex;
-                    boundIndices.to.tray = trayIndex;
-                }
-
-                return { // this maps all trays to an object which contains the tray and relevant indices
-                    columnIndex: columnIndex,
-                    trayIndex: trayIndex,
-                    tray: tray
-                };
-            })
-        ).sort(((a, b) => {
-
-            // this is a multi level sort
-
-            if (a.columnIndex < b.columnIndex) {
-                return -1;
-            } else if (a.columnIndex > b.columnIndex) {
-                return 1;
-            } else if (a.trayIndex < b.trayIndex) {
-                return 1;
-            } else if (a.trayIndex > b.trayIndex) {
-                return -1;
-            } else {
-                return 0;
-            }
-
-        })).map(it => it.tray);
+        const trayOrdered = shelf.columns
+                                 .flatMap(column => column.getPaddedTrays())
+                                 .sort(trayComparisonFunction);
 
         // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
         // the from and to trays

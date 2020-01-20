@@ -51,9 +51,7 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
                     <button className="key-btn"
                             onClick={() => this.props.history.push("/settings")}><p>Settings</p>
                     </button>
-
                 </div>
-
             </div>
         );
     }

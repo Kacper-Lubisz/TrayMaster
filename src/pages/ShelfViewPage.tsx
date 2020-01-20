@@ -39,6 +39,8 @@ import {properMod} from "../utils/properMod";
 import App, {Dialog, DialogButtons, DialogTitle} from "../core/App";
 import {ToolBar} from "../components/ToolBar";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import _ from "lodash";
+import {trayComparisonFunction} from "../utils/sortCells";
 
 
 /**
@@ -337,10 +339,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * repaint to follow after the triggering handler is finished.
      * @param fillSpaces If spaces are to be filled
      * @param ignoreAirSpaces If air trays are to be ignored
+     * @param advanceSelection If the selection should be advanced after this call
      */
     private getSelectedTrays(
         fillSpaces: boolean,
-        ignoreAirSpaces: boolean
+        ignoreAirSpaces: boolean,
+        advanceSelection: "cell" | "tray" | null = null
     ): Tray[] {
 
         const selectedCells = this.state.currentView.columns
@@ -370,7 +374,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
             }).filter(tray => tray) as Tray[];
 
-            this.setSelected(newSelection);
+            if (advanceSelection === null) {
+                this.setSelected(newSelection);
+            } else {
+                this.setSelected(this.advanceSelection(advanceSelection === "cell", newSelection));
+            }
             return trays.concat(newTrays);
         } else {
             return trays;
@@ -393,12 +401,77 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
+     * This method selects the next cell or tray after the current selection
+     * @param canGoToCell If tray cells will be considered or skipped
+     * @param selection The selection to be mutated
+     * @return The mutated selection
+     */
+    private advanceSelection(canGoToCell: boolean, selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
+        //todo add a setting for this
+
+        const maxSelected = Array.from(selection.entries())
+                                 .filter(([_, selected]) => selected)
+                                 .map(([cell, _]) => cell)
+                                 .reduce((max, cur) => {
+                                     if (max && trayComparisonFunction(max, cur) !== 1) {
+                                         return max;
+                                     } else {
+                                         return cur;
+                                     }
+                                 }, undefined as (TrayCell | undefined));
+
+
+        if (maxSelected) {
+
+            const columnIndex = (maxSelected instanceof Tray ? maxSelected.parentColumn
+                                                             : maxSelected.column).index;
+
+            const trayIndex = maxSelected.index;
+
+            const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
+                                                      : maxSelected.column.parentShelf;
+
+            const currentCells = canGoToCell ? shelf.columns[columnIndex].getPaddedTrays().length
+                                             : shelf.columns[columnIndex].trays.length;
+            if (currentCells !== trayIndex + 1) {
+
+                return new Map<TrayCell, boolean>([
+                    [shelf.columns[columnIndex].getPaddedTrays()[trayIndex + 1], true]
+                ]);
+
+            } else if (shelf.columns.length !== columnIndex + 1) {
+
+                const nextColumn = _.reduce(shelf.columns, (acc, cur) => {
+                    if (!acc && cur.getPaddedTrays().length !== 0 && cur.index > columnIndex) {
+                        return cur;
+                    } else {
+                        return acc;
+                    }
+                }, null as (null | Column));
+
+                if (nextColumn) {
+                    return new Map<TrayCell, boolean>([
+                        [nextColumn.getPaddedTrays()[0], true]
+                    ]);
+                } else {
+                    return selection;
+                }
+            } else {
+                return selection;
+            }
+        } else {
+            return selection;
+        }
+
+    }
+
+    /**
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
     private onCategorySelected(category: Category): void {
 
-        this.getSelectedTrays(true, true).forEach((tray) => {
+        this.getSelectedTrays(true, true, "cell").forEach((tray) => {
             tray.category = category;
         });
         this.forceUpdate();
@@ -411,7 +484,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private onExpirySelected(expiry: ExpiryRange): void {
 
-        this.getSelectedTrays(true, true).forEach((tray) => {
+        this.getSelectedTrays(true, true, "tray").forEach((tray) => {
             tray.expiry = expiry;
         });
         this.forceUpdate();
@@ -434,7 +507,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private applyDraftWeight(): void {
 
-        this.getSelectedTrays(true, true).forEach((tray) => {
+        this.getSelectedTrays(true, true, "tray").forEach((tray) => {
             tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
         });
         this.forceUpdate();
