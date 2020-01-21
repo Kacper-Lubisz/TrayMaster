@@ -56,7 +56,7 @@ class SpinnerTray extends React.Component<SpinnerTrayProps> {
 /**
  * Loading page component
  * Contents:
- * - 'Shelfmaster' heading
+ * - 'TrayMaster' heading
  * - Loading spinner & 'Loading...' text
  * No props
  */
