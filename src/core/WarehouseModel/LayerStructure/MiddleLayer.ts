@@ -191,7 +191,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
 
         this.parent.children.splice(this.indexInParent, 1);
 
-        firebase.database.delete(this.path);
+        firebase.database.delete(this.topLevelPath);
 
         if (commit) {
             await firebase.database.commit();
@@ -210,7 +210,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         commit = false,
         minLayer: WarehouseModel = this.layerID
     ): Promise<void> {
-        await this.stageLayer(forceStage);
+        this.stageLayer(forceStage);
 
         if (this.layerID >= minLayer) {
             for (const child of this.children) {

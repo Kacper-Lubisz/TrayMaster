@@ -7,11 +7,10 @@ export abstract class DatabaseObject<TFields> {
     public loaded: boolean;
 
     protected fields: TFields;
-    protected originalFields: TFields;
+    protected originalFields?: TFields;
 
     protected constructor(id: string, fields: TFields) {
         this.fields = fields;
-        this.originalFields = Object.assign({}, fields);
         this.loaded = false;
         this.id = id;
     }
@@ -56,7 +55,7 @@ export abstract class DatabaseObject<TFields> {
     }
 
     protected get changed(): boolean {
-        return !deepEqual(this.fields, this.originalFields);
+        return typeof this.originalFields !== "undefined" && !deepEqual(this.fields, this.originalFields);
     }
 
     protected fieldsSaved(): void {

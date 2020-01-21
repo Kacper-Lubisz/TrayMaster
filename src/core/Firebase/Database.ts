@@ -52,24 +52,15 @@ export class Database {
 
     //#region Writing
     public update<T>(path: string, obj: T): void {
-        // if (!Utils.isWhiteSpace(path)) { // todo fixme resolve this issue and uncomment this
-        //     throw new DatabaseError("Invalid path");
-        // }
         this.dbChangeQueue.enqueue({type: WriteOperation.update, path: path, obj: obj});
     }
 
     public set<T>(path: string, obj: T): void {
-        // if (!Utils.isWhiteSpace(path)) {
-        //     throw new DatabaseError("Invalid path");
-        // }
         this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path, obj: obj});
     }
 
     public delete(path: string): void {
-        // if (!Utils.isWhiteSpace(path)) {
-        //     throw new DatabaseError("Invalid path");
-        // }
-        this.dbChangeQueue.enqueue({type: WriteOperation.set, path: path});
+        this.dbChangeQueue.enqueue({type: WriteOperation.delete, path: path});
     }
 
     public async commit(): Promise<void> {
@@ -93,6 +84,7 @@ export class Database {
                             }
                             break;
                         case WriteOperation.delete:
+                            console.log(`DELETE: ${change.path}`);
                             batches[batches.length - 1].delete(this.db.doc(change.path));
                             changeCount += 1;
                             break;
@@ -104,6 +96,7 @@ export class Database {
             }
 
             await Promise.all(batches.map(async batch => batch.commit()));
+            console.log("Committed...");
         } else {
             this.dbChangeQueue.clear();
         }

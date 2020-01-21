@@ -400,7 +400,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         undefined,
                         undefined,
                         undefined);
-                    space.column.trays.push(newTray);
                     newSelection.set(newTray, true);
                     newSelection.delete(space);
                     return newTray;
@@ -524,7 +523,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     addColumn(shelf: Shelf): void {
         shelf.columns.push(Column.create(
             shelf.columns.length,
-            this.props.warehouse.traySizes[1], //fixme set a default
+            this.props.warehouse.defaultTraySize,
             3,
             shelf
         ));
@@ -553,7 +552,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     this.state.selected.delete(removed);
                     removed.delete(true);
                 });
-
             }
         });
 
@@ -564,8 +562,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             };
         });
 
-        await this.state.currentView.stage(true, true, WarehouseModel.column);
-
+        await shelf.stage(false, true, WarehouseModel.column);
     }
 
     /**
@@ -575,7 +572,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     async discardEditShelf(shelf: Shelf): Promise<void> {
 
         //todo unimplemented
-        await this.finaliseEditShelf(shelf);
+        //await this.finaliseEditShelf(shelf);
     }
 
 

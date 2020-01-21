@@ -56,9 +56,9 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     }
 
     public async delete(commit = false): Promise<void> {
-        firebase.database.delete(this.path);
-
         this.parent.children.splice(this.indexInParent, 1);
+
+        firebase.database.delete(this.topLevelPath);
 
         if (commit) {
             await firebase.database.commit();
@@ -73,7 +73,7 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
      */
     public async stage(
         forceStage = false, commit = false): Promise<void> {
-        await this.stageLayer(forceStage);
+        this.stageLayer(forceStage);
 
         if (commit) {
             await firebase.database.commit();

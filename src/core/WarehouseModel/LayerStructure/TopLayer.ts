@@ -172,12 +172,11 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
 
     // noinspection DuplicatedCode
     public async delete(commit = false): Promise<void> {
-
         for (const child of this.children) {
             await child.delete();
         }
 
-        firebase.database.delete(this.path);
+        firebase.database.delete(this.topLevelPath);
 
         if (commit) {
             await firebase.database.commit();
@@ -193,7 +192,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
      */
     public async stage(
         forceStage = false, commit = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
-        await this.stageLayer(forceStage);
+        this.stageLayer(forceStage);
 
         if (this.layerID >= minLayer) {
             for (const child of this.children) {

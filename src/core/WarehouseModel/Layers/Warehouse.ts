@@ -20,6 +20,7 @@ const defaultTraySizes: TraySize[] = [
 
 interface WarehouseFields {
     name: string;
+    defaultTraySizeID: string;
 }
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
@@ -43,7 +44,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      * @returns The newly created warehouse
      */
     public static create(id?: string, name?: string): Warehouse {
-        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? ""});
+        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: ""});
     }
 
     /**
@@ -149,7 +150,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         await this.traySizeCollection.stage(forceStage);
 
         if (this.changed || forceStage) {
-            firebase.database.set(this.path, this.fields);
+            firebase.database.set(this.topLevelPath, this.fields);
             this.fieldsSaved();
         }
     }
@@ -161,6 +162,14 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public set name(name: string) {
         this.fields.name = name;
+    }
+
+    public get defaultTraySize(): TraySize {
+        return this.traySizeCollection.get(this.fields.defaultTraySizeID) ?? this.traySizes[0];
+    }
+
+    public set defaultTraySize(traySize: TraySize) {
+        this.fields.defaultTraySizeID = this.traySizeCollection.getItemId(traySize);
     }
 
     //#endregion

@@ -49,7 +49,6 @@ export class User extends DatabaseObject<UserFields> {
 
     public get accessibleWarehouses(): Warehouse[] {
         const accessibleWarehouses: Warehouse[] = [];
-        console.log(WarehouseManager.warehouseList);
         for (const warehouse of WarehouseManager.warehouseList) {
             if (this.warehouseSettings.idList.includes(warehouse.id)) {
                 accessibleWarehouses.push(warehouse);
@@ -114,7 +113,7 @@ export class Authentication {
             this.currentUser = await new User("MOCK_USER",
                 {
                     name: "Mock User",
-                    lastWarehouseID: "",
+                    lastWarehouseID: "MOCK_WAREHOUSE_0",
                     isAdmin: true
                 }).load();
             onSignIn?.call(this, this.currentUser);
