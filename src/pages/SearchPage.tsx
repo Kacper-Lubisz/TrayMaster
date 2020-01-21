@@ -57,16 +57,16 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
 
     render(): React.ReactNode {
         return <div id="searchPage">
-            <div id="leftPanel">
-                <div id="topPanel">
+            <div id="topPanel">
                     <span id="searchSentence">
                         {this.renderSearchSentence()}
                     </span>
-                    <div id="sentenceR">
-                        <FontAwesomeIcon icon={trash} onClick={this.clearQuery.bind(this)}/>
-                        <button onClick={() => this.props.history.goBack()}>Go back</button>
-                    </div>
+                <div id="sentenceR">
+                    <FontAwesomeIcon icon={trash} onClick={this.clearQuery.bind(this)}/>
+                    <button onClick={() => this.props.history.goBack()}>Go back</button>
                 </div>
+            </div>
+            <div id="leftPanel">
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
             <SearchPanel keyboardState="yeet" setQuery={this.props.setQuery}/>
