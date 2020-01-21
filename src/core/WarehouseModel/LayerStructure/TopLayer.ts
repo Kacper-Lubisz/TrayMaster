@@ -176,7 +176,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
 
         for (let i = this.children.length - 1; i > -1; i--) {
             await this.children[i].delete();
-            delete this.children[i];
         }
 
         if (commit) {
