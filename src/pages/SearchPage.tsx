@@ -147,7 +147,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     {weightString}
                 </span>
             </span>, <span id="searchSort" className="searchField">
-                {sortBy ? `sorted by ${sortBy}` : "unsorted"}
+                {sortBy ? `sorted by ${sortBy.type} (${sortBy.orderAscending ? "asc" : "desc"})` : "unsorted"}
             </span>.
         </span>;
 
