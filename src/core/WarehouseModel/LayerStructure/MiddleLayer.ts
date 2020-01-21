@@ -2,7 +2,7 @@ import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer}
 import Utils, {Queue} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {BottomLayer} from "./BottomLayer";
-import Firebase from "../../Firebase";
+import firebase from "../../Firebase";
 
 /**
  * Represents a middle layer in the object model (that has children and a parent)
@@ -22,6 +22,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         this.parent = parent;
         this.children = children ?? [];
         this.childrenLoaded = typeof children !== "undefined";
+        this.parent.children.push(this);
     }
 
     public get collectionPath(): string {
@@ -91,9 +92,9 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
      */
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = Firebase.database.db.collection(this.topLevelChildCollectionPath)
+            const query = firebase.database.db.collection(this.topLevelChildCollectionPath)
                                   .where(`layerIdentifiers.${this.collectionName}`, "==", this.id);
-            this.children = (await Firebase.database.loadQuery<unknown>(query))
+            this.children = (await firebase.database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
@@ -131,7 +132,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await Firebase.database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            for (const document of (await firebase.database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
@@ -183,6 +184,20 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         return this;
     }
 
+    // noinspection DuplicatedCode
+    public async delete(commit = false): Promise<void> {
+        firebase.database.delete(this.path);
+
+        for (let i = this.children.length - 1; i > -1; i--) {
+            await this.children[i].delete();
+            delete this.children[i];
+        }
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
     /**
      * Stage changes to the object to the database
      * @async
@@ -201,7 +216,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         }
 
         if (commit) {
-            await Firebase.database.commit();
+            await firebase.database.commit();
         }
     }
 

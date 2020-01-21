@@ -3,7 +3,7 @@ import Utils, {Collection, Queue, Stack} from "../Utils";
 import {WarehouseModel} from "../../WarehouseModel";
 import {MiddleLayer} from "./MiddleLayer";
 import {BottomLayer} from "./BottomLayer";
-import Firebase from "../../Firebase";
+import firebase from "../../Firebase";
 
 /**
  * Represents the top layer in the object model (that has children)
@@ -119,7 +119,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await Firebase.database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            for (const document of (await firebase.database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
@@ -171,6 +171,20 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         return this;
     }
 
+    // noinspection DuplicatedCode
+    public async delete(commit = false): Promise<void> {
+        firebase.database.delete(this.path);
+
+        for (let i = this.children.length - 1; i > -1; i--) {
+            await this.children[i].delete();
+            delete this.children[i];
+        }
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
     /**
      * Stage changes to the object to the database
      * @async
@@ -189,7 +203,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         }
 
         if (commit) {
-            await Firebase.database.commit();
+            await firebase.database.commit();
         }
     }
 

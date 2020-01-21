@@ -1,6 +1,6 @@
 import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
 import Utils from "../Utils";
-import Firebase from "../../Firebase";
+import firebase from "../../Firebase";
 
 /**
  * Represents the bottom layer in the object model (that has a parent)
@@ -13,6 +13,7 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     protected constructor(id: string, fields: TFields, parent: TParent) {
         super(id, fields);
         this.parent = parent;
+        this.parent.children.push(this);
     }
 
     public get collectionPath(): string {
@@ -54,6 +55,14 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
         return this;
     }
 
+    public async delete(commit = false): Promise<void> {
+        firebase.database.delete(this.path);
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
     /**
      * Stage changes to the object to the database
      * @async
@@ -65,7 +74,7 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
         await this.stageLayer(forceStage);
 
         if (commit) {
-            await Firebase.database.commit();
+            await firebase.database.commit();
         }
     }
 }

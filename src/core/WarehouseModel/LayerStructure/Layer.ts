@@ -98,6 +98,8 @@ export abstract class Layer<TFields> extends DatabaseObject<TFields> {
         return this;
     }
 
+    public abstract async delete(commit: boolean): Promise<void>;
+
     /**
      * Load the object (breadth first)
      * @async
