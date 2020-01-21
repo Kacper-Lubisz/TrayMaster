@@ -40,6 +40,7 @@ export abstract class DatabaseObject<TFields> {
     public async stage(forceStage = false, commit = false): Promise<void> {
         if (this.changed || forceStage) {
             firebase.database.set(this.path, this.fields);
+            this.originalFields = Object.assign({}, this.fields);
         }
         if (commit) {
             await firebase.database.commit();

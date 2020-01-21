@@ -34,7 +34,8 @@ class App extends React.Component<unknown, AppState> {
             throw Error("This browser isn't supported"); // supported in IE 11, should be fine
         }
 
-        firebase.auth.onSignIn = (user: User) => {
+        firebase.auth.onSignIn = async (user: User) => {
+            await WarehouseManager.loadWarehouses();
             if (user.lastWarehouseID === null) {
                 this.setState(state => {
                     return {
@@ -44,7 +45,6 @@ class App extends React.Component<unknown, AppState> {
                     };
                 });
                 (async () => {
-                    await WarehouseManager.loadWarehouses();
                     const warehouse = await WarehouseManager.loadWarehouseByID("MOCK 0");
                     this.setState(state => {
                         return {
