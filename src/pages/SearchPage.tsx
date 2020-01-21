@@ -127,12 +127,27 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
             }
         })();
 
-        // todo this is horrific and could probably afford to be split out into if statements
-        const filterString = catList.length ? catList.map((c, i) => i === catList.length - 1
-                                                                    ? c
-                                                                    : c.concat(i === catList.length - 2 ? " and "
-                                                                                                        : ", "))
-                                            : "All categories";
+        const filterString = (() => {
+            const len = catList.length;
+            if (len > 1) {
+                return catList.map((c, i) => {
+                    const append = (() => {
+                        if (i === catList.length - 2) {
+                            return " and ";
+                        } else if (i !== catList.length - 1) {
+                            return ", ";
+                        }
+                        return "";
+                    })();
+                    return c.concat(append);
+                });
+            } else if (len === 1) {
+                return catList[0];
+            } else {
+                return "Any category";
+            }
+        })();
+
         const weightString = typeof weight === "object" && weight ? `between ${weight.from} and ${weight.to} kg`
                                                                   : typeof weight === "string" ? "with no given weight"
                                                                                                : "with any weight";
@@ -148,7 +163,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 {sortBy ? `sorted by ${sortBy}` : "unsorted"}
             </span>.
         </span>;
-
     }
 
     private renderSearchResults(): React.ReactNode {
