@@ -15,6 +15,21 @@ interface SearchPanelProps {
 
 export class SearchPanel extends React.Component<SearchPanelProps> {
 
+    private toggleCategory(cat: Category): void {
+        if (this.props.search?.query.categories instanceof Set) {
+            const newCategories = this.props.search.query.categories;
+            if (newCategories.has(cat)) {
+                newCategories.delete(cat);
+            } else {
+                newCategories.add(cat);
+            }
+            this.props.setQuery({
+                ...this.props.search.query,
+                categories: newCategories
+            });
+        }
+    }
+
     private renderCategoryOptions(): React.ReactNode {
 
         const allCategories = this.props.warehouse?.categories?.sort((a, b) =>
@@ -30,7 +45,8 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                     style={{backgroundColor: searchCategories.has(cat) ? "red" : "transparent"}}
                     className={classNames("searchPanelButton", {
                         "selected": searchCategories.has(cat)
-                    })}>{cat.name}</button>;
+                    })}
+                    onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>;
             });
         }
     }

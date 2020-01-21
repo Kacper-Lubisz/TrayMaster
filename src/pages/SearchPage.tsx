@@ -11,11 +11,11 @@ import {PanelState, SearchPanel} from "../components/SearchPanel";
 
 
 export enum SortBy {
-    expiry,
-    category,
-    weight,
-    location,
-    none
+    expiry = "expiry",
+    category = "category",
+    weight = "weight",
+    location = "location",
+    none = "none"
 }
 
 export interface SortQueryOptions {
@@ -131,10 +131,10 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         const filterString = (() => {
             const len = catList.length;
             if (len > 1) {
-                return catList.map((c, i) => {
+                return catList.sort().map((c, i) => {
                     const append = (() => {
                         if (i === catList.length - 2) {
-                            return " and ";
+                            return ", and ";
                         } else if (i !== catList.length - 1) {
                             return ", ";
                         }
@@ -157,10 +157,10 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
             <span id="searchFilters"> {/* todo evaluate the usefulness of this span */}
                 <span className="searchField" onClick={() => this.updatePanel("category")}>
                     {filterString}
-                </span>, <span className="searchField" onClick={() => this.updatePanel("weight")}>
+                </span>; <span className="searchField" onClick={() => this.updatePanel("weight")}>
                     {weightString}
                 </span>
-            </span>, <span id="searchSort" className="searchField">
+            </span>; <span id="searchSort" className="searchField">
                 {sortBy ? `sorted by ${sortBy.type} (${sortBy.orderAscending ? "asc" : "desc"})` : "unsorted"}
             </span>.
         </span>;
