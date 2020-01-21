@@ -86,9 +86,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     render(): React.ReactNode {
         return <div id="searchPage">
             <div id="topPanel">
-                    <span id="searchSentence">
-                        {this.renderSearchSentence()}
-                    </span>
+                    {this.renderSearchSentence()}
                 <div id="sentenceR">
                     <FontAwesomeIcon icon={trash} onClick={this.clearQuery.bind(this)}/>
                     <button onClick={() => this.props.history.goBack()}>Go back</button>
@@ -170,12 +168,10 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         })();
 
         return <span id="searchSentence">
-            <span id="searchFilters"> {/* todo evaluate the usefulness of this span */}
-                <span className="searchField" onClick={() => this.updatePanel("category")}>
-                    {filterString}
-                </span>; <span className="searchField" onClick={() => this.updatePanel("weight")}>
-                    {weightString}
-                </span>
+            <span className="searchField" onClick={() => this.updatePanel("category")}>
+                {filterString}
+            </span>, <span className="searchField" onClick={() => this.updatePanel("weight")}>
+                {weightString}
             </span>, <span id="searchSort" className="searchField">
                 {expiryString}
             </span>.
@@ -227,12 +223,11 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                             <td>{tray.category?.name ?? "?"}</td>
                             <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
                             <td className="weightCell">{tray.weight
-                                                        ? `${tray.weight.toLocaleString(undefined, {minimumFractionDigits: 2})}kg`
+                                                        ? `${tray.weight.toLocaleString(undefined, {minimumFractionDigits: 2})} kg`
                                                         : "?"}</td>
                             <td style={zoneStyle}>{tray.parentZone.name} {tray.parentBay.name}{tray.parentShelf.name}</td>
                             <td className="commentCell" style={{
                                 backgroundColor: tray.comment ? "#ffffff" : ""
-                                // todo make this a text field that can be edited
                             }}>{tray.comment}</td>
                             <td>
                                 <button>Go To</button>
@@ -245,7 +240,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         } else if (!this.props.search?.results) {
             return <div>
                 Loading
-            </div>; //todo fixme make this reuse the loading anumation inside the search area
+            </div>; //todo fixme make this reuse the loading animation inside the search area
         } else if (this.props.search.results.length === 0) {
             return <div>
                 Couldn't find any trays which match this search
