@@ -148,9 +148,25 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
             }
         })();
 
-        const weightString = typeof weight === "object" && weight ? `between ${weight.from} and ${weight.to} kg`
-                                                                  : typeof weight === "string" ? "with no given weight"
-                                                                                               : "with any weight";
+        const weightString = (() => {
+            if (typeof weight === "object" && weight) {
+                return `between ${weight.from} and ${weight.to} kg`;
+            } else if (weight === "set") {
+                return "without a set weight value";
+            } else if (weight === "unset") {
+                return "with any set weight value";
+            } else { // null
+                return "with any weight value";
+            }
+        })();
+
+        const expiryString = (() => {
+            if (sortBy) {
+                return `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" : "descending"}`;
+            } else {
+                return "unsorted";
+            }
+        })();
 
         return <span id="searchSentence">
             <span id="searchFilters"> {/* todo evaluate the usefulness of this span */}
@@ -160,7 +176,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     {weightString}
                 </span>
             </span>, <span id="searchSort" className="searchField">
-                {sortBy ? `sorted by ${sortBy}` : "unsorted"}
+                {expiryString}
             </span>.
         </span>;
     }
