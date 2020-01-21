@@ -2,10 +2,6 @@
 
 @import "./keyboard";
 
-.main-menu {
-
-}
-
 .menu-header {
   //shelfmaster text
   position: fixed;
@@ -28,7 +24,7 @@
 .alert {
   //container for the alert
   position: fixed;
-  width: 500px;
+  width: 400px;
   right: 30px;
   top: 30px;
   box-shadow: 0 0 30px -15px #000000;
