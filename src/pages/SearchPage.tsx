@@ -7,7 +7,7 @@ import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {faTrashAlt as trash} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RouteComponentProps, withRouter} from "react-router-dom";
-import {SearchPanel} from "../components/SearchPanel";
+import {PanelState, SearchPanel} from "../components/SearchPanel";
 
 export interface SearchQuery {
     categories: (Category | null)[] | undefined;
@@ -32,15 +32,18 @@ interface SearchPageProps {
     setQuery: (query: SearchQuery) => void;
 }
 
-// interface SearchPageState {
-// }
+interface SearchPageState {
+    panelState: PanelState;
+}
 
-class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> {
+class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, SearchPageState> {
 
     constructor(props: SearchPageProps & RouteComponentProps) {
         super(props);
 
-        this.state = {};
+        this.state = {
+            panelState: "category"
+        };
 
     }
 
@@ -69,8 +72,16 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
             <div id="leftPanel">
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
-            <SearchPanel keyboardState="yeet" setQuery={this.props.setQuery}/>
+            <SearchPanel panelState={this.state.panelState} setPanelState={this.updatePanel.bind(this)}
+                         setQuery={this.props.setQuery}/>
         </div>;
+    }
+
+    private updatePanel(state: PanelState): void {
+        this.setState({
+            ...this.state,
+            panelState: state
+        });
     }
 
     private renderSearchSentence(): React.ReactNode {
@@ -93,9 +104,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
 
         return <span id="searchSentence">
             <span id="searchFilters"> {/* todo evaluate the usefulness of this span */}
-                <span className="searchField">
+                <span className="searchField" onClick={() => this.updatePanel("category")}>
                     {filterString}
-                </span>, <span className="searchField">
+                </span>, <span className="searchField" onClick={() => this.updatePanel("weight")}>
                     {weightString}
                 </span>
             </span>, <span id="searchSort" className="searchField">
@@ -178,7 +189,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
                 </tr>
                 </thead>
                 <tbody>
-                {this.props.search.results.map(tray => {
+                {this.props.search.results.map((tray, i) => {
 
                     const expiryStyle = (() => {
                         if (tray.expiry) {
@@ -204,7 +215,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
                     })();
 
                     return (
-                        <tr>
+                        <tr key={i}>
                             <td>{tray.category?.name ?? "?"}</td>
                             <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
                             <td>{tray.weight ?? "?"} kg</td>
