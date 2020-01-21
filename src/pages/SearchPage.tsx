@@ -9,15 +9,41 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
 
+
+enum SortBy {
+    expiry,
+    category,
+    weight,
+    location,
+    None
+}
+
+interface SortQueryOptions {
+    orderAscending: boolean;
+    type: SortBy;
+}
+
+interface CommentQueryOptions {
+    searchComment: boolean;
+    commentSubstring: string;
+}
+
+/**
+ * todo fixme document this properly
+ */
 export interface SearchQuery {
-    categories: (Category | null)[] | undefined;
+    categories: Set<Category> | "set" | "unset" | null;
     /**
      * The type corresponds to:
      *  within range, any weight, only undefined weight, no filter by weight
      */
-    weight: { from: number; to: number } | "defined" | "undefined" | undefined;
+    weight: ({ from: number; to: number } | "set" | "unset") | null;
 
-    sortBy: "expiry" | undefined;
+    commentContains: CommentQueryOptions;
+
+    excludePickingArea: boolean;
+
+    sort: SortQueryOptions;
 }
 
 export interface SearchResults {
@@ -54,7 +80,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         this.props.setQuery({
             categories: undefined,
             sortBy: undefined,
-            weight: undefined
+            weight: null
         });
     }
 
@@ -182,7 +208,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 <tr>
                     <th>Category</th>
                     <th>Expiry</th>
-                    <th>Weight</th>
+                    <th>Weight (kg)</th>
                     <th>Location</th>
                     <th>Custom</th>
                     <th/>
@@ -218,10 +244,10 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         <tr key={i}>
                             <td>{tray.category?.name ?? "?"}</td>
                             <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
-                            <td>{tray.weight ?? "?"} kg</td>
+                            <td>{tray.weight ?? "??.??"}</td>
                             <td style={zoneStyle}>{tray.parentZone.name} {tray.parentBay.name}{tray.parentShelf.name}</td>
-                            <td style={{
-                                backgroundColor: tray.comment ? "#ffffff" : "#eeeeee"
+                            <td className="commentCell" style={{
+                                backgroundColor: tray.comment ? "#ffffff" : ""
                                 // todo make this a text field that can be edited
                             }}>{tray.comment}</td>
                             <td>

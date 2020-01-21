@@ -65,11 +65,20 @@
 
       tr > * {
         padding: 5px;
+        text-align: center;
 
         &:not(:first-child):not(:last-child) {
           border-left: 1px solid #aaaaaa;
           border-right: 1px solid #aaaaaa;
         }
+      }
+
+      .commentCell {
+        background-color: #eeeeee;
+      }
+
+      tr:nth-child(2n) > .commentCell {
+        background-color: #e8e8e8;
       }
     }
   }
