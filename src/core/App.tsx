@@ -103,7 +103,7 @@ class App extends React.Component<any, AppState> {
      * will close the dialog.  Only one dialog can be open at a time.
      * @param dialog The dialog to be displayed
      */
-    public openDialog(dialog: Dialog): void {
+    private openDialog(dialog: Dialog): void {
         this.setState((state) => {
             return {...state, dialog: dialog};
         });
@@ -112,7 +112,7 @@ class App extends React.Component<any, AppState> {
     /**
      * This method closes the currently open dialog, if none is open then it does nothing.
      */
-    public closeDialog(): void {
+    private closeDialog(): void {
         this.setState((state) => {
             return {...state, dialog: null};
         });
