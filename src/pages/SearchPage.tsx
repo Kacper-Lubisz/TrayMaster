@@ -116,7 +116,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         const weight = this.props.search?.query?.weight;
         const sortBy = this.props.search?.query?.sort;
 
-        //todo  change mixed to ?
         const catList = (() => {
             if (categories === null) {
                 return [];
@@ -129,12 +128,27 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
             }
         })();
 
-        // todo this is horrific and could probably afford to be split out into if statements
-        const filterString = catList.length ? catList.map((c, i) => i === catList.length - 1
-                                                                    ? c
-                                                                    : c.concat(i === catList.length - 2 ? " and "
-                                                                                                        : ", "))
-                                            : "All categories";
+        const filterString = (() => {
+            const len = catList.length;
+            if (len > 1) {
+                return catList.map((c, i) => {
+                    const append = (() => {
+                        if (i === catList.length - 2) {
+                            return " and ";
+                        } else if (i !== catList.length - 1) {
+                            return ", ";
+                        }
+                        return "";
+                    })();
+                    return c.concat(append);
+                });
+            } else if (len === 1) {
+                return catList[0];
+            } else {
+                return "Any category";
+            }
+        })();
+
         const weightString = typeof weight === "object" && weight ? `between ${weight.from} and ${weight.to} kg`
                                                                   : typeof weight === "string" ? "with no given weight"
                                                                                                : "with any weight";
@@ -150,65 +164,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 {sortBy ? `sorted by ${sortBy.type} (${sortBy.orderAscending ? "asc" : "desc"})` : "unsorted"}
             </span>.
         </span>;
-
-        /*return <>
-
-            {
-                categories === undefined || categories.length === 0 ?
-                <span
-                    className="searchField"
-                    onClick={() => {
-                        alert("todo");
-                    }}
-                >Any</span> :
-                categories.map((category, index) =>
-                    <span
-                        key={index}
-                        className="searchField"
-                    >{ //todo fixme on click remove from query
-                        category?.name ?? "Mixed" //todo add comma
-                    }</span>
-                )
-            }
-
-            <span
-                className="searchEdit"
-            ><FontAwesomeIcon
-                icon={plus}/> Cat.</span> {/*todo fixme move to category keyboard, highlight this button*//*}
-
-            {(() => {
-                if (weight === undefined) {
-                    return <span className="searchEdit"><FontAwesomeIcon icon={plus}/> Weight</span>;
-                } else if (weight === "defined") {
-                    return <span className="searchField">Defined Weight</span>;
-                } else if (weight === "undefined") {
-                    return <span className="searchField">Undefined Weight</span>;
-                } else { //range
-                    return <span className="searchField">{`${weight.from}-${weight.to}kg`}</span>;
-                }
-            })()}
-
-            {(() => {
-                if (sortBy === undefined) {
-                    return <span className="searchEdit"><FontAwesomeIcon icon={plus}/> Sort</span>;
-                } else { // if (sortBy === "expiry") {
-                    return <>
-                        <span className="searchMessage">Sorted By</span>
-                        <span className="searchField">Expiry</span>
-                    </>;
-                }
-                // else {
-                //     // todo finalise this when sort and search query are better defined
-                //     return <>
-                //         <span className="search">Sorted By</span>
-                //         <span className="searchField">SOMETHING UNKNOWN</span>
-                //     </>;
-                // }
-            })()}
-
-            {/*todo fixme add custom fields and other search criteria here*//*}
-
-        </>;*/
     }
 
     private renderSearchResults(): React.ReactNode {

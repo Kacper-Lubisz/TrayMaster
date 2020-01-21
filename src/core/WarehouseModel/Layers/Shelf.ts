@@ -59,7 +59,15 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
         this.fields.name = name;
     }
 
-    //#endregion
+    public get isPickingArea(): boolean {
+        return this.fields.isPickingArea;
+    }
+
+    public set isPickingArea(isPickingArea: boolean) {
+        this.fields.isPickingArea = isPickingArea;
+    }
+
+//#endregion
 
     //#region Parent Getters
     public get parentBay(): Bay {

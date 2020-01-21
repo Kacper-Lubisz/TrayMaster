@@ -8,7 +8,7 @@ const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
     "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
     "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
-    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
+    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
 ];
 
 const defaultTraySizes: TraySize[] = [
@@ -188,18 +188,10 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //#endregion
 
-    private composeSortsBy<T>(
-        keys: ((a: T) => any)[],
-    ): (a: T, b: T) => number {
-        return keys.map(keyFunction =>
-            (a: T, b: T): number => keyFunction(a) < keyFunction(b) ? -1 : 1
-        ).reduceRight(this.composeSort.bind(this), () => 0);
-    }
-
     private composeSorts<T>(
         comparators: ((a: T, b: T) => number)[],
     ): (a: T, b: T) => number {
-        return comparators.reduceRight(this.composeSort.bind(this), () => 0);
+        return comparators.reduce(this.composeSort.bind(this), () => 0);
     }
 
     // todo add tests to these
@@ -217,6 +209,22 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         };
     }
 
+    byNullSafe<T>(key: (a: T) => any | null | undefined, before = true): (a: T, b: T) => number {
+        return (a: T, b: T): number => {
+            const keyA = key(a);
+            const keyB = key(b);
+            if (keyA && keyB) {
+                return keyA < keyB ? -1 : 1;
+            } else if (keyA) {
+                return before ? -1 : 1;
+            } else if (keyB) {
+                return before ? 1 : -1;
+            } else {
+                return 0;
+            }
+        };
+    }
+
     //region search
     public traySearch(query: SearchQuery): Tray[] {
 
@@ -229,10 +237,11 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
         );
 
-        const defaultSort = this.composeSortsBy<Tray>([
-            tray => tray.expiry?.from,
-            tray => tray.expiry?.to,
-            tray => tray.category?.name,
+        const defaultSort = this.composeSorts<Tray>([
+            this.byNullSafe<Tray>((a) => a.expiry?.from, true),
+            // this.byNullSafe<Tray>((a) => a.expiry?.to, false),
+            // tray => tray.expiry?.to,
+            // tray => tray.category?.name,
         ]);
 
         // const sort = (() => {

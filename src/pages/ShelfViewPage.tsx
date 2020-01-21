@@ -418,26 +418,28 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * This method is called when a category is selected on the category keyboard
-     * @param category The category that is selected
+     * This method is called when a category is selected on the category keyboard, null category signifies that the
+     * category ought to be cleared
+     * @param category The category that is selected or null to clear
      */
-    onCategorySelected(category: Category): void {
+    onCategorySelected(category: Category | null): void {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
-            tray.category = category;
+            tray.category = category ?? undefined;
         });
         this.forceUpdate();
 
     }
 
     /**
-     * This method is called when an expiry is selected on the expiry keyboard
-     * @param expiry The expiry that is selected
+     * This method is called when an expiry is selected on the expiry keyboard, null expiry signifies that the expiry
+     * ought to be cleared
+     * @param expiry The expiry that is selected or null to clear
      */
-    onExpirySelected(expiry: ExpiryRange): void {
+    onExpirySelected(expiry: ExpiryRange | null): void {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
-            tray.expiry = expiry;
+            tray.expiry = expiry ?? undefined;
         });
         this.forceUpdate();
 
@@ -607,22 +609,24 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     editTrayComment(): void {
 
-        if (this.getSelectedTrayCells().length === 1) {
+        this.props.openDialog({
+            closeOnDocumentClick: true,
+            dialog: (close: () => void) => {
 
-            this.props.openDialog({
-                closeOnDocumentClick: true,
-                dialog: (close: () => void) => <EditCommentContent
+
+                const trays = this.getSelectedTrayCells();
+                return <EditCommentContent
                     onDiscard={close}
-                    draft={this.getSelectedTrays(false, false)[0].comment ?? null}
+                    draft={trays.length === 1 && trays[0] instanceof Tray ? trays[0].comment ?? null : null}
                     onSubmit={(comment) => {
-                        this.getSelectedTrays(false, false)[0].comment = comment ?? undefined;
+                        this.getSelectedTrays(true, false).forEach(tray =>
+                            tray.comment = comment ?? undefined
+                        );
                         close();
                     }}
-                />
-            });
-        } else {
-            throw Error("Multiple comments can't be set at the same time, maybe they should be");
-        }
+                />;
+            }
+        });
 
     }
 
@@ -700,7 +704,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                                 name: "Edit Custom",
                                 icon: faCommentAlt,
                                 onClick: this.editTrayComment.bind(this),
-                                disabled: this.getSelectedTrays(false, false).length !== 1
+                                disabled: this.getSelectedTrays(false, false).length === 0
                             },
                             {
                                 name: "Clear Trays",

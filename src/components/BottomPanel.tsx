@@ -7,8 +7,8 @@ import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 
 export interface BottomPanelProps {
     keyboardState: KeyboardName;
-    categorySelected: (category: Category) => void;
-    expirySelected: (expiry: ExpiryRange) => void;
+    categorySelected: (category: Category | null) => void;
+    expirySelected: (expiry: ExpiryRange | null) => void;
     categories: Category[];
     selectedTrayCells: TrayCell[];
     draftWeight?: string;
@@ -188,7 +188,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     onClick: () => this.props.categorySelected(cat),
                     selected: cat.name === commonCat
                 };
-            });
+            }).concat([
+                {
+                    name: "Clear",
+                    onClick: () => this.props.categorySelected(null),
+                    selected: false
+                }
+            ]);
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
@@ -208,7 +214,25 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 year.selected = year.name === commonYear?.toString();
             }
 
+            const specialButtons = [
+                {
+                    name: "Indefinite",
+                    onClick: () => this.props.expirySelected({
+                        from: null,
+                        to: null,
+                        label: "Indefinite"
+                    })
+
+                }, {
+                    name: "Clear",
+                    onClick: () => this.props.expirySelected(null)
+
+                }
+            ];
+
             return <div className="keyboard-container">
+                <Keyboard id="exp-special" disabled={disabled} buttons={specialButtons} gridX={1}/>
+                <div className="vl"/>
                 <Keyboard id="exp-years" disabled={disabled} buttons={this.years} gridX={2}/>
                 <div className="vl"/>
                 <Keyboard id="exp-quarters" disabled={!commonYear} buttons={this.quarters} gridX={1}/>
@@ -220,9 +244,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             // Create numpad for the digits and decimal point buttons
             const numpad = (Array.from(Array(10).keys()) as WeightKeyboardButton[]).reverse().concat(["."]).map((a) => ({
                 name: a.toString(),
-                onClick: () => {
-                    this.weightKeyHandler(a);
-                }
+                onClick: () => this.weightKeyHandler(a)
             }));
 
             // Create numpadSide for the side buttons
@@ -237,9 +259,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
                     disabled: shouldDisable,
-                    onClick: () => {
-                        this.weightKeyHandler(a);
-                    }
+                    onClick: () => this.weightKeyHandler(a)
+
                 };
             });
 
