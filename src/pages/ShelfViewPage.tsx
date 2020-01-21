@@ -13,6 +13,7 @@ import {
     TrayCell,
     TraySpace,
     Warehouse,
+    WarehouseModel,
     Zone
 } from "../core/WarehouseModel";
 import {
@@ -442,6 +443,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             tray.category = category;
         });
         this.forceUpdate();
+
+
+        this.state.currentView.stage(false, true, WarehouseModel.tray);
 
     }
 
