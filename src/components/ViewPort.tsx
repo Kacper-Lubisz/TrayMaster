@@ -17,12 +17,16 @@ import {getExpiryColor} from "../utils/getExpiryColor";
 export type ViewPortLocation = Shelf | Zone | Warehouse;
 
 interface ViewPortProps {
-    isShelfEdit: boolean;
-    current: ViewPortLocation;
     selected: Map<TrayCell, boolean>;
     setSelected: (newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)) => void;
     isTraySelected: ((tray: TrayCell) => boolean | undefined);
     selectedTrayCells: TrayCell[];
+
+    removeColumn: (column: Column) => void;
+
+    current: ViewPortLocation;
+    isShelfEdit: boolean;
+
 }
 
 /**
@@ -380,16 +384,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     }
 
     /**
-     * The listener for removing a column
-     * @param column The column to remove
-     */
-    removeColumn(column: Column): void {
-        const index = column.parentShelf.columns.indexOf(column);
-        column.parentShelf.columns.splice(index, 1);
-        this.forceUpdate();
-    }
-
-    /**
      * This method renters a column.  It can either render it in or out of shelf edit mode depending on the props.
      * @param shelf The current shelf that is being displayed
      * @param column The column to draw
@@ -450,7 +444,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             })}
             {this.props.isShelfEdit ? <div className="edit-shelf-column">
                 <button className="colDeleteBtn"
-                        onClick={this.removeColumn.bind(this, column)}
+                        onClick={() => this.props.removeColumn(column)}
                 > {/*todo revise these icons*/}
                     <FontAwesomeIcon icon={trash}/>
                 </button>

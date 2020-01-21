@@ -40,8 +40,6 @@ import {properMod} from "../utils/properMod";
 import {ToolBar} from "../components/ToolBar";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {buildErrorDialog, Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
-// todo fixme decide if to replace this icon, if this icon is removed then remove this package too
-
 
 /**
  * Defines possible keyboard names
@@ -437,15 +435,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method is called when a category is selected on the category keyboard
      * @param category The category that is selected
      */
-    onCategorySelected(category: Category): void {
+    async onCategorySelected(category: Category): Promise<void> {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.category = category;
         });
         this.forceUpdate();
 
-
-        this.state.currentView.stage(false, true, WarehouseModel.tray);
+        await this.state.currentView.stage(false, true, WarehouseModel.tray);
 
     }
 
@@ -453,12 +450,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method is called when an expiry is selected on the expiry keyboard
      * @param expiry The expiry that is selected
      */
-    onExpirySelected(expiry: ExpiryRange): void {
+    async onExpirySelected(expiry: ExpiryRange): Promise<void> {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.expiry = expiry;
         });
         this.forceUpdate();
+
+        await this.state.currentView.stage(false, true, WarehouseModel.tray);
 
     }
 
@@ -478,12 +477,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     /**
      * Applies the draftWeight to the selected trays. Called when Enter is clicked on the weight keyboard
      */
-    applyDraftWeight(): void {
+    async applyDraftWeight(): Promise<void> {
 
         this.getSelectedTrays(true, true).forEach((tray) => {
             tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
         });
         this.forceUpdate();
+
+        await this.state.currentView.stage(false, true, WarehouseModel.tray);
 
     }
 
@@ -531,16 +532,31 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
+     * This method is called when a column is to be removed
+     * @param column The column to remove
+     */
+    async removeColumn(column: Column): Promise<void> {
+        const index = column.parentShelf.columns.indexOf(column);
+        column.parentShelf.columns.splice(index, 1);
+
+        await column.parentShelf.columns[index].delete(true);
+
+        this.forceUpdate();
+    }
+
+    /**
      * This method is called when edit shelf mode is exited and the changes are not rolled back
      * @param shelf The shelf in question
      */
-    finaliseEditShelf(shelf: Shelf): void {
+    async finaliseEditShelf(shelf: Shelf): Promise<void> {
         shelf.columns.forEach(column => { // remove trays over max height
             if (column.maxHeight) {
                 const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
-                column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed =>
-                    this.state.selected.delete(removed)
-                );
+                column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed => {
+
+                    this.state.selected.delete(removed);
+                    removed.delete(true);
+                });
 
             }
         });
@@ -551,16 +567,19 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 isEditShelf: !this.state.isEditShelf
             };
         });
+
+        await this.state.currentView.stage(true, true, WarehouseModel.column);
+
     }
 
     /**
      * This method is called when edit shelf mode is exited and the changes **are** rolled back
      * @param shelf The shelf in question
      */
-    discardEditShelf(shelf: Shelf): void {
+    async discardEditShelf(shelf: Shelf): Promise<void> {
 
         //todo unimplemented
-        this.finaliseEditShelf(shelf);
+        await this.finaliseEditShelf(shelf);
     }
 
 
@@ -591,7 +610,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     /**
      * This method removes all the trays that are currently selected
      */
-    clearTrays(): void {
+    async clearTrays(): Promise<void> {
         const newSelectedMap = new Map(this.state.selected);
 
         const reindexColumns = new Set<Column>();
@@ -602,14 +621,21 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     const trayIndex = tray.parentColumn.trays.indexOf(tray);
                     tray.parentColumn.trays.splice(trayIndex, 1);
                     reindexColumns.add(tray.parentColumn);
+
+                    tray.delete(true);
                 }
             }
         });
+
+
         reindexColumns.forEach((column) => {
             column.trays.forEach((tray, index) => tray.index = index);
         });
 
         this.setSelected(newSelectedMap);
+
+        await this.state.currentView.stage(false, true, WarehouseModel.tray);
+
     }
 
     /**
@@ -640,14 +666,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         if (this.getSelectedTrayCells().length === 1) {
 
+            const currentTray = this.getSelectedTrays(false, false)[0];
             this.props.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => <EditCommentContent
                     onDiscard={close}
-                    draft={this.getSelectedTrays(false, false)[0].comment ?? null}
-                    onSubmit={(comment) => {
-                        this.getSelectedTrays(false, false)[0].comment = comment ?? undefined;
+                    draft={currentTray.comment ?? null}
+                    onSubmit={async (comment) => {
+                        currentTray.comment = comment ?? undefined;
                         close();
+                        await currentTray.stage(false, true);
                     }}
                 />
             });
@@ -679,6 +707,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         setSelected={this.setSelected.bind(this)}
                         isTraySelected={this.isTrayCellSelected.bind(this)}
                         selectedTrayCells={this.getSelectedTrayCells()}
+
+                        removeColumn={this.removeColumn.bind(this)}
 
                         current={this.state.currentView}
                         isShelfEdit={this.state.isEditShelf}
@@ -925,14 +955,19 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
     render(): React.ReactElement {
         return <>
             <DialogTitle title="Edit Comment"/>
-            <form onSubmit={() => this.props.onSubmit(this.state.draft)}>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                this.props.onSubmit(this.state.draft);
+            }}>
                 <input
+                    autoFocus={true}
                     type="text"
                     onChange={(event) => {
+                        const newValue = event.target.value;
                         this.setState(state => {
                             return {
                                 ...state,
-                                draft: event.target.value.length === 0 ? null : event.target.value
+                                draft: newValue.length === 0 ? null : newValue
                             };
                         });
                     }}
@@ -947,7 +982,6 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
                 }, {
                     name: "Done", buttonProps: {
                         onClick: () => this.props.onSubmit(this.state.draft),
-                        style: {borderColor: "red"}
                     }
                 }
             ]}/>

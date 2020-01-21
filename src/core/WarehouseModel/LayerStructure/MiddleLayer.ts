@@ -204,7 +204,10 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
      * @param minLayer - The minimum layer to stage down to
      */
     public async stage(
-        forceStage = false, commit = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
+        forceStage = false,
+        commit = false,
+        minLayer: WarehouseModel = this.layerID
+    ): Promise<void> {
         await this.stageLayer(forceStage);
 
         if (this.layerID >= minLayer) {

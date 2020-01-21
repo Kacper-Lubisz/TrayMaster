@@ -59,7 +59,6 @@ export class Database {
     }
 
     public set<T>(path: string, obj: T): void {
-        console.log(path);
         // if (!Utils.isWhiteSpace(path)) {
         //     throw new DatabaseError("Invalid path");
         // }
