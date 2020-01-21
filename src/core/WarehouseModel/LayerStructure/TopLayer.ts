@@ -127,7 +127,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                     child.loaded = true;
                     child.loadComplete?.call(child);
                     childMap.get(currentState.childCollectionName)?.set(document.id, child);
-                    parent.children.push(child);
                     if (child instanceof MiddleLayer && !nextState) {
                         nextState = {
                             generator: child.createChild,
