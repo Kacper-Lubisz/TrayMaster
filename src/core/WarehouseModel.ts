@@ -73,40 +73,49 @@ const trayExpires: ExpiryRange[] = [
         label: "Indefinite"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
+        from: new Date(2020, 0).getTime(),
+        to: null,
+        label: "After Jan 2020"
+    },
+    {
+        from: null,
+        to: new Date(2020, 0).getTime(),
+        label: "Before Jan 2020"
+    },
+    {
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2020, 1).getTime(),
         label: "Jan 2020"
     },
     {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 2).getTime(),
         label: "Feb 2020"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2020, 3).getTime(),
         label: "Jan-Mar 2020"
     },
     {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
+        from: new Date(2020, 3).getTime(),
+        to: new Date(2020, 6).getTime(),
         label: "Apr-Jun 2020"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2021, 0).getTime(),
         label: "2020"
     },
     {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
+        from: new Date(2021, 0).getTime(),
+        to: new Date(2022, 0).getTime(),
         label: "2021"
     },
-].concat(Array(20).fill(0).map(_ => {
-    const j = Math.floor(Math.random() * 10);
+].concat(Array(10).fill(0).map((_, j) => {
     return {
-        from: new Date(2020 + j, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
+        from: new Date(2022 + j, 0).getTime(),
+        to: new Date(2022 + j, 0).getTime(),
         label: (2020 + j).toString()
     };
 }));

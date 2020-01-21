@@ -2,7 +2,8 @@ import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from
 import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import database, {DatabaseCollection} from "../Database";
-import {SearchQuery} from "../../../pages/SearchPage";
+import {SearchQuery, SortBy} from "../../../pages/SearchPage";
+import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
@@ -188,43 +189,6 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //#endregion
 
-    private composeSorts<T>(
-        comparators: ((a: T, b: T) => number)[],
-    ): (a: T, b: T) => number {
-        return comparators.reduce(this.composeSort.bind(this), () => 0);
-    }
-
-    // todo add tests to these
-    private composeSort<T>(
-        first: (a: T, b: T) => number,
-        second: (a: T, b: T) => number
-    ): (a: T, b: T) => number {
-        return (a, b) => {
-            const firstResult = first(a, b);
-            if (firstResult === 0) {
-                return second(a, b);
-            } else {
-                return firstResult;
-            }
-        };
-    }
-
-    byNullSafe<T>(key: (a: T) => any | null | undefined, before = true): (a: T, b: T) => number {
-        return (a: T, b: T): number => {
-            const keyA = key(a);
-            const keyB = key(b);
-            if (keyA && keyB) {
-                return keyA < keyB ? -1 : 1;
-            } else if (keyA) {
-                return before ? -1 : 1;
-            } else if (keyB) {
-                return before ? 1 : -1;
-            } else {
-                return 0;
-            }
-        };
-    }
-
     //region search
     public traySearch(query: SearchQuery): Tray[] {
 
@@ -237,28 +201,39 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
         );
 
-        const defaultSort = this.composeSorts<Tray>([
-            this.byNullSafe<Tray>((a) => a.expiry?.from, true),
-            // this.byNullSafe<Tray>((a) => a.expiry?.to, false),
-            // tray => tray.expiry?.to,
-            // tray => tray.category?.name,
+        const defaultSort = composeSorts<Tray>([
+            partitionBy<Tray>((a) => !!(a.expiry)), // draw a diagram to understand this
+            partitionBy<Tray>((a) => !(!a.expiry?.from && a.expiry?.to)),
+            partitionBy<Tray>((a) => (!a.expiry?.from && !a.expiry?.to)),
+
+            byNullSafe<Tray>((a) => a.expiry?.from, true),
+            byNullSafe<Tray>((a) => a.expiry?.to, false, false),
+            byNullSafe<Tray>((a) => a.category?.name, false, true),
+            byNullSafe<Tray>((a) => a.weight, false, true),
         ]);
 
-        // const sort = (() => {
-        //     if (query.sort.type === SortBy.category) {
-        //         return defaultSort;
-        //     } else if (query.sort.type === SortBy.expiry) {
-        //         return defaultSort;
-        //     } else if (query.sort.type === SortBy.location) {
-        //         return defaultSort;
-        //     } else if (query.sort.type === SortBy.weight) {
-        //         return defaultSort;
-        //     } else { // none
-        //         return defaultSort;
-        //     }
-        // })();
+        const sort = (() => {
+            if (query.sort.type === SortBy.category) {
+                return composeSort(
+                    byNullSafe<Tray>((a) => a.category?.name, false, true),
+                    defaultSort
+                );
+            } else if (query.sort.type === SortBy.location) {
+                return composeSort(
+                    byNullSafe<Tray>((a) => a.locationString, false, true),
+                    defaultSort
+                );
+            } else if (query.sort.type === SortBy.weight) {
+                return composeSort(
+                    byNullSafe<Tray>((a) => a.weight, false, true),
+                    defaultSort
+                );
+            } else { // none or SortBy.expiry
+                return defaultSort;
+            }
+        })();
 
-        return filteredTrays.sort(defaultSort);
+        return filteredTrays.sort(sort);
 
     }
 
