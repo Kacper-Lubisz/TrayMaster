@@ -185,11 +185,14 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
 
     // noinspection DuplicatedCode
     public async delete(commit = false): Promise<void> {
-        firebase.database.delete(this.path);
 
-        for (let i = this.children.length - 1; i > -1; i--) {
-            await this.children[i].delete();
+        for (const child of this.children) {
+            await child.delete();
         }
+
+        this.parent.children.splice(this.indexInParent, 1);
+
+        firebase.database.delete(this.path);
 
         if (commit) {
             await firebase.database.commit();

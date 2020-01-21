@@ -536,11 +536,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param column The column to remove
      */
     async removeColumn(column: Column): Promise<void> {
-        const index = column.parentShelf.columns.indexOf(column);
-        column.parentShelf.columns.splice(index, 1);
-
-        await column.parentShelf.columns[index].delete(true);
-
+        await column.delete(true);
         this.forceUpdate();
     }
 

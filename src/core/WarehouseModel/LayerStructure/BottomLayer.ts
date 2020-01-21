@@ -58,6 +58,8 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     public async delete(commit = false): Promise<void> {
         firebase.database.delete(this.path);
 
+        this.parent.children.splice(this.indexInParent, 1);
+
         if (commit) {
             await firebase.database.commit();
         }

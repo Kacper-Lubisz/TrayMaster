@@ -172,11 +172,12 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
 
     // noinspection DuplicatedCode
     public async delete(commit = false): Promise<void> {
-        firebase.database.delete(this.path);
 
-        for (let i = this.children.length - 1; i > -1; i--) {
-            await this.children[i].delete();
+        for (const child of this.children) {
+            await child.delete();
         }
+
+        firebase.database.delete(this.path);
 
         if (commit) {
             await firebase.database.commit();

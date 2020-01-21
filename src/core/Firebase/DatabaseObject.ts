@@ -47,6 +47,14 @@ export abstract class DatabaseObject<TFields> {
         }
     }
 
+    public async delete(commit = false): Promise<void> {
+        firebase.database.delete(this.path);
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
     protected get changed(): boolean {
         return !deepEqual(this.fields, this.originalFields);
     }
