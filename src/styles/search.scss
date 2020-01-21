@@ -73,12 +73,17 @@
         }
       }
 
-      .commentCell {
-        background-color: #eeeeee;
+      td {
+        background-color: #ececec;
       }
 
-      tr:nth-child(2n) > .commentCell {
-        background-color: #e8e8e8;
+      .weightCell {
+        font-kerning: none;
+        text-align: right;
+      }
+
+      tr:nth-child(2n) > td {
+        background-color: #f4f4f4;
       }
     }
   }

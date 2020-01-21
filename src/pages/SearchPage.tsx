@@ -190,7 +190,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 <tr>
                     <th>Category</th>
                     <th>Expiry</th>
-                    <th>Weight (kg)</th>
+                    <th>Weight</th>
                     <th>Location</th>
                     <th>Custom</th>
                     <th/>
@@ -226,7 +226,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         <tr key={i}>
                             <td>{tray.category?.name ?? "?"}</td>
                             <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
-                            <td>{tray.weight ?? "??.??"}</td>
+                            <td className="weightCell">{tray.weight
+                                                        ? `${tray.weight.toLocaleString(undefined, {minimumFractionDigits: 2})}kg`
+                                                        : "?"}</td>
                             <td style={zoneStyle}>{tray.parentZone.name} {tray.parentBay.name}{tray.parentShelf.name}</td>
                             <td className="commentCell" style={{
                                 backgroundColor: tray.comment ? "#ffffff" : ""
