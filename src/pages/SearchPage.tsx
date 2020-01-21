@@ -4,7 +4,7 @@ import {Settings} from "../core/Settings";
 import "../styles/search.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-import {faPlus as plus, faTrashAlt as trash} from "@fortawesome/free-solid-svg-icons";
+import {faTrashAlt as trash} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {SearchPanel} from "../components/SearchPanel";
@@ -59,11 +59,13 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
         return <div id="searchPage">
             <div id="leftPanel">
                 <div id="topPanel">
-                    <button onClick={() => this.props.history.goBack()}>Go back</button>
                     <span id="searchSentence">
                         {this.renderSearchSentence()}
-                        <FontAwesomeIcon icon={trash} onClick={this.clearQuery.bind(this)}/>
                     </span>
+                    <div id="sentenceR">
+                        <FontAwesomeIcon icon={trash} onClick={this.clearQuery.bind(this)}/>
+                        <button onClick={() => this.props.history.goBack()}>Go back</button>
+                    </div>
                 </div>
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
@@ -73,13 +75,35 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
 
     private renderSearchSentence(): React.ReactNode {
 
-        const categories = this.props.search?.query?.categories;
+        const categories: (Category | null)[] = this.props.search?.query?.categories ?? [];
         const weight = this.props.search?.query?.weight;
         const sortBy = this.props.search?.query?.sortBy;
 
         //todo  change mixed to ?
-        console.log(categories);
-        return <>
+        const catList: string[] = categories.map(c => c ? c.name : "Mixed");
+        // todo this is horrific and could probably afford to be split out into if statements
+        const filterString = categories.length ? catList.map((c, i) => i === catList.length - 1 ? c
+                                                                                                : c.concat(i === catList.length - 2
+                                                                                                           ? " and "
+                                                                                                           : ", "))
+                                               : "All categories";
+        const weightString = typeof weight === "object" ? `between ${weight.from} and ${weight.to} kg`
+                                                        : typeof weight === "string" ? "with no given weight"
+                                                                                     : "with any weight";
+
+        return <span id="searchSentence">
+            <span id="searchFilters"> {/* todo evaluate the usefulness of this span */}
+                <span className="searchField">
+                    {filterString}
+                </span>, <span className="searchField">
+                    {weightString}
+                </span>
+            </span>, <span id="searchSort" className="searchField">
+                {sortBy ? `sorted by ${sortBy}` : "unsorted"}
+            </span>.
+        </span>;
+
+        /*return <>
 
             {
                 categories === undefined || categories.length === 0 ?
@@ -102,7 +126,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
             <span
                 className="searchEdit"
             ><FontAwesomeIcon
-                icon={plus}/> Cat.</span> {/*todo fixme move to category keyboard, highlight this button*/}
+                icon={plus}/> Cat.</span> {/*todo fixme move to category keyboard, highlight this button*//*}
 
             {(() => {
                 if (weight === undefined) {
@@ -134,9 +158,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps> 
                 // }
             })()}
 
-            {/*todo fixme add custom fields and other search criteria here*/}
+            {/*todo fixme add custom fields and other search criteria here*//*}
 
-        </>;
+        </>;*/
     }
 
     private renderSearchResults(): React.ReactNode {

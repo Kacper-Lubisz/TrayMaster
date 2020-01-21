@@ -12,10 +12,12 @@
   align-items: center;
   padding: 20px;
   background-color: #ffffff;
-  box-shadow: 0 -20px 15px 10px #000000;
+  box-shadow: 0 -20px 15px 10px #000000; // todo consider switching this to an inset shadow on the results div
 
   #searchSentence {
     font-size: 24px;
+
+    flex-grow: 1;
 
     span.searchMessage {
       padding: 2px;
@@ -23,19 +25,29 @@
     }
 
     span.searchField {
-      padding: 2px;
-      background-color: $accent-color;
-      border-radius: 10px;
-      margin-right: 10px;
+      color: $accent-color;
+      background-color: #eeeeee;
+      padding: 2px 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  }
+
+  #sentenceR {
+    height: 100%;
+    display: flex;
+    align-items: center;
+
+    > button {
+      height: 50%;
+      margin-left: 20px;
     }
 
-    span.searchEdit {
-      padding: 2px;
-      background-color: #aaaaaa;
-      border-radius: 10px;
-      margin-right: 10px;
+    > svg {
+      margin-right: 20px;
+      width: 30px;
+      height: 30px;
     }
-
   }
 }
 
