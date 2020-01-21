@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import * as fb from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";

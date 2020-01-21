@@ -11,11 +11,11 @@ import {PanelState, SearchPanel} from "../components/SearchPanel";
 
 
 export enum SortBy {
-    expiry,
-    category,
-    weight,
-    location,
-    none
+    expiry = "expiry",
+    category = "category",
+    weight = "weight",
+    location = "location",
+    none = "none"
 }
 
 export interface SortQueryOptions {
@@ -86,9 +86,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     render(): React.ReactNode {
         return <div id="searchPage">
             <div id="topPanel">
-                    <span id="searchSentence">
-                        {this.renderSearchSentence()}
-                    </span>
+                    {this.renderSearchSentence()}
                 <div id="sentenceR">
                     <FontAwesomeIcon icon={trash} onClick={this.clearQuery.bind(this)}/>
                     <button onClick={() => this.props.history.goBack()}>Go back</button>
@@ -98,6 +96,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
             <SearchPanel panelState={this.state.panelState} setPanelState={this.updatePanel.bind(this)}
+                         search={this.props.search} warehouse={this.props.warehouse}
                          setQuery={this.props.setQuery}/>
         </div>;
     }
@@ -130,10 +129,10 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         const filterString = (() => {
             const len = catList.length;
             if (len > 1) {
-                return catList.map((c, i) => {
+                return catList.sort().map((c, i) => {
                     const append = (() => {
                         if (i === catList.length - 2) {
-                            return " and ";
+                            return ", and ";
                         } else if (i !== catList.length - 1) {
                             return ", ";
                         }
@@ -148,19 +147,33 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
             }
         })();
 
-        const weightString = typeof weight === "object" && weight ? `between ${weight.from} and ${weight.to} kg`
-                                                                  : typeof weight === "string" ? "with no given weight"
-                                                                                               : "with any weight";
+        const weightString = (() => {
+            if (typeof weight === "object" && weight) {
+                return `between ${weight.from} and ${weight.to} kg`;
+            } else if (weight === "set") {
+                return "without a set weight value";
+            } else if (weight === "unset") {
+                return "with any set weight value";
+            } else { // null
+                return "with any weight value";
+            }
+        })();
+
+        const expiryString = (() => {
+            if (sortBy) {
+                return `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" : "descending"}`;
+            } else {
+                return "unsorted";
+            }
+        })();
 
         return <span id="searchSentence">
-            <span id="searchFilters"> {/* todo evaluate the usefulness of this span */}
-                <span className="searchField" onClick={() => this.updatePanel("category")}>
-                    {filterString}
-                </span>, <span className="searchField" onClick={() => this.updatePanel("weight")}>
-                    {weightString}
-                </span>
+            <span className="searchField" onClick={() => this.updatePanel("category")}>
+                {filterString}
+            </span>, <span className="searchField" onClick={() => this.updatePanel("weight")}>
+                {weightString}
             </span>, <span id="searchSort" className="searchField">
-                {sortBy ? `sorted by ${sortBy}` : "unsorted"}
+                {expiryString}
             </span>.
         </span>;
     }
@@ -173,10 +186,11 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 <tr>
                     <th>Category</th>
                     <th>Expiry</th>
-                    <th>Weight (kg)</th>
+                    <th>Weight</th>
                     <th>Location</th>
-                    <th>Custom</th>
+                    <th>Comment</th>
                     <th/>
+                    {/* dummy table header for 'Go to tray' buttons */}
                 </tr>
                 </thead>
                 <tbody>
@@ -205,15 +219,23 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         };
                     })();
 
+                    const weightString = (() => {
+                        if (tray.weight) {
+                            return `${tray.weight.toLocaleString(undefined, {minimumFractionDigits: 2})}kg`;
+                        }
+                        return "?";
+                    })();
+
+                    const locationString = `${tray.parentZone.name} ${tray.parentBay.name}${tray.parentShelf.name}`;
+
                     return (
                         <tr key={i}>
                             <td>{tray.category?.name ?? "?"}</td>
                             <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
-                            <td>{tray.weight ?? "??.??"}</td>
-                            <td style={zoneStyle}>{tray.parentZone.name} {tray.parentBay.name}{tray.parentShelf.name}</td>
+                            <td className="weightCell">{weightString}</td>
+                            <td style={zoneStyle}>{locationString}</td>
                             <td className="commentCell" style={{
                                 backgroundColor: tray.comment ? "#ffffff" : ""
-                                // todo make this a text field that can be edited
                             }}>{tray.comment}</td>
                             <td>
                                 <button>Go To</button>
@@ -226,7 +248,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         } else if (!this.props.search?.results) {
             return <div>
                 Loading
-            </div>; //todo fixme make this reuse the loading anumation inside the search area
+            </div>; //todo fixme make this reuse the loading animation inside the search area
         } else if (this.props.search.results.length === 0) {
             return <div>
                 Couldn't find any trays which match this search
