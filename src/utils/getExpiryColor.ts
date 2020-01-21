@@ -116,12 +116,12 @@ function getSaturation(days: number): number {
  */
 export function getExpiryColor(range: ExpiryRange): string {
 
-    if (range.range === null) {
+    if (range.from === null) {
         return "#000000"; //todo fixme special colour for indefinite
 
     } else {
         // get a dayjs date corresponding to the from property of the range, to use later
-        const djsDate: Dayjs = dayjs(range.range.from);
+        const djsDate: Dayjs = dayjs(range.from);
 
         // Year modulo YEAR_PERIOD
         const modYear: number = djsDate.year() % YEAR_PERIOD;
@@ -136,7 +136,7 @@ export function getExpiryColor(range: ExpiryRange): string {
         const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
 
         // get saturation from difference between from and to and return hex value
-        const saturation = getSaturation(dayjs(range.range.to).diff(djsDate, "day"));
+        const saturation = range.to ? getSaturation(dayjs(range.to).diff(djsDate, "day")) : 1; //todo eval this
         return hslToHex(ratioPeriod * 360, saturation, 1);
     }
 

@@ -23,7 +23,8 @@ export enum WarehouseModel {
  * Represents a tray expiry range
  */
 export interface ExpiryRange {
-    range: { from: number; to: number } | null;
+    from: number | null;
+    to: number | null;
     label: string;
 }
 
@@ -67,37 +68,45 @@ const zoneColors = [
  */
 const trayExpires: ExpiryRange[] = [
     {
-        range: null,
+        from: null,
+        to: null,
         label: "Indefinite"
     },
     {
-        range: {from: new Date(2020, 1).getTime(), to: new Date(2020, 2).getTime()},
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 2).getTime(),
         label: "Jan 2020"
     },
     {
-        range: {from: new Date(2020, 2).getTime(), to: new Date(2020, 3).getTime()},
+        from: new Date(2020, 2).getTime(),
+        to: new Date(2020, 3).getTime(),
         label: "Feb 2020"
     },
     {
-        range: {from: new Date(2020, 1).getTime(), to: new Date(2020, 4).getTime()},
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 4).getTime(),
         label: "Jan-Mar 2020"
     },
     {
-        range: {from: new Date(2020, 4).getTime(), to: new Date(2020, 7).getTime()},
+        from: new Date(2020, 4).getTime(),
+        to: new Date(2020, 7).getTime(),
         label: "Apr-Jun 2020"
     },
     {
-        range: {from: new Date(2020, 1).getTime(), to: new Date(2021, 1).getTime()},
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2021, 1).getTime(),
         label: "2020"
     },
     {
-        range: {from: new Date(2021, 1).getTime(), to: new Date(2022, 1).getTime()},
+        from: new Date(2021, 1).getTime(),
+        to: new Date(2022, 1).getTime(),
         label: "2021"
     },
 ].concat(Array(20).fill(0).map(_ => {
     const j = Math.floor(Math.random() * 10);
     return {
-        range: {from: new Date(2020 + j, 1).getTime(), to: new Date(2022, 1).getTime()},
+        from: new Date(2020 + j, 1).getTime(),
+        to: new Date(2022, 1).getTime(),
         label: (2020 + j).toString()
     };
 }));
@@ -117,7 +126,7 @@ async function generateRandomWarehouse(id: string): Promise<Warehouse> {
             const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
 
             for (let k = 0; k < 3; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, bay);
+                const shelf = Shelf.create(k, `${k + 1}`, bay, k === 1);
 
                 for (let l = 0; l < 4; l++) {
                     const maxHeight = 2 + Math.round(3 * Math.random()),

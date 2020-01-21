@@ -188,45 +188,68 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //#endregion
 
+    private composeSortsBy<T>(
+        keys: ((a: T) => any)[],
+    ): (a: T, b: T) => number {
+        return keys.map(keyFunction =>
+            (a: T, b: T): number => keyFunction(a) < keyFunction(b) ? -1 : 1
+        ).reduceRight(this.composeSort.bind(this), () => 0);
+    }
 
-    //region saerch
+    private composeSorts<T>(
+        comparators: ((a: T, b: T) => number)[],
+    ): (a: T, b: T) => number {
+        return comparators.reduceRight(this.composeSort.bind(this), () => 0);
+    }
+
+    // todo add tests to these
+    private composeSort<T>(
+        first: (a: T, b: T) => number,
+        second: (a: T, b: T) => number
+    ): (a: T, b: T) => number {
+        return (a, b) => {
+            const firstResult = first(a, b);
+            if (firstResult === 0) {
+                return second(a, b);
+            } else {
+                return firstResult;
+            }
+        };
+    }
+
+    //region search
     public traySearch(query: SearchQuery): Tray[] {
 
         //todo make this feature full, it's actually a complete mess right now, needs a redoing
 
-        const categorySet = new Set(query.categories);
-        const filteredTrays = this.trays.filter(tray => categorySet.size === 0 || categorySet.has(tray.category ?? null));
+        const filteredTrays = this.trays.filter(tray =>
+            query.categories === null ||
+            (query.categories === "set" && tray.category) ||
+            (query.categories === "unset" && !tray.category) ||
+            (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
+        );
 
+        const defaultSort = this.composeSortsBy<Tray>([
+            tray => tray.expiry?.from,
+            tray => tray.expiry?.to,
+            tray => tray.category?.name,
+        ]);
 
-        // todo fixme this needs to first sort by the thing that is specified in the query, and then if the comparison
-        // resolves to 0 there should be a standard sorting to procede the initial one
+        // const sort = (() => {
+        //     if (query.sort.type === SortBy.category) {
+        //         return defaultSort;
+        //     } else if (query.sort.type === SortBy.expiry) {
+        //         return defaultSort;
+        //     } else if (query.sort.type === SortBy.location) {
+        //         return defaultSort;
+        //     } else if (query.sort.type === SortBy.weight) {
+        //         return defaultSort;
+        //     } else { // none
+        //         return defaultSort;
+        //     }
+        // })();
 
-        return filteredTrays.sort((a, b) => {
-            if (query.sortBy === "expiry") {
-                if (a.expiry === undefined && b.expiry) {
-                    return -1;
-                } else if (a.expiry && b.expiry === undefined) {
-                    return 1;
-
-                } else if (!a.expiry || !b.expiry) {
-                    return (a.category?.name ?? "") < (b.category?.name ?? "") ? -1 : 1;
-
-                } else if (b.expiry.range === null) {
-                    return -1;
-
-                } else if (a.expiry.range === null) {
-                    return 1;
-                } else if (a.expiry.range.from !== b.expiry.range.from) {
-                    return a.expiry.range.from < b.expiry.range.from ? -1 : 1;
-                } else if (a.expiry.range.to !== b.expiry.range.to) {
-                    return a.expiry.range.to < b.expiry.range.to ? -1 : 1;
-                } else {
-                    return (a.category?.name ?? "") < (b.category?.name ?? "") ? -1 : 1;
-                }
-            } else {
-                return 0;
-            }
-        });
+        return filteredTrays.sort(defaultSort);
 
     }
 

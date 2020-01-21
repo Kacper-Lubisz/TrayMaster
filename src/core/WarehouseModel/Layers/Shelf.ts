@@ -5,6 +5,7 @@ import Utils from "../Utils";
 interface ShelfFields {
     index: number;
     name: string;
+    isPickingArea: boolean;
 }
 
 export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
@@ -21,9 +22,10 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
      * @param index - The (ordered) index of the shelf within the bay
      * @param name - The name of the shelf
      * @param parent - The parent bay
+     * @param isPickingArea - If the shelf is in the picking area
      */
-    public static create(index: number, name: string, parent: Bay): Shelf {
-        return new Shelf(Utils.generateRandomId(), {index, name}, parent);
+    public static create(index: number, name: string, parent: Bay, isPickingArea: boolean): Shelf {
+        return new Shelf(Utils.generateRandomId(), {index, name, isPickingArea}, parent);
     }
 
     /**

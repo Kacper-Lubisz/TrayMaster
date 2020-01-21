@@ -41,7 +41,7 @@ import {properMod} from "../utils/properMod";
 import App, {Dialog, DialogButtons, DialogTitle} from "../core/App";
 import {ToolBar} from "../components/ToolBar";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-import {SearchQuery} from "./SearchPage";
+import {SearchQuery, SortBy} from "./SearchPage";
 
 
 /**
@@ -628,14 +628,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     private makeSearch(): void {
 
-        const categories = this.getSelectedTrays(false, false)
-                               .map(tray => tray.category ?? null);
-        const distinctCategories = Array.from(new Set(categories));
-
+        const catSet = new Set(this.getSelectedTrays(false, false)
+                                   .map(tray => tray.category ?? null)
+                                   .filter((cat): cat is Category => cat !== null));
         this.props.setSearch({
-            categories: distinctCategories,
-            sortBy: "expiry",
-            weight: undefined
+            categories: catSet,
+            weight: null,
+            commentSubstring: null,
+            excludePickingArea: true,
+            sort: {orderAscending: true, type: SortBy.expiry}
+
         });
 
         this.props.history.push("/search"); //todo fixme find a better way to do this?

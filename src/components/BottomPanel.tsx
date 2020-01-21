@@ -123,7 +123,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         const to = new Date(year + 1, 0).getTime();
 
         this.props.expirySelected({
-            range: {from: from, to: to},
+            from: from,
+            to: to,
             label: year.toString()
         });
     }
@@ -140,7 +141,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const to = new Date(this.selectedYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
 
             this.props.expirySelected({
-                range: {from: from, to: to},
+                from: from,
+                to: to,
                 label: `${this.quartersTranslator[quarter]} ${this.selectedYear.toString()}`
             });
         }
@@ -158,7 +160,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const to = new Date(month === 11 ? this.selectedYear + 1 : this.selectedYear, (month + 1) % 12).getTime();
 
             this.props.expirySelected({
-                range: {from: from, to: to},
+                from: from,
+                to: to,
                 label: `${this.monthsTranslator[month]} ${this.selectedYear.toString()}`
             });
         }
@@ -190,11 +193,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else if (this.props.keyboardState === "expiry") {
 
-            const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.range?.from;
+            const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
             const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
 
             const commonYear = firstYear !== undefined && traysOnly.every(item =>
-                item.expiry?.range?.from === undefined || new Date(item.expiry.range.from).getFullYear() === firstYear
+                item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
             ) ? firstYear : undefined;
 
             // update object-level selectedYear

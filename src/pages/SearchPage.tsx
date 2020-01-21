@@ -10,36 +10,33 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
 
 
-enum SortBy {
+export enum SortBy {
     expiry,
     category,
     weight,
     location,
-    None
+    none
 }
 
-interface SortQueryOptions {
+export interface SortQueryOptions {
     orderAscending: boolean;
     type: SortBy;
 }
 
-interface CommentQueryOptions {
-    searchComment: boolean;
-    commentSubstring: string;
-}
+type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * todo fixme document this properly
  */
 export interface SearchQuery {
-    categories: Set<Category> | "set" | "unset" | null;
+    categories: CategoryQueryOptions;
     /**
      * The type corresponds to:
      *  within range, any weight, only undefined weight, no filter by weight
      */
     weight: ({ from: number; to: number } | "set" | "unset") | null;
 
-    commentContains: CommentQueryOptions;
+    commentSubstring: string | null;
 
     excludePickingArea: boolean;
 
@@ -78,8 +75,10 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
      */
     private clearQuery(): void {
         this.props.setQuery({
-            categories: undefined,
-            sortBy: undefined,
+            commentSubstring: null,
+            excludePickingArea: true,
+            categories: null,
+            sort: {type: SortBy.none, orderAscending: true},
             weight: null
         });
     }
@@ -112,21 +111,32 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
     private renderSearchSentence(): React.ReactNode {
 
-        const categories: (Category | null)[] = this.props.search?.query?.categories ?? [];
+        const categories: CategoryQueryOptions = this.props.search?.query?.categories ?? null;
         const weight = this.props.search?.query?.weight;
-        const sortBy = this.props.search?.query?.sortBy;
+        const sortBy = this.props.search?.query?.sort;
 
         //todo  change mixed to ?
-        const catList: string[] = categories.map(c => c ? c.name : "Mixed");
+        const catList = (() => {
+            if (categories === null) {
+                return [];
+            } else if (categories instanceof Set) {
+                return Array.from(categories.keys()).map(cat => cat.name);
+            } else if (categories === "set") {
+                return ["Any Set"];
+            } else { // unset
+                return ["Unset"];
+            }
+        })();
+
         // todo this is horrific and could probably afford to be split out into if statements
-        const filterString = categories.length ? catList.map((c, i) => i === catList.length - 1 ? c
-                                                                                                : c.concat(i === catList.length - 2
-                                                                                                           ? " and "
-                                                                                                           : ", "))
-                                               : "All categories";
-        const weightString = typeof weight === "object" ? `between ${weight.from} and ${weight.to} kg`
-                                                        : typeof weight === "string" ? "with no given weight"
-                                                                                     : "with any weight";
+        const filterString = catList.length ? catList.map((c, i) => i === catList.length - 1
+                                                                    ? c
+                                                                    : c.concat(i === catList.length - 2 ? " and "
+                                                                                                        : ", "))
+                                            : "All categories";
+        const weightString = typeof weight === "object" && weight ? `between ${weight.from} and ${weight.to} kg`
+                                                                  : typeof weight === "string" ? "with no given weight"
+                                                                                               : "with any weight";
 
         return <span id="searchSentence">
             <span id="searchFilters"> {/* todo evaluate the usefulness of this span */}
