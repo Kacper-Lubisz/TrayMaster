@@ -418,6 +418,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                 return <div
                     className={classNames("tray", {
+                        "trayEmpty": !(tray instanceof Tray) && index === column.trays.length,
                         "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
                         "selected": this.props.isTraySelected(tray),
                         "firstTraySpace": index === column.trays.length,
@@ -435,7 +436,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
-                        <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
+                        <div className="trayCategory">{tray.category?.name ?? "?"}</div>
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 

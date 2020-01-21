@@ -68,6 +68,17 @@
       position: relative;
 
 
+      &.trayEmpty {
+        font-size: 24px;
+        font-weight: lighter;
+
+        text-align: center;
+
+        > p { //todo fixme text align to the centre properly
+          width: 100%;
+        }
+      }
+
       // When we're in multiple select mode
       &.multipleSelect {
         // Round the corners
@@ -176,6 +187,8 @@
         left: 50%;
         transform: translate(-50%, 0);
       }
+
     }
+
   }
 }

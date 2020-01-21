@@ -115,7 +115,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         const weight = this.props.search?.query?.weight;
         const sortBy = this.props.search?.query?.sort;
 
-        //todo  change mixed to ?
         const catList = (() => {
             if (categories === null) {
                 return [];
@@ -150,64 +149,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
             </span>.
         </span>;
 
-        /*return <>
-
-            {
-                categories === undefined || categories.length === 0 ?
-                <span
-                    className="searchField"
-                    onClick={() => {
-                        alert("todo");
-                    }}
-                >Any</span> :
-                categories.map((category, index) =>
-                    <span
-                        key={index}
-                        className="searchField"
-                    >{ //todo fixme on click remove from query
-                        category?.name ?? "Mixed" //todo add comma
-                    }</span>
-                )
-            }
-
-            <span
-                className="searchEdit"
-            ><FontAwesomeIcon
-                icon={plus}/> Cat.</span> {/*todo fixme move to category keyboard, highlight this button*//*}
-
-            {(() => {
-                if (weight === undefined) {
-                    return <span className="searchEdit"><FontAwesomeIcon icon={plus}/> Weight</span>;
-                } else if (weight === "defined") {
-                    return <span className="searchField">Defined Weight</span>;
-                } else if (weight === "undefined") {
-                    return <span className="searchField">Undefined Weight</span>;
-                } else { //range
-                    return <span className="searchField">{`${weight.from}-${weight.to}kg`}</span>;
-                }
-            })()}
-
-            {(() => {
-                if (sortBy === undefined) {
-                    return <span className="searchEdit"><FontAwesomeIcon icon={plus}/> Sort</span>;
-                } else { // if (sortBy === "expiry") {
-                    return <>
-                        <span className="searchMessage">Sorted By</span>
-                        <span className="searchField">Expiry</span>
-                    </>;
-                }
-                // else {
-                //     // todo finalise this when sort and search query are better defined
-                //     return <>
-                //         <span className="search">Sorted By</span>
-                //         <span className="searchField">SOMETHING UNKNOWN</span>
-                //     </>;
-                // }
-            })()}
-
-            {/*todo fixme add custom fields and other search criteria here*//*}
-
-        </>;*/
     }
 
     private renderSearchResults(): React.ReactNode {
