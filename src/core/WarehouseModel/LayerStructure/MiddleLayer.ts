@@ -185,7 +185,6 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
 
     // noinspection DuplicatedCode
     public async delete(commit = false): Promise<void> {
-
         for (const child of this.children) {
             await child.delete();
         }

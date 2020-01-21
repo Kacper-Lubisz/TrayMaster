@@ -105,8 +105,9 @@ const trayExpiries: ExpiryRange[] = [
  * @async
  * @param id - The ID of the warehouse
  * @param name - The name of the new warehouse
+ * @param randomMaxColumnHeight - Generate random maximum column heights per column
  */
-async function generateRandomWarehouse(id: string, name: string): Promise<Warehouse> {
+async function generateRandomWarehouse(id: string, name: string, randomMaxColumnHeight = false): Promise<Warehouse> {
     const warehouse = await Warehouse.create(id, name).loadDepthFirst();
     for (const zoneColor of zoneColors) {
         const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
@@ -115,20 +116,16 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
             for (let k = 0; k < 3; k++) {
                 const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
                 for (let l = 0; l < 4; l++) {
-                    const maxHeight = 2 + Math.round(3 * Math.random()),
+                    const maxHeight = randomMaxColumnHeight ? 2 + Math.round(3 * Math.random()) : 3,
                         column = Column.create(l, Utils.randItem(warehouse.traySizes), maxHeight, shelf);
-                    for (let m = 0; m < 2 + Math.round((maxHeight - 2) * Math.random()); m++) {
-                        column.trays.push(Tray.create(column, m, Utils.randItem(warehouse.categories),
+                    for (let m = 0; m < 1 + Math.round((maxHeight - 2) * Math.random()); m++) {
+                        Tray.create(column, m, Utils.randItem(warehouse.categories),
                             Utils.randItem(trayExpiries), Number((15 * Math.random()).toFixed(2)),
-                            Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined));
+                            Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined);
                     }
-                    shelf.columns.push(column);
                 }
-                bay.shelves.push(shelf);
             }
-            zone.bays.push(bay);
         }
-        warehouse.zones.push(zone);
     }
     return warehouse;
 }
@@ -142,11 +139,6 @@ interface Warehouses {
 
 export class WarehouseManager {
     private static readonly warehouses: Warehouses = {};
-    private static currentWarehouseId = "";
-
-    public static get currentWarehouse(): Warehouse {
-        return this.warehouses[this.currentWarehouseId];
-    }
 
     public static get warehouseList(): Warehouse[] {
         return Object.values(this.warehouses);
@@ -163,9 +155,10 @@ export class WarehouseManager {
                     Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
             }
         } else {
-            for (let i = 0; i < 1; i++) {
-                const id = `MOCK ${i}`;
-                this.warehouses[id] = await generateRandomWarehouse(id, "Chester-le-Street");
+            const warehouseNames = ["Chester-le-Street", "Durham", "Newcastle"];
+            for (let i = 0; i < warehouseNames.length; i++) {
+                const id = `MOCK_WAREHOUSE_${i}`;
+                this.warehouses[id] = await generateRandomWarehouse(id, warehouseNames[i]);
             }
         }
         return this.warehouseList;
@@ -184,21 +177,6 @@ export class WarehouseManager {
     public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
         return typeof WarehouseManager.warehouses[id] === "undefined" ? undefined
                                                                       : this.loadWarehouse(this.warehouses[id]);
-    }
-
-    /**
-     * Load a warehouse by its name
-     * @async
-     * @param name - The name of the warehouse to load
-     * @returns The loaded warehouse
-     */
-    public static async loadWarehouseByName(name: string): Promise<Warehouse | undefined> {
-        for (const [id, warehouse] of Object.entries(this.warehouses)) {
-            if (warehouse.name === name) {
-                return await this.loadWarehouseByID(id);
-            }
-        }
-        return undefined;
     }
 }
 

@@ -32,8 +32,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     private constructor(id: string, fields: WarehouseFields) {
         super(id, fields);
-        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"));
-        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"));
+        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"), true);
+        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"), true);
     }
 
     /**

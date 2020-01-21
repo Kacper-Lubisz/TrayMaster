@@ -34,47 +34,39 @@ class App extends React.Component<unknown, AppState> {
             throw Error("This browser isn't supported"); // supported in IE 11, should be fine
         }
 
-        firebase.auth.onSignIn = async (user: User) => {
-            await WarehouseManager.loadWarehouses();
-            if (user.lastWarehouseID === null) {
-                this.setState(state => {
-                    return {
-                        ...state,
-                        user: user,
-                        loading: false
-                    };
-                });
-                (async () => {
-                    const warehouse = await WarehouseManager.loadWarehouseByID("MOCK 0");
-                    this.setState(state => {
-                        return {
-                            ...state,
-                            warehouse: warehouse,
-                            user: user,
-                            loading: false
-                        };
-                    });
-                })();
-            } else {
-                WarehouseManager.loadWarehouseByID(user.lastWarehouseID).then(warehouse => {
+        const onSignIn = (user: User): void => {
+            WarehouseManager.loadWarehouses().then(() => {
+
+                if (user.lastWarehouseID === null) {
                     this.setState(state => {
                         return {
                             ...state,
                             user: user,
-                            warehouse: warehouse,
                             loading: false
                         };
                     });
-                }).catch((reason) => {
-                    this.openDialog(buildErrorDialog(
-                        "Load Failed",
-                        `Failed to load last warehouse ${reason}`,
-                        false
-                    ));
-                });
-            }
+                } else {
+                    WarehouseManager.loadWarehouseByID(user.lastWarehouseID).then(warehouse => {
+                        this.setState(state => {
+                            return {
+                                ...state,
+                                user: user,
+                                warehouse: warehouse,
+                                loading: false
+                            };
+                        });
+                    }).catch((reason) => {
+                        this.openDialog(buildErrorDialog(
+                            "Load Failed",
+                            `Failed to load last warehouse ${reason}`,
+                            false
+                        ));
+                    });
+                }
+            });
         };
-        firebase.auth.onSignOut = () => {
+
+        const onSignOut = (): void => {
             this.setState(state => {
                 return {
                     ...state,
@@ -83,8 +75,8 @@ class App extends React.Component<unknown, AppState> {
                 };
             });
         };
-        // if (!firebase.auth.isSignedIn)
 
+        firebase.auth.registerListeners(onSignIn, onSignOut).then();
 
         this.state = {
             loading: true

@@ -7,14 +7,16 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
     protected changed: boolean;
     protected deleted: Set<string>;
     protected loaded: boolean;
+    protected uniqueValues: boolean;
 
-    public constructor(collectionPath: string, values?: [string, TF][]) {
+    public constructor(collectionPath: string, uniqueValues: boolean, values?: [string, TF][]) {
         if (values) {
             super(values);
         } else {
             super();
         }
         this.collectionPath = collectionPath;
+        this.uniqueValues = uniqueValues;
         this.changed = false;
         this.loaded = false;
         this.deleted = new Set<string>();
@@ -76,13 +78,16 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
         return super.delete(id);
     }
 
-    public add(item: TF): void {
-        if (this.getItemId(item) === "") {
-            this.set(Utils.generateRandomId(), item);
+    public add(item: TF, id?: string): void {
+        if (this.getItemId(item) === "" || !this.uniqueValues) {
+            this.set(id ?? Utils.generateRandomId(), item);
         }
     }
 
     public remove(item: TF): void {
+        if (!this.uniqueValues) {
+            throw Error("Cannot remove by item in non-unique mode.");
+        }
         this.delete(this.getItemId(item));
     }
 }

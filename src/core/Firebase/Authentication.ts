@@ -6,6 +6,7 @@ import {DatabaseCollection} from "./DatabaseCollection";
 import {FirebaseError} from "./FirebaseError";
 import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
 import {WarehouseManager} from "../WarehouseModel";
+import {ONLINE} from "../Firebase";
 
 type Auth = fb.auth.Auth;
 
@@ -27,11 +28,17 @@ export class User extends DatabaseObject<UserFields> {
 
     public constructor(id: string, fields?: UserFields) {
         super(id, fields ?? {isAdmin: false, name: "", lastWarehouseID: ""});
-        this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"));
+        this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
 
     public async load(forceLoad = false): Promise<this> {
-        await this.warehouseSettings.load(forceLoad);
+        if (ONLINE) {
+            await this.warehouseSettings.load(forceLoad);
+        } else {
+            this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_0");
+            this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_1");
+            this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_2");
+        }
         return super.load(forceLoad);
     }
 
@@ -42,6 +49,7 @@ export class User extends DatabaseObject<UserFields> {
 
     public get accessibleWarehouses(): Warehouse[] {
         const accessibleWarehouses: Warehouse[] = [];
+        console.log(WarehouseManager.warehouseList);
         for (const warehouse of WarehouseManager.warehouseList) {
             if (this.warehouseSettings.idList.includes(warehouse.id)) {
                 accessibleWarehouses.push(warehouse);
@@ -77,21 +85,40 @@ export class User extends DatabaseObject<UserFields> {
 
 export class Authentication {
     public readonly auth: Auth;
-    public onSignIn?: (user: User) => void;
-    public onSignOut?: () => void;
     public currentUser?: User;
+
+    private onSignIn?: (user: User) => void;
+    private onSignOut?: () => void;
 
     public constructor() {
         this.auth = fb.auth();
-        this.auth.onAuthStateChanged(async userSnapshot => {
-            if (userSnapshot) {
-                this.currentUser = await new User(userSnapshot.uid).load();
-                this.onSignIn?.call(this, this.currentUser);
-            } else {
-                this.currentUser = undefined;
-                this.onSignOut?.call(this);
-            }
-        });
+        if (!ONLINE) {
+            this.auth.setPersistence(fb.auth.Auth.Persistence.NONE).catch(error => console.log(error));
+        }
+    }
+
+    public async registerListeners(onSignIn?: (user: User) => void, onSignOut?: () => void): Promise<void> {
+        this.onSignIn = onSignIn;
+        this.onSignOut = onSignOut;
+        if (ONLINE) {
+            this.auth.onAuthStateChanged(async userSnapshot => {
+                if (userSnapshot) {
+                    this.currentUser = await new User(userSnapshot.uid).load();
+                    onSignIn?.call(this, this.currentUser);
+                } else {
+                    this.currentUser = undefined;
+                    onSignOut?.call(this);
+                }
+            });
+        } else {
+            this.currentUser = await new User("MOCK_USER",
+                {
+                    name: "Mock User",
+                    lastWarehouseID: "",
+                    isAdmin: true
+                }).load();
+            onSignIn?.call(this, this.currentUser);
+        }
     }
 
     public async signUp(email: string, password: string): Promise<void> {
@@ -104,18 +131,42 @@ export class Authentication {
         if (password.toLowerCase() !== password) {
             throw new AuthenticationError("Password must contain at least one lower and upper case character.");
         }
-        await this.auth.createUserWithEmailAndPassword(email, password);
+        if (ONLINE) {
+            await this.auth.createUserWithEmailAndPassword(email, password);
+        } else {
+            this.currentUser = await new User("MOCK_USER",
+                {
+                    name: "Mock User",
+                    lastWarehouseID: "",
+                    isAdmin: true
+                }).load();
+            this.onSignIn?.call(this, this.currentUser);
+        }
     }
 
     public async signIn(email: string, password: string): Promise<void> {
         if (!Utils.isEmailValid(email)) {
             throw new AuthenticationError("Invalid email");
         }
-        await this.auth.signInWithEmailAndPassword(email, password);
+        if (ONLINE) {
+            await this.auth.signInWithEmailAndPassword(email, password);
+        } else {
+            this.currentUser = await new User("MOCK_USER",
+                {
+                    name: "Mock User",
+                    lastWarehouseID: "",
+                    isAdmin: true
+                }).load();
+            this.onSignIn?.call(this, this.currentUser);
+        }
     }
 
     public async signOut(): Promise<void> {
-        await this.auth.signOut();
+        if (ONLINE) {
+            await this.auth.signOut();
+        } else {
+            this.onSignOut?.call(this);
+        }
     }
 
     public get isSignedIn(): boolean {
