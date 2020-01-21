@@ -9,7 +9,7 @@ class PageNotFoundPage extends React.Component<RouteComponentProps, any> {
             <div>
                 <h1>Page not found</h1>
                 <button className="key-btn"
-                        onClick={() => this.props.history.push("/menu")}><p>Go to Main Menu</p>
+                        onClick={() => this.props.history.replace("/menu")}><p>Go to Main Menu</p>
                 </button>
             </div>
         );

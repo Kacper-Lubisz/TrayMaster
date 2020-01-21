@@ -1,5 +1,5 @@
 import dayjs, {Dayjs} from "dayjs";
-import {ExpiryRange} from "../core/MockWarehouse";
+import {ExpiryRange} from "../core/WarehouseModel";
 
 
 /**
