@@ -22,12 +22,12 @@ import {
     faArrowRight as rightArrow,
     faArrowUp as upArrow,
     faCheckCircle as tickSolid,
-    faClock,
+    faClock as expiryIcon,
     faCommentAlt,
+    faCube as categoryIcon,
     faEraser,
-    faHome,
     faTimes as cross,
-    faWeightHanging
+    faWeightHanging as weightIcon
 } from "@fortawesome/free-solid-svg-icons";
 
 import {faCheckCircle as tickRegular} from "@fortawesome/free-regular-svg-icons";
@@ -581,7 +581,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     /**
      * Sets the selection of all trays and tray spaces in the shelf.  If
-     * @param select if all should be  selected or deslected
+     * @param select if all should be selected or deselected
      */
     selectAll(select: "none" | "trays" | "all"): void {
         if (this.state.currentView instanceof Shelf) {
@@ -631,7 +631,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (this.state.currentView instanceof Zone) {
                 return this.state.currentView.color;
             } else if (this.state.currentView instanceof Shelf) {
-                return this.state.currentView.parentZone.color ?? "#ffffff";
+                return this.state.currentView.parentZone.color;
             } else {
                 return "#ffffff";
             }
@@ -663,39 +663,40 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                                         icon: tickRegular,
                                         onClick: this.selectAll.bind(this, "trays")
                                     };
-                            } else if (selected.length === this.getTrayCells().length) {
-                                return {
-                                    name: "Deselect All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "none")
-                                };
-                            } else {
-                                return {
-                                    name: "Select All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "all")
-                                };
+                                } else if (selected.length === this.getTrayCells().length) {
+                                    return {
+                                        name: "Deselect All",
+                                        icon: tickSolid,
+                                        onClick: this.selectAll.bind(this, "none")
+                                    };
+                                } else {
+                                    return {
+                                        name: "Select All",
+                                        icon: tickSolid,
+                                        onClick: this.selectAll.bind(this, "all")
+                                    };
+                                }
+                            })(),
+                            {
+                                name: "Edit Custom",
+                                icon: faCommentAlt,
+                                onClick: this.editTrayComment.bind(this),
+                                disabled: this.getSelectedTrays(false, false).length !== 1
+                            },
+                            {
+                                name: "Clear Trays",
+                                icon: faEraser,
+                                onClick: this.clearTrays.bind(this),
+                                disabled: this.getSelectedTrayCells().length === 0
+                            },
+                            { /*This code adds a button which opens a test dialog*/
+                                name: "Test Error", onClick: this.props.openDialog.bind(undefined,
+                                    App.buildErrorDialog("this is a big test", true)
+                                )
                             }
-                        })(),
-                        {
-                            name: "Edit Custom",
-                            icon: faCommentAlt,
-                            onClick: this.editTrayComment.bind(this),
-                            disabled: this.getSelectedTrays(false, false).length !== 1
-                        },
-                        {
-                            name: "Clear Trays",
-                            icon: faEraser,
-                            onClick: this.clearTrays.bind(this),
-                            disabled: this.getSelectedTrayCells().length === 0
-                        },
-                        { /*This code adds a button which opens a test dialog*/
-                            name: "Test Error", onClick: this.props.openDialog.bind(undefined,
-                                App.buildErrorDialog("this is a big test", true)
-                            )
-                        }
 
-                    ]}/>
+                        ]}
+                    />
                     <SideBar
                         zoneColor={zoneColor}
                         locationString={locationString}
@@ -714,9 +715,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             // enabled = possibleMoveDirections.nextTray
                         ]}
                         keyboards={[
-                            {name: "category", icon: faHome},
-                            {name: "expiry", icon: faClock},
-                            {name: "weight", icon: faWeightHanging}
+                            {name: "category", icon: categoryIcon},
+                            {name: "expiry", icon: expiryIcon},
+                            {name: "weight", icon: weightIcon}
                         ]}
                         keyboardSwitcher={this.switchKeyboard.bind(this)}
                         showKeyboardSwitcher={!this.state.isEditShelf}
