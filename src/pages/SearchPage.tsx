@@ -98,6 +98,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
             <SearchPanel panelState={this.state.panelState} setPanelState={this.updatePanel.bind(this)}
+                         search={this.props.search} warehouse={this.props.warehouse}
                          setQuery={this.props.setQuery}/>
         </div>;
     }
