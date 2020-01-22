@@ -1,5 +1,5 @@
 import React, {ReactNode} from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 
 import SettingsPage from "../pages/SettingsPage";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
@@ -95,13 +95,14 @@ class App extends React.Component<any, AppState> {
                                }/>
                         <Route path="/settings"
                                component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
-                        <Route path="/search" component={() => // todo fixme ensure that this is rerouted if there is no search
-                            <SearchPage
+                        <Route path="/search" component={() => {// todo fixme ensure that this is rerouted if there is no search
+                            return this.state.search ? <SearchPage
                                 warehouse={this.state.loaded?.warehouse}
                                 settings={this.state.loaded?.settings}
                                 search={this.state.search}
                                 setQuery={this.setSearch.bind(this)}
-                            />}/>
+                            /> : <Redirect to="/"/>;
+                        }}/>
                         <Route component={PageNotFoundPage}/>
                     </Switch>
                 </BrowserRouter>)}

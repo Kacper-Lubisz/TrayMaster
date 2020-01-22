@@ -10,13 +10,13 @@ interface SearchPanelProps {
     panelState: PanelState;
     setPanelState: (state: PanelState) => void;
     setQuery: (query: SearchQuery) => void;
-    search?: SearchResults;
+    search: SearchResults;
 }
 
 export class SearchPanel extends React.Component<SearchPanelProps> {
 
     private toggleCategory(cat: Category): void {
-        if (this.props.search?.query.categories instanceof Set) {
+        if (this.props.search.query.categories instanceof Set) {
             const newCategories = this.props.search.query.categories;
             if (newCategories.has(cat)) {
                 newCategories.delete(cat);
@@ -36,17 +36,17 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
             a.name < b.name ? -1 : 1
         );
 
-        const searchCategories = this.props.search?.query.categories instanceof Set ? this.props.search.query.categories
-                                                                                    : new Set<Category>();
+        const searchCategories = this.props.search.query.categories instanceof Set ? this.props.search.query.categories
+                                                                                   : new Set<Category>();
 
         if (allCategories) {
             return allCategories.map(cat => {
-                return <button
-                    style={{backgroundColor: searchCategories.has(cat) ? "red" : "transparent"}}
-                    className={classNames("searchPanelButton", {
-                        "selected": searchCategories.has(cat)
-                    })}
-                    onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>;
+                return <button key={cat.name}
+                               style={{backgroundColor: searchCategories.has(cat) ? "red" : "transparent"}}
+                               className={classNames("searchPanelButton", {
+                                   "selected": searchCategories.has(cat)
+                               })}
+                               onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>;
             });
         }
     }

@@ -51,7 +51,7 @@ export interface SearchResults {
 interface SearchPageProps {
     warehouse?: Warehouse;
     settings?: Settings;
-    search?: SearchResults;
+    search: SearchResults;
     setQuery: (query: SearchQuery) => void;
 }
 
@@ -91,7 +91,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 </div>
                 {this.renderSearchSentence()}
                 <div id="sentenceR">
-                    <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
+                    <FontAwesomeIcon style={{cursor: "pointer"}} icon={cross} onClick={this.clearQuery.bind(this)}/>
                 </div>
             </div>
             <div id="leftPanel">
@@ -112,9 +112,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
     private renderSearchSentence(): React.ReactNode {
 
-        const categories: CategoryQueryOptions = this.props.search?.query?.categories ?? null;
-        const weight = this.props.search?.query?.weight;
-        const sortBy = this.props.search?.query?.sort;
+        const categories: CategoryQueryOptions = this.props.search.query?.categories ?? null;
+        const weight = this.props.search.query.weight;
+        const sortBy = this.props.search.query.sort;
 
         const catList = (() => {
             if (categories === null) {
@@ -172,9 +172,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         return <span id="searchSentence">
             <span className="searchField" onClick={() => this.updatePanel("category")}>
                 {filterString}
-            </span>, <span className="searchField" onClick={() => this.updatePanel("weight")}>
+            </span>; <span className="searchField" onClick={() => this.updatePanel("weight")}>
                 {weightString}
-            </span>, <span id="searchSort" className="searchField">
+            </span>; <span id="searchSort" className="searchField">
                 {expiryString}
             </span>.
         </span>;
