@@ -680,10 +680,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (selected) {
                 newSelectedMap.set(tray, false);
                 if (tray instanceof Tray) {
-                    const trayIndex = tray.parentColumn.trays.indexOf(tray);
-                    tray.parentColumn.trays.splice(trayIndex, 1);
                     reindexColumns.add(tray.parentColumn);
-
                     tray.delete(true);
                 }
             }
