@@ -14,7 +14,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
     public abstract readonly childCollectionName: string = "";
     public children: TChildren[];
     public childrenLoaded: boolean;
-    public childLoadComplete?: () => void;
 
     protected constructor(id: string, fields: TFields, children?: TChildren[]) {
         super(id, fields);
@@ -106,33 +105,39 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             collectionName: string;
             childCollectionName: string;
             topLevelChildCollectionPath: string;
+            childIsSortable: boolean;
         };
 
         let currentState: State = {
             generator: this.createChild,
             collectionName: this.collectionName,
             childCollectionName: this.childCollectionName,
-            topLevelChildCollectionPath: this.topLevelChildCollectionPath
+            topLevelChildCollectionPath: this.topLevelChildCollectionPath,
+            childIsSortable: false
         };
 
         for (let i = this.layerID - 1; i >= minLayer; i--) {
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await firebase.database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            const query =
+                currentState.childIsSortable ?
+                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index") :
+                firebase.database.db.collection(currentState.topLevelChildCollectionPath);
+            for (const document of (await firebase.database.loadQuery<unknown & TopLevelFields>(query))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
                     const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
                     child.loaded = true;
-                    child.loadComplete?.call(child);
                     childMap.get(currentState.childCollectionName)?.set(document.id, child);
                     if (child instanceof MiddleLayer && !nextState) {
                         nextState = {
                             generator: child.createChild,
                             collectionName: child.collectionName,
                             childCollectionName: child.childCollectionName,
-                            topLevelChildCollectionPath: child.topLevelChildCollectionPath
+                            topLevelChildCollectionPath: child.topLevelChildCollectionPath,
+                            childIsSortable: child.childIsSortable
                         };
                     }
                 }
@@ -144,12 +149,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                 break;
             }
         }
-
-        this.dfs(layer => {
-            if (!(layer instanceof BottomLayer)) {
-                layer.childLoadComplete?.call(layer);
-            }
-        });
     }
 
     public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {

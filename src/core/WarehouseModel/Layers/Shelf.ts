@@ -10,13 +10,9 @@ interface ShelfFields {
 
 export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     public readonly layerID: WarehouseModel = WarehouseModel.shelf;
+    public readonly childIsSortable = true;
     public readonly collectionName = "shelves";
     public readonly childCollectionName = "columns";
-
-    protected constructor(id: string, fields: ShelfFields, parent: Bay) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
 
     /**
      * @param index - The (ordered) index of the shelf within the bay

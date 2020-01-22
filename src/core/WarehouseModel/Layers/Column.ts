@@ -10,13 +10,9 @@ interface ColumnFields {
 
 export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public readonly layerID: WarehouseModel = WarehouseModel.column;
+    public readonly childIsSortable = true;
     public readonly collectionName = "columns";
     public readonly childCollectionName = "trays";
-
-    protected constructor(id: string, fields: ColumnFields, parent: Shelf) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
 
     /**
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two

@@ -10,13 +10,9 @@ interface ZoneFields {
 
 export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
     public readonly layerID: WarehouseModel = WarehouseModel.zone;
+    public readonly childIsSortable = true;
     public readonly collectionName = "zones";
     public readonly childCollectionName = "bays";
-
-    protected constructor(id: string, fields: ZoneFields, parent: Warehouse) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
 
     /**
      * @param name - The name of the zone

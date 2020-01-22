@@ -40,7 +40,6 @@ export type LowerLayer = MiddleLayer<any, any, any> | BottomLayer<any, any>;
 export abstract class Layer<TFields> extends DatabaseObject<TFields> {
     public abstract readonly collectionName: string;
     public abstract readonly layerID: WarehouseModel;
-    public loadComplete?: () => void;
 
     protected constructor(id: string, fields: TFields) {
         super(id, fields);
@@ -90,7 +89,6 @@ export abstract class Layer<TFields> extends DatabaseObject<TFields> {
             this.fields = (await firebase.database.loadDocument<TFields>(this.topLevelPath))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
-            this.loadComplete?.call(this);
         }
         return this;
     }
