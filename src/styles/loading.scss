@@ -29,18 +29,12 @@ $gridCols: 4;
   // Styling
   background-color: #eeeeee;
 
-  // Shelfmaster text
+  // TrayMaster text
   #menu-header {
     // Use fixed top-left position
     position: fixed;
     top: 20px;
     left: 40px;
-    font-size: 40px;
-
-    h1 {
-      // Don't have default margins
-      margin: 0;
-    }
   }
 
   // Centred box

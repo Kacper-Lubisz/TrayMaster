@@ -5,6 +5,7 @@ import "../styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import {Dialog} from "../core/App";
+import logoSkew from "../Logo_skew.svg";
 
 /**
  * expiryAmount is the number of items expiring soon
@@ -28,7 +29,7 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
         return (
             <div className="main-menu">
                 <div className="menu-header">
-                    <h1>Shelfmaster</h1>
+                    <img alt="TrayMaster Logo" src={logoSkew}/>
                 </div>
                 {this.props.expiryAmount === 0 ? undefined : <div className="alert">
                     <div className="alert-header">

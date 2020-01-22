@@ -2,20 +2,11 @@
 
 @import "./keyboard";
 
-.main-menu {
-
-}
-
 .menu-header {
-  //shelfmaster text
+  //TrayMaster icon
   position: fixed;
   top: 20px;
   left: 40px;
-  font-size: 40px;
-
-  h1 {
-    margin: 0;
-  }
 }
 
 .menu-btn-container {
@@ -33,7 +24,7 @@
 .alert {
   //container for the alert
   position: fixed;
-  width: 500px;
+  width: 400px;
   right: 30px;
   top: 30px;
   box-shadow: 0 0 30px -15px #000000;
