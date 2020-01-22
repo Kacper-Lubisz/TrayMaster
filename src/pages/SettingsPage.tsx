@@ -5,10 +5,12 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 import {Dialog} from "../core/Dialog";
+import {User} from "../core/Firebase/Authentication";
 
 interface SettingsProps {
     openDialog: (dialog: Dialog) => void;
     warehouse: Warehouse | undefined;
+    user: User;
 }
 
 /**
@@ -40,6 +42,21 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                         <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                         <p>Back</p>
                     </button>
+                </div>
+                <div className="settings-content">
+                    <h1>User Settings</h1>
+                    <div className="settings-setting">
+                        <input
+                            type="checkbox"
+                            checked={this.props.user.willAutoAdvance}
+                            onChange={async e => {
+                                this.props.user.willAutoAdvance = e.target.checked;
+                                await this.props.user.stage(true, true);
+                                this.forceUpdate();
+                            }}
+                        />
+                        <p>Will Auto Advance</p>
+                    </div>
                 </div>
             </div>
         );

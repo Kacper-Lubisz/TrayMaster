@@ -90,6 +90,7 @@ class App extends React.Component<unknown, AppState> {
                     this.state.user && this.state.warehouse ? <ShelfViewPage
                         openDialog={this.openDialog.bind(this)}
                         warehouse={this.state.warehouse}
+                        user={this.state.user}
                     /> : <Redirect to="/menu"/>
                 } exact/>
                 <Route path="/menu" component={() => (() => {
@@ -122,10 +123,8 @@ class App extends React.Component<unknown, AppState> {
 
                     } else if (!this.state.user) {
                         return <Redirect to={"/signin"}/>;
-
                     } else {
                         return <Redirect to={"/warehouses"}/>;
-
                     }
                 })()}/>
                 <Route path="/settings" component={() => (() => {
@@ -135,6 +134,7 @@ class App extends React.Component<unknown, AppState> {
                         return <Redirect to={"/warehouses"}/>;
                     } else {
                         return <SettingsPage
+                            user={this.state.user}
                             warehouse={this.state.warehouse}
                             openDialog={this.openDialog.bind(this)}
                         />;
