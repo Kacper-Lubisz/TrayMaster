@@ -8,6 +8,7 @@ import {Warehouse} from "../core/WarehouseModel";
 import {User} from "../core/Firebase";
 import {Dialog} from "../core/Dialog";
 import logoSkew from "../Logo_skew.svg";
+import {SearchQuery, SortBy} from "./SearchPage";
 
 /**
  * expiryAmount is the number of items expiring soon
@@ -22,6 +23,8 @@ interface MainMenuProps {
     warehouse: Warehouse;
     user: User;
     expiryAmount: number;
+
+    setSearch: (query: SearchQuery) => void;
 }
 
 
@@ -40,8 +43,18 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                 <img alt="TrayMaster Logo" src={logoSkew}/>
             </div>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
-            {this.props.expiryAmount === 0 ? undefined : <div className="alert">
-                <div className="alert-header">
+            {this.props.expiryAmount === 0 ? undefined : <div
+                    className="alert"
+                onClick={(_) => {
+                        this.props.setSearch({
+                            categories: null,
+                            weight: null,
+                            commentSubstring: null,
+                            excludePickingArea: true,
+                            sort: {orderAscending: true, type: SortBy.expiry}
+                        });
+                        this.props.history.push("/search");
+                    }}><div className="alert-header">
                     <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
                     <h2>Expiry Imminent</h2>
                 </div>
@@ -53,7 +66,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                 <button className="key-btn" onClick={() => this.props.history.push("/")}>
                     <p>Back to Shelf View</p></button>
                 <button className="key-btn"
-                        onClick={() => alert("Search")}><p>Search</p>
+                        onClick={() => this.props.history.push("/search")}><p>Search</p>
                 </button>
                 <button className="key-btn"
                         onClick={() => alert("Report")}><p>Report</p>

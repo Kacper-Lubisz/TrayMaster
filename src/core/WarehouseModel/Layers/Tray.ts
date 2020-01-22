@@ -117,4 +117,22 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     }
 
     //#endregion
+
+    //region derived properties
+    public get locationString(): string {
+        return `${
+            this.parentZone.indexInParent
+        }_${
+            this.parentBay.indexInParent
+        }_${
+            this.parentShelf.indexInParent
+        }_${
+            this.parentColumn.indexInParent
+        }_${
+            this.indexInParent
+        }`;
+    }
+
+    //endregion
+
 }

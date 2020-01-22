@@ -19,8 +19,9 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
      * @param name - The name of the shelf
      * @param isPickingArea - true if in picking area
      * @param parent - The parent bay
+     * @param isPickingArea - If the shelf is in the picking area
      */
-    public static create(index: number, name: string, isPickingArea: boolean, parent: Bay): Shelf {
+    public static create(index: number, name: string, isPickingArea: boolean, parent: Bay, isPickingArea: boolean): Shelf {
         return new Shelf(Utils.generateRandomId(), {index, name, isPickingArea}, parent);
     }
 
@@ -55,7 +56,15 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
         this.fields.name = name;
     }
 
-    //#endregion
+    public get isPickingArea(): boolean {
+        return this.fields.isPickingArea;
+    }
+
+    public set isPickingArea(isPickingArea: boolean) {
+        this.fields.isPickingArea = isPickingArea;
+    }
+
+//#endregion
 
     //#region Parent Getters
     public get parentBay(): Bay {

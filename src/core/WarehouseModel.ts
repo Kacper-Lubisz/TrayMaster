@@ -24,8 +24,8 @@ export enum WarehouseModel {
  * Represents a tray expiry range
  */
 export interface ExpiryRange {
-    from: number;
-    to: number;
+    from: number | null;
+    to: number | null;
     label: string;
 }
 
@@ -57,9 +57,9 @@ export interface Category {
  * Mock warehouse zone colours
  */
 const zoneColors = [
-    {name: "Red", color: "#ff0000"},
-    {name: "Green", color: "#00ff00"},
-    {name: "Blue", color: "#0000ff"},
+    {name: "Red", color: "#f44336"},
+    {name: "Green", color: "#4caf50"},
+    {name: "Blue", color: "#2196f3"},
     {name: "White", color: "#ffffff"},
     {name: "Black", color: "#000000"}
 ];
@@ -67,38 +67,59 @@ const zoneColors = [
 /**
  * Mock warehouse tray expiries
  */
-const trayExpiries: ExpiryRange[] = [
+const trayExpires: ExpiryRange[] = [
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
+        from: null,
+        to: null,
+        label: "Indefinite"
+    },
+    {
+        from: new Date(2020, 0).getTime(),
+        to: null,
+        label: "After Jan 2020"
+    },
+    {
+        from: null,
+        to: new Date(2020, 0).getTime(),
+        label: "Before Jan 2020"
+    },
+    {
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2020, 1).getTime(),
         label: "Jan 2020"
     },
     {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
+        from: new Date(2020, 1).getTime(),
+        to: new Date(2020, 2).getTime(),
         label: "Feb 2020"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 4).getTime(),
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2020, 3).getTime(),
         label: "Jan-Mar 2020"
     },
     {
-        from: new Date(2020, 4).getTime(),
-        to: new Date(2020, 7).getTime(),
+        from: new Date(2020, 3).getTime(),
+        to: new Date(2020, 6).getTime(),
         label: "Apr-Jun 2020"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2021, 1).getTime(),
+        from: new Date(2020, 0).getTime(),
+        to: new Date(2021, 0).getTime(),
         label: "2020"
     },
     {
-        from: new Date(2021, 1).getTime(),
-        to: new Date(2022, 1).getTime(),
+        from: new Date(2021, 0).getTime(),
+        to: new Date(2022, 0).getTime(),
         label: "2021"
     },
-];
+].concat(Array(10).fill(0).map((_, j) => {
+    return {
+        from: new Date(2022 + j, 0).getTime(),
+        to: new Date(2022 + j, 0).getTime(),
+        label: (2020 + j).toString()
+    };
+}));
 
 /**
  * Generate a random warehouse structure down to tray level
@@ -111,17 +132,26 @@ async function generateRandomWarehouse(id: string, name: string, randomMaxColumn
     const warehouse = await Warehouse.create(id, name).loadDepthFirst();
     for (const zoneColor of zoneColors) {
         const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
+
         for (let j = 0; j < 3; j++) {
             const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
+
             for (let k = 0; k < 3; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
+                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay, k === 1);
                 for (let l = 0; l < 4; l++) {
                     const maxHeight = randomMaxColumnHeight ? 2 + Math.round(3 * Math.random()) : 3,
                         column = Column.create(l, Utils.randItem(warehouse.traySizes), maxHeight, shelf);
-                    for (let m = 0; m < 1 + Math.round((maxHeight - 2) * Math.random()); m++) {
-                        Tray.create(column, m, Utils.randItem(warehouse.categories),
-                            Utils.randItem(trayExpiries), Number((15 * Math.random()).toFixed(2)),
+
+                    for (let m = 0; m < 2 + Math.round((maxHeight - 2) * Math.random()); m++) {
+
+                        const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
+                        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
+                        const weight = Math.random() < 0.25 ? undefined :
+                                       Number((15 * Math.random()).toFixed(2));
+
+                        Tray.create(column, m, category, expiry, weight,
                             Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined);
+
                     }
                 }
             }

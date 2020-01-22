@@ -4,7 +4,7 @@ import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
 
 import firebase, {User} from "./Firebase";
 import {LoadingPage} from "../pages/Loading";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import {Redirect} from "react-router";
 import SettingsPage from "../pages/SettingsPage";
 import SignInPage from "../pages/SignInPage";
@@ -14,6 +14,8 @@ import Popup from "reactjs-popup";
 import MainMenu from "../pages/MainMenu";
 import ErrorHandler from "./ErrorHandler";
 import ShelfViewPage from "../pages/ShelfViewPage";
+import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
+
 
 /**
  * This interface exists because these are never null together
@@ -23,6 +25,7 @@ interface LoadedContent {
 }
 
 interface AppState {
+    search?: SearchResults;
     loading: boolean;
     user?: User | null;
     warehouse?: Warehouse | null;
@@ -97,6 +100,7 @@ class App extends React.Component<unknown, AppState> {
                 <Switch>
                     <Route path="/" component={() =>
                         this.state.user && this.state.warehouse ? <ShelfViewPage
+                            setSearch={this.setSearch.bind(this)}
                             openDialog={this.openDialog.bind(this)}
 
                             warehouse={this.state.warehouse}
@@ -125,6 +129,7 @@ class App extends React.Component<unknown, AppState> {
                                     });
                                 }}
                                 user={this.state.user}
+                                setSearch={this.setSearch.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
                                 expiryAmount={5}//todo fixme
                             />;
@@ -162,7 +167,15 @@ class App extends React.Component<unknown, AppState> {
                                 setWarehouse={this.setWarehouse.bind(this)}
                             />;
                         }
-                    })()}/><Route component={PageNotFoundPage}/>
+                    })()}/>
+                    <Route path="/search" component={() => {// todo fixme ensure that this is rerouted if there is no search
+                        return this.state.search ? <SearchPage
+                            warehouse={this.state.warehouse}
+                            search={this.state.search}
+                            setQuery={this.setSearch.bind(this)}
+                        /> : <Redirect to="/"/>;
+                    }}/>
+                    <Route component={PageNotFoundPage}/>
                 </Switch>
             </ErrorHandler>
             </BrowserRouter>
@@ -195,6 +208,32 @@ class App extends React.Component<unknown, AppState> {
             };
         });
     }
+
+
+    /**
+     * This method allows for setting the search query
+     * @param query
+     */
+    private setSearch(query: SearchQuery): void {
+        if (this.state.loaded) {
+            const loaded = this.state.loaded;
+            this.setState(state => {
+                return {
+                    ...state,
+                    search: {
+                        query: query,
+                        results: loaded.warehouse.traySearch(query)
+                        //todo fixme finalise how and where this search is going to be performed
+                        // an alternative is to keep results null until this promise resolves.
+                    }
+                };
+            });
+        } else {
+            throw new Error("Can't perform search when the warehouse is undefined");
+        }
+    }
+
+
 
     /**
      * This method opens a dialog.  The dialog is passed as a function which generates the dialog given a function which

@@ -8,8 +8,8 @@ import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 
 export interface BottomPanelProps {
     keyboardState: KeyboardName;
-    categorySelected: (category: Category) => void;
-    expirySelected: (expiry: ExpiryRange) => void;
+    categorySelected: (category: Category | null) => void;
+    expirySelected: (expiry: ExpiryRange | null) => void;
     categories: Category[];
     selectedTrayCells: TrayCell[];
     draftWeight?: string;
@@ -119,9 +119,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     private selectYear(year: number): void {
         this.selectedYear = year;
+
+        const from = new Date(year, 0).getTime();
+        const to = new Date(year + 1, 0).getTime();
+
         this.props.expirySelected({
-            from: new Date(year, 0).getTime(),
-            to: new Date(year + 1, 0).getTime(),
+            from: from,
+            to: to,
             label: year.toString()
         });
     }
@@ -133,10 +137,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     private selectQuarter(quarter: number): void {
         if (this.selectedYear) {
+
+            const from = new Date(this.selectedYear, quarter * 3).getTime();
+            const to = new Date(this.selectedYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
+
             this.props.expirySelected({
-                from: new Date(this.selectedYear, quarter * 3).getTime(),
-                to: new Date(quarter === 3 ? this.selectedYear + 1
-                                           : this.selectedYear, (quarter + 1) * 3 % 4).getTime(),
+                from: from,
+                to: to,
                 label: `${this.quartersTranslator[quarter]} ${this.selectedYear.toString()}`
             });
         }
@@ -149,9 +156,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     private selectMonth(month: number): void {
         if (this.selectedYear) {
+
+            const from = new Date(this.selectedYear, month).getTime();
+            const to = new Date(month === 11 ? this.selectedYear + 1 : this.selectedYear, (month + 1) % 12).getTime();
+
             this.props.expirySelected({
-                from: new Date(this.selectedYear, month).getTime(),
-                to: new Date(month === 11 ? this.selectedYear + 1 : this.selectedYear, (month + 1) % 12).getTime(),
+                from: from,
+                to: to,
                 label: `${this.monthsTranslator[month]} ${this.selectedYear.toString()}`
             });
         }
@@ -178,16 +189,23 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     onClick: () => this.props.categorySelected(cat),
                     selected: cat.name === commonCat
                 };
-            });
+            }).concat([
+                {
+                    name: "Clear",
+                    onClick: () => this.props.categorySelected(null),
+                    selected: false
+                }
+            ]);
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
 
             const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
             const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
-            const commonYear = firstYear === undefined ? undefined
-                                                       : traysOnly.every(item => item.expiry?.from === undefined || new Date(item.expiry.from).getFullYear() === firstYear)
-                                                         ? firstYear : undefined;
+
+            const commonYear = firstYear !== undefined && traysOnly.every(item =>
+                item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
+            ) ? firstYear : undefined;
 
             // update object-level selectedYear
             this.selectedYear = commonYear;
@@ -197,7 +215,25 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 year.selected = year.name === commonYear?.toString();
             }
 
+            const specialButtons = [
+                {
+                    name: "Indefinite",
+                    onClick: () => this.props.expirySelected({
+                        from: null,
+                        to: null,
+                        label: "Indefinite"
+                    })
+
+                }, {
+                    name: "Clear",
+                    onClick: () => this.props.expirySelected(null)
+
+                }
+            ];
+
             return <div className="keyboard-container">
+                <Keyboard id="exp-special" disabled={disabled} buttons={specialButtons} gridX={1}/>
+                <div className="vl"/>
                 <Keyboard id="exp-years" disabled={disabled} buttons={this.years} gridX={2}/>
                 <div className="vl"/>
                 <Keyboard id="exp-quarters" disabled={!commonYear} buttons={this.quarters} gridX={1}/>
@@ -212,7 +248,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 .map((a) => ({
                     name: a.toString(),
                     onClick: () => this.weightKeyHandler(a)
-                }));
+            }));
 
             // Create numpadSide for the side buttons
             const numpadSide = (["Backspace", "Clear", "Enter"] as WeightKeyboardButton[]).map((a) => {

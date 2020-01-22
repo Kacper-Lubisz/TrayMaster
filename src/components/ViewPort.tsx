@@ -364,16 +364,24 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             key={order}
         >{
             column.getPaddedTrays().map((tray, index) => {
-                let expiryStyle;
-                if (tray instanceof Tray) {
-                    const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";
-                    expiryStyle = {
-                        backgroundColor: bg,
-                        color: getTextColorForBackground(bg)
-                    };
-                }
+                const expiryStyle = (() => {
+                    if (tray instanceof Tray && tray.expiry) {
+                        const background = getExpiryColor(tray.expiry);
+                        return {
+                            backgroundColor: background,
+                            color: getTextColorForBackground(background)
+                        };
+                    } else {
+                        return {
+                            backgroundColor: "#ffffff",
+                            color: "#000000"
+                        };
+                    }
+                })();
+
                 return <div
                     className={classNames("tray", {
+                        "trayEmpty": !(tray instanceof Tray) && index === column.trays.length,
                         "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
                         "selected": this.props.isTraySelected(tray),
                         "firstTraySpace": index === column.trays.length,
@@ -391,7 +399,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
-                        <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
+                        <div className="trayCategory">{tray.category?.name ?? "?"}</div>
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
@@ -399,7 +407,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         <div className="trayCustomField">{tray.comment ?? ""}</div>
                     </> : null}
                     {!(tray instanceof Tray) && index === column.trays.length ? <>
-                        <p>EMPTY TRAY {tray.index}</p>
+                        <p>EMPTY TRAY</p>
                     </> : null}
                 </div>;
             })}

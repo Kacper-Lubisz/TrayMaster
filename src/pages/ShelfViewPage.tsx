@@ -42,6 +42,7 @@ import {buildErrorDialog, Dialog, DialogButtons, DialogTitle} from "../core/Dial
 import {trayComparisonFunction} from "../utils/sortCells";
 import _ from "lodash";
 import {User} from "../core/Firebase";
+import {SearchQuery, SortBy} from "./SearchPage";
 
 
 /**
@@ -69,6 +70,7 @@ interface ShelfViewProps {
      * @param dialog A dialog builder function which takes the function that closes the dialog.
      */
     openDialog: (dialog: Dialog) => void;
+    setSearch: (query: SearchQuery) => void;
     warehouse: Warehouse;
     user: User;
 }
@@ -485,17 +487,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * This method is called when a category is selected on the category keyboard
-     * @param category The category that is selected
+     * This method is called when a category is selected on the category keyboard, null category signifies that the
+     * category ought to be cleared
+     * @param category The category that is selected or null to clear
      */
-    private async onCategorySelected(category: Category): Promise<void> {
+    private async onCategorySelected(category: Category | null): Promise<void> {
 
         this.getSelectedTrays(
             true,
             true,
             this.props.user.willAutoAdvance ? "cell" : null
         ).forEach((tray) => {
-            tray.category = category;
+            tray.category = category ?? undefined;
         });
         this.forceUpdate();
 
@@ -504,17 +507,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * This method is called when an expiry is selected on the expiry keyboard
-     * @param expiry The expiry that is selected
+     * This method is called when an expiry is selected on the expiry keyboard, null expiry signifies that the expiry
+     * ought to be cleared
+     * @param expiry The expiry that is selected or null to clear
      */
-    private async onExpirySelected(expiry: ExpiryRange): Promise<void> {
+    private async onExpirySelected(expiry: ExpiryRange | null): Promise<void> {
 
         this.getSelectedTrays(
             true,
             true,
             this.props.user.willAutoAdvance ? "tray" : null
         ).forEach((tray) => {
-            tray.expiry = expiry;
+            tray.expiry = expiry ?? undefined;
         });
         this.forceUpdate();
 
@@ -721,25 +725,43 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private editTrayComment(): void {
 
-        if (this.getSelectedTrayCells().length === 1) {
+        this.props.openDialog({
+            closeOnDocumentClick: true,
+            dialog: (close: () => void) => {
 
-            const currentTray = this.getSelectedTrays(false, false)[0];
-            this.props.openDialog({
-                closeOnDocumentClick: true,
-                dialog: (close: () => void) => <EditCommentContent
+
+                const trays = this.getSelectedTrayCells();
+                return <EditCommentContent
                     onDiscard={close}
-                    draft={currentTray.comment ?? null}
-                    onSubmit={async (comment) => {
-                        currentTray.comment = comment ?? undefined;
+                    draft={trays.length === 1 && trays[0] instanceof Tray ? trays[0].comment ?? null : null}
+                    onSubmit={(comment) => {
+                        this.getSelectedTrays(true, false).forEach(tray =>
+                            tray.comment = comment ?? undefined
+                        );
                         close();
                         await currentTray.stage(false, true);
                     }}
-                />
-            });
-        } else {
-            throw Error("Multiple comments can't be set at the same time, maybe they should be");
-        }
+                />;
+            }
+        });
 
+    }
+
+    private makeSearch(): void {
+
+        const catSet = new Set(this.getSelectedTrays(false, false)
+                                   .map(tray => tray.category ?? null)
+                                   .filter((cat): cat is Category => cat !== null));
+        this.props.setSearch({
+            categories: catSet,
+            weight: null,
+            commentSubstring: null,
+            excludePickingArea: true,
+            sort: {orderAscending: true, type: SortBy.expiry}
+
+        });
+
+        this.props.history.push("/search"); //todo fixme find a better way to do this?
     }
 
     render(): React.ReactNode {
@@ -792,7 +814,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             name: "Edit Custom",
                             icon: faCommentAlt,
                             onClick: this.editTrayComment.bind(this),
-                            disabled: this.getSelectedTrays(false, false).length !== 1
+                            disabled: this.getSelectedTrays(false, false).length === 0
                         },
                         {
                             name: "Clear Trays",
@@ -815,11 +837,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                     ] : [ // Generate sidebar buttons
-                        {name: "Settings", onClick: () => this.props.history.push("/settings")},
+                        {name: "Search", onClick: this.makeSearch.bind(this)},
+                            {name: "Settings", onClick: () => this.props.history.push("/settings")},
                         {name: "Home", onClick: () => this.props.history.push("/menu")},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a
-                                                                                     // warehouse
+                                                                                      warehouse
                         // enabled = possibleMoveDirections.previousTray
                         {name: "Next", onClick: this.changeView.bind(this, "next")},
                         // enabled = possibleMoveDirections.nextTray
