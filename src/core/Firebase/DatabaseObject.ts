@@ -55,7 +55,7 @@ export abstract class DatabaseObject<TFields> {
     }
 
     protected get changed(): boolean {
-        return typeof this.originalFields !== "undefined" && !deepEqual(this.fields, this.originalFields);
+        return !deepEqual(this.fields, this.originalFields);
     }
 
     protected fieldsSaved(): void {

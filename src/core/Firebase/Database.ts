@@ -84,7 +84,6 @@ export class Database {
                             }
                             break;
                         case WriteOperation.delete:
-                            console.log(`DELETE: ${change.path}`);
                             batches[batches.length - 1].delete(this.db.doc(change.path));
                             changeCount += 1;
                             break;
@@ -96,7 +95,6 @@ export class Database {
             }
 
             await Promise.all(batches.map(async batch => batch.commit()));
-            console.log("Committed...");
         } else {
             this.dbChangeQueue.clear();
         }

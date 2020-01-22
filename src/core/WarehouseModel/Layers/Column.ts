@@ -49,7 +49,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public createChild = Tray.createFromFields;
 
     public toString(): string {
-        return `Column(${this.index}, ${this.traySize?.label}, ${this.maxHeight})`;
+        return `Column(${this.parentShelf.toString()}, ${this.index}, ${this.traySize?.label}, ${this.maxHeight})`;
     }
 
     //#region Field Getters and Setters

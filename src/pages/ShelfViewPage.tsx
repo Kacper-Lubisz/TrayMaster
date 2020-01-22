@@ -521,12 +521,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     addColumn(shelf: Shelf): void {
-        shelf.columns.push(Column.create(
+        Column.create(
             shelf.columns.length,
             this.props.warehouse.defaultTraySize,
             3,
             shelf
-        ));
+        );
         this.forceUpdate();
     }
 
@@ -572,7 +572,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     async discardEditShelf(shelf: Shelf): Promise<void> {
 
         //todo unimplemented
-        //await this.finaliseEditShelf(shelf);
+        await this.finaliseEditShelf(shelf);
     }
 
 
