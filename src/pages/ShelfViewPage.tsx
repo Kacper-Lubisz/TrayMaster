@@ -582,6 +582,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         // throw Error("Unimplemented method stub");
     }
 
+    // private addedColumns = new Set<Column>();
+
     /**
      * This method adds a new column to the current shelf and is called when the add column button is pressed.
      * @param shelf The shelf in question
@@ -614,7 +616,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (column.maxHeight) {
                 const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
                 column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed => {
-
                     this.state.selected.delete(removed);
                     removed.delete(true);
                 });
@@ -635,11 +636,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method is called when edit shelf mode is exited and the changes **are** rolled back
      * @param shelf The shelf in question
      */
-    private async discardEditShelf(shelf: Shelf): Promise<void> {
-
-        //todo unimplemented
-        await this.finaliseEditShelf(shelf);
-    }
+    // private async discardEditShelf(shelf: Shelf): Promise<void> {
+    //
+    // }
 
 
     /**
@@ -813,7 +812,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     locationString={locationString}
                     buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
                         {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
-                        {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
+                        // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                     ] : [ // Generate sidebar buttons
                         {name: "Settings", onClick: () => this.props.history.push("/settings")},
