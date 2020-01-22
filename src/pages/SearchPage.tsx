@@ -1,6 +1,5 @@
 import React from "react";
 import {Category, Tray, Warehouse} from "../core/WarehouseModel";
-import {Settings} from "../core/Settings";
 import "../styles/search.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
@@ -50,7 +49,6 @@ export interface SearchResults {
 
 interface SearchPageProps {
     warehouse?: Warehouse;
-    settings?: Settings;
     search: SearchResults;
     setQuery: (query: SearchQuery) => void;
 }

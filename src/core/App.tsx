@@ -5,7 +5,6 @@ import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
 import firebase, {User} from "./Firebase";
 import {LoadingPage} from "../pages/Loading";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
-import {Redirect} from "react-router";
 import SettingsPage from "../pages/SettingsPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
@@ -169,11 +168,13 @@ class App extends React.Component<unknown, AppState> {
                         }
                     })()}/>
                     <Route path="/search" component={() => {// todo fixme ensure that this is rerouted if there is no search
-                        return this.state.search ? <SearchPage
-                            warehouse={this.state.warehouse}
-                            search={this.state.search}
-                            setQuery={this.setSearch.bind(this)}
-                        /> : <Redirect to="/"/>;
+                        return this.state.user && this.state.warehouse ?
+                               this.state.search ? <SearchPage
+                                   warehouse={this.state.warehouse}
+                                   search={this.state.search}
+                                   setQuery={this.setSearch.bind(this)}
+                               /> : <Redirect to="/"/>
+                                                                       : <Redirect to="/menu"/>;
                     }}/>
                     <Route component={PageNotFoundPage}/>
                 </Switch>
@@ -215,14 +216,14 @@ class App extends React.Component<unknown, AppState> {
      * @param query
      */
     private setSearch(query: SearchQuery): void {
-        if (this.state.loaded) {
-            const loaded = this.state.loaded;
+        if (this.state.warehouse) {
+            const warehouse = this.state.warehouse;
             this.setState(state => {
                 return {
                     ...state,
                     search: {
                         query: query,
-                        results: loaded.warehouse.traySearch(query)
+                        results: warehouse.traySearch(query)
                         //todo fixme finalise how and where this search is going to be performed
                         // an alternative is to keep results null until this promise resolves.
                     }
@@ -232,7 +233,6 @@ class App extends React.Component<unknown, AppState> {
             throw new Error("Can't perform search when the warehouse is undefined");
         }
     }
-
 
 
     /**

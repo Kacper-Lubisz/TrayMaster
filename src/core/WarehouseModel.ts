@@ -137,7 +137,7 @@ async function generateRandomWarehouse(id: string, name: string, randomMaxColumn
             const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
 
             for (let k = 0; k < 3; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay, k === 1);
+                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
                 for (let l = 0; l < 4; l++) {
                     const maxHeight = randomMaxColumnHeight ? 2 + Math.round(3 * Math.random()) : 3,
                         column = Column.create(l, Utils.randItem(warehouse.traySizes), maxHeight, shelf);

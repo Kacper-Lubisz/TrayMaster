@@ -739,7 +739,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             tray.comment = comment ?? undefined
                         );
                         close();
-                        await currentTray.stage(false, true);
                     }}
                 />;
             }
@@ -838,11 +837,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                     ] : [ // Generate sidebar buttons
                         {name: "Search", onClick: this.makeSearch.bind(this)},
-                            {name: "Settings", onClick: () => this.props.history.push("/settings")},
+                        {name: "Settings", onClick: () => this.props.history.push("/settings")},
                         {name: "Home", onClick: () => this.props.history.push("/menu")},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
-                        {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a
-                                                                                      warehouse
+                        {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a warehouse
                         // enabled = possibleMoveDirections.previousTray
                         {name: "Next", onClick: this.changeView.bind(this, "next")},
                         // enabled = possibleMoveDirections.nextTray
