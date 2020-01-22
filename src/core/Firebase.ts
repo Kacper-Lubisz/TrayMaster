@@ -24,13 +24,13 @@ export class Firebase {
 
     public constructor() {
         const firebaseConfig = {
-            apiKey: "AIzaSyDR3NWkFU7G9F5CZNrZ1GvSz0GXZ3qcj9w",
-            authDomain: "shelfmaster-b719c.firebaseapp.com",
-            databaseURL: "https://shelfmaster-b719c.firebaseio.com",
-            projectId: "shelfmaster-b719c",
-            storageBucket: "shelfmaster-b719c.appspot.com",
-            messagingSenderId: "94491668696",
-            appId: "1:94491668696:web:66c6e469d7bc1167b827ad"
+            apiKey: "AIzaSyCYLusdThwIe0NKuKPerO-LT4NKOq88qfM",
+            authDomain: "traymaster-ea059.firebaseapp.com",
+            databaseURL: "https://traymaster-ea059.firebaseio.com",
+            projectId: "traymaster-ea059",
+            storageBucket: "traymaster-ea059.appspot.com",
+            messagingSenderId: "467309929406",
+            appId: "1:467309929406:web:9f94f529e0e70e16fa8fef"
         };
 
         fb.initializeApp(firebaseConfig);

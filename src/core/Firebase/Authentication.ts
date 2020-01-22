@@ -29,7 +29,7 @@ export class User extends DatabaseObject<UserFields> {
     private warehouseSettings: DatabaseCollection<UserWarehouseSettings>;
 
     public constructor(id: string, fields?: UserFields) {
-        super(id, fields ?? {isAdmin: false, name: "", lastWarehouseID: "", willAutoAdvance: true});
+        super(id, fields ?? {isAdmin: false, name: "", lastWarehouseID: "", willAutoAdvance: false});
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
 

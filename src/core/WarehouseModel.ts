@@ -130,6 +130,7 @@ const trayExpires: ExpiryRange[] = [
  */
 async function generateRandomWarehouse(id: string, name: string, randomMaxColumnHeight = false): Promise<Warehouse> {
     const warehouse = await Warehouse.create(id, name).loadDepthFirst();
+
     for (const zoneColor of zoneColors) {
         const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
 
@@ -138,12 +139,12 @@ async function generateRandomWarehouse(id: string, name: string, randomMaxColumn
 
             for (let k = 0; k < 3; k++) {
                 const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
+
                 for (let l = 0; l < 4; l++) {
                     const maxHeight = randomMaxColumnHeight ? 2 + Math.round(3 * Math.random()) : 3,
-                        column = Column.create(l, Utils.randItem(warehouse.traySizes), maxHeight, shelf);
+                        column = Column.create(l, warehouse.defaultTraySize, maxHeight, shelf);
 
                     for (let m = 0; m < 2 + Math.round((maxHeight - 2) * Math.random()); m++) {
-
                         const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
                         const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
                         const weight = Math.random() < 0.25 ? undefined :
@@ -189,6 +190,7 @@ export class WarehouseManager {
             for (let i = 0; i < warehouseNames.length; i++) {
                 const id = `MOCK_WAREHOUSE_${i}`;
                 this.warehouses[id] = await generateRandomWarehouse(id, warehouseNames[i]);
+                //await this.warehouses[id].stage(true, true, WarehouseModel.tray);
             }
         }
         return this.warehouseList;
@@ -206,7 +208,7 @@ export class WarehouseManager {
      */
     public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
         return typeof WarehouseManager.warehouses[id] === "undefined" ? undefined
-                                                                      : this.loadWarehouse(this.warehouses[id]);
+                                                                      : await this.loadWarehouse(this.warehouses[id]);
     }
 }
 

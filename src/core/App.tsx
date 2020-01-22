@@ -16,13 +16,6 @@ import ShelfViewPage from "../pages/ShelfViewPage";
 import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
 
 
-/**
- * This interface exists because these are never null together
- */
-interface LoadedContent {
-    warehouse: Warehouse;
-}
-
 interface AppState {
     search?: SearchResults;
     loading: boolean;
@@ -199,8 +192,10 @@ class App extends React.Component<unknown, AppState> {
         this.setState(state => {
             if (state.user) {
                 state.user.lastWarehouseID = warehouse.id;
-                // noinspection JSIgnoredPromiseFromCall
-                // state.user.stage(false, true);
+                if (!warehouse.childrenLoaded) {
+                    WarehouseManager.loadWarehouse(warehouse).then(); // todo change to async await with loading screen
+                }
+                state.user.stage(false, true).then();
             }
             //todo decide if this needs to call any load the warehouse or anything like that
             return {
