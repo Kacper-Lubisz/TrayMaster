@@ -4,7 +4,7 @@ import {Settings} from "../core/Settings";
 import "../styles/search.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-import {faTrashAlt as trash} from "@fortawesome/free-solid-svg-icons";
+import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
@@ -86,10 +86,12 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     render(): React.ReactNode {
         return <div id="searchPage">
             <div id="topPanel">
-                    {this.renderSearchSentence()}
+                <div id="sentenceL">
+                    <FontAwesomeIcon icon={arrowLeft} onClick={() => this.props.history.goBack()}/>
+                </div>
+                {this.renderSearchSentence()}
                 <div id="sentenceR">
-                    <FontAwesomeIcon icon={trash} onClick={this.clearQuery.bind(this)}/>
-                    <button onClick={() => this.props.history.goBack()}>Go back</button>
+                    <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
                 </div>
             </div>
             <div id="leftPanel">
