@@ -89,7 +89,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 </div>
                 {this.renderSearchSentence()}
                 <div id="sentenceR">
-                    <FontAwesomeIcon style={{cursor: "pointer"}} icon={cross} onClick={this.clearQuery.bind(this)}/>
+                    <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
                 </div>
             </div>
             <div id="leftPanel">
@@ -159,13 +159,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
             }
         })();
 
-        const expiryString = (() => {
-            if (sortBy) {
-                return `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" : "descending"}`;
-            } else {
-                return "unsorted";
-            }
-        })();
+        const expiryString = `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" : "descending"}`;
 
         return <span id="searchSentence">
             <span className="searchField" onClick={() => this.updatePanel("category")}>
@@ -205,8 +199,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                             };
                         } else {
                             return {
-                                backgroundColor: "#ffffff",
-                                color: "#000000"
+                                backgroundColor: ""
                             };
                         }
                     })();
