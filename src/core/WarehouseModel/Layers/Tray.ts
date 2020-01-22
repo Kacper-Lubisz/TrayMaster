@@ -20,7 +20,7 @@ export class Tray extends BottomLayer<Column, TrayFields> {
      * @param category - The tray's (nullable) category
      * @param expiry - The tray's (nullable) expiry range
      * @param weight - The tray's (nullable) weight
-     * @param comment - The tray's (nullable) custom field
+     * @param comment - The tray's (nullable) custom comment
      */
     public static create(parent: Column, index: number, category?: Category, expiry?: ExpiryRange, weight?: number,
                          comment?: string

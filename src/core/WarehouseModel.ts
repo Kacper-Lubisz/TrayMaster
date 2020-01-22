@@ -150,7 +150,7 @@ async function generateRandomWarehouse(id: string, name: string, randomMaxColumn
                                        Number((15 * Math.random()).toFixed(2));
 
                         Tray.create(column, m, category, expiry, weight,
-                            Math.random() < 0.1 ? "This is a custom field, it might be very long" : undefined);
+                            Math.random() < 0.1 ? "This is a custom comment, it might be very long" : undefined);
 
                     }
                 }

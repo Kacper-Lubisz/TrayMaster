@@ -404,7 +404,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
                         <div className="trayWeight">{tray.weight ?? "?"}kg</div>
-                        <div className="trayCustomField">{tray.comment ?? ""}</div>
+                        <div className="trayComment">{tray.comment ?? ""}</div>
                     </> : null}
                     {!(tray instanceof Tray) && index === column.trays.length ? <>
                         <p>EMPTY TRAY</p>

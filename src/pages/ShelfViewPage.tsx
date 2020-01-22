@@ -721,7 +721,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * Opens a popup which allows for editing the custom field
+     * Opens a popup which allows for editing the custom comment
      */
     private editTrayComment(): void {
 
@@ -812,7 +812,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             }
                         })(),
                         {
-                            name: "Edit Custom",
+                            name: "Edit Comment",
                             icon: faCommentAlt,
                             onClick: this.editTrayComment.bind(this),
                             disabled: this.getSelectedTrays(false, false).length === 0
