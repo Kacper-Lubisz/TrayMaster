@@ -5,6 +5,7 @@ import "../styles/mainmenu.scss";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import {Dialog} from "../core/App";
+import {SearchQuery, SortBy} from "./SearchPage";
 
 /**
  * expiryAmount is the number of items expiring soon
@@ -13,6 +14,8 @@ import {Dialog} from "../core/App";
 interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
     expiryAmount: number;
+
+    setSearch: (query: SearchQuery) => void;
 }
 
 
@@ -30,7 +33,18 @@ class MainMenu extends React.Component<RouteComponentProps & MainMenuProps> {
                 <div className="menu-header">
                     <h1>Shelfmaster</h1>
                 </div>
-                {this.props.expiryAmount === 0 ? undefined : <div className="alert">
+                {this.props.expiryAmount === 0 ? undefined : <div
+                    className="alert"
+                    onClick={(_) => {
+                        this.props.setSearch({
+                            categories: null,
+                            weight: null,
+                            commentSubstring: null,
+                            excludePickingArea: true,
+                            sort: {orderAscending: true, type: SortBy.expiry}
+                        });
+                        this.props.history.push("/search");
+                    }}>
                     <div className="alert-header">
                         <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
                         <h2>Expiry Imminent</h2>

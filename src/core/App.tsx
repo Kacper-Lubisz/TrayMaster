@@ -86,7 +86,13 @@ class App extends React.Component<any, AppState> {
                             />;
                         }).bind(this, this.state.loaded)} exact/>
                         <Route path="/menu"
-                               component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
+                               component={() =>
+                                   <MainMenu
+                                       setSearch={this.setSearch.bind(this)}
+                                       openDialog={this.openDialog.bind(this)}
+                                       expiryAmount={5}
+                                   />
+                               }/>
                         <Route path="/settings"
                                component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
                         <Route path="/search" component={() => // todo fixme ensure that this is rerouted if there is no search
