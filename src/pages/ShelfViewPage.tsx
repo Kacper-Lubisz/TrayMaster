@@ -41,6 +41,7 @@ import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {buildErrorDialog, Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {trayComparisonFunction} from "../utils/sortCells";
 import _ from "lodash";
+import {User} from "../core/Firebase";
 
 
 /**
@@ -69,6 +70,7 @@ interface ShelfViewProps {
      */
     openDialog: (dialog: Dialog) => void;
     warehouse: Warehouse;
+    user: User;
 }
 
 interface ShelfViewState {
@@ -488,7 +490,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private async onCategorySelected(category: Category): Promise<void> {
 
-        this.getSelectedTrays(true, true, "cell").forEach((tray) => {
+        this.getSelectedTrays(
+            true,
+            true,
+            this.props.user.willAutoAdvance ? "cell" : null
+        ).forEach((tray) => {
             tray.category = category;
         });
         this.forceUpdate();
@@ -503,7 +509,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private async onExpirySelected(expiry: ExpiryRange): Promise<void> {
 
-        this.getSelectedTrays(true, true, "tray").forEach((tray) => {
+        this.getSelectedTrays(
+            true,
+            true,
+            this.props.user.willAutoAdvance ? "tray" : null
+        ).forEach((tray) => {
             tray.expiry = expiry;
         });
         this.forceUpdate();
@@ -530,7 +540,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private async applyDraftWeight(): Promise<void> {
 
-        this.getSelectedTrays(true, true, "tray").forEach((tray) => {
+        this.getSelectedTrays(
+            true,
+            true,
+            this.props.user.willAutoAdvance ? "tray" : null
+        ).forEach((tray) => {
             tray.weight = isNaN(Number(this.state.draftWeight)) ? undefined : Number(this.state.draftWeight);
         });
         this.forceUpdate();

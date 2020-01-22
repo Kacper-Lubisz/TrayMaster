@@ -21,13 +21,15 @@ interface UserFields {
     isAdmin: boolean;
     name: string;
     lastWarehouseID: string;
+
+    willAutoAdvance: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
     private warehouseSettings: DatabaseCollection<UserWarehouseSettings>;
 
     public constructor(id: string, fields?: UserFields) {
-        super(id, fields ?? {isAdmin: false, name: "", lastWarehouseID: ""});
+        super(id, fields ?? {isAdmin: false, name: "", lastWarehouseID: "", willAutoAdvance: true});
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
 
@@ -80,6 +82,16 @@ export class User extends DatabaseObject<UserFields> {
     public set name(name: string) {
         this.fields.name = name;
     }
+
+    public get willAutoAdvance(): boolean {
+        return this.fields.willAutoAdvance;
+    }
+
+    public set willAutoAdvance(willAutoAdvance: boolean) {
+        this.fields.willAutoAdvance = willAutoAdvance;
+    }
+
+
 }
 
 export class Authentication {
@@ -114,7 +126,8 @@ export class Authentication {
                 {
                     name: "Mock User",
                     lastWarehouseID: "MOCK_WAREHOUSE_0",
-                    isAdmin: true
+                    isAdmin: true,
+                    willAutoAdvance: true,
                 }).load();
             onSignIn?.call(this, this.currentUser);
         }
@@ -137,7 +150,8 @@ export class Authentication {
                 {
                     name: "Mock User",
                     lastWarehouseID: "",
-                    isAdmin: true
+                    isAdmin: true,
+                    willAutoAdvance: true,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
@@ -154,7 +168,8 @@ export class Authentication {
                 {
                     name: "Mock User",
                     lastWarehouseID: "",
-                    isAdmin: true
+                    isAdmin: true,
+                    willAutoAdvance: true,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
