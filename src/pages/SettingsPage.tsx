@@ -16,6 +16,7 @@ interface SettingsProps {
 class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, any> {
 
     render(): React.ReactNode {
+
         return (
             <div className="settings">
                 <div className="settings-header">

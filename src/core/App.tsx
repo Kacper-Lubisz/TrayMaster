@@ -12,6 +12,7 @@ import ShelfView from "../pages/ShelfViewPage";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import MainMenu from "../pages/MainMenu";
+import ErrorHandler from "./ErrorHandler";
 
 /**
  * This interface exists because these are never null together
@@ -73,20 +74,23 @@ class App extends React.Component<any, AppState> {
         return <>
             {this.state.loaded === undefined ? <LoadingPage/> : (
                 <BrowserRouter>
-                    <Switch>
-                        <Route path="/" component={((loaded: LoadedContent) => {
-                            return <ShelfView
-                                openDialog={this.openDialog.bind(this)}
-                                settings={loaded.settings}
-                                warehouse={loaded.warehouse}
-                            />;
-                        }).bind(this, this.state.loaded)} exact/>
-                        <Route path="/menu"
-                               component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
-                        <Route path="/settings"
-                               component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
-                        <Route component={PageNotFoundPage}/>
-                    </Switch>
+                    <ErrorHandler>
+                        <Switch>
+                            <Route path="/" component={((loaded: LoadedContent) => {
+                                return <ShelfView
+                                    openDialog={this.openDialog.bind(this)}
+                                    settings={loaded.settings}
+                                    warehouse={loaded.warehouse}
+                                />;
+                            }).bind(this, this.state.loaded)} exact/>
+                            <Route path="/menu"
+                                   component={() => <MainMenu openDialog={this.openDialog.bind(this)}
+                                                              expiryAmount={5}/>}/>
+                            <Route path="/settings"
+                                   component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
+                            <Route component={PageNotFoundPage}/>
+                        </Switch>
+                    </ErrorHandler>
                 </BrowserRouter>)}
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
