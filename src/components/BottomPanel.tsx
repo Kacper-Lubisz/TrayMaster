@@ -5,6 +5,7 @@ import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 
+
 export interface BottomPanelProps {
     keyboardState: KeyboardName;
     categorySelected: (category: Category) => void;

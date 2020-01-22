@@ -12,6 +12,17 @@ test("Test characteristics of Utils.joinPaths", () => {
     expect(Utils.joinPaths("/a", "/b/", "c/d", "e/")).toBe("a/b/c/d/e");
 });
 
+
+test("Test characteristics of Utils.isWhiteSpace", () => {
+    expect(Utils.isWhiteSpace("")).toBe(true);
+    expect(Utils.isWhiteSpace(" ")).toBe(true);
+    expect(Utils.isWhiteSpace("\t")).toBe(true);
+    expect(Utils.isWhiteSpace("\t \t")).toBe(true);
+    expect(Utils.isWhiteSpace("a")).toBe(false);
+    expect(Utils.isWhiteSpace("\ta\t ")).toBe(false);
+    expect(Utils.isWhiteSpace("             a           ")).toBe(false);
+});
+
 test("Test characteristics of Utils.normalisePath", () => {
     expect(Utils.normalisePath("")).toBe("");
     expect(Utils.normalisePath("////////")).toBe("");

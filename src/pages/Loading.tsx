@@ -25,20 +25,6 @@ interface SpinnerTrayProps {
 }
 
 /**
- * State of the LoadingPage component
- */
-interface LoadingPageState {
-    /**
-     * Object that defines any ongoing animations in the format:
-     * {
-     *     [trayKey]: [animationClass],
-     *     [tray2Key]: [animationClass2]
-     * }
-     */
-    animation?: any;
-}
-
-/**
  * Spinner tray
  * Returns an SVG rect with class equal to its anim prop
  */
@@ -60,13 +46,45 @@ class SpinnerTray extends React.Component<SpinnerTrayProps> {
  * - Loading spinner & 'Loading...' text
  * No props
  */
-export class LoadingPage extends React.Component<any, LoadingPageState> {
-    traySwapInterval: NodeJS.Timeout | undefined;
+export class LoadingPage extends React.Component {
+
+    render(): React.ReactNode {
+        return <div id="loadingPage">
+            <div id="menu-header">
+                <h1>Shelfmaster</h1>
+            </div>
+            <LoadingSpinner/>
+        </div>;
+
+    }
+}
+
+interface LoadingSpinnerState {
+    traySwapInterval: NodeJS.Timeout | null;
+
+    /**
+     * Object that defines any ongoing animations in the format:
+     * {
+     *     [trayKey]: [animationClass],
+     *     [tray2Key]: [animationClass2]
+     * }
+     */
+    animation?: any;
+}
+
+export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
+
+    constructor(props: any) {
+        super(props);
+        this.state = {
+            traySwapInterval: null
+        };
+    }
 
     /**
      * Choose two trays to swap, and update the state to reflect this
      */
-    swapTrays(): void {
+    private swapTrays(): void {
         // Decide what kind of swap to make
         const swapDir: boolean = Math.random() < 0.5; // axis: true => x, false => y
         let swaps = swapDir ? ["r", "l"] : ["d", "u"]; // start generating class names
@@ -76,7 +94,7 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
         });
 
         // Initialise tray variables
-        let startTray, endTray;
+        let startTray: any, endTray: any;
         // if swapping vertically
         if (swapDir) {
             // decide first tray
@@ -98,27 +116,39 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
         }
 
         // set state to reflect trays being swapped
-        this.setState({
-            ...this.state,
-            animation: {
-                [startTray]: swaps[0],
-                [endTray]: swaps[1]
-            }
+        this.setState(state => {
+            return {
+                ...state,
+                animation: {
+                    [startTray]: swaps[0],
+                    [endTray]: swaps[1]
+                }
+            };
         });
     }
 
+
     componentDidMount(): void {
         // when fully rendered, start swapping :D
-        this.traySwapInterval = setInterval(this.swapTrays.bind(this), 250);
+        this.setState(state => {
+            return {
+                ...state,
+                traySwapInterval: setInterval(this.swapTrays.bind(this), 250)
+            };
+        });
+
     }
 
     componentWillUnmount(): void {
-        if (this.traySwapInterval) {
-            clearInterval(this.traySwapInterval);
+
+        if (this.state.traySwapInterval) {
+            clearInterval(this.state.traySwapInterval);
         }
+
     }
 
     render(): React.ReactNode {
+
         return (
             <div id="loadingPage">
                 <div id="menu-header">
@@ -126,29 +156,27 @@ export class LoadingPage extends React.Component<any, LoadingPageState> {
                 </div>
                 <div id="loading-box">
                     <svg id="spinner">
-                        <g>
-                            {
-                                Array(gridCols).fill(0).map((_, i) => {
-                                    return Array(gridRows).fill(0).map((_, j) => {
-                                        const key = `${i}${j}`;
-                                        return <rect className="spinner-tray-slot" key={key} x={i * gridDistX}
-                                                     y={j * gridDistY}/>;
-                                    });
-                                })
-                            }
-                        </g>
-                        {
-                            Array(gridCols).fill(0).map((_, i) => {
-                                return Array(gridRows).fill(0).map((_, j) => {
-                                    const key = `${i}${j}`;
-                                    return <SpinnerTray anim={this.state?.animation[key]} key={key} pos={[i, j]}/>;
-                                });
-                            })
-                        }
+                        <g>{Array(gridCols).fill(0).map((_, i) => {
+                            return Array(gridRows).fill(0).map((_, j) => {
+                                const key = `${i}${j}`;
+                                return <rect className="spinner-tray-slot" key={key} x={i * gridDistX}
+                                             y={j * gridDistY}/>;
+                            });
+                        })}</g>
+                        {Array(gridCols).fill(0).map((_, i) => {
+                            return Array(gridRows).fill(0).map((_, j) => {
+                                const key = `${i}${j}`;
+                                return <SpinnerTray
+                                    anim={this.state?.animation ? this.state?.animation[key] : undefined}
+                                    key={key}
+                                    pos={[i, j]}
+                                />;
+                            });
+                        })}
                     </svg>
                     <h2>Loading...</h2>
                 </div>
-            </div>
-        );
+            </div>);
+
     }
 }

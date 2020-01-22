@@ -39,24 +39,24 @@ module.exports = {
         // For these rules, disable ESLint's default implementations to use TypeScript-specific replacements
         "semi": "off",
         "@typescript-eslint/semi": [
-            "error",
+            "warn",
             "always"
         ],
         "no-extra-semi": "off",
-        "@typescript-eslint/no-extra-semi": "error",
+        "@typescript-eslint/no-extra-semi": "warn",
         "brace-style": "off",
         "@typescript-eslint/brace-style": [
-            "error",
+            "warn",
             "1tbs"
         ],
         "func-call-spacing": "off",
         "@typescript-eslint/func-call-spacing": [
-            "error",
+            "warn",
             "never"
         ],
         "quotes": "off",
         "@typescript-eslint/quotes": [
-            "error",
+            "warn",
             "double",
             {
                 "avoidEscape": false
@@ -73,11 +73,11 @@ module.exports = {
         "@typescript-eslint/no-explicit-any": "off",
 
         // These rules don't have an equivalent in ESLint to disable
-        "@typescript-eslint/no-throw-literal": "error",
-        "@typescript-eslint/promise-function-async": "error",
-        "@typescript-eslint/no-extra-non-null-assertion": "error",
+        "@typescript-eslint/no-throw-literal": "warn",
+        "@typescript-eslint/promise-function-async": "warn",
+        "@typescript-eslint/no-extra-non-null-assertion": "warn",
         "@typescript-eslint/explicit-function-return-type": [
-            "error",
+            "warn",
             {
                 "allowExpressions": true
             }

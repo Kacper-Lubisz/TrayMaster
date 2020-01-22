@@ -1,7 +1,8 @@
 import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
-import database, {DatabaseCollection} from "../Database";
+import firebase from "../../Firebase";
+import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
@@ -19,6 +20,7 @@ const defaultTraySizes: TraySize[] = [
 
 interface WarehouseFields {
     name: string;
+    defaultTraySizeID: string;
 }
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
@@ -31,8 +33,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     private constructor(id: string, fields: WarehouseFields) {
         super(id, fields);
-        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"));
-        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"));
+        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"), true);
+        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"), true);
     }
 
     /**
@@ -42,7 +44,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      * @returns The newly created warehouse
      */
     public static create(id?: string, name?: string): Warehouse {
-        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? ""});
+        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: ""});
     }
 
     /**
@@ -56,8 +58,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database.db.collection(this.topLevelChildCollectionPath);
-            this.children = (await database.loadQuery<unknown>(query))
+            const query = firebase.database.db.collection(this.topLevelChildCollectionPath);
+            this.children = (await firebase.database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
@@ -148,7 +150,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         await this.traySizeCollection.stage(forceStage);
 
         if (this.changed || forceStage) {
-            database.set(this.path, this.fields);
+            firebase.database.set(this.topLevelPath, this.fields);
             this.fieldsSaved();
         }
     }
@@ -160,6 +162,14 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public set name(name: string) {
         this.fields.name = name;
+    }
+
+    public get defaultTraySize(): TraySize {
+        return this.traySizeCollection.get(this.fields.defaultTraySizeID) ?? this.traySizes[0];
+    }
+
+    public set defaultTraySize(traySize: TraySize) {
+        this.fields.defaultTraySizeID = this.traySizeCollection.getItemId(traySize);
     }
 
     //#endregion

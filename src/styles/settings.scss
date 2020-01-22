@@ -6,6 +6,22 @@
 
 }
 
+.settings-content {
+  position: fixed;
+  left: 258px;
+  bottom: 8px;
+  right: 8px;
+  top: 8px;
+
+  display: block;
+
+  > .settings-setting {
+    display: flex;
+    flex-direction: row;
+
+  }
+}
+
 .settings-header {
   //settings header text
   position: fixed;

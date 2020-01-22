@@ -9,13 +9,9 @@ interface BayFields {
 
 export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
     public readonly layerID: WarehouseModel = WarehouseModel.bay;
+    public readonly childIsSortable = true;
     public readonly collectionName = "bays";
     public readonly childCollectionName = "shelves";
-
-    protected constructor(id: string, fields: BayFields, parent: Zone) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
 
     /**
      * @param name - The name of the bay

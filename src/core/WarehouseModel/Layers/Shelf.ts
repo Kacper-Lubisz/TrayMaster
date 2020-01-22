@@ -5,25 +5,23 @@ import Utils from "../Utils";
 interface ShelfFields {
     index: number;
     name: string;
+    isPickingArea: boolean;
 }
 
 export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     public readonly layerID: WarehouseModel = WarehouseModel.shelf;
+    public readonly childIsSortable = true;
     public readonly collectionName = "shelves";
     public readonly childCollectionName = "columns";
-
-    protected constructor(id: string, fields: ShelfFields, parent: Bay) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
 
     /**
      * @param index - The (ordered) index of the shelf within the bay
      * @param name - The name of the shelf
+     * @param isPickingArea - true if in picking area
      * @param parent - The parent bay
      */
-    public static create(index: number, name: string, parent: Bay): Shelf {
-        return new Shelf(Utils.generateRandomId(), {index, name}, parent);
+    public static create(index: number, name: string, isPickingArea: boolean, parent: Bay): Shelf {
+        return new Shelf(Utils.generateRandomId(), {index, name, isPickingArea}, parent);
     }
 
     /**
