@@ -735,9 +735,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     onDiscard={close}
                     draft={trays.length === 1 && trays[0] instanceof Tray ? trays[0].comment ?? null : null}
                     onSubmit={(comment) => {
-                        this.getSelectedTrays(true, false).forEach(tray =>
-                            tray.comment = comment ?? undefined
+                        this.getSelectedTrays(true, false).forEach(tray => {
+                                tray.comment = comment ?? undefined;
+                            }
                         );
+                        this.state.currentView.stage(false, true, WarehouseModel.tray).then();
                         close();
                     }}
                 />;

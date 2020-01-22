@@ -46,12 +46,6 @@ export class Tray extends BottomLayer<Column, TrayFields> {
         return `Tray(${this.index}, ${this.category?.name}, ${this.expiry?.label}, ${this.weight} kg, "${this.comment}")`;
     }
 
-    public async delete(commit = false): Promise<void> {
-        console.log(this.id);
-        console.log(this.fields);
-        return super.delete(commit);
-    }
-
     //#region Field Getters and Setters
     public get index(): number {
         return this.fields.index;
