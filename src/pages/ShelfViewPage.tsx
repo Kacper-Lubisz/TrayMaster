@@ -754,7 +754,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                                    .map(tray => tray.category ?? null)
                                    .filter((cat): cat is Category => cat !== null));
         this.props.setSearch({
-            categories: catSet,
+            categories: catSet.size ? catSet : null,
             weight: null,
             commentSubstring: null,
             excludePickingArea: true,
