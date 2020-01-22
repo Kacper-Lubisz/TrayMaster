@@ -56,9 +56,9 @@ export interface Category {
  * Mock warehouse zone colours
  */
 const zoneColors = [
-    {name: "Red", color: "#ff0000"},
-    {name: "Green", color: "#00ff00"},
-    {name: "Blue", color: "#0000ff"},
+    {name: "Red", color: "#f44336"},
+    {name: "Green", color: "#4caf50"},
+    {name: "Blue", color: "#2196f3"},
     {name: "White", color: "#ffffff"},
     {name: "Black", color: "#000000"}
 ];
