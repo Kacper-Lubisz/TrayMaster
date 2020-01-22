@@ -24,16 +24,16 @@ type WeightKeyboardButton = "Enter" | "Clear" | "Backspace" | number | ".";
  * @see BottomPanelPage
  */
 export class BottomPanel extends React.Component<BottomPanelProps> {
-    years: KeyboardButtonProps[];
-    quarters: KeyboardButtonProps[];
-    months: KeyboardButtonProps[];
-    quartersTranslator: string[] = [
+    private readonly years: KeyboardButtonProps[];
+    private readonly quarters: KeyboardButtonProps[];
+    private readonly months: KeyboardButtonProps[];
+    private readonly quartersTranslator: string[] = [
         "Jan-Mar",
         "Apr-Jun",
         "Jul-Sep",
         "Oct-Dec"
     ];
-    monthsTranslator: string[] = [
+    private readonly monthsTranslator: string[] = [
         "Jan", "Feb", "Mar",
         "Apr", "May", "Jun",
         "Jul", "Aug", "Sep",
@@ -43,7 +43,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     /**
      * Currently selected year
      */
-    selectedYear: number | undefined;
+    private selectedYear: number | undefined; // todo fixme this needs to be part of state
 
     constructor(props: BottomPanelProps) {
         super(props);
@@ -83,7 +83,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Handles key presses clicked in the weight keyboard, by updating draftWeight in ShelfView
      * @param key
      */
-    weightKeyHandler(key: WeightKeyboardButton): void {
+    private weightKeyHandler(key: WeightKeyboardButton): void {
 
         if (key === "Enter") {
             this.props.applyDraftWeight();
@@ -117,7 +117,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Sets selectedYear and current tray expiry to that year
      * @param year - number representing the current year
      */
-    selectYear(year: number): void {
+    private selectYear(year: number): void {
         this.selectedYear = year;
         this.props.expirySelected({
             from: new Date(year, 0).getTime(),
@@ -131,7 +131,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Sets current tray expiry to that quarter in selectedYear
      * @param quarter - number in [0-3] inclusive representing the current quarter
      */
-    selectQuarter(quarter: number): void {
+    private selectQuarter(quarter: number): void {
         if (this.selectedYear) {
             this.props.expirySelected({
                 from: new Date(this.selectedYear, quarter * 3).getTime(),
@@ -147,7 +147,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Sets current tray expiry to that month in selectedYear
      * @param month - number in [0-11] inclusive representing the current month
      */
-    selectMonth(month: number): void {
+    private selectMonth(month: number): void {
         if (this.selectedYear) {
             this.props.expirySelected({
                 from: new Date(this.selectedYear, month).getTime(),
@@ -161,7 +161,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * Return different keyboards depending on keyboardState
      * @param disabled whether the keyboard is disabled (ie no trays are selected)
      */
-    chooseKeyboard(disabled: boolean): React.ReactNode {
+    private chooseKeyboard(disabled: boolean): React.ReactNode {
         // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
         const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
 
@@ -207,12 +207,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         } else if (this.props.keyboardState === "weight") {
 
             // Create numpad for the digits and decimal point buttons
-            const numpad = (Array.from(Array(10).keys()) as WeightKeyboardButton[]).reverse().concat(["."]).map((a) => ({
-                name: a.toString(),
-                onClick: () => {
-                    this.weightKeyHandler(a);
-                }
-            }));
+            const numpad = (Array(9).fill(0).map((_, i) => i + 1) as WeightKeyboardButton[])
+                .concat([0, "."])
+                .map((a) => ({
+                    name: a.toString(),
+                    onClick: () => this.weightKeyHandler(a)
+                }));
 
             // Create numpadSide for the side buttons
             const numpadSide = (["Backspace", "Clear", "Enter"] as WeightKeyboardButton[]).map((a) => {
@@ -226,9 +226,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
                     disabled: shouldDisable,
-                    onClick: () => {
-                        this.weightKeyHandler(a);
-                    }
+                    onClick: () => this.weightKeyHandler(a)
                 };
             });
 
@@ -245,7 +243,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             </div>;
 
         } else { // edit shelf
-            return <div>Add some presets in here</div>;
+            return <div>
+                Unimplemented Panel
+
+            </div>;
         }
 
     }
