@@ -160,7 +160,7 @@ class App extends React.Component<unknown, AppState> {
                             />;
                         }
                     })()}/>
-                    <Route path="/search" component={() => {// todo fixme ensure that this is rerouted if there is no search
+                    <Route path="/search" component={() => {
                         return this.state.user && this.state.warehouse ?
                                this.state.search ? <SearchPage
                                    warehouse={this.state.warehouse}
