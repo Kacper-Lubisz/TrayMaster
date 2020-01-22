@@ -53,7 +53,7 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
  * The properties that get passed into Keyboard components
  * @see Keyboard
  */
-export interface KeyboardProps {
+interface KeyboardProps {
     /** List of KeyboardButtonProps to give to child buttons */
     buttons: KeyboardButtonProps[];
 
@@ -76,7 +76,7 @@ export class Keyboard extends React.Component<KeyboardProps> {
     /**
      * Generate and return an object representing a full keyboard based on the given props
      */
-    generateBoard(): React.ReactNode[] {
+    private generateBoard(): React.ReactNode[] {
         // calculate the number of rows we need
         const rowCount: number = Math.ceil(this.props.buttons.length / this.props.gridX);
 
@@ -85,23 +85,24 @@ export class Keyboard extends React.Component<KeyboardProps> {
             // Work out how many buttons we've generated so far
             const pastButtons: number = r * this.props.gridX;
 
-            return (<div key={r} className="kb-row">
-                {  // Generate the buttons in this row
-                    Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons)).fill(0).map((_, c) => {
-                        return <KeyboardButton disabled={this.props.disabled}
-                                               key={c} {...this.props.buttons[pastButtons + c]}/>;
-                    })
-                }
-            </div>);
+            return <div key={r} className="kb-row">{  // Generate the buttons in this row
+                Array(Math.min(this.props.gridX, this.props.buttons.length - pastButtons))
+                    .fill(0)
+                    .map((_, c) =>
+                        <KeyboardButton disabled={this.props.disabled}
+                                        key={c}
+                                        {...this.props.buttons[pastButtons + c]}
+                        />
+                    )
+            }</div>;
         });
     }
 
     render(): React.ReactNode {
 
-        return (
-            <div className="keyboard" id={this.props.id}>
-                {this.generateBoard()}
-            </div>
-        );
+        return <div className="keyboard" id={this.props.id}>
+            {this.generateBoard()}
+        </div>;
+
     }
 }

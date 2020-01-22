@@ -1,19 +1,18 @@
 import React from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
-import {Redirect} from "react-router";
+import {Warehouse, WarehouseManager} from "./WarehouseModel";
+import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
 
-import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
-import Popup from "reactjs-popup";
-
-import MainMenu from "../pages/MainMenu";
 import firebase, {User} from "./Firebase";
 import {LoadingPage} from "../pages/Loading";
+import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {Redirect} from "react-router";
+import MainMenu from "../pages/MainMenu";
 import SettingsPage from "../pages/SettingsPage";
-import PageNotFoundPage from "../pages/PageNotFoundPage";
-import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
-import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
+import PageNotFoundPage from "../pages/PageNotFoundPage";
+import Popup from "reactjs-popup";
+import ShelfViewPage from "../pages/ShelfViewPage";
 
 interface AppState {
     loading: boolean;
@@ -194,7 +193,7 @@ class App extends React.Component<unknown, AppState> {
      * will close the dialog.  Only one dialog can be open at a time.
      * @param dialog The dialog to be displayed
      */
-    public openDialog(dialog: Dialog): void {
+    private openDialog(dialog: Dialog): void {
         this.setState(state => {
             return {
                 ...state,
@@ -209,7 +208,7 @@ class App extends React.Component<unknown, AppState> {
     /**
      * This method closes the currently open dialog, if none is open then it does nothing.
      */
-    public closeDialog(): void {
+    private closeDialog(): void {
         this.setState((state) => {
             return {...state, dialog: null};
         });
