@@ -377,9 +377,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         if (fillSpaces) {
             const newSelection = new Map(this.state.selected);
             const newTrays = spaces.map(space => {
-                if (!ignoreAirSpaces || space.index === space.column.trays.length) {
+                if (!ignoreAirSpaces || space.index === space.parentColumn.trays.length) {
                     const newTray = Tray.create(
-                        space.column,
+                        space.parentColumn,
                         space.index,
                         undefined,
                         undefined,
@@ -428,13 +428,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         //todo add a setting for this
 
         const comparison = composeSorts<TrayCell>([
-            byNullSafe<TrayCell>(cell => {
-                if (cell instanceof Tray) {
-                    return cell.parentColumn.indexInParent;
-                } else {
-                    return cell.column.indexInParent;
-                }
-            }, false, false),
+            byNullSafe<TrayCell>(cell => cell.parentColumn.indexInParent, false, false),
             byNullSafe<TrayCell>(cell => cell.index, false, false)
         ]);
 
@@ -451,13 +445,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         if (maxSelected) {
 
-            const columnIndex = (maxSelected instanceof Tray ? maxSelected.parentColumn
-                                                             : maxSelected.column).index;
+            const columnIndex = maxSelected.parentColumn.index;
 
             const trayIndex = maxSelected.index;
 
             const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
-                                                      : maxSelected.column.parentShelf;
+                                                      : maxSelected.parentColumn.parentShelf;
 
             const currentCellsLength = canGoToCell ? shelf.columns[columnIndex].getPaddedTrays().length
                                                    : shelf.columns[columnIndex].trays.length;

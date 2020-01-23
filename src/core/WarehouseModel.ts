@@ -33,7 +33,7 @@ export interface ExpiryRange {
  * Represents a tray space within a column
  */
 export interface TraySpace {
-    column: Column;
+    parentColumn: Column;
     index: number;
 }
 

@@ -41,7 +41,7 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
     /**
      * This function is called when the button to reload the page is called
      */
-    private exitError(): void {
+    private static exitError(): void {
         window.location.reload();
     }
 
@@ -53,7 +53,7 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
                     <h2>Something went wrong.</h2>
                     <p>{`${this.state.error}`}</p>
                     <button className="key-btn"
-                            onClick={this.exitError.bind(this)}><p>Refresh Page</p>
+                            onClick={ErrorHandler.exitError.bind(this)}><p>Refresh Page</p>
                     </button>
                 </div>
             );
