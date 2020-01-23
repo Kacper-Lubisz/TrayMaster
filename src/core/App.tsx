@@ -30,6 +30,7 @@ class App extends React.Component<unknown, AppState> {
         super(props);
 
         if (process.env.NODE_ENV === "test") {
+            this.state = {loading: true};
             return;
         }
         if (typeof (Storage) === "undefined") {

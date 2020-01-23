@@ -1,8 +1,8 @@
+import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
+import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
-import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
-import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 
 
@@ -117,10 +117,10 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
      * @param year - number representing the current year
      */
     private selectYear(year: number): void {
-        this.setState({
-            ...this.state,
+        this.setState(state => ({
+            ...state,
             selectedYear: year
-        });
+        }));
 
         const from = new Date(year, 0).getTime();
         const to = new Date(year + 1, 0).getTime();
@@ -160,7 +160,8 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
         if (this.state.selectedYear) {
 
             const from = new Date(this.state.selectedYear, month).getTime();
-            const to = new Date(month === 11 ? this.state.selectedYear + 1 : this.state.selectedYear, (month + 1) % 12).getTime();
+            const to = new Date(month === 11 ? this.state.selectedYear + 1
+                                             : this.state.selectedYear, (month + 1) % 12).getTime();
 
             this.props.expirySelected({
                 from: from,
@@ -210,10 +211,10 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
             ) ? firstYear : undefined;
 
             // update object-level selectedYear
-            this.setState({
-                ...this.state,
+            this.setState(state => ({
+                ...state,
                 selectedYear: commonYear
-            });
+            }));
 
             // set the button corresponding to selectedYear to be visibly selected
             for (const year of this.years) {
@@ -253,7 +254,7 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
                 .map((a) => ({
                     name: a.toString(),
                     onClick: () => this.weightKeyHandler(a)
-            }));
+                }));
 
             // Create numpadSide for the side buttons
             const numpadSide = (["Backspace", "Clear", "Enter"] as WeightKeyboardButton[]).map((a) => {

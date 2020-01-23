@@ -8,7 +8,6 @@ export function composeSorts<T>(
     return comparators.reduce(composeSort, () => 0);
 }
 
-// todo add tests to these
 /**
  * This method composes two sorts into a multi-level sort
  * @param first The comparison to be performed first
@@ -29,8 +28,8 @@ export function composeSort<T>(
 }
 
 /**
- * This method creates a comparison function which partitions when sorting based on the key such that false comes
- * before true
+ * This method creates a comparison function which partitions when sorting based on the key such that true comes
+ * after those which are false
  * @param key The key to partition by
  */
 export function partitionBy<T>(
@@ -69,10 +68,7 @@ export function byNullSafe<T>(
         const keyA = key(a);
         const keyB = key(b);
 
-        if (keyA === keyB) {
-            return 0;
-
-        } else if (!keyB && !keyA) {
+        if (keyA === keyB || (!keyB && !keyA)) {
             return 0;
 
         } else if (!keyA) {
@@ -83,7 +79,6 @@ export function byNullSafe<T>(
 
         } else {
             return keyA < keyB ? smaller : -smaller;
-
         }
     };
 }
