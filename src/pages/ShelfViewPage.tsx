@@ -596,8 +596,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             ...state,
             isEditShelf: !this.state.isEditShelf
         }));
-        // todo
-        // throw Error("Unimplemented method stub");
     }
 
     // private addedColumns = new Set<Column>();
@@ -767,7 +765,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         });
 
-        this.props.history.push("/search"); //todo fixme find a better way to do this?
+        this.props.history.push("/search");
     }
 
     render(): React.ReactNode {

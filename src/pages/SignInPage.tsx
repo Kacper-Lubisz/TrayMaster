@@ -2,7 +2,7 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import firebase from "../core/Firebase";
 import "../styles/settings.scss";
-import {LoadingSpinner} from "./Loading";
+import {LoadingSpinner} from "../components/LoadingSpinner";
 
 interface SignInPageState {
     emailField?: string;

@@ -88,23 +88,19 @@ export function hslToHex(h: number, s: number, l: number): string {
  * @return number - the saturation to use for that range
  */
 function getSaturation(days: number): number {
-    if (days <= 0) {
+    if (days <= 0) { // not a valid range
+        return 0;
+    } else if (days <= 40) { // month
         return 1;
-    }        // not a valid range - TODO: decide whether to return 1 or 0 here
-    //if (days <= 20) return 1;       // less than a month  TODO: also decide whether we should throw errors for bad nos
-    if (days <= 40) {
-        return 1;
-    }     // month
-    if (days <= 100) {
+    } else if (days <= 100) { // quarter
         return 0.75;
-    }    // quarter
-    if (days <= 183) {
+    } else if (days <= 183) { // 6 months
         return 0.6;
-    }   // 6 months
-    if (days <= 366) {
+    } else if (days <= 366) { // year
         return 0.5;
-    }    // year
-    return 0;                       // more than a year
+    } else { // more than a year
+        return 0;
+    }
 }
 
 /**
@@ -136,7 +132,7 @@ export function getExpiryColor(range: ExpiryRange): string {
         const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
 
         // get saturation from difference between from and to and return hex value
-        const saturation = range.to ? getSaturation(dayjs(range.to).diff(djsDate, "day")) : 1; //todo eval this
+        const saturation = range.to ? getSaturation(dayjs(range.to).diff(djsDate, "day")) : 1;
         return hslToHex(ratioPeriod * 360, saturation, 1);
     }
 

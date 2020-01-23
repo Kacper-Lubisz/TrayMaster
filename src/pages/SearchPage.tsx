@@ -2,6 +2,7 @@ import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-soli
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {LoadingSpinner} from "../components/LoadingSpinner";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
 import {Category, Tray, Warehouse} from "../core/WarehouseModel";
 import "../styles/search.scss";
@@ -25,20 +26,23 @@ export interface SortQueryOptions {
 type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
+ * Defines the search queries that can be run on the warehouse
  * todo fixme document this properly
  */
 export interface SearchQuery {
+    /** either a Set<Category>, or whether the category is 'set' or 'unset' */
     categories: CategoryQueryOptions;
-    /**
-     * The type corresponds to:
-     *  within range, any weight, only undefined weight, no filter by weight
-     */
+
+    /** either a weight range, or whether the weight is 'set' or 'unset' */
     weight: ({ from: number; to: number } | "set" | "unset") | null;
 
+    /** a substring to look for in tray comments */
     commentSubstring: string | null;
 
+    /** whether to include the shelves designated as picking areas in results */
     excludePickingArea: boolean;
 
+    /** the property to sort by and whether to sort ascending or descending */
     sort: SortQueryOptions;
 }
 
@@ -173,7 +177,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     }
 
     private renderSearchResults(): React.ReactNode {
-
         if (this.props.search?.results && this.props.search.results.length !== 0) {
             return <table>
                 <thead>
@@ -239,9 +242,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 </tbody>
             </table>;
         } else if (!this.props.search?.results) {
-            return <div>
-                Loading
-            </div>; //todo fixme make this reuse the loading animation inside the search area
+            return <LoadingSpinner/>;
         } else if (this.props.search.results.length === 0) {
             return <div>
                 Couldn't find any trays which match this search

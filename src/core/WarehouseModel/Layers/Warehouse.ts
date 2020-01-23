@@ -167,7 +167,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     }
 
     public get defaultTraySize(): TraySize {
-        return this.traySizeCollection.get(this.fields.defaultTraySizeID) ?? this.traySizes[0];
+        return this.traySizeCollection.get(this.fields.defaultTraySizeID) ?? this.traySizes[1];
     }
 
     public set defaultTraySize(traySize: TraySize) {
