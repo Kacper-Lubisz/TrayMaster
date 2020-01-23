@@ -17,13 +17,17 @@ export interface BottomPanelProps {
     applyDraftWeight: () => void;
 }
 
+interface BottomPanelState {
+    selectedYear: number | undefined;
+}
+
 type WeightKeyboardButton = "Enter" | "Clear" | "Backspace" | number | ".";
 
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
  * @see BottomPanelPage
  */
-export class BottomPanel extends React.Component<BottomPanelProps> {
+export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelState> {
     private readonly years: KeyboardButtonProps[];
     private readonly quarters: KeyboardButtonProps[];
     private readonly months: KeyboardButtonProps[];
@@ -39,11 +43,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         "Jul", "Aug", "Sep",
         "Oct", "Nov", "Dec"
     ];
-
-    /**
-     * Currently selected year
-     */
-    private selectedYear: number | undefined; // todo fixme this needs to be part of state
 
     constructor(props: BottomPanelProps) {
         super(props);
@@ -118,7 +117,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * @param year - number representing the current year
      */
     private selectYear(year: number): void {
-        this.selectedYear = year;
+        this.setState({
+            ...this.state,
+            selectedYear: year
+        });
 
         const from = new Date(year, 0).getTime();
         const to = new Date(year + 1, 0).getTime();
@@ -136,15 +138,15 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * @param quarter - number in [0-3] inclusive representing the current quarter
      */
     private selectQuarter(quarter: number): void {
-        if (this.selectedYear) {
+        if (this.state.selectedYear) {
 
-            const from = new Date(this.selectedYear, quarter * 3).getTime();
-            const to = new Date(this.selectedYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
+            const from = new Date(this.state.selectedYear, quarter * 3).getTime();
+            const to = new Date(this.state.selectedYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
 
             this.props.expirySelected({
                 from: from,
                 to: to,
-                label: `${this.quartersTranslator[quarter]} ${this.selectedYear.toString()}`
+                label: `${this.quartersTranslator[quarter]} ${this.state.selectedYear.toString()}`
             });
         }
     }
@@ -155,15 +157,15 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * @param month - number in [0-11] inclusive representing the current month
      */
     private selectMonth(month: number): void {
-        if (this.selectedYear) {
+        if (this.state.selectedYear) {
 
-            const from = new Date(this.selectedYear, month).getTime();
-            const to = new Date(month === 11 ? this.selectedYear + 1 : this.selectedYear, (month + 1) % 12).getTime();
+            const from = new Date(this.state.selectedYear, month).getTime();
+            const to = new Date(month === 11 ? this.state.selectedYear + 1 : this.state.selectedYear, (month + 1) % 12).getTime();
 
             this.props.expirySelected({
                 from: from,
                 to: to,
-                label: `${this.monthsTranslator[month]} ${this.selectedYear.toString()}`
+                label: `${this.monthsTranslator[month]} ${this.state.selectedYear.toString()}`
             });
         }
     }
@@ -208,7 +210,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             ) ? firstYear : undefined;
 
             // update object-level selectedYear
-            this.selectedYear = commonYear;
+            this.setState({
+                ...this.state,
+                selectedYear: commonYear
+            });
 
             // set the button corresponding to selectedYear to be visibly selected
             for (const year of this.years) {
@@ -281,7 +286,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         } else { // edit shelf
             return <div>
                 Unimplemented Panel
-
             </div>;
         }
 

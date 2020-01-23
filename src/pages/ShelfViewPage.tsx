@@ -29,7 +29,6 @@ import {
     faTimes as cross,
     faWeightHanging as weightIcon
 } from "@fortawesome/free-solid-svg-icons";
-// todo fixme decide if to replace this icon, if this icon is removed then remove this package too
 import Popup from "reactjs-popup";
 import classNames from "classnames";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -582,8 +581,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 isEditShelf: !this.state.isEditShelf
             };
         });
-        // todo
-        // throw Error("Unimplemented method stub");
     }
 
     // private addedColumns = new Set<Column>();
@@ -759,7 +756,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         });
 
-        this.props.history.push("/search"); //todo fixme find a better way to do this?
+        this.props.history.push("/search");
     }
 
     render(): React.ReactNode {

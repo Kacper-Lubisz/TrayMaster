@@ -52,7 +52,17 @@
   }
 
   #searchResults {
+    position: relative;
+    height: 100%;
     padding: 0 20px;
+
+    // loading spinner
+    svg {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
 
     table {
       width: 100%;

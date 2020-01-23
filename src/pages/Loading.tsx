@@ -51,9 +51,12 @@ export class LoadingPage extends React.Component {
     render(): React.ReactNode {
         return <div id="loadingPage">
             <div id="menu-header">
-                <h1>Shelfmaster</h1>
+                <img alt="TrayMaster Logo" src={logoSkew}/>
             </div>
-            <LoadingSpinner/>
+            <div id="loading-box">
+                <LoadingSpinner/>
+                <h2>Loading...</h2>
+            </div>
         </div>;
 
     }
@@ -149,34 +152,24 @@ export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
 
     render(): React.ReactNode {
 
-        return (
-            <div id="loadingPage">
-                <div id="menu-header">
-                    <img alt="TrayMaster Logo" src={logoSkew}/>
-                </div>
-                <div id="loading-box">
-                    <svg id="spinner">
-                        <g>{Array(gridCols).fill(0).map((_, i) => {
-                            return Array(gridRows).fill(0).map((_, j) => {
-                                const key = `${i}${j}`;
-                                return <rect className="spinner-tray-slot" key={key} x={i * gridDistX}
-                                             y={j * gridDistY}/>;
-                            });
-                        })}</g>
-                        {Array(gridCols).fill(0).map((_, i) => {
-                            return Array(gridRows).fill(0).map((_, j) => {
-                                const key = `${i}${j}`;
-                                return <SpinnerTray
-                                    anim={this.state?.animation ? this.state?.animation[key] : undefined}
-                                    key={key}
-                                    pos={[i, j]}
-                                />;
-                            });
-                        })}
-                    </svg>
-                    <h2>Loading...</h2>
-                </div>
-            </div>);
-
+        return <svg id="spinner">
+            <g>{Array(gridCols).fill(0).map((_, i) => {
+                return Array(gridRows).fill(0).map((_, j) => {
+                    const key = `${i}${j}`;
+                    return <rect className="spinner-tray-slot" key={key} x={i * gridDistX}
+                                 y={j * gridDistY}/>;
+                });
+            })}</g>
+            {Array(gridCols).fill(0).map((_, i) => {
+                return Array(gridRows).fill(0).map((_, j) => {
+                    const key = `${i}${j}`;
+                    return <SpinnerTray
+                        anim={this.state?.animation ? this.state?.animation[key] : undefined}
+                        key={key}
+                        pos={[i, j]}
+                    />;
+                });
+            })}
+        </svg>;
     }
 }
