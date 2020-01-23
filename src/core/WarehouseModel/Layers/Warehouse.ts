@@ -1,16 +1,16 @@
-import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
-import Utils from "../Utils";
-import {TopLayer} from "../LayerStructure/TopLayer";
-import firebase from "../../Firebase";
-import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 import {SearchQuery, SortBy} from "../../../pages/SearchPage";
 import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
+import firebase from "../../Firebase";
+import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
+import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
+import {TopLayer} from "../LayerStructure/TopLayer";
+import Utils from "../Utils";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
     "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
     "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
-    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
+    "Sponge Pudding", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
 ];
 
 const defaultTraySizes: TraySize[] = [

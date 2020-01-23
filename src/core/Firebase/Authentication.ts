@@ -1,12 +1,12 @@
 import * as fb from "firebase/app";
 import "firebase/auth";
-import Utils from "../WarehouseModel/Utils";
-import {DatabaseObject} from "./DatabaseObject";
-import {DatabaseCollection} from "./DatabaseCollection";
-import {FirebaseError} from "./FirebaseError";
-import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
-import {WarehouseManager} from "../WarehouseModel";
 import {ONLINE} from "../Firebase";
+import {WarehouseManager} from "../WarehouseModel";
+import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
+import Utils from "../WarehouseModel/Utils";
+import {DatabaseCollection} from "./DatabaseCollection";
+import {DatabaseObject} from "./DatabaseObject";
+import {FirebaseError} from "./FirebaseError";
 
 type Auth = fb.auth.Auth;
 

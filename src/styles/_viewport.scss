@@ -40,9 +40,11 @@
     transition: flex-grow 0.5s ease;
 
     // Styling
-    border: 1px solid white;
+
+    //border: 1px solid white;
+    //background-color: #eee;
+
     text-align: center;
-    background-color: #eee;
 
     // Children of column should have all of their pointer events
     > * {
@@ -58,8 +60,11 @@
 
       // Styling
       background-color: #ffffff;
-      border: 1px solid black;
+      border: 1px solid #cccccc;
       cursor: pointer;
+
+      // Round the corners
+      border-radius: 10px;
 
       // Hide overflow: stops content escaping trays when they have rounded corners or in cases of extreme length 😎
       overflow: hidden;
@@ -68,9 +73,10 @@
       position: relative;
 
 
-      &.trayEmpty {
+      &.traySpace {
         font-size: 24px;
         font-weight: lighter;
+        color: #444;
 
         text-align: center;
 
@@ -81,8 +87,6 @@
 
       // When we're in multiple select mode
       &.multipleSelect {
-        // Round the corners
-        border-radius: 10px;
 
         > svg.tray-tickbox {
           // Show the tickboxes
@@ -93,13 +97,12 @@
       // When the tray is selected
       &.selected {
         box-shadow: inset 0 0 18px -10px #000000;
-        z-index: 1; // TODO: is there any reason for this?
       }
 
       // The first empty space a tray can take above
       &.traySpace.firstTraySpace {
         background-color: #00000011;
-        border-color: #888;
+        border-color: #bbb;
       }
 
       &.traySpace {
@@ -123,9 +126,9 @@
       // Tickboxes
       > svg.tray-tickbox {
         // Layout
-        margin: 5px 0;
-        width: 10%;
-        height: 30%;
+        margin: 5px;
+        width: 22px;
+        height: 22px;
         top: 0;
         left: 0;
 

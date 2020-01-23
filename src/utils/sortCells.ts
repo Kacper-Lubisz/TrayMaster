@@ -1,5 +1,5 @@
-import {Tray} from "../core/WarehouseModel/Layers/Tray";
 import {TrayCell} from "../core/WarehouseModel";
+import {Tray} from "../core/WarehouseModel/Layers/Tray";
 
 export const trayComparisonFunction = (a: TrayCell, b: TrayCell): number => {
 

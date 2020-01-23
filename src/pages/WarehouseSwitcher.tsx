@@ -1,10 +1,10 @@
-import React from "react";
-import "../styles/settings.scss";
-import {RouteComponentProps, withRouter} from "react-router-dom";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faHome} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import React from "react";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel";
+import "../styles/settings.scss";
 
 interface WarehouseSwitcherProps {
     user: User;

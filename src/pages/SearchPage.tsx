@@ -1,12 +1,12 @@
+import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
+import {RouteComponentProps, withRouter} from "react-router-dom";
+import {PanelState, SearchPanel} from "../components/SearchPanel";
 import {Category, Tray, Warehouse} from "../core/WarehouseModel";
 import "../styles/search.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {RouteComponentProps, withRouter} from "react-router-dom";
-import {PanelState, SearchPanel} from "../components/SearchPanel";
 
 
 export enum SortBy {

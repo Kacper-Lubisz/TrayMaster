@@ -1,11 +1,11 @@
-import React from "react";
-import "../styles/settings.scss";
-import {RouteComponentProps, withRouter} from "react-router-dom";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
-import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import React from "react";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
+import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import "../styles/settings.scss";
 
 interface SettingsProps {
     openDialog: (dialog: Dialog) => void;

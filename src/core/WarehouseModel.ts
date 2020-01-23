@@ -1,12 +1,12 @@
+import firebase, {ONLINE} from "./Firebase";
+import {DatabaseDocument} from "./Firebase/Database";
+import {Bay} from "./WarehouseModel/Layers/Bay";
+import {Column} from "./WarehouseModel/Layers/Column";
+import {Shelf} from "./WarehouseModel/Layers/Shelf";
+import {Tray} from "./WarehouseModel/Layers/Tray";
 import {Warehouse} from "./WarehouseModel/Layers/Warehouse";
 import {Zone} from "./WarehouseModel/Layers/Zone";
-import {Bay} from "./WarehouseModel/Layers/Bay";
-import {Shelf} from "./WarehouseModel/Layers/Shelf";
-import {Column} from "./WarehouseModel/Layers/Column";
-import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
-import {DatabaseDocument} from "./Firebase/Database";
-import firebase, {ONLINE} from "./Firebase";
 
 /**
  * Represents the order of (and IDs of) each layer in the warehouse model

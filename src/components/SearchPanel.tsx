@@ -1,7 +1,7 @@
+import classNames from "classnames";
 import React from "react";
 import {Category, Warehouse} from "../core/WarehouseModel";
 import {SearchQuery, SearchResults} from "../pages/SearchPage";
-import classNames from "classnames";
 
 export type PanelState = "category" | "weight" | "expiry";
 

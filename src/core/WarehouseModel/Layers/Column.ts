@@ -1,5 +1,5 @@
-import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import {Bay, Shelf, Tray, TrayCell, TraySize, TraySpace, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 interface ColumnFields {

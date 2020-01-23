@@ -1,6 +1,6 @@
 import React from "react";
-import "../styles/loading.scss";
 import logoSkew from "../Logo_skew.svg";
+import "../styles/loading.scss";
 
 // VARIABLES DEFINING THE TRAY SPINNER GRID
 // DO NOT ADJUST THESE WITHOUT ADJUSTING THE CORRESPONDING VALUES IN "loading.scss"
@@ -116,26 +116,22 @@ export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
         }
 
         // set state to reflect trays being swapped
-        this.setState(state => {
-            return {
-                ...state,
-                animation: {
-                    [startTray]: swaps[0],
-                    [endTray]: swaps[1]
-                }
-            };
-        });
+        this.setState(state => ({
+            ...state,
+            animation: {
+                [startTray]: swaps[0],
+                [endTray]: swaps[1]
+            }
+        }));
     }
 
 
     componentDidMount(): void {
         // when fully rendered, start swapping :D
-        this.setState(state => {
-            return {
-                ...state,
-                traySwapInterval: setInterval(this.swapTrays.bind(this), 250)
-            };
-        });
+        this.setState(state => ({
+            ...state,
+            traySwapInterval: setInterval(this.swapTrays.bind(this), 250)
+        }));
 
     }
 

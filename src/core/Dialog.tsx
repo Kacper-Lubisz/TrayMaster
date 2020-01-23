@@ -1,6 +1,6 @@
-import React, {ReactNode} from "react";
-import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
+import React, {ReactNode} from "react";
 
 export type StoredDialog = {
     dialog: ReactNode;

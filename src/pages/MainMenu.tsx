@@ -1,13 +1,13 @@
-import React from "react";
-import {RouteComponentProps} from "react-router-dom";
-import {withRouter} from "react-router";
-import "../styles/mainmenu.scss";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExchangeAlt, faExclamationTriangle as warningIcon, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
-import {Warehouse} from "../core/WarehouseModel";
-import {User} from "../core/Firebase";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import React from "react";
+import {withRouter} from "react-router";
+import {RouteComponentProps} from "react-router-dom";
 import {Dialog} from "../core/Dialog";
+import {User} from "../core/Firebase";
+import {Warehouse} from "../core/WarehouseModel";
 import logoSkew from "../Logo_skew.svg";
+import "../styles/mainmenu.scss";
 import {SearchQuery, SortBy} from "./SearchPage";
 
 /**
@@ -44,17 +44,18 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             </div>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
             {this.props.expiryAmount === 0 ? undefined : <div
-                    className="alert"
+                className="alert"
                 onClick={(_) => {
-                        this.props.setSearch({
-                            categories: null,
-                            weight: null,
-                            commentSubstring: null,
-                            excludePickingArea: true,
-                            sort: {orderAscending: true, type: SortBy.expiry}
-                        });
-                        this.props.history.push("/search");
-                    }}><div className="alert-header">
+                    this.props.setSearch({
+                        categories: null,
+                        weight: null,
+                        commentSubstring: null,
+                        excludePickingArea: true,
+                        sort: {orderAscending: true, type: SortBy.expiry}
+                    });
+                    this.props.history.push("/search");
+                }}>
+                <div className="alert-header">
                     <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
                     <h2>Expiry Imminent</h2>
                 </div>

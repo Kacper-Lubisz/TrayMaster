@@ -1,8 +1,9 @@
+import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
+import {User} from "../core/Firebase/Authentication";
+import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
-import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
-import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 
 
@@ -10,14 +11,19 @@ export interface BottomPanelProps {
     keyboardState: KeyboardName;
     categorySelected: (category: Category | null) => void;
     expirySelected: (expiry: ExpiryRange | null) => void;
+
     categories: Category[];
+
     selectedTrayCells: TrayCell[];
-    draftWeight?: string;
-    setDraftWeight: (newDraftWeight?: string) => void;
-    applyDraftWeight: () => void;
+
+    weight?: string;
+    setWeight: (weight: string | undefined, couldAdvance: boolean) => void;
+
+    user: User;
+
 }
 
-type WeightKeyboardButton = "Enter" | "Clear" | "Backspace" | number | ".";
+type WeightKeyboardButton = "Next" | "Clear" | "Backspace" | number | ".";
 
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
@@ -85,29 +91,29 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     private weightKeyHandler(key: WeightKeyboardButton): void {
 
-        if (key === "Enter") {
-            this.props.applyDraftWeight();
+        if (key === "Next") {
+            this.props.setWeight(this.props.weight, true);
+        } else if (key === "Clear") {
+            this.props.setWeight(undefined, false);
         } else {
-            let newDraftWeight: string | undefined;
-            if (key === "Clear") {
-                newDraftWeight = "";
-            } else if (key === "Backspace") {
-                newDraftWeight = this.props.draftWeight?.slice(0, -1);
-            } else {
-                // Must be a number or decimal point, just append
-                // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals
-                // with overwriting the default 0 value too
-                if (this.props.draftWeight === "0" && key !== ".") {
-                    newDraftWeight = `${key}`;
+            // Must be a number or decimal point, just append
+            // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals
+            // with overwriting the default 0 value too
+
+            const newDraftWeight: string = (() => {
+                if (key === "Backspace") {
+                    return this.props.weight?.slice(0, -1) ?? "";
+                } else if (this.props.weight === "0" && key !== ".") {
+                    return `${key}`;
                 } else {
-                    newDraftWeight = `${this.props.draftWeight ?? ""}${key}`;
+                    return `${this.props.weight ?? ""}${key}`;
                 }
-            }
+            })();
 
             if (newDraftWeight === "") {
-                this.props.setDraftWeight(undefined);
-            } else if (!isNaN(Number(newDraftWeight)) && (newDraftWeight ?? "").length <= 6) {
-                this.props.setDraftWeight(newDraftWeight);
+                this.props.setWeight(undefined, false);
+            } else if (!isNaN(Number(newDraftWeight)) && newDraftWeight.length <= 6) {
+                this.props.setWeight(newDraftWeight, false);
             }
         }
     }
@@ -247,30 +253,25 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 .concat([0, "."])
                 .map((a) => ({
                     name: a.toString(),
-                    onClick: () => this.weightKeyHandler(a)
-            }));
+                    onClick: () => this.weightKeyHandler(a),
+                    disabled: this.props.selectedTrayCells.length === 0,
+                }));
 
             // Create numpadSide for the side buttons
-            const numpadSide = (["Backspace", "Clear", "Enter"] as WeightKeyboardButton[]).map((a) => {
-                let shouldDisable = false;
-                if (a === "Backspace" || a === "Clear") {
-                    shouldDisable = (this.props.draftWeight ?? "").length === 0;
-                } else if (a === "Enter") {
-                    shouldDisable = this.props.selectedTrayCells.length === 0;
-                }
-                return {
+            const numpadSide = (["Backspace", "Clear"].concat(this.props.user.willAutoAdvance ? ["Next"]
+                                                                                              : []) as WeightKeyboardButton[])
+                .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
-                    disabled: shouldDisable,
+                    disabled: this.props.selectedTrayCells.length === 0,
                     onClick: () => this.weightKeyHandler(a)
-                };
-            });
+                }));
 
             return <div className="keyboard-container">
                 <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
                 <div id="numpadR">
                     <div id="draftWeight">
-                        {`${this.props.draftWeight === undefined ? "?" : this.props.draftWeight} kg`}
+                        {`${this.props.weight === undefined ? "?" : this.props.weight} kg`}
                     </div>
                     <div id="weight-numpad-side">
                         <Keyboard buttons={numpadSide} gridX={1}/>
@@ -292,6 +293,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     render(): React.ReactNode {
 
+        console.log("render > ", this.props.weight);
         // return DOM elements using button structures
         return <div id="bottom">
             {this.chooseKeyboard(!this.props.selectedTrayCells.length)}
