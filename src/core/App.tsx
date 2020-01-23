@@ -169,9 +169,6 @@ class App extends React.Component<unknown, AppState> {
                                /> : <Redirect to="/"/>
                                                                        : <Redirect to="/menu"/>;
                     }}/>
-                    <Route path="/loading" component={() => {
-                        return <LoadingPage />;
-                    }}/>
                     <Route component={PageNotFoundPage}/>
                 </Switch>
             </ErrorHandler>

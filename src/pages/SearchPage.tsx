@@ -7,7 +7,7 @@ import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-soli
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
-import {LoadingSpinner} from "./Loading";
+import {LoadingSpinner} from "../components/LoadingSpinner";
 
 
 export enum SortBy {
