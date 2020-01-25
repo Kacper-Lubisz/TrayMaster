@@ -395,8 +395,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
-                        <div className="trayWeight">{isSelected && this.props.draftWeight
-                                                     ? this.props.draftWeight : tray.weight ?? "?"}kg
+                        <div className={classNames("trayWeight", {
+                            // "trayWeightEdit": this.props.draftWeight && isSelected
+                        })}>
+                            {this.props.draftWeight && isSelected ? this.props.draftWeight
+                                                                  : tray.weight ?? "?"}kg
                         </div>
                         <div className="trayComment">{tray.comment ?? ""}</div>
                     </> : null}

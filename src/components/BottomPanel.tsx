@@ -297,8 +297,6 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
      * @inheritDoc
      */
     render(): React.ReactNode {
-
-        console.log("render > ", this.props.weight);
         // return DOM elements using button structures
         return <div id="bottom">
             {this.chooseKeyboard(!this.props.selectedTrayCells.length)}

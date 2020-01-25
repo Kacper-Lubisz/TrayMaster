@@ -550,8 +550,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private async setWeight(newWeight: string | undefined, couldAdvance = false): Promise<void> {
 
-        console.log("setting > ", newWeight);
-
         this.getSelectedTrays(
             true,
             true,
