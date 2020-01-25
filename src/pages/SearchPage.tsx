@@ -186,8 +186,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     <th>Weight</th>
                     <th>Location</th>
                     <th>Comment</th>
-                    <th/>
-                    {/* dummy table header for 'Go to tray' buttons */}
                 </tr>
                 </thead>
                 <tbody>
@@ -233,9 +231,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                             <td className="commentCell" style={{
                                 backgroundColor: tray.comment ? "#ffffff" : ""
                             }}>{tray.comment}</td>
-                            <td>
-                                <button>Go To</button>
-                            </td>
                         </tr>
                     );
                 })}

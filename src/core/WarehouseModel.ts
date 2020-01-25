@@ -116,8 +116,8 @@ const trayExpires: ExpiryRange[] = [
 ].concat(Array(10).fill(0).map((_, j) => {
     return {
         from: new Date(2022 + j, 0).getTime(),
-        to: new Date(2022 + j, 0).getTime(),
-        label: (2020 + j).toString()
+        to: new Date(2023 + j, 0).getTime(),
+        label: (2022 + j).toString()
     };
 }));
 

@@ -432,64 +432,70 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             byNullSafe<TrayCell>(cell => cell.index, false, false)
         ]);
 
-        const maxSelected = Array.from(selection.entries())
-                                 .filter(([_, selected]) => selected)
-                                 .map(([cell, _]) => cell)
-                                 .reduce((max, cur) => {
-                                     if (max && comparison(max, cur) !== 1) {
-                                         return max;
-                                     } else {
-                                         return cur;
-                                     }
-                                 }, undefined as (TrayCell | undefined));
+        const selected = Array.from(selection.entries())
+                              .filter(([_, selected]) => selected);
 
-        if (maxSelected) {
+        if (selected.length === 1) {
 
-            const columnIndex = maxSelected.parentColumn.index;
+            const maxSelected = selected.map(([cell, _]) => cell)
+                                        .reduce((max, cur) => {
+                                            if (max && comparison(max, cur) !== 1) {
+                                                return max;
+                                            } else {
+                                                return cur;
+                                            }
+                                        }, undefined as (TrayCell | undefined));
 
-            const trayIndex = maxSelected.index;
+            if (maxSelected) {
 
-            const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
-                                                      : maxSelected.parentColumn.parentShelf;
+                const columnIndex = maxSelected.parentColumn.index;
 
-            const currentCellsLength = canGoToCell ? shelf.columns[columnIndex].getPaddedTrays().length
-                                                   : shelf.columns[columnIndex].trays.length;
+                const trayIndex = maxSelected.index;
 
-            if (currentCellsLength !== trayIndex + 1) {
-                return new Map<TrayCell, boolean>([
-                    [shelf.columns[columnIndex].getPaddedTrays()[trayIndex + 1], true]
-                ]);
+                const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
+                                                          : maxSelected.parentColumn.parentShelf;
 
-            } else if (shelf.columns.length !== columnIndex + 1) {
-                const nextColumn = _.reduce(shelf.columns, (acc, cur) => {
+                const currentCellsLength = canGoToCell ? shelf.columns[columnIndex].getPaddedTrays().length
+                                                       : shelf.columns[columnIndex].trays.length;
 
-                    const cellLength = canGoToCell ? cur.getPaddedTrays().length
-                                                   : cur.trays.length;
-
-                    if (!acc && cellLength !== 0 && cur.index > columnIndex) {
-                        return cur;
-                    } else {
-                        return acc;
-                    }
-                }, null as (null | Column));
-
-                if (nextColumn) {
+                if (currentCellsLength !== trayIndex + 1) {
                     return new Map<TrayCell, boolean>([
-                        [nextColumn.getPaddedTrays()[0], true]
+                        [shelf.columns[columnIndex].getPaddedTrays()[trayIndex + 1], true]
                     ]);
-                } else { // this is an erroneous state
-                    return selection;
+
+                } else if (shelf.columns.length !== columnIndex + 1) {
+                    const nextColumn = _.reduce(shelf.columns, (acc, cur) => {
+
+                        const cellLength = canGoToCell ? cur.getPaddedTrays().length
+                                                       : cur.trays.length;
+
+                        if (!acc && cellLength !== 0 && cur.index > columnIndex) {
+                            return cur;
+                        } else {
+                            return acc;
+                        }
+                    }, null as (null | Column));
+
+                    if (nextColumn) {
+                        return new Map<TrayCell, boolean>([
+                            [nextColumn.getPaddedTrays()[0], true]
+                        ]);
+                    } else { // this is an erroneous state
+                        return selection;
+                    }
+                } else {
+                    const cells = shelf.cells;
+                    if (cells.length === 0) {
+                        return selection;
+                    } else {
+                        return new Map<TrayCell, boolean>([
+                            [cells[0], true]
+                        ]);
+                    }
+
                 }
             } else {
-                const cells = shelf.cells;
-                if (cells.length === 0) {
-                    return selection;
-                } else {
-                    return new Map<TrayCell, boolean>([
-                        [cells[0], true]
-                    ]);
-                }
-
+                return selection;
             }
         } else {
             return selection;
