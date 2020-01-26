@@ -4,6 +4,7 @@ import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
+import "./styles/_bottompanel.scss";
 
 
 export interface BottomPanelProps {

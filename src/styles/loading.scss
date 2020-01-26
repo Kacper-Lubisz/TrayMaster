@@ -12,15 +12,13 @@
   justify-content: center;
   align-items: center;
 
-  // Styling
-  background-color: #eeeeee;
-
   // Centred box
   #loading-box {
     padding: 2%;
     border-radius: 10px;
-    box-shadow: 0 0 15px -8px #000000;
+    box-shadow: 0 0 30px -12px #000000;
     background-color: #ffffff;
+    border: 1px solid #eeeeee;
 
     // 'Loading...' text
     h2 {

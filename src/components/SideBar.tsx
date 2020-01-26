@@ -5,6 +5,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import classNames from "classnames";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import "./styles/_sidebar.scss";
 
 
 /**

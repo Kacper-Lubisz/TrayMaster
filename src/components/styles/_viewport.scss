@@ -4,195 +4,206 @@
 @import "../../styles/variables";
 
 
-// Shelf
-#shelf {
-  // Layout
+#viewPort {
+  background-color: #bbbbbb;
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-around;
-  align-items: stretch;
-  width: calc(100% - 10px);
-  height: calc(100% - 10px);
+  justify-content: center;
+  align-items: center;
 
-  // Disable text selection: makes clicking and dragging feel less janky
+  touch-action: none;
   user-select: none;
+  -webkit-touch-callout: none;
 
-  // Shelf itself should not have any pointer events (let its parent handle them)
-  pointer-events: none;
-  // But all of its children (except column) should have their pointer events
-  > *:not(.column) {
-    pointer-events: auto;
-  }
-
-  // Columns
-  .column {
+  // Shelf
+  #shelf {
     // Layout
-    flex: auto;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: flex-end;
-    padding: 5px;
-    position: relative; // needed to allow us to position shelf edit columns absolutely inside .column
+    justify-content: space-around;
+    align-items: stretch;
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
 
-    transition: flex-grow 0.5s ease;
+    // Disable text selection: makes clicking and dragging feel less janky
+    user-select: none;
 
-    // Styling
-    border: 1px solid white;
-    text-align: center;
-    background-color: #eee;
-
-    // Children of column should have all of their pointer events
-    > * {
+    // Shelf itself should not have any pointer events (let its parent handle them)
+    pointer-events: none;
+    // But all of its children (except column) should have their pointer events
+    > *:not(.column) {
       pointer-events: auto;
     }
 
-    .tray {
+    // Columns
+    .column {
       // Layout
-      width: 100%;
-      height: calc(100% / 3); // todo revise this change
-      min-width: 0;
-      margin: 5px 0 0 0;
+      flex: auto;
+      display: flex;
+      flex-direction: column-reverse;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      align-items: flex-end;
+      padding: 5px;
+      position: relative; // needed to allow us to position shelf edit columns absolutely inside .column
+
+      transition: flex-grow 0.5s ease;
 
       // Styling
-      background-color: #ffffff;
-      border: 1px solid black;
-      cursor: pointer;
+      border: 1px solid white;
+      text-align: center;
+      background-color: #eee;
 
-      // Hide overflow: stops content escaping trays when they have rounded corners or in cases of extreme length 😎
-      overflow: hidden;
+      // Children of column should have all of their pointer events
+      > * {
+        pointer-events: auto;
+      }
 
-      // Relative positioning: required to allow us to give children position: absolute;
-      position: relative;
+      .tray {
+        // Layout
+        width: 100%;
+        height: calc(100% / 3); // todo revise this change
+        min-width: 0;
+        margin: 5px 0 0 0;
 
+        // Styling
+        background-color: #ffffff;
+        border: 1px solid black;
+        cursor: pointer;
 
-      &.trayEmpty {
-        font-size: 24px;
-        color: #666666;
+        // Hide overflow: stops content escaping trays when they have rounded corners or in cases of extreme length 😎
+        overflow: hidden;
 
-        text-align: center;
+        // Relative positioning: required to allow us to give children position: absolute;
         position: relative;
 
-        > p {
+
+        &.trayEmpty {
+          font-size: 24px;
+          color: #666666;
+
+          text-align: center;
+          position: relative;
+
+          > p {
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+
+        // When we're in multiple select mode
+        &.multipleSelect {
+          // Round the corners
+          border-radius: 10px;
+
+          > svg.tray-tickbox {
+            // Show the tickboxes
+            visibility: visible;
+          }
+        }
+
+        // When the tray is selected
+        &.selected {
+          box-shadow: inset 0 0 18px -10px #000000;
+        }
+
+        // The first empty space a tray can take above
+        &.traySpace.firstTraySpace {
+          background-color: #00000011;
+          border-color: #888;
+        }
+
+        &.traySpace {
+          background-color: #00000011;
+          border-color: #8880;
+        }
+
+        // only give trays with items above them the top margin
+        &:last-child {
           margin: 0;
+        }
+
+        // Everything inside a tray
+        > * {
+          // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
           position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
+          // Make all children elements (inside tray) transparent to pointer events (so they bubble to the tray itself)
+          pointer-events: none;
         }
-      }
 
-      // When we're in multiple select mode
-      &.multipleSelect {
-        // Round the corners
-        border-radius: 10px;
-
+        // Tickboxes
         > svg.tray-tickbox {
-          // Show the tickboxes
-          visibility: visible;
-        }
-      }
+          // Layout
+          margin: 5px 0;
+          width: 10%;
+          height: 30%;
+          top: 0;
+          left: 0;
 
-      // When the tray is selected
-      &.selected {
-        box-shadow: inset 0 0 18px -10px #000000;
-      }
+          // Grey unselected by default
+          // Needed because now just using tickSolid (better not to switch icons to avoid flickering)
+          color: #cacaca;
 
-      // The first empty space a tray can take above
-      &.traySpace.firstTraySpace {
-        background-color: #00000011;
-        border-color: #888;
-      }
+          // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
+          visibility: hidden;
 
-      &.traySpace {
-        background-color: #00000011;
-        border-color: #8880;
-      }
+          &.tick-selected {
+            color: $accent-color;
+            visibility: visible;
+          }
 
-      // only give trays with items above them the top margin
-      &:last-child {
-        margin: 0;
-      }
-
-      // Everything inside a tray
-      > * {
-        // Use absolute positioning (allows us to put stuff in absolute locations inside the tray box)
-        position: absolute;
-        // Make all children elements (inside tray) transparent to pointer events (so they bubble to the tray itself)
-        pointer-events: none;
-      }
-
-      // Tickboxes
-      > svg.tray-tickbox {
-        // Layout
-        margin: 5px 0;
-        width: 10%;
-        height: 30%;
-        top: 0;
-        left: 0;
-
-        // Grey unselected by default
-        // Needed because now just using tickSolid (better not to switch icons to avoid flickering)
-        color: #cacaca;
-
-        // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
-        visibility: hidden;
-
-        &.tick-selected {
-          color: $accent-color;
-          visibility: visible;
         }
 
-      }
+        // Tray category: bottom left
+        > div.trayCategory {
+          // Layout
+          bottom: 0;
+          left: 5px;
+          font-size: 30px;
+          text-align: left;
 
-      // Tray category: bottom left
-      > div.trayCategory {
-        // Layout
-        bottom: 0;
-        left: 5px;
-        font-size: 30px;
-        text-align: left;
+          // Truncate long categories
+          width: 60%;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
 
-        // Truncate long categories
-        width: 60%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+        // Tray expiry: bottom right
+        > div.trayExpiry {
+          bottom: 0;
+          right: 0;
+          font-size: 22px;
+          padding: 0 5px;
 
-      // Tray expiry: bottom right
-      > div.trayExpiry {
-        bottom: 0;
-        right: 0;
-        font-size: 22px;
-        padding: 0 5px;
+          // Break lines when it gets too wide
+          width: 30%;
+          text-align: center;
+          word-wrap: break-word;
 
-        // Break lines when it gets too wide
-        width: 30%;
-        text-align: center;
-        word-wrap: break-word;
+          background-color: #aaa; // this is the default color when there is no expiry specified
+        }
 
-        background-color: #aaa; // this is the default color when there is no expiry specified
-      }
+        // Tray weight: top right
+        > div.trayWeight {
+          top: 0;
+          right: 0;
+          font-size: 20px;
+          margin: 2px 5px;
+        }
 
-      // Tray weight: top right
-      > div.trayWeight {
-        top: 0;
-        right: 0;
-        font-size: 20px;
-        margin: 2px 5px;
-      }
+        // Comment: top middle
+        > div.trayComment {
+          top: 0;
+          left: 50%;
+          transform: translate(-50%, 0);
+        }
 
-      // Comment: top middle
-      > div.trayComment {
-        top: 0;
-        left: 50%;
-        transform: translate(-50%, 0);
       }
 
     }
-
   }
 }
