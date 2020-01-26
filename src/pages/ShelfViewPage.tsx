@@ -433,7 +433,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         const selected = Array.from(selection.entries())
                               .filter(([_, selected]) => selected);
 
-        if (selected.length === 1) {
+        if (selected.length === 1 || !this.props.user.onlySingleAutoAdvance) {
 
             const maxSelected = selected.map(([cell, _]) => cell)
                                         .reduce((max, cur) => {
@@ -511,7 +511,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.willAutoAdvance ? "cell" : null
+            this.props.user.enableAutoAdvance ? "cell" : null
         ).forEach((tray) => {
             tray.category = category ?? undefined;
             tray.expiry = undefined;
@@ -537,7 +537,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.willAutoAdvance ? "tray" : null
+            this.props.user.enableAutoAdvance ? "tray" : null
         ).forEach((tray) => {
             tray.expiry = expiry ?? undefined;
         });
@@ -557,7 +557,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            couldAdvance && this.props.user.willAutoAdvance ? "tray" : null
+            couldAdvance && this.props.user.enableAutoAdvance ? "tray" : null
         ).forEach((tray) => {
             tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
         });
@@ -857,7 +857,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Search", onClick: this.makeSearch.bind(this)},
                         // enabled = possibleMoveDirections.previousTray
-                        {name: "Next", onClick: this.changeView.bind(this, "next")},
+                        {name: "Next Shelf  ", onClick: this.changeView.bind(this, "next")},
                         // enabled = possibleMoveDirections.nextTray
                     ]}
                     keyboards={[

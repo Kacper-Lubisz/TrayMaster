@@ -21,24 +21,28 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
 
     render(): React.ReactNode {
 
+        const settings: {
+            get: () => boolean;
+            set: (value: boolean) => void;
+            label: string;
+        }[] = [
+            {
+                get: () => this.props.user.enableAutoAdvance,
+                set: (value: boolean) => this.props.user.enableAutoAdvance = value,
+                label: "Enable Auto Advance"
+            }, {
+                get: () => this.props.user.onlySingleAutoAdvance,
+                set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
+                label: "Don't Advance in Multi-select"
+            }
+        ];
+
         return (
             <div className="settings">
                 <div className="settings-header">
                     <h1>Settings</h1>
                 </div>
                 <div className="settings-btns">
-                    <button className="key-btn" onClick={() => alert("Alerts")}>
-                        <p>Alerts</p></button>
-                    <button className="key-btn"
-                            onClick={() => alert("Type Labels")}><p>Type Labels</p>
-                    </button>
-                    <button className="key-btn"
-                            onClick={() => alert("Time Labels")}><p>Time Labels</p>
-                    </button>
-                    <button className="key-btn"
-                            onClick={() => alert("General")}><p>General</p>
-                    </button>
-                    <hr className="line"/>
                     <button className="key-btn" onClick={() => this.props.history.goBack()}>
                         <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                         <p>Back</p>
@@ -46,18 +50,24 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                 </div>
                 <div className="settings-content">
                     <h1>User Settings</h1>
-                    <div className="settings-setting">
-                        <input
-                            type="checkbox"
-                            checked={this.props.user.willAutoAdvance}
-                            onChange={async e => {
-                                this.props.user.willAutoAdvance = e.target.checked;
-                                await this.props.user.stage(true, true);
-                                this.forceUpdate();
-                            }}
-                        />
-                        <p>Will Auto Advance</p>
-                    </div>
+                    {settings.map(setting =>
+                        <div className="settings-setting"
+                             onClick={() => {
+                                 setting.set(!setting.get());
+                                 this.forceUpdate();
+                             }}>
+                            <input
+                                type="checkbox"
+                                checked={setting.get()}
+                                onChange={async e => {
+                                    setting.set(e.target.checked);
+                                    await this.props.user.stage(true, true);
+                                    this.forceUpdate();
+                                }}
+                            />
+                            <p>{setting.label}</p>
+                        </div>
+                    )}
                 </div>
             </div>
         );

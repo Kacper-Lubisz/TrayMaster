@@ -22,14 +22,21 @@ interface UserFields {
     name: string;
     lastWarehouseID: string;
 
-    willAutoAdvance: boolean;
+    enableAutoAdvance: boolean;
+    onlySingleAutoAdvance: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
     private warehouseSettings: DatabaseCollection<UserWarehouseSettings>;
 
     public constructor(id: string, fields?: UserFields) {
-        super(id, fields ?? {isAdmin: false, name: "", lastWarehouseID: "", willAutoAdvance: false});
+        super(id, fields ?? {
+            isAdmin: false,
+            name: "",
+            lastWarehouseID: "",
+            enableAutoAdvance: false,
+            onlySingleAutoAdvance: false
+        });
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
 
@@ -83,14 +90,22 @@ export class User extends DatabaseObject<UserFields> {
         this.fields.name = name;
     }
 
-    public get willAutoAdvance(): boolean {
-        return this.fields.willAutoAdvance;
+    public get enableAutoAdvance(): boolean {
+        return this.fields.enableAutoAdvance;
     }
 
-    public set willAutoAdvance(willAutoAdvance: boolean) {
-        this.fields.willAutoAdvance = willAutoAdvance;
+    public set enableAutoAdvance(enableAutoAdvance: boolean) {
+        this.fields.enableAutoAdvance = enableAutoAdvance;
     }
 
+
+    public get onlySingleAutoAdvance(): boolean {
+        return this.fields.onlySingleAutoAdvance;
+    }
+
+    public set onlySingleAutoAdvance(onlySingleAutoAdvance: boolean) {
+        this.fields.onlySingleAutoAdvance = onlySingleAutoAdvance;
+    }
 
 }
 
@@ -127,7 +142,8 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "MOCK_WAREHOUSE_0",
                     isAdmin: true,
-                    willAutoAdvance: true,
+                    enableAutoAdvance: false,
+                    onlySingleAutoAdvance: false
                 }).load();
             onSignIn?.call(this, this.currentUser);
         }
@@ -151,7 +167,8 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "",
                     isAdmin: true,
-                    willAutoAdvance: true,
+                    enableAutoAdvance: false,
+                    onlySingleAutoAdvance: false
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
@@ -169,7 +186,8 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "",
                     isAdmin: true,
-                    willAutoAdvance: true,
+                    enableAutoAdvance: false,
+                    onlySingleAutoAdvance: false
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }

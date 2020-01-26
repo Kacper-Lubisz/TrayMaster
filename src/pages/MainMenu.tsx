@@ -65,7 +65,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
 
             <div className="menu-btn-container">
                 <button className="key-btn" onClick={() => this.props.history.push("/")}>
-                    <p>Back to Shelf View</p></button>
+                    <p>Shelf View</p></button>
                 <button className="key-btn"
                         onClick={(_) => {
                             this.props.setSearch({
@@ -79,6 +79,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                         }}><p>Search</p>
                 </button>
                 <button className="key-btn"
+                        disabled={true}
                         onClick={() => alert("Report")}><p>Report</p>
                 </button>
                 <button className="key-btn"

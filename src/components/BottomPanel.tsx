@@ -23,7 +23,7 @@ export interface BottomPanelProps {
     user: User;
 }
 
-type WeightKeyboardButton = "Next" | "Clear" | "Backspace" | number | ".";
+type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
 
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
@@ -86,7 +86,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      */
     private weightKeyHandler(key: WeightKeyboardButton): void {
 
-        if (key === "Next") {
+        if (key === "Next Tray") {
             this.props.setWeight(this.props.weight, true);
         } else if (key === "Clear") {
             this.props.setWeight(undefined, false);
@@ -233,17 +233,18 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         } else if (this.props.keyboardState === "weight") {
 
             // Create numpad for the digits and decimal point buttons
-            const numpad = (Array(9).fill(0).map((_, i) => i + 1) as WeightKeyboardButton[])
-                .concat([0, "."])
-                .map((a) => ({
-                    name: a.toString(),
-                    onClick: () => this.weightKeyHandler(a),
-                    disabled: this.props.selectedTrayCells.length === 0,
-                }));
+
+            const numpad: WeightKeyboardButton[] = [7, 8, 9, 4, 5, 6, 1, 2, 3, 0, "."];
+            const numpadButtons = numpad.map((a) => ({
+                name: a.toString(),
+                onClick: () => this.weightKeyHandler(a),
+                disabled: this.props.selectedTrayCells.length === 0,
+            }));
 
             // Create numpadSide for the side buttons
-            const numpadSide = (["Backspace", "Clear"].concat(this.props.user.willAutoAdvance ? ["Next"]
-                                                                                              : []) as WeightKeyboardButton[])
+            const numpadSide: KeyboardButtonProps[] = (["Backspace", "Clear"].concat(this.props.user.enableAutoAdvance
+                                                                                     ? ["Next Tray"]
+                                                                                     : []) as WeightKeyboardButton[])
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
@@ -252,11 +253,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 }));
 
             return <div className="keyboard-container">
-                <Keyboard id="weight-numpad" buttons={numpad} gridX={3}/>
+                <Keyboard id="weight-numpad" buttons={numpadButtons} gridX={3}/>
                 <div id="numpadR">
-                    <div id="draftWeight">
-                        {`${this.props.weight === undefined ? "?" : this.props.weight} kg`}
-                    </div>
                     <div id="weight-numpad-side">
                         <Keyboard buttons={numpadSide} gridX={1}/>
                     </div>

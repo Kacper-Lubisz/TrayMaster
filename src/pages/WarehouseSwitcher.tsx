@@ -1,4 +1,4 @@
-import {faHome} from "@fortawesome/free-solid-svg-icons";
+import {faArrowLeft, faHome} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -31,6 +31,12 @@ class WarehouseSwitcherPage extends React.Component<RouteComponentProps & Wareho
     render(): React.ReactNode {
         return <div>
             <h1>Change Warehouse</h1>
+
+            {this.props.user.accessibleWarehouses.some(warehouse => warehouse.id === this.props.user.lastWarehouseID) ?
+             <button className="key-btn" onClick={() => this.props.history.goBack()}>
+                 <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
+                 <p>Back</p>
+             </button> : undefined}
 
             {this.props.user.accessibleWarehouses.length === 0 ? <p>
                 You don't have access to any warehouse! Contact your administrator, more info in the manual
