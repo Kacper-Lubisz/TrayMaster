@@ -1,8 +1,6 @@
 import {
-    faArrowDown as downArrow,
     faArrowLeft as leftArrow,
     faArrowRight as rightArrow,
-    faArrowUp as upArrow,
     faCheckCircle as tickSolid,
     faClock as expiryIcon,
     faCommentAlt,
@@ -923,7 +921,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         onClick={this.changeView.bind(this, "previousZone")}
                         disabled={!possibleMoveDirections.get("previousZone")}
                     >
-                        <FontAwesomeIcon icon={leftArrow}/> &nbsp; Previous
+                        <FontAwesomeIcon icon={leftArrow}/> &nbsp; Previous Zone
                     </button>
                     <p className="centerText">{`${zone.name} Zone`}</p>
                     <button
@@ -931,7 +929,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         onClick={this.changeView.bind(this, "nextZone")}
                         disabled={!possibleMoveDirections.get("nextZone")}
                     >
-                        Next &nbsp; <FontAwesomeIcon icon={rightArrow}/>
+                        Next Zone &nbsp; <FontAwesomeIcon icon={rightArrow}/>
                     </button>
                 </div>
 
@@ -971,36 +969,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                          }}
                      >{`Current Shelf: ${this.state.currentView.toString()}`}</p> : undefined
                     }
-
-                    <button id="shelf-up"
-                            className="nav-arrow-btn"
-                            disabled={!possibleMoveDirections.get("up")}
-                            onClick={this.changeView.bind(this, "up")}
-                    >
-                        <FontAwesomeIcon icon={upArrow}/>
-                    </button>
-                    <button id="shelf-down"
-                            className="nav-arrow-btn"
-                            onClick={this.changeView.bind(this, "down")}
-                            disabled={!possibleMoveDirections.get("down")}
-                    >
-                        <FontAwesomeIcon icon={downArrow}/>
-                    </button>
-                    <button id="shelf-left"
-                            className="nav-arrow-btn"
-                            onClick={this.changeView.bind(this, "left")}
-                            disabled={!possibleMoveDirections.get("left")}
-                    >
-                        <FontAwesomeIcon icon={leftArrow}/>
-                    </button>
-                    <button id="shelf-right"
-                            className="nav-arrow-btn"
-                            onClick={this.changeView.bind(this, "right")}
-                            disabled={!possibleMoveDirections.get("right")}
-                    >
-                        <FontAwesomeIcon icon={rightArrow}/>
-                    </button>
-
                     {/* Next and previous shelf buttons */}
                     <button id="nav-previous"
                             className="nav-prev-next-btn"
