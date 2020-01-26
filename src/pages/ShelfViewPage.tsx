@@ -473,16 +473,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     return new Map<TrayCell, boolean>([
                         [nextColumn.getPaddedTrays()[0], true]
                     ]);
-                } else {
-                    return selection;
                 }
-            } else {
-                return selection;
             }
-        } else {
-            return selection;
         }
 
+        return selection;
     }
 
     /**
