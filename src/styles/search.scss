@@ -1,0 +1,105 @@
+// SEARCH PAGE STYLING
+
+@import "variables";
+// Import global variables: we need $accent-color
+@import "./searchgrid";
+// Import search page grid layout
+
+#searchPage {
+  #topPanel {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 -20px 15px 10px #000000; // todo consider switching this to an inset shadow on the results div
+
+    svg {
+      cursor: pointer;
+      margin-right: 20px;
+      width: 30px;
+      height: 30px;
+    }
+
+    #sentenceL {
+      margin-right: 20px;
+    }
+
+    #searchSentence {
+      font-size: 24px;
+      line-height: 45px;
+
+      flex-grow: 1;
+
+      span.searchMessage {
+        padding: 2px;
+        margin-right: 10px;
+      }
+
+      span.searchField {
+        color: $accent-color;
+        background-color: #eeeeee;
+        padding: 2px 5px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    }
+
+    #sentenceR {
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  #searchResults {
+    position: relative;
+    height: 100%;
+    padding: 0 20px;
+
+    // loading spinner
+    svg {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+
+      th {
+        border-bottom: 1px solid #aaaaaa;
+      }
+
+      tr > * {
+        padding: 5px;
+        text-align: center;
+
+        &:not(:first-child):not(:last-child) {
+          border-left: 1px solid #aaaaaa;
+          border-right: 1px solid #aaaaaa;
+        }
+      }
+
+      td {
+        background-color: #ececec;
+      }
+
+      .weightCell {
+        font-kerning: none;
+        text-align: right;
+      }
+
+      tr:nth-child(2n) > td {
+        background-color: #f4f4f4;
+      }
+    }
+  }
+
+  #searchPanel {
+    background-color: #ffffff;
+  }
+}
+

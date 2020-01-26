@@ -21,6 +21,30 @@
 
 }
 
+#menu-warehouse-user-area {
+  display: flex;
+  flex-direction: column;
+
+  position: fixed;
+  right: 15px;
+  bottom: 15px;
+
+  > div {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    > button {
+      font-size: 2em;
+      margin: .33em;
+      padding: 14px 16px 14px 16px;
+    }
+
+  }
+
+}
+
 .alert {
   //container for the alert
   position: fixed;
@@ -42,7 +66,7 @@
       color: #ff0000;
       height: 55px;
       width: 55px;
-      //TODO position should be dependent on .alert [what does this mean? -BC]
+      //TODO position should be dependent on .alert [what does this mean? -BC <-- any ideas?]
     }
 
     h2 {

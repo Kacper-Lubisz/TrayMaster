@@ -1,6 +1,6 @@
 import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
-import database from "../Database";
 import Utils from "../Utils";
+import firebase from "../../Firebase";
 
 /**
  * Represents the bottom layer in the object model (that has a parent)
@@ -13,6 +13,7 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     protected constructor(id: string, fields: TFields, parent: TParent) {
         super(id, fields);
         this.parent = parent;
+        this.parent.children.push(this);
     }
 
     public get collectionPath(): string {
@@ -54,12 +55,28 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
         return this;
     }
 
-    public async stage(
-        forceStage = false, commitAtEnd = false): Promise<void> {
-        await this.stageLayer(forceStage);
+    public async delete(commit = false): Promise<void> {
+        this.parent.children.splice(this.indexInParent, 1);
 
-        if (commitAtEnd) {
-            await database.commit();
+        firebase.database.delete(this.topLevelPath);
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
+    /**
+     * Stage changes to the object to the database
+     * @async
+     * @param forceStage - Stage the object regardless of whether fields have changed or not
+     * @param commit - Get the database to commit the changes at the end of staging
+     */
+    public async stage(
+        forceStage = false, commit = false): Promise<void> {
+        this.stageLayer(forceStage);
+
+        if (commit) {
+            await firebase.database.commit();
         }
     }
 }

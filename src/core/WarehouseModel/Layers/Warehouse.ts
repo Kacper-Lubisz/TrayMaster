@@ -1,13 +1,16 @@
 import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
 import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
-import database, {DatabaseCollection} from "../Database";
+import firebase from "../../Firebase";
+import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
+import {SearchQuery, SortBy} from "../../../pages/SearchPage";
+import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
     "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
     "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
-    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
+    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
 ];
 
 const defaultTraySizes: TraySize[] = [
@@ -19,6 +22,7 @@ const defaultTraySizes: TraySize[] = [
 
 interface WarehouseFields {
     name: string;
+    defaultTraySizeID: string;
 }
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
@@ -31,8 +35,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     private constructor(id: string, fields: WarehouseFields) {
         super(id, fields);
-        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"));
-        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"));
+        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"), true);
+        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"), true);
     }
 
     /**
@@ -42,7 +46,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      * @returns The newly created warehouse
      */
     public static create(id?: string, name?: string): Warehouse {
-        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? ""});
+        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: ""});
     }
 
     /**
@@ -56,8 +60,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database.db.collection(this.topLevelChildCollectionPath);
-            this.children = (await database.loadQuery<unknown>(query))
+            const query = firebase.database.db.collection(this.topLevelChildCollectionPath);
+            this.children = (await firebase.database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
@@ -148,7 +152,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         await this.traySizeCollection.stage(forceStage);
 
         if (this.changed || forceStage) {
-            database.set(this.path, this.fields);
+            firebase.database.set(this.topLevelPath, this.fields);
             this.fieldsSaved();
         }
     }
@@ -160,6 +164,14 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public set name(name: string) {
         this.fields.name = name;
+    }
+
+    public get defaultTraySize(): TraySize {
+        return this.traySizeCollection.get(this.fields.defaultTraySizeID) ?? this.traySizes[1];
+    }
+
+    public set defaultTraySize(traySize: TraySize) {
+        this.fields.defaultTraySizeID = this.traySizeCollection.getItemId(traySize);
     }
 
     //#endregion
@@ -186,4 +198,54 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     }
 
     //#endregion
+
+    //region search
+    public traySearch(query: SearchQuery): Tray[] {
+
+        //todo make this feature full, it's actually a complete mess right now, needs a redoing
+
+        const filteredTrays = this.trays.filter(tray =>
+            query.categories === null ||
+            (query.categories === "set" && tray.category) ||
+            (query.categories === "unset" && !tray.category) ||
+            (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
+        );
+
+        const defaultSort = composeSorts<Tray>([
+            partitionBy<Tray>((a) => !!(a.expiry)), // draw a diagram to understand this
+            partitionBy<Tray>((a) => !(!a.expiry?.from && a.expiry?.to)),
+            partitionBy<Tray>((a) => (!a.expiry?.from && !a.expiry?.to)),
+
+            byNullSafe<Tray>((a) => a.expiry?.from, true),
+            byNullSafe<Tray>((a) => a.expiry?.to, false, false),
+            byNullSafe<Tray>((a) => a.category?.name, false, true),
+            byNullSafe<Tray>((a) => a.weight, false, true),
+        ]);
+
+        const sort = (() => {
+            if (query.sort.type === SortBy.category) {
+                return composeSort(
+                    byNullSafe<Tray>((a) => a.category?.name, false, true),
+                    defaultSort
+                );
+            } else if (query.sort.type === SortBy.location) {
+                return composeSort(
+                    byNullSafe<Tray>((a) => a.locationString, false, true),
+                    defaultSort
+                );
+            } else if (query.sort.type === SortBy.weight) {
+                return composeSort(
+                    byNullSafe<Tray>((a) => a.weight, false, true),
+                    defaultSort
+                );
+            } else { // none or SortBy.expiry
+                return defaultSort;
+            }
+        })();
+
+        return filteredTrays.sort(sort);
+
+    }
+
+    //endregion
 }
