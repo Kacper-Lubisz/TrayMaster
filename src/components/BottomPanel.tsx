@@ -1,6 +1,6 @@
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
-import {User} from "../core/Firebase/Authentication";
+import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
@@ -15,16 +15,12 @@ export interface BottomPanelProps {
     categories: Category[];
 
     selectedTrayCells: TrayCell[];
+    commonYear?: number;
 
     weight?: string;
     setWeight: (weight: string | undefined, couldAdvance: boolean) => void;
 
     user: User;
-
-}
-
-interface BottomPanelState {
-    selectedYear: number | undefined;
 }
 
 type WeightKeyboardButton = "Next" | "Clear" | "Backspace" | number | ".";
@@ -33,7 +29,7 @@ type WeightKeyboardButton = "Next" | "Clear" | "Backspace" | number | ".";
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
  * @see BottomPanelPage
  */
-export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelState> {
+export class BottomPanel extends React.Component<BottomPanelProps> {
     private readonly years: KeyboardButtonProps[];
     private readonly quarters: KeyboardButtonProps[];
     private readonly months: KeyboardButtonProps[];
@@ -123,11 +119,6 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
      * @param year - number representing the current year
      */
     private selectYear(year: number): void {
-        this.setState(state => ({
-            ...state,
-            selectedYear: year
-        }));
-
         const from = new Date(year, 0).getTime();
         const to = new Date(year + 1, 0).getTime();
 
@@ -144,15 +135,15 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
      * @param quarter - number in [0-3] inclusive representing the current quarter
      */
     private selectQuarter(quarter: number): void {
-        if (this.state.selectedYear) {
+        if (this.props.commonYear) {
 
-            const from = new Date(this.state.selectedYear, quarter * 3).getTime();
-            const to = new Date(this.state.selectedYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
+            const from = new Date(this.props.commonYear, quarter * 3).getTime();
+            const to = new Date(this.props.commonYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
 
             this.props.expirySelected({
                 from: from,
                 to: to,
-                label: `${this.quartersTranslator[quarter]} ${this.state.selectedYear.toString()}`
+                label: `${this.quartersTranslator[quarter]} ${this.props.commonYear.toString()}`
             });
         }
     }
@@ -163,16 +154,16 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
      * @param month - number in [0-11] inclusive representing the current month
      */
     private selectMonth(month: number): void {
-        if (this.state.selectedYear) {
+        if (this.props.commonYear) {
 
-            const from = new Date(this.state.selectedYear, month).getTime();
-            const to = new Date(month === 11 ? this.state.selectedYear + 1
-                                             : this.state.selectedYear, (month + 1) % 12).getTime();
+            const from = new Date(this.props.commonYear, month).getTime();
+            const to = new Date(month === 11 ? this.props.commonYear + 1
+                                             : this.props.commonYear, (month + 1) % 12).getTime();
 
             this.props.expirySelected({
                 from: from,
                 to: to,
-                label: `${this.monthsTranslator[month]} ${this.state.selectedYear.toString()}`
+                label: `${this.monthsTranslator[month]} ${this.props.commonYear.toString()}`
             });
         }
     }
@@ -209,22 +200,9 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
 
         } else if (this.props.keyboardState === "expiry") {
 
-            const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
-            const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
-
-            const commonYear = firstYear !== undefined && traysOnly.every(item =>
-                item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
-            ) ? firstYear : undefined;
-
-            // update object-level selectedYear
-            this.setState(state => ({
-                ...state,
-                selectedYear: commonYear
-            }));
-
             // set the button corresponding to selectedYear to be visibly selected
             for (const year of this.years) {
-                year.selected = year.name === commonYear?.toString();
+                year.selected = year.name === this.props.commonYear?.toString();
             }
 
             const specialButtons = [
@@ -248,8 +226,8 @@ export class BottomPanel extends React.Component<BottomPanelProps, BottomPanelSt
                 <div className="vl"/>
                 <Keyboard id="exp-years" disabled={disabled} buttons={this.years} gridX={2}/>
                 <div className="vl"/>
-                <Keyboard id="exp-quarters" disabled={!commonYear} buttons={this.quarters} gridX={1}/>
-                <Keyboard id="exp-months" disabled={!commonYear} buttons={this.months} gridX={3}/>
+                <Keyboard id="exp-quarters" disabled={!this.props.commonYear} buttons={this.quarters} gridX={1}/>
+                <Keyboard id="exp-months" disabled={!this.props.commonYear} buttons={this.months} gridX={3}/>
             </div>;
 
         } else if (this.props.keyboardState === "weight") {

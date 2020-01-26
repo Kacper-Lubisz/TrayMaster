@@ -133,6 +133,7 @@ export function getExpiryColor(range: ExpiryRange): string {
 
         // get saturation from difference between from and to and return hex value
         const saturation = range.to ? getSaturation(dayjs(range.to).diff(djsDate, "day")) : 1;
+        // todo decide what to do with this
         return hslToHex(ratioPeriod * 360, saturation, 1);
     }
 

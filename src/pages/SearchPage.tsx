@@ -105,11 +105,11 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         </div>;
     }
 
-    private updatePanel(state: PanelState): void {
-        this.setState({
-            ...this.state,
-            panelState: state
-        });
+    private updatePanel(panelState: PanelState): void {
+        this.setState(state => ({
+            ...state,
+            panelState: panelState
+        }));
     }
 
     private renderSearchSentence(): React.ReactNode {
