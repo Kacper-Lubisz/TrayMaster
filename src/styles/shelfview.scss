@@ -2,12 +2,8 @@
 
 // Import system-wide variables: we need to know $accent-color here
 @import "./variables";
-// Import generic keyboard styling
-@import "./keyboard";
 // Import shelf view grid layout
 @import "./shelfviewgrid";
-// Import viewport toolbar styling
-@import "./toolbar";
 // Import shelf edit styling
 @import "./shelfedit";
 // Import shelf navigator styling
@@ -26,7 +22,7 @@
   -webkit-touch-callout: none;
 
   // Import viewport styling
-  @import "./viewport";
+  @import "../components/styles/viewport";
 }
 
 #sideBar {

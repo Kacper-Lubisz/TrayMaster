@@ -1,19 +1,5 @@
 // STYLESHEET FOR THE LOADING PAGE
 
-// TRAY GRID PARAMETERS
-// ADJUSTING THESE WILL REQUIRE CHANGES IN "components/LoadingSpinner.tsx" AS WELL
-// ONLY MESS WITH THESE IF YOU KNOW WHAT YOU'RE DOING BECAUSE IT WILL MAKE THE ANIMATION LOOK RUBBISH / BREAK OTHERWISE
-$trayHeight: 20px;
-$trayWidth: 35px;
-$gridGutter: 5px;
-$gridRows: 3;
-$gridCols: 4;
-
-// Import animations stylesheet
-// IMPORTANT: This stylesheet uses some of the variables defined above.
-//            That means that it needs to be imported after they're defined.
-@import "loading-animations";
-
 // Main page styles
 #loadingPage {
   // Fill screen, define flexbox
@@ -38,30 +24,8 @@ $gridCols: 4;
 
     // 'Loading...' text
     h2 {
-      margin: 0;
+      margin: 20px 0 0 0;
       text-align: center;
-    }
-  }
-}
-
-// Epic flying tray spinner
-#spinner {
-  // calculate dimensions from given variables
-  width: ($trayWidth + $gridGutter) * $gridCols - $gridGutter;
-  height: ($trayHeight + $gridGutter) * $gridRows - $gridGutter;
-
-  // space out the text beneath
-  margin-bottom: 20px;
-
-  // All SVG rectangles (that's moving trays *and* the static tray slots)
-  rect {
-    width: $trayWidth;
-    height: $trayHeight;
-    fill: #000000;
-
-    // Static tray slots only
-    &.spinner-tray-slot {
-      fill: #cccccc;
     }
   }
 }

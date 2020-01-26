@@ -1,4 +1,5 @@
 import React from "react";
+import "./styles/_loadingspinner.scss";
 
 // VARIABLES DEFINING THE TRAY SPINNER GRID
 // DO NOT ADJUST THESE WITHOUT ADJUSTING THE CORRESPONDING VALUES IN "loading.scss"

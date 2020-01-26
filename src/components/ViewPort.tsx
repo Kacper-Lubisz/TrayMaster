@@ -13,6 +13,7 @@ import classNames from "classnames/bind";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {trayComparisonFunction} from "../utils/sortCells";
+import "./styles/_viewport.scss";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;
