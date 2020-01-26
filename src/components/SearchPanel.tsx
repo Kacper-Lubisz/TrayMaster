@@ -35,7 +35,11 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
 
     }
 
-    private renderCategoryOptions(): React.ReactNode {
+    componentDidUnmount(): void {
+        console.log("this is bad");
+    }
+
+    render(): React.ReactNode {
 
         const allCategories = this.props.warehouse?.categories?.sort((a, b) =>
             a.name < b.name ? -1 : 1
@@ -58,8 +62,8 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                 }
             });
 
-            return <>
-                <div className="categoryGroup">
+            return <div id="searchPanel">
+                <div className="categoryGroup" key={-1}>
                     <h1 className="categoryGroupTitle">{"~"}</h1>
                     <div className="categoryGroupCategories">
                         <button
@@ -74,8 +78,11 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                 </div>
                 {Array.from(groups.keys()).sort((a, b) =>
                     a < b ? -1 : 1
-                ).map(group =>
-                    <div className="categoryGroup">
+                ).map((group, i) =>
+                    <div
+                        className="categoryGroup"
+                        key={i}
+                    >
                         <h1 className="categoryGroupTitle">{group}</h1>
                         <div className="categoryGroupCategories"
                         >{groups.get(group)?.map(cat => <button
@@ -86,22 +93,8 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                             onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
                         }</div>
                     </div>
-                )}</>;
+                )}</div>;
         }
     }
 
-
-    render(): React.ReactNode {
-        // return DOM elements using button structures
-        return (
-            <div id="searchPanel">
-                {/*This is the side panel fellas. keyboardState is "{this.props.panelState}"*/}
-                {/*<br/>*/}
-                {/*<button onClick={() => this.props.setPanelState("category")}>Category</button>*/}
-                {/*<button onClick={() => this.props.setPanelState("weight")}>Weight</button>*/}
-                {/*<br/><br/>*/}
-                {this.renderCategoryOptions()}
-            </div>
-        );
-    }
 }
