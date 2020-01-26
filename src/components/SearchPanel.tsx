@@ -45,14 +45,38 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                                                                                    : new Set<Category>();
 
         if (allCategories) {
-            return allCategories.map(cat => {
-                return <button key={cat.name}
-                               style={{backgroundColor: searchCategories.has(cat) ? "red" : "transparent"}}
-                               className={classNames("searchPanelButton", {
-                                   "selected": searchCategories.has(cat)
-                               })}
-                               onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>;
+
+            const groups = new Map<string, Category[]>();
+
+            allCategories.forEach(cat => {
+                const key = cat.name.charAt(0).toUpperCase();
+
+                if (groups.has(key)) {
+                    groups.get(key)?.push(cat);
+                } else {
+                    groups.set(key, [cat]);
+                }
             });
+
+            return <>{
+                Array.from(groups.keys()).sort((a, b) =>
+                    a < b ? -1 : 1
+                ).map(group =>
+                    <div className="categoryGroup">
+                        <h1 className="categoryGroupTitle">{group}</h1>
+                        <div
+                            className="categoryGroupCategories"
+                        >{groups.get(group)?.map(cat => <button
+                            key={cat.name}
+                            style={{backgroundColor: searchCategories.has(cat) ? "red" : "transparent"}}
+                            className={classNames("searchPanelButton", {
+                                "selected": searchCategories.has(cat)
+                            })}
+                            onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
+                        }</div>
+                    </div>
+                )
+            }</>;
         }
     }
 

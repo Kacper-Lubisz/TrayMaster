@@ -20,7 +20,7 @@ import {BottomPanel} from "../components/BottomPanel";
 import {SideBar} from "../components/SideBar";
 import {ToolBar} from "../components/ToolBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
-import {buildErrorDialog, Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
+import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {
     Bay,
@@ -423,7 +423,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @return The mutated selection
      */
     private advanceSelection(canGoToCell: boolean, selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
-        //todo add a setting for this
 
         const comparison = composeSorts<TrayCell>([
             byNullSafe<TrayCell>(cell => cell.parentColumn.indexInParent, false, false),
@@ -833,11 +832,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             onClick: this.clearTrays.bind(this),
                             disabled: this.getSelectedTrayCells().length === 0
                         },
-                        { /*This code adds a button which opens a test dialog*/
-                            name: "Test Error", onClick: this.props.openDialog.bind(undefined,
-                                buildErrorDialog("Error Title", "this is a big test", true)
-                            )
-                        }
+                        // { /*This code adds a button which opens a test dialog*/
+                        //     name: "Test Error", onClick: this.props.openDialog.bind(undefined,
+                        //         buildErrorDialog("Error Title", "this is a big test", true)
+                        //     )
+                        // }
 
                     ]}/>
                 <SideBar

@@ -201,18 +201,28 @@ class App extends React.Component<unknown, AppState> {
      * This method allows for setting the search query
      * @param query
      */
-    private setSearch(query: SearchQuery): void {
+    private async setSearch(query: SearchQuery): Promise<void> {
         if (this.state.warehouse) {
             const warehouse = this.state.warehouse;
+
             this.setState(state => ({
                 ...state,
                 search: {
                     query: query,
-                    results: warehouse.traySearch(query)
-                    //todo fixme finalise how and where this search is going to be performed
-                    // an alternative is to keep results null until this promise resolves.
+                    results: null
                 }
             }));
+
+            const results = await warehouse.traySearch(query);
+            this.setState(state => ({
+                    ...state,
+                    search: {
+                        query: query,
+                        results: results
+                    }
+                })
+            );
+
         } else {
             throw new Error("Can't perform search when the warehouse is undefined");
         }

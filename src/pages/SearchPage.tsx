@@ -222,17 +222,13 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
                     const locationString = `${tray.parentZone.name} ${tray.parentBay.name}${tray.parentShelf.name}`;
 
-                    return (
-                        <tr key={i}>
-                            <td>{tray.category?.name ?? "?"}</td>
-                            <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
-                            <td className="weightCell">{weightString}</td>
-                            <td style={zoneStyle}>{locationString}</td>
-                            <td className="commentCell" style={{
-                                backgroundColor: tray.comment ? "#ffffff" : ""
-                            }}>{tray.comment}</td>
-                        </tr>
-                    );
+                    return <tr key={i}>
+                        <td>{tray.category?.name ?? "?"}</td>
+                        <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
+                        <td className="weightCell">{weightString}</td>
+                        <td style={zoneStyle}>{locationString}</td>
+                        <td className="commentCell">{tray.comment}</td>
+                    </tr>;
                 })}
                 </tbody>
             </table>;
