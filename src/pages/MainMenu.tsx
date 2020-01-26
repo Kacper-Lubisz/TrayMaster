@@ -7,8 +7,8 @@ import {faExchangeAlt, faExclamationTriangle as warningIcon, faSignOutAlt} from 
 import {Warehouse} from "../core/WarehouseModel";
 import {User} from "../core/Firebase";
 import {Dialog} from "../core/Dialog";
-import logoSkew from "../Logo_skew.svg";
 import {SearchQuery, SortBy} from "./SearchPage";
+import {TrayMasterLogo} from "../components/TrayMasterLogo";
 
 /**
  * expiryAmount is the number of items expiring soon
@@ -39,9 +39,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
     render(): React.ReactNode {
 
         return <div className="main-menu">
-            <div className="menu-header">
-                <img alt="TrayMaster Logo" src={logoSkew}/>
-            </div>
+            <TrayMasterLogo/>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
             {this.props.expiryAmount === 0 ? undefined : <div
                     className="alert"
