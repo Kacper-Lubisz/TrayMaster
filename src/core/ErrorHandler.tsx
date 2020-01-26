@@ -1,5 +1,7 @@
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {TrayMasterLogo} from "../components/TrayMasterLogo";
+import "../styles/errorhandler.scss";
 
 
 interface ErrorHandlerState {
@@ -41,20 +43,43 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
     /**
      * This function is called when the button to reload the page is called
      */
-    private exitError(): void {
+    private exitError(): void { // todo this method's content can just be moved into the button surely?
         window.location.reload();
     }
 
     render(): React.ReactNode {
-
         if (this.state.error) {
+            const errorStack = this.state.error.stack?.split("\n") ?? "unknown";
+
             return (
                 <div>
-                    <h2>Something went wrong.</h2>
-                    <p>{`${this.state.error}`}</p>
-                    <button className="key-btn"
-                            onClick={this.exitError.bind(this)}><p>Refresh Page</p>
-                    </button>
+                    <TrayMasterLogo/>
+                    <div id="error-container">
+                        <h1>Something went wrong.</h1>
+                        <p>Sorry about that. Here's some more information:</p>
+                        <div id="error-content">
+                            <h2>{this.state.error.name}</h2>
+                            <table>
+                                <tr>
+                                    <td className="error-title">
+                                        Thrown at:
+                                    </td>
+                                    <td className="error-info">
+                                        {errorStack[errorStack.length - 2]}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="error-title">
+                                        Description:
+                                    </td>
+                                    <td className="error-info">
+                                        {this.state.error.message}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <button id="error-exit" onClick={this.exitError.bind(this)}>Refresh</button>
+                    </div>
                 </div>
             );
         } else {

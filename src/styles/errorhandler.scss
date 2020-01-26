@@ -1,0 +1,39 @@
+
+#error-container {
+  background-color: #ffffff;
+  text-align: center;
+  position: absolute;
+  top: 55%;
+  right: 10%;
+  transform: translate(0, -50%);
+
+  font-size: 24px;
+
+  #error-content {
+    text-align: left;
+    background-color: #eeeeee;
+    padding: 10px;
+    line-height: 40px;
+
+    > *:not(:last-child) {
+      margin: 0 0 10px 0;
+    }
+
+    .error-title {
+      vertical-align: center;
+      padding-right: 10px;
+    }
+
+    .error-info {
+      font-family: monospace;
+      background-color: #dddddd;
+      padding: 0 5px;
+    }
+  }
+
+  #error-exit {
+    margin-top: 20px;
+    font-size: 30px;
+    padding: 10px 40px;
+  }
+}
