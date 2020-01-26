@@ -58,25 +58,35 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                 }
             });
 
-            return <>{
-                Array.from(groups.keys()).sort((a, b) =>
+            return <>
+                <div className="categoryGroup">
+                    <h1 className="categoryGroupTitle">{"~"}</h1>
+                    <div className="categoryGroupCategories">
+                        <button
+                            className={classNames("searchPanelButton", {
+                                // "selected": searchCategories.has(cat)
+                            })}
+                            // onClick={}
+                        >{"~"}
+                        </button>
+
+                    </div>
+                </div>
+                {Array.from(groups.keys()).sort((a, b) =>
                     a < b ? -1 : 1
                 ).map(group =>
                     <div className="categoryGroup">
                         <h1 className="categoryGroupTitle">{group}</h1>
-                        <div
-                            className="categoryGroupCategories"
+                        <div className="categoryGroupCategories"
                         >{groups.get(group)?.map(cat => <button
                             key={cat.name}
-                            style={{backgroundColor: searchCategories.has(cat) ? "red" : "transparent"}}
                             className={classNames("searchPanelButton", {
                                 "selected": searchCategories.has(cat)
                             })}
                             onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
                         }</div>
                     </div>
-                )
-            }</>;
+                )}</>;
         }
     }
 
