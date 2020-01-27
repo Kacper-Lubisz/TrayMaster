@@ -132,7 +132,8 @@ export function getExpiryColor(range: ExpiryRange): string {
         const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
 
         // get saturation from difference between from and to and return hex value
-        const saturation = range.to ? getSaturation(dayjs(range.to).diff(djsDate, "day")) : 1; //todo eval this <-- what does this mean?
+        //todo eval this <-- what does this mean?
+        const saturation = range.to ? getSaturation(dayjs(range.to).diff(djsDate, "day")) : 1;
         return hslToHex(ratioPeriod * 360, saturation, 1);
     }
 
