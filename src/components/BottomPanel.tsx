@@ -187,7 +187,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 };
             }).concat([
                 {
-                    name: "Clear",
+                    name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
                     selected: false
                 }
