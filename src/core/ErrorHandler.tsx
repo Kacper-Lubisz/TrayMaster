@@ -43,7 +43,7 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
     /**
      * This function is called when the button to reload the page is called
      */
-    private exitError(): void { // todo this method's content can just be moved into the button surely?
+    private static exitError(): void { // todo this method's content can just be moved into the button surely?
         window.location.reload();
     }
 
@@ -78,7 +78,7 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
                                 </tr>
                             </table>
                         </div>
-                        <button id="error-exit" onClick={this.exitError.bind(this)}>Refresh</button>
+                        <button id="error-exit" onClick={ErrorHandler.exitError.bind(this)}>Refresh</button>
                     </div>
                 </div>
             );

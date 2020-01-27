@@ -42,17 +42,18 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             <TrayMasterLogo/>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
             {this.props.expiryAmount === 0 ? undefined : <div
-                    className="alert"
+                className="alert"
                 onClick={(_) => {
-                        this.props.setSearch({
-                            categories: null,
-                            weight: null,
-                            commentSubstring: null,
-                            excludePickingArea: true,
-                            sort: {orderAscending: true, type: SortBy.expiry}
-                        });
-                        this.props.history.push("/search");
-                    }}><div className="alert-header">
+                    this.props.setSearch({
+                        categories: null,
+                        weight: null,
+                        commentSubstring: null,
+                        excludePickingArea: true,
+                        sort: {orderAscending: true, type: SortBy.expiry}
+                    });
+                    this.props.history.push("/search");
+                }}>
+                <div className="alert-header">
                     <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
                     <h2>Expiry Imminent</h2>
                 </div>

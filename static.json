@@ -1,0 +1,25 @@
+{
+  "canonical_host": "traymaster.herokuapp.com",
+  "https_only": true,
+  "headers": {
+    "/**": {
+      "Strict-Transport-Security": "max-age=2592000",
+      "Access-Control-Allow-Origin": "https://traymaster.herokuapp.com",
+      "Cache-Control": "no-store, no-cache"
+    },
+    "/static/**": {
+      "Strict-Transport-Security": "max-age=2592000",
+      "Access-Control-Allow-Origin": "https://traymaster.herokuapp.com",
+      "Cache-Control": "public, max-age=2592000"
+    }
+  },
+  "root": "build/",
+  "clean_urls": false,
+  "routes": {
+    "/**": "index.html"
+  },
+  "logging": {
+    "access": true,
+    "error": "warn"
+  }
+}

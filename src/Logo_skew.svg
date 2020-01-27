@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--suppress ALL -->
 <svg
         xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:cc="http://creativecommons.org/ns#"
@@ -34,18 +35,18 @@
             bordercolor="#666666"
             pagecolor="#ffffff"
             id="base"/>
-  <metadata
-     id="metadata21">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
+    <metadata
+            id="metadata21">
+        <rdf:RDF>
+            <cc:Work
+                    rdf:about="">
+                <dc:format>image/svg+xml</dc:format>
+                <dc:type
+                        rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+                <dc:title></dc:title>
+            </cc:Work>
+        </rdf:RDF>
+    </metadata>
     <g
             id="layer1"
             inkscape:groupmode="layer"
@@ -315,5 +316,5 @@
                 x="1007.6315"
                 y="817.52795"
                 transform="matrix(1,0,-0.5,0.8660254,0,0)"/>
-  </g>
+    </g>
 </svg>
