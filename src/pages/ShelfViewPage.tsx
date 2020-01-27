@@ -837,9 +837,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
                     ] : [ // Generate sidebar buttons
+                        {name: "Main Menu", onClick: () => this.props.history.push("/menu")},
                         {name: "Search", onClick: this.makeSearch.bind(this)},
                         {name: "Settings", onClick: () => this.props.history.push("/settings")},
-                        {name: "Home", onClick: () => this.props.history.push("/menu")},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         {name: "Navigator", onClick: this.openNavigator.bind(this)}, // disable if view is a warehouse
                         // enabled = possibleMoveDirections.previousTray
