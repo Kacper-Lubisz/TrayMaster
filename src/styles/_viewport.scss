@@ -70,12 +70,17 @@
 
       &.trayEmpty {
         font-size: 24px;
-        font-weight: lighter;
+        color: #666666;
 
         text-align: center;
+        position: relative;
 
-        > p { //todo fixme text align to the centre properly
-          width: 100%;
+        > p {
+          margin: 0;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
         }
       }
 

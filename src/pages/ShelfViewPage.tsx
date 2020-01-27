@@ -473,16 +473,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     return new Map<TrayCell, boolean>([
                         [nextColumn.getPaddedTrays()[0], true]
                     ]);
-                } else {
-                    return selection;
                 }
-            } else {
-                return selection;
             }
-        } else {
-            return selection;
         }
 
+        return selection;
     }
 
     /**
@@ -759,6 +754,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.props.history.push("/search");
     }
 
+    private getCommonYear(): number | undefined {
+        const traysOnly = this.splitCells(this.getSelectedTrayCells()).trays;
+        const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
+        const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
+
+        return firstYear !== undefined && traysOnly.every(item =>
+            item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
+        ) ? firstYear : undefined;
+    }
+
     render(): React.ReactNode {
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
@@ -854,6 +859,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     categories={this.props.warehouse.categories}
                     categorySelected={this.onCategorySelected.bind(this)}
                     expirySelected={this.onExpirySelected.bind(this)}
+                    commonYear={this.state.currentKeyboard === "expiry" ? this.getCommonYear() : undefined}
                     draftWeight={this.state.draftWeight}
                     setDraftWeight={this.setDraftWeight.bind(this)}
                     applyDraftWeight={this.applyDraftWeight.bind(this)}

@@ -105,9 +105,11 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     }
 
     private updatePanel(state: PanelState): void {
-        this.setState({
-            ...this.state,
-            panelState: state
+        this.setState(oldState => {
+            return {
+                ...oldState,
+                panelState: state
+            };
         });
     }
 
