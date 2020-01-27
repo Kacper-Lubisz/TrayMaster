@@ -8,46 +8,60 @@
 #searchPage {
   #topPanel {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     padding: 20px;
     background-color: #ffffff;
     box-shadow: 0 -20px 15px 10px #000000; // todo consider switching this to an inset shadow on the results div
 
     svg {
       cursor: pointer;
-      margin-right: 20px;
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
     }
 
     #sentenceL {
-      margin-right: 20px;
-    }
-
-    #searchSentence {
-      font-size: 24px;
-      line-height: 45px;
-
-      flex-grow: 1;
-
-      span.searchMessage {
-        padding: 2px;
-        margin-right: 10px;
-      }
-
-      span.searchField {
-        color: $accent-color;
-        background-color: #eeeeee;
-        padding: 2px 5px;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-    }
-
-    #sentenceR {
-      height: 100%;
+      margin: 0 30px 0 10px;
       display: flex;
       align-items: center;
+    }
+
+    #sentenceBox {
+      flex-grow: 1;
+
+      display: flex;
+      background-color: #eeeeee;
+      align-items: center;
+
+      padding: 10px;
+
+      #searchSentence {
+        margin: -2px 0;
+        font-size: 24px;
+        line-height: 40px;
+
+        flex-grow: 1;
+
+        padding-right: 10px;
+
+        span.searchMessage {
+          padding: 2px;
+          margin-right: 10px;
+        }
+
+        span.searchField {
+          color: $accent-color;
+          background-color: #dddddd;
+          padding: 2px 5px;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+      }
+
+      #sentenceR {
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
     }
   }
 
