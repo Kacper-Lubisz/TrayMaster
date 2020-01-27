@@ -1,7 +1,7 @@
+import classNames from "classnames";
 import React from "react";
 import {Category, Warehouse} from "../core/WarehouseModel";
 import {SearchQuery, SearchResults} from "../pages/SearchPage";
-import classNames from "classnames";
 
 export type PanelState = "category" | "weight" | "expiry";
 
@@ -35,7 +35,11 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
 
     }
 
-    private renderCategoryOptions(): React.ReactNode {
+    componentDidUnmount(): void {
+        console.log("this is bad");
+    }
+
+    render(): React.ReactNode {
 
         const allCategories = this.props.warehouse?.categories?.sort((a, b) =>
             a.name < b.name ? -1 : 1
@@ -45,29 +49,52 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                                                                                    : new Set<Category>();
 
         if (allCategories) {
-            return allCategories.map(cat => {
-                return <button key={cat.name}
-                               style={{backgroundColor: searchCategories.has(cat) ? "red" : "transparent"}}
-                               className={classNames("searchPanelButton", {
-                                   "selected": searchCategories.has(cat)
-                               })}
-                               onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>;
+
+            const groups = new Map<string, Category[]>();
+
+            allCategories.forEach(cat => {
+                const key = cat.name.charAt(0).toUpperCase();
+
+                if (groups.has(key)) {
+                    groups.get(key)?.push(cat);
+                } else {
+                    groups.set(key, [cat]);
+                }
             });
+
+            return <div id="searchPanel">
+                <div className="categoryGroup" key={-1}>
+                    <h1 className="categoryGroupTitle">{"~"}</h1>
+                    <div className="categoryGroupCategories">
+                        <button
+                            className={classNames("searchPanelButton", {
+                                // "selected": searchCategories.has(cat)
+                            })}
+                            // onClick={}
+                        >{"~"}
+                        </button>
+
+                    </div>
+                </div>
+                {Array.from(groups.keys()).sort((a, b) =>
+                    a < b ? -1 : 1
+                ).map((group, i) =>
+                    <div
+                        className="categoryGroup"
+                        key={i}
+                    >
+                        <h1 className="categoryGroupTitle">{group}</h1>
+                        <div className="categoryGroupCategories"
+                        >{groups.get(group)?.map(cat => <button
+                            key={cat.name}
+                            className={classNames("searchPanelButton", {
+                                "selected": searchCategories.has(cat)
+                            })}
+                            onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
+                        }</div>
+                    </div>
+                )}</div>;
         }
     }
 
-
-    render(): React.ReactNode {
-        // return DOM elements using button structures
-        return (
-            <div id="searchPanel">
-                {/*This is the side panel fellas. keyboardState is "{this.props.panelState}"*/}
-                {/*<br/>*/}
-                {/*<button onClick={() => this.props.setPanelState("category")}>Category</button>*/}
-                {/*<button onClick={() => this.props.setPanelState("weight")}>Weight</button>*/}
-                {/*<br/><br/>*/}
-                {this.renderCategoryOptions()}
-            </div>
-        );
-    }
 }

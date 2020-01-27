@@ -1,17 +1,17 @@
-import React from "react";
-import "pepjs";
-import "../styles/shelfview.scss";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle as tickSolid,
     faMinus as minus,
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames/bind";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import "pepjs";
+import React from "react";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
+import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {trayComparisonFunction} from "../utils/sortCells";
 import "./styles/_viewport.scss";
 
@@ -28,6 +28,8 @@ interface ViewPortProps {
 
     current: ViewPortLocation;
     isShelfEdit: boolean;
+
+    draftWeight: string | undefined;
 
 }
 
@@ -75,17 +77,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         // Shallow clone the selected map from props, which we will save
         const selectedBefore = new Map(this.props.selected);
 
-        this.setState(state => {
-            return {
-                ...state,
-                longPress: this.state.longPress ? {
-                    isHappening: true,
-                    timeout: undefined,
-                    dragFrom: this.state.longPress.dragFrom,
-                    selectedBefore: selectedBefore,
-                } : undefined,
-            };
-        }, () => {
+        this.setState(state => ({
+            ...state,
+            longPress: this.state.longPress ? {
+                isHappening: true,
+                timeout: undefined,
+                dragFrom: this.state.longPress.dragFrom,
+                selectedBefore: selectedBefore,
+            } : undefined,
+        }), () => {
             if (this.state.longPress) {
                 this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom);
             }
@@ -136,12 +136,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      */
     private onDragSelectEnd(): void {
 
-        this.setState(state => {
-            return {
-                ...state,
-                longPress: null,
-            };
-        });
+        this.setState(state => ({
+            ...state,
+            longPress: null,
+        }));
     }
 
     /**
@@ -181,17 +179,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             }
         }, LONG_PRESS_TIMEOUT);
 
-        this.setState(state => {
-            return {
-                ...state,
-                longPress: {
-                    selectedBefore: new Map(),
-                    isHappening: false,
-                    timeout: timeout,
-                    dragFrom: tray
-                }
-            };
-        });
+        this.setState(state => ({
+            ...state,
+            longPress: {
+                selectedBefore: new Map(),
+                isHappening: false,
+                timeout: timeout,
+                dragFrom: tray
+            }
+        }));
     }
 
     /**
@@ -206,12 +202,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 this.onDragSelectEnd(); // end of drag
             } else {
                 window.clearTimeout(this.state.longPress?.timeout);
-                this.setState(state => {
-                    return {
-                        ...state,
-                        longPress: null
-                    };
-                });
+                this.setState(state => ({
+                    ...state,
+                    longPress: null
+                }));
                 this.onTrayClick(tray);
             }
         }
@@ -228,12 +222,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             // is between pointer down and drag start
             window.clearTimeout(this.state.longPress?.timeout);
 
-            this.setState(state => {
-                return { // kills the long press
-                    ...state,
-                    longPress: null
-                };
-            });
+            this.setState(state => ({ // kills the long press
+                ...state,
+                longPress: null
+            }));
         }
     }
 
@@ -374,15 +366,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         };
                     } else {
                         return {
-                            backgroundColor: "#ffffff",
+                            backgroundColor: "#ffffff00",
                             color: "#000000"
                         };
                     }
                 })();
 
+                const isSelected = this.props.isTraySelected(tray);
                 return <div
                     className={classNames("tray", {
-                        "trayEmpty": !(tray instanceof Tray) && index === column.trays.length,
                         "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
                         "selected": this.props.isTraySelected(tray),
                         "firstTraySpace": index === column.trays.length,
@@ -396,7 +388,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 >
                     <FontAwesomeIcon
                         className={classNames("tray-tickbox", {
-                            "tick-selected": this.props.isTraySelected(tray)
+                            "tick-selected": isSelected
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
@@ -404,12 +396,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
-                        <div className="trayWeight">{tray.weight ?? "?"}kg</div>
+                        <div className={classNames("trayWeight", {
+                            // "trayWeightEdit": this.props.draftWeight && isSelected
+                        })}>
+                            {this.props.draftWeight && isSelected ? this.props.draftWeight
+                                                                  : tray.weight ?? "?"}kg
+                        </div>
                         <div className="trayComment">{tray.comment ?? ""}</div>
                     </> : null}
-                    {!(tray instanceof Tray) && index === column.trays.length ? <>
-                        <p>EMPTY TRAY</p>
-                    </> : null}
+                    {tray instanceof Tray ? null : <>
+                        <p>EMPTY SPACE</p>
+                    </>}
                 </div>;
             })}
             {this.props.isShelfEdit ? <div className="edit-shelf-column">

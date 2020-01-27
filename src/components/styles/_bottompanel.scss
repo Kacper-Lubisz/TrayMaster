@@ -41,19 +41,12 @@
       width: 30%;
     }
 
-    // weight keyboard: side section (with backspace, enter etc0
+    // weight keyboard: side section (with backspace, enter etc)
     #numpadR {
       height: 100%;
       width: 10%;
       display: flex;
       flex-direction: column;
-
-      #draftWeight {
-        text-align: right;
-        font-size: 30px;
-        font-weight: 600;
-        margin-bottom: 10px;
-      }
 
       #weight-numpad-side {
         flex-grow: 1;

@@ -1,5 +1,5 @@
-import {BottomLayer} from "../LayerStructure/BottomLayer";
 import {Bay, Category, Column, ExpiryRange, Shelf, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {BottomLayer} from "../LayerStructure/BottomLayer";
 import Utils from "../Utils";
 
 interface TrayFields {

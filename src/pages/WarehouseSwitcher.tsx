@@ -1,13 +1,12 @@
-import React from "react";
-import "../styles/settings.scss";
-import {RouteComponentProps, withRouter} from "react-router-dom";
+import {faArrowLeft, faHome} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faHome} from "@fortawesome/free-solid-svg-icons";
+import classNames from "classnames";
+import React from "react";
+import {RouteComponentProps, withRouter} from "react-router-dom";
+import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel";
-import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import "../styles/warehouseswitcher.scss";
-import classNames from "classnames";
 
 interface WarehouseSwitcherProps {
     user: User;
@@ -37,6 +36,13 @@ class WarehouseSwitcherPage extends React.Component<RouteComponentProps & Wareho
 
             <div id="switch-box">
                 <h1>Select Warehouse</h1>
+                {this.props.user.accessibleWarehouses.some(warehouse => warehouse.id === this.props.user.lastWarehouseID)
+                 ?
+                 <button className="key-btn" onClick={() => this.props.history.goBack()}>
+                     <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
+                     <p>Back</p>
+                 </button> : undefined}
+
                 {this.props.user.accessibleWarehouses.length === 0 ? <>
                     <p>You don't have access to any warehouses! You might want to contact your administrator.</p>
                     {/*fixme add back button*//*<button onClick={() => this.props.history.goBack()}>Go back</button>*/}
