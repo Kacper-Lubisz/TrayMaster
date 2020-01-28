@@ -56,11 +56,17 @@
           cursor: pointer;
         }
       }
+    }
 
-      #sentenceR {
+    #sentenceR {
+      margin: 0 10px 0 30px;
+
+      button {
         height: 100%;
-        display: flex;
-        align-items: center;
+        width: 120px;
+        font-size: 24px;
+        background-color: #eeeeee;
+        border: 1px solid #aaaaaa;
       }
     }
   }

@@ -94,9 +94,10 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     </div>
                     <div id="sentenceBox">
                         {this.renderSearchSentence()}
-                        <div id="sentenceR">
-                            <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
-                        </div>
+                        <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
+                    </div>
+                    <div id="sentenceR">
+                        <button onClick={() => this.props.history.push("/menu")}>Menu</button>
                     </div>
                 </div>
                 <div id="searchResults">{this.renderSearchResults()}</div>
