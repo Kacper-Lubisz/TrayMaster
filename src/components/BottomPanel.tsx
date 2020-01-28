@@ -215,7 +215,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     })
 
                 }, {
-                    name: "Clear",
+                    name: "< Clear >",
                     onClick: () => this.props.expirySelected(null)
 
                 }
@@ -242,7 +242,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             }));
 
             // Create numpadSide for the side buttons
-            const numpadSide: KeyboardButtonProps[] = (["Backspace", "Clear"].concat(this.props.user.enableAutoAdvance
+            const numpadSide: KeyboardButtonProps[] = (["Backspace", "< Clear >"].concat(this.props.user.enableAutoAdvance
                                                                                      ? ["Next Tray"]
                                                                                      : []) as WeightKeyboardButton[])
                 .map((a) => ({
