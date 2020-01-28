@@ -93,7 +93,6 @@ class App extends React.Component<unknown, AppState> {
                             warehouse={this.state.warehouse}
                             user={this.state.user}
                         /> : <Redirect to="/menu"/>} exact/>
-                    <Route path="/loading" component={() => <LoadingPage/>}/>
                     <Route path="/menu" component={() => (() => {
                         if (this.state.user && this.state.warehouse) {
                             return <MainMenu

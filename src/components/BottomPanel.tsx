@@ -139,8 +139,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         if (this.props.commonYear) {
 
             const from = new Date(this.props.commonYear, quarter * 3).getTime();
-            const to = new Date(this.props.commonYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
-
+            const to = new Date(this.props.commonYear + Math.floor(quarter / 3), (quarter + 1) % 4 * 3).getTime();
             this.props.expirySelected({
                 from: from,
                 to: to,
