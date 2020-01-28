@@ -1,8 +1,10 @@
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {LoadingSpinner} from "../components/LoadingSpinner";
+import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import firebase from "../core/Firebase";
 import "../styles/settings.scss";
+import "../styles/signin.scss";
 
 const authErrorMessages: Map<string, string> = new Map<string, string>([
     ["auth/invalid-email", "Invalid email address."],
@@ -39,51 +41,50 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
 
 
     render(): React.ReactNode {
-        return <div>
-            <h1>Sign In</h1>
+        return <>
+            <TrayMasterLogo
+                message={this.state.feedback ? <span style={{color: "red"}}>{this.state.feedback}</span> : undefined}/>
+            <div id="signin-box">
+                <h1>Sign in</h1>
+                {this.state.loading ? <LoadingSpinner/> : <>
+                    <form onSubmit={async (event) => {
+                        event.preventDefault();
+                        await this.signIn(this.state.emailField, this.state.passwordField);
+                    }}>
+                        <input
+                            onChange={(event) => {
+                                const newEmail = event.target.value;
+                                this.setState(state => ({
 
-            {this.state.loading ? <LoadingSpinner/> : <>
-                <form onSubmit={async (event) => {
-                    event.preventDefault();
-                    await this.signIn(this.state.emailField, this.state.passwordField);
-                }}>
-                    Email:
-                    <input
-                        onChange={(event) => {
-                            const newEmail = event.target.value;
-                            this.setState(state => ({
-                                ...state,
-                                emailField: newEmail
-                            }));
-                        }}
-                        value={this.state?.emailField ?? ""}
-                        type="text"
-                        placeholder={"Email"}
-                    /> <br/>
-                    Password:
-                    <input
-                        onChange={(event) => {
-                            const newPassword = event.target.value;
-                            this.setState(state => ({
-                                ...state,
-                                passwordField: newPassword
-                            }));
-                        }}
-                        value={this.state?.passwordField ?? ""}
-                        type="password"
-                        placeholder={"Password"}
-                    /> <br/>
-                </form>
+                                    ...state,
+                                    emailField: newEmail
 
-                {this.state.feedback ? <h1 style={{color: "red"}}>{this.state.feedback}</h1> : undefined}
+                                }));
+                            }}
+                            value={this.state?.emailField ?? ""}
+                            type="text"
+                            placeholder={"Email"}
+                        />
+                        <input
+                            onChange={(event) => {
+                                const newPassword = event.target.value;
+                                this.setState(state => ({
+                                    ...state,
+                                    passwordField: newPassword
 
-                <button onClick={this.signIn.bind(this, this.state.emailField, this.state.passwordField)}>Sign In
-                </button>
-
-                <br/>
-            </>
-            }
-        </div>;
+                                }));
+                            }}
+                            value={this.state?.passwordField ?? ""}
+                            type="password"
+                            placeholder={"Password"}
+                        />
+                        <input type="submit" value="Submit"
+                               onClick={this.signIn.bind(this, this.state.emailField, this.state.passwordField)}/>
+                    </form>
+                </>
+                }
+            </div>
+        </>;
     }
 
     private async signIn(email: string | undefined, password: string | undefined): Promise<void> {
@@ -97,15 +98,15 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
             } catch (e) {
                 this.setState(state => ({
                     ...state,
-                    feedback: authErrorMessages.get(e.code) ?? "Authentication error occurred.",
+                    feedback: "Error: ".concat(authErrorMessages.get(e.code) ?? "Authentication error occurred."),
                     loading: false,
                 }));
             }
         } else {
             this.setState(state => ({
                 ...state,
-                feedback: `${email ? "emailField is undefined " : ""}
-                    ${password ? "passwordField is undefined " : ""}`
+                feedback: `${email ? "" : "Please enter your email address!"}
+                    ${password ? "" : "Please enter your password!"}`
             }));
         }
     }

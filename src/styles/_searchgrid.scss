@@ -13,7 +13,7 @@
   display: grid;
   // MASTER GRID PARAMETERS: USE THESE TO ADJUST RATIOS
   grid-template-columns: 7fr 3fr;
-  grid-template-rows: 1fr 9fr;
+  grid-template-rows: 1fr;
 
 
   // these values specify what sectors of the grid each component takes up
@@ -21,23 +21,16 @@
     // top left sector
     grid-column-start: 1;
     grid-column-end: 2;
-    grid-row-start: 2;
-    grid-row-end: 3;
-
-    overflow-y: auto;
-  }
-
-  #topPanel {
-    grid-column-start: 1;
-    grid-column-end: 2;
     grid-row-start: 1;
     grid-row-end: 2;
+
+    overflow-y: auto;
   }
 
   #searchPanel {
     grid-column-start: 2;
     grid-column-end: 3;
     grid-row-start: 1;
-    grid-row-end: 3;
+    grid-row-end: 2;
   }
 }

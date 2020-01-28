@@ -5,6 +5,7 @@ import React from "react";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
+import "./styles/_sidebar.scss";
 
 
 /**
