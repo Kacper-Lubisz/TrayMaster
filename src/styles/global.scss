@@ -8,3 +8,20 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+button, input[type="submit"] {
+  font-size: 20px;
+  background-color: #eeeeee;
+  border: 1px solid #cccccc;
+  padding: 0 20px;
+  cursor: pointer;
+  text-transform: uppercase;
+  border-radius: 5px;
+  margin: 5px;
+
+  transition: box-shadow ease 0.5s;
+
+  &:hover:enabled {
+    box-shadow: 0 0 20px -10px #000000;
+  }
+}

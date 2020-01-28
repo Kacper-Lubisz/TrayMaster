@@ -62,26 +62,23 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             }
 
             <div className="menu-btn-container">
-                <button className="key-btn" onClick={() => this.props.history.push("/")}>
+                <button onClick={() => this.props.history.push("/")}>
                     <p>Shelf View</p></button>
-                <button className="key-btn"
-                        onClick={(_) => {
-                            this.props.setSearch({
-                                categories: null,
-                                weight: null,
-                                commentSubstring: null,
-                                excludePickingArea: true,
-                                sort: {orderAscending: true, type: SortBy.expiry}
-                            });
-                            this.props.history.push("/search");
-                        }}><p>Search</p>
+                <button onClick={(_) => {
+                    this.props.setSearch({
+                        categories: null,
+                        weight: null,
+                        commentSubstring: null,
+                        excludePickingArea: true,
+                        sort: {orderAscending: true, type: SortBy.expiry}
+                    });
+                    this.props.history.push("/search");
+                }}><p>Search</p>
                 </button>
-                <button className="key-btn"
-                        disabled={true}
+                <button disabled={true}
                         onClick={() => alert("Report")}><p>Report</p>
                 </button>
-                <button className="key-btn"
-                        onClick={() => this.props.history.push("/settings")}><p>Settings</p>
+                <button onClick={() => this.props.history.push("/settings")}><p>Settings</p>
                 </button>
 
             </div>

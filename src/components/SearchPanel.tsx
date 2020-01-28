@@ -60,26 +60,26 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
             });
 
             return <div id="searchPanel">
-                <table id="cat-table">
+                <div id="cat-table">
                     {Array.from(groups.keys()).sort((a, b) =>
                         a < b ? -1 : 1
                     ).map((group, i) =>
-                        <tr
+                        <div
                             className="categoryGroup"
                             key={i}
                         >
-                            <td className="categoryGroupTitle"><span>{group}</span></td>
-                            <td className="categoryGroupCategories"
+                            <div className="categoryGroupTitle"><span>{group}</span></div>
+                            <div className="categoryGroupCategories"
                             >{groups.get(group)?.map(cat => <button
                                 key={cat.name}
                                 className={classNames("searchPanelButton", {
                                     "selected": searchCategories.has(cat)
                                 })}
                                 onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
-                            }</td>
-                        </tr>
+                            }</div>
+                        </div>
                     )}
-                </table>
+                </div>
                 {/*<div className="categoryGroup" key={-1}>*/}
                 {/*<h1 className="categoryGroupTitle">{"~"}</h1>*/}
                 {/*<div className="categoryGroupCategories">*/}

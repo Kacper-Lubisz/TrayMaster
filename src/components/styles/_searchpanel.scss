@@ -1,8 +1,15 @@
 #searchPanel {
   #cat-table {
+    height: 100vh;
+    overflow-y: auto;
+
     .categoryGroup {
+      display: flex;
+      margin: 20px 0;
 
       .categoryGroupTitle {
+        flex-shrink: 0;
+        width: 60px;
         font-size: 50px;
         font-weight: bold;
         text-align: center;
@@ -10,25 +17,26 @@
         align-items: center;
         padding: 0 20px;
 
+
         > span {
           width: 100%;
         }
       }
 
       .categoryGroupCategories {
-        margin-bottom: -10px;
-        // todo flex is probably the best option here
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: stretch;
+        align-content: center;
 
         .searchPanelButton {
-          font-size: 20px;
-          background-color: #eeeeee;
-          border: 1px solid #dddddd;
-          margin: 0 10px 10px 0;
+          flex-grow: 1;
+          margin: 5px;
           height: 50px;
-          min-width: 120px;
+          width: 150px;
 
           &.selected {
-            background-color: #dddddd;
+            background-color: #cccccc;
           }
         }
       }
