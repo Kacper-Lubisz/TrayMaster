@@ -133,7 +133,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
             }
         } else { // build tray spaces
             const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
-                return {parentColumn: this, index: this.trays.length + index};
+                    return {parentColumn: this, index: this.trays.length + index};
                 }
             );
             Column.traySpaces.set(this, newSpaces);

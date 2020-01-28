@@ -1,7 +1,7 @@
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
-import {LoadingSpinner} from "../components/LoadingSpinner";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
+import {LoadingSpinner} from "../components/LoadingSpinner";
 import firebase from "../core/Firebase";
 import "../styles/settings.scss";
 import "../styles/signin.scss";
