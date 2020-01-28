@@ -2,14 +2,14 @@ import deepEqual from "deep-equal";
 import firebase from "../Firebase";
 import Utils from "../WarehouseModel/Utils";
 
-export class DatabaseCollection<TF> extends Map<string, TF> {
+export class DatabaseCollection<TFields> extends Map<string, TFields> {
     protected readonly collectionPath: string;
     protected changed: boolean;
     protected deleted: Set<string>;
     protected loaded: boolean;
     protected uniqueValues: boolean;
 
-    public constructor(collectionPath: string, uniqueValues: boolean, values?: [string, TF][]) {
+    public constructor(collectionPath: string, uniqueValues: boolean, values?: [string, TFields][]) {
         if (values) {
             super(values);
         } else {
@@ -22,9 +22,11 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
         this.deleted = new Set<string>();
     }
 
-    public async load(forceLoad = false): Promise<void> {
+    public async load(forceLoad = false, orderField?: string): Promise<void> {
         if (!this.loaded || forceLoad) {
-            (await firebase.database.loadCollection<TF>(this.collectionPath))
+            (await firebase.database.loadQuery<TFields>(orderField
+                                                        ? firebase.database.db.collection(this.collectionPath).orderBy(orderField)
+                                                        : firebase.database.db.collection(this.collectionPath)))
                 .forEach(document => super.set(document.id, document.fields));
             this.loaded = true;
         }
@@ -45,7 +47,7 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
         }
     }
 
-    public get itemList(): TF[] {
+    public get itemList(): TFields[] {
         return Array.from(this).map(([_, category]) => category);
     }
 
@@ -53,7 +55,7 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
         return Array.from(this).map(([id, _]) => id);
     }
 
-    public getItemId(item?: TF): string {
+    public getItemId(item?: TFields): string {
         if (typeof item === "undefined") {
             return "";
         }
@@ -65,7 +67,7 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
         return "";
     }
 
-    public set(id: string, value: TF): this {
+    public set(id: string, value: TFields): this {
         this.changed = true;
         return super.set(id, value);
     }
@@ -78,13 +80,13 @@ export class DatabaseCollection<TF> extends Map<string, TF> {
         return super.delete(id);
     }
 
-    public add(item: TF, id?: string): void {
+    public add(item: TFields, id?: string): void {
         if (this.getItemId(item) === "" || !this.uniqueValues) {
             this.set(id ?? Utils.generateRandomId(), item);
         }
     }
 
-    public remove(item: TF): void {
+    public remove(item: TFields): void {
         if (!this.uniqueValues) {
             throw Error("Cannot remove by item in non-unique mode.");
         }

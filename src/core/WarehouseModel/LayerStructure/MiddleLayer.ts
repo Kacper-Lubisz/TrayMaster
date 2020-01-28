@@ -12,7 +12,7 @@ import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer}
  */
 export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren extends LowerLayer> extends Layer<TFields> {
     public abstract readonly childCollectionName: string;
-    public abstract readonly childIsSortable: boolean;
+    public abstract readonly childIndexed: boolean;
     public parent: TParent;
     public children: TChildren[];
     public childrenLoaded: boolean;
@@ -151,7 +151,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
                             collectionName: child.collectionName,
                             childCollectionName: child.childCollectionName,
                             topLevelChildCollectionPath: child.topLevelChildCollectionPath,
-                            childIsSortable: child.childIsSortable
+                            childIsSortable: child.childIndexed
                         };
                     }
                 }
