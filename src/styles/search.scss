@@ -77,11 +77,18 @@
     padding: 0 20px;
 
     // loading spinner
-    svg {
+    svg, div#search-no-results {
       position: absolute;
       top: 20%;
       left: 50%;
       transform: translate(-50%, -50%);
+
+      // only really applies to div
+      font-size: 25px;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     table {

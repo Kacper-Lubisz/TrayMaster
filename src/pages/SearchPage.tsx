@@ -27,7 +27,7 @@ type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * Defines the search queries that can be run on the warehouse
- * todo fixme document this properly
+ * todo fixme document this properly <- is this documented properly now? If not, what needs adding?
  */
 export interface SearchQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */
@@ -239,9 +239,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         } else if (!this.props.search?.results) {
             return <LoadingSpinner/>;
         } else if (this.props.search.results.length === 0) {
-            return <div>
-                Couldn't find any trays which match this search
-            </div>; //todo restyle
+            return <div id="search-no-results">
+                Couldn't find any trays which match this search!
+            </div>;
         }
 
     }

@@ -32,7 +32,6 @@ interface MainMenuProps {
 /**
  * This class creates the main menu, redirecting to other screens
  * by changing state values when buttons are pressed
- * TODO change which path it pushes to when those are added
  * Only shows the alert when an item is withing chosen expiry range
  */
 class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> {
