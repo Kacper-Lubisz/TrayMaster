@@ -242,9 +242,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             }));
 
             // Create numpadSide for the side buttons
-            const numpadSide: KeyboardButtonProps[] = (["Backspace", "< Clear >"].concat(this.props.user.enableAutoAdvance
-                                                                                     ? ["Next Tray"]
-                                                                                     : []) as WeightKeyboardButton[])
+            const numpadSide: KeyboardButtonProps[] = ([
+                "Backspace", "< Clear >"
+            ].concat(this.props.user.enableAutoAdvance
+                     ? ["Next Tray"]
+                     : []) as WeightKeyboardButton[])
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
