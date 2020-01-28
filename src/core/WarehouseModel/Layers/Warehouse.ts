@@ -15,8 +15,8 @@ const defaultCategories: string[] = [
 
 const defaultTraySizes: TraySize[] = [
     {index: 0, label: "small", sizeRatio: 1.5},
-    {index: 1, label: "normal", sizeRatio: 2.5},
-    {index: 2, label: "big", sizeRatio: 3.5},
+    {index: 1, label: "regular", sizeRatio: 2.5},
+    {index: 2, label: "large", sizeRatio: 3.5},
 ];
 
 
@@ -86,7 +86,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
         if (this.categoryCollection.size === 0) {
             for (let i = 0; i < defaultCategories.length; i++) {
-                this.categoryCollection.add({index: i, name: defaultCategories[i], shortName: defaultCategories[0]});
+                this.categoryCollection.add({index: i, name: defaultCategories[i], shortName: defaultCategories[i]});
             }
         }
 

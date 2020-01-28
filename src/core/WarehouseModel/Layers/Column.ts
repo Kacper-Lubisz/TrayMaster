@@ -10,7 +10,7 @@ interface ColumnFields {
 
 export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public readonly layerID: WarehouseModel = WarehouseModel.column;
-    public readonly childIsSortable = true;
+    public readonly childIndexed = true;
     public readonly collectionName = "columns";
     public readonly childCollectionName = "trays";
 

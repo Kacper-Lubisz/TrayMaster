@@ -43,12 +43,12 @@ export class User extends DatabaseObject<UserFields> {
     public async load(forceLoad = false): Promise<this> {
         if (ONLINE) {
             await this.warehouseSettings.load(forceLoad);
+            return super.load(forceLoad);
         } else {
             this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_0");
             this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_1");
-            this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_2");
+            return this;
         }
-        return super.load(forceLoad);
     }
 
     public async stage(forceStage = false, commit = false): Promise<void> {

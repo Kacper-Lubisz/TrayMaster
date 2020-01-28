@@ -10,7 +10,7 @@ interface ShelfFields {
 
 export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     public readonly layerID: WarehouseModel = WarehouseModel.shelf;
-    public readonly childIsSortable = true;
+    public readonly childIndexed = true;
     public readonly collectionName = "shelves";
     public readonly childCollectionName = "columns";
 

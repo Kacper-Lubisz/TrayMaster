@@ -56,15 +56,24 @@ export interface Category {
 }
 
 /**
- * Mock warehouse zone colours
+ * Mock warehouse aisle zones
  */
-const zoneColors = [
-    {name: "Red", color: "#f44336"},
+const aisleZones = [
+    {name: "White", color: "#ffffff"},
+    {name: "Yellow", color: "#f0e68c"},
     {name: "Green", color: "#4caf50"},
     {name: "Blue", color: "#2196f3"},
-    {name: "White", color: "#ffffff"},
-    {name: "Black", color: "#000000"}
 ];
+
+/**
+ * Mock warehouse aisle end zones
+ */
+const endZones = [
+    {name: "Red", color: "#f44336"},
+    {name: "Pink", color: "#ff69b4"},
+];
+
+// Ignoring street zones
 
 /**
  * Mock warehouse tray expiries
@@ -128,38 +137,60 @@ const trayExpires: ExpiryRange[] = [
  * @async
  * @param id - The ID of the warehouse
  * @param name - The name of the new warehouse
- * @param randomMaxColumnHeight - Generate random maximum column heights per column
  */
-async function generateRandomWarehouse(id: string, name: string, randomMaxColumnHeight = false): Promise<Warehouse> {
+async function generateRandomWarehouse(id: string, name: string): Promise<Warehouse> {
     const warehouse = await Warehouse.create(id, name).load();
 
-    for (const zoneColor of zoneColors) {
-        const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
+    for (const zoneFields of aisleZones) {
+        const zone = Zone.create(zoneFields.name, zoneFields.color, warehouse);
 
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < 5; j++) {
             const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
 
-            for (let k = 0; k < 3; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
+            for (let k = 0; k < 5; k++) {
+                const shelf = Shelf.create(k, `${k + 1}`, false, bay);
 
                 for (let l = 0; l < 4; l++) {
-                    const maxHeight = randomMaxColumnHeight ? 2 + Math.round(3 * Math.random()) : 3,
-                        column = Column.create(l, warehouse.defaultTraySize, maxHeight, shelf);
+                    const column = Column.create(l, warehouse.defaultTraySize, 3, shelf);
 
-                    for (let m = 0; m < 2 + Math.round((maxHeight - 2) * Math.random()); m++) {
-                        const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
-                        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
-                        const weight = Math.random() < 0.25 ? undefined :
-                                       Number((15 * Math.random()).toFixed(2));
-
-                        Tray.create(column, m, category, expiry, weight,
-                            Math.random() < 0.1 ? "This is a custom comment, it might be very long" : undefined);
-
+                    for (let m = 0; m < 3; m++) {
+                        makeRandomTray(column, m);
                     }
                 }
             }
         }
     }
+
+    for (const zoneFields of endZones) {
+        const zone = Zone.create(zoneFields.name, zoneFields.color, warehouse);
+
+        for (let j = 0; j < 2; j++) {
+            const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
+
+            for (let k = 0; k < 4; k++) {
+                const shelf = Shelf.create(k, `${k + 1}`, false, bay);
+
+                for (let l = 0; l < 4; l++) {
+                    const column = Column.create(l, warehouse.defaultTraySize, 3, shelf);
+
+                    for (let m = 0; m < 3; m++) {
+                        makeRandomTray(column, m);
+                    }
+                }
+            }
+        }
+    }
+
+    function makeRandomTray(parentColumn: Column, index: number): void {
+        const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
+        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
+        const weight = Math.random() < 0.25 ? undefined :
+                       Number((15 * Math.random()).toFixed(2));
+
+        Tray.create(parentColumn, index, category, expiry, weight,
+            Math.random() < 0.1 ? "This is a custom comment, it might be very long" : undefined);
+    }
+
     return warehouse;
 }
 
@@ -188,7 +219,7 @@ export class WarehouseManager {
                     Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
             }
         } else {
-            const warehouseNames = ["Chester-le-Street", "Sunderland", "Newcastle"];
+            const warehouseNames = ["Chester-le-Street", "Sunderland"];
             for (let i = 0; i < warehouseNames.length; i++) {
                 const id = `MOCK_WAREHOUSE_${i}`;
                 this.warehouses[id] = await generateRandomWarehouse(id, warehouseNames[i]);
