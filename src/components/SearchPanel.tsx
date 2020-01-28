@@ -35,10 +35,6 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
 
     }
 
-    componentDidUnmount(): void {
-        console.log("this is bad");
-    }
-
     render(): React.ReactNode {
 
         const allCategories = this.props.warehouse?.categories?.sort((a, b) =>

@@ -51,7 +51,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                 <div className="settings-content">
                     <h1>User Settings</h1>
                     {settings.map(setting =>
-                        <div className="settings-setting"
+                        <div className="settings-setting" key={setting.label}
                              onClick={() => {
                                  setting.set(!setting.get());
                                  this.forceUpdate();
