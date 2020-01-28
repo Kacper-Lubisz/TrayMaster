@@ -1,16 +1,16 @@
-import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
-import Utils from "../Utils";
-import {TopLayer} from "../LayerStructure/TopLayer";
-import firebase from "../../Firebase";
-import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 import {SearchQuery, SortBy} from "../../../pages/SearchPage";
 import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
+import firebase from "../../Firebase";
+import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
+import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
+import {TopLayer} from "../LayerStructure/TopLayer";
+import Utils from "../Utils";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
     "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
     "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
-    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
+    "Sponge Pudding", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
 ];
 
 const defaultTraySizes: TraySize[] = [
@@ -200,50 +200,71 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     //#endregion
 
     //region search
-    public traySearch(query: SearchQuery): Tray[] {
+    public async traySearch(query: SearchQuery): Promise<Tray[]> {
 
-        //todo make this feature full, it's actually a complete mess right now, needs a redoing
+        return await new Promise((resolve, _) => {
+            //todo make this feature full, it's actually a complete mess right now, needs a redoing
 
-        const filteredTrays = this.trays.filter(tray =>
-            query.categories === null ||
-            (query.categories === "set" && tray.category) ||
-            (query.categories === "unset" && !tray.category) ||
-            (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
-        );
+            const filteredTrays = this.trays.filter(tray =>
+                query.categories === null ||
+                (query.categories === "set" && tray.category) ||
+                (query.categories === "unset" && !tray.category) ||
+                (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
+            ).filter(tray => {
+                if (query.weight === null) {
+                    return true;
+                } else if (query.weight === "set") {
+                    return tray.weight;
+                } else if (query.weight === "unset") {
+                    return !tray.weight;
+                } else {
+                    return tray.weight && query.weight.from <= tray.weight && tray.weight <= query.weight.to;
+                }
+            }).filter(tray => {
+                if (!query.commentSubstring || tray.comment) {
+                    return true;
+                } else {
+                    return query.commentSubstring.includes(query.commentSubstring);
+                }
+            }).filter(tray => {
+                return !query.excludePickingArea || !tray.parentShelf.isPickingArea;
+            });
 
-        const defaultSort = composeSorts<Tray>([
-            partitionBy<Tray>((a) => !!(a.expiry)), // draw a diagram to understand this
-            partitionBy<Tray>((a) => !(!a.expiry?.from && a.expiry?.to)),
-            partitionBy<Tray>((a) => (!a.expiry?.from && !a.expiry?.to)),
+            const defaultSort = composeSorts<Tray>([
+                partitionBy<Tray>((a) => !!(a.expiry)), // draw a diagram to understand this
+                partitionBy<Tray>((a) => !(!a.expiry?.from && a.expiry?.to)),
+                partitionBy<Tray>((a) => (!a.expiry?.from && !a.expiry?.to)),
 
-            byNullSafe<Tray>((a) => a.expiry?.from, true),
-            byNullSafe<Tray>((a) => a.expiry?.to, false, false),
-            byNullSafe<Tray>((a) => a.category?.name, false, true),
-            byNullSafe<Tray>((a) => a.weight, false, true),
-        ]);
+                byNullSafe<Tray>((a) => a.expiry?.from, true),
+                byNullSafe<Tray>((a) => a.expiry?.to, false, false),
+                byNullSafe<Tray>((a) => a.category?.name, false, true),
+                byNullSafe<Tray>((a) => a.weight, false, true),
+            ]);
 
-        const sort = (() => {
-            if (query.sort.type === SortBy.category) {
-                return composeSort(
-                    byNullSafe<Tray>((a) => a.category?.name, false, true),
-                    defaultSort
-                );
-            } else if (query.sort.type === SortBy.location) {
-                return composeSort(
-                    byNullSafe<Tray>((a) => a.locationString, false, true),
-                    defaultSort
-                );
-            } else if (query.sort.type === SortBy.weight) {
-                return composeSort(
-                    byNullSafe<Tray>((a) => a.weight, false, true),
-                    defaultSort
-                );
-            } else { // none or SortBy.expiry
-                return defaultSort;
-            }
-        })();
+            const sort = (() => {
+                if (query.sort.type === SortBy.category) {
+                    return composeSort(
+                        byNullSafe<Tray>((a) => a.category?.name, false, true),
+                        defaultSort
+                    );
+                } else if (query.sort.type === SortBy.location) {
+                    return composeSort(
+                        byNullSafe<Tray>((a) => a.locationString, false, true),
+                        defaultSort
+                    );
+                } else if (query.sort.type === SortBy.weight) {
+                    return composeSort(
+                        byNullSafe<Tray>((a) => a.weight, false, true),
+                        defaultSort
+                    );
+                } else { // none or SortBy.expiry
+                    return defaultSort;
+                }
+            })();
 
-        return filteredTrays.sort(sort);
+            resolve(filteredTrays.sort(sort));
+
+        });
 
     }
 

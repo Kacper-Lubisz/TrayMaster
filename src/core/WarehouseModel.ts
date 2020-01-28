@@ -1,12 +1,12 @@
+import firebase, {ONLINE} from "./Firebase";
+import {DatabaseDocument} from "./Firebase/Database";
+import {Bay} from "./WarehouseModel/Layers/Bay";
+import {Column} from "./WarehouseModel/Layers/Column";
+import {Shelf} from "./WarehouseModel/Layers/Shelf";
+import {Tray} from "./WarehouseModel/Layers/Tray";
 import {Warehouse} from "./WarehouseModel/Layers/Warehouse";
 import {Zone} from "./WarehouseModel/Layers/Zone";
-import {Bay} from "./WarehouseModel/Layers/Bay";
-import {Shelf} from "./WarehouseModel/Layers/Shelf";
-import {Column} from "./WarehouseModel/Layers/Column";
-import {Tray} from "./WarehouseModel/Layers/Tray";
 import Utils from "./WarehouseModel/Utils";
-import {DatabaseDocument} from "./Firebase/Database";
-import firebase, {ONLINE} from "./Firebase";
 
 /**
  * Represents the order of (and IDs of) each layer in the warehouse model
@@ -34,7 +34,7 @@ export interface ExpiryRange {
  */
 export interface TraySpace {
     index: number;
-    column: Column;
+    parentColumn: Column;
 }
 
 /**
@@ -118,8 +118,8 @@ const trayExpires: ExpiryRange[] = [
 ].concat(Array(10).fill(0).map((_, j) => {
     return {
         from: new Date(2022 + j, 0).getTime(),
-        to: new Date(2022 + j, 0).getTime(),
-        label: (2020 + j).toString()
+        to: new Date(2023 + j, 0).getTime(),
+        label: (2022 + j).toString()
     };
 }));
 

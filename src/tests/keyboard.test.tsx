@@ -1,16 +1,15 @@
 // Following https://gist.github.com/jackawatts/1c7a8d3c277ccf4e969675002fe35bc9
 
-import React from "react";
-import renderer from "react-test-renderer";
-import {createRenderer} from "react-test-renderer/shallow";
-import Enzyme from "enzyme";
-import React16Adapter from "enzyme-adapter-react-16";
-
 import {
     faAmericanSignLanguageInterpreting as icon1,
     faSolarPanel as icon3,
     faSpider as icon2
 } from "@fortawesome/free-solid-svg-icons";
+import Enzyme from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
+import React from "react";
+import renderer from "react-test-renderer";
+import {createRenderer} from "react-test-renderer/shallow";
 import {Keyboard} from "../components/Keyboard";
 
 // configure Enzyme to use React 16

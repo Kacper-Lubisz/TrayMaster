@@ -1,6 +1,6 @@
-import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
-import Utils from "../Utils";
 import firebase from "../../Firebase";
+import Utils from "../Utils";
+import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
 
 /**
  * Represents the bottom layer in the object model (that has a parent)

@@ -1,19 +1,19 @@
 import React from "react";
-import {Warehouse, WarehouseManager} from "./WarehouseModel";
-import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
-
-import firebase, {User} from "./Firebase";
-import {LoadingPage} from "../pages/Loading";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
+import Popup from "reactjs-popup";
+import {LoadingPage} from "../pages/Loading";
+import MainMenu from "../pages/MainMenu";
+import PageNotFoundPage from "../pages/PageNotFoundPage";
+import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
 import SettingsPage from "../pages/SettingsPage";
+import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
-import PageNotFoundPage from "../pages/PageNotFoundPage";
-import Popup from "reactjs-popup";
-import MainMenu from "../pages/MainMenu";
+import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
 import ErrorHandler from "./ErrorHandler";
-import ShelfViewPage from "../pages/ShelfViewPage";
-import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
+
+import firebase, {User} from "./Firebase";
+import {Warehouse, WarehouseManager} from "./WarehouseModel";
 
 
 interface AppState {
@@ -41,23 +41,19 @@ class App extends React.Component<unknown, AppState> {
             WarehouseManager.loadWarehouses().then(() => {
 
                 if (user.lastWarehouseID === null) {
-                    this.setState(state => {
-                        return {
-                            ...state,
-                            user: user,
-                            loading: false
-                        };
-                    });
+                    this.setState(state => ({
+                        ...state,
+                        user: user,
+                        loading: false
+                    }));
                 } else {
                     WarehouseManager.loadWarehouseByID(user.lastWarehouseID).then(warehouse => {
-                        this.setState(state => {
-                            return {
-                                ...state,
-                                user: user,
-                                warehouse: warehouse,
-                                loading: false
-                            };
-                        });
+                        this.setState(state => ({
+                            ...state,
+                            user: user,
+                            warehouse: warehouse,
+                            loading: false
+                        }));
                     }).catch((reason) => {
                         this.openDialog(buildErrorDialog(
                             "Load Failed",
@@ -70,13 +66,11 @@ class App extends React.Component<unknown, AppState> {
         };
 
         const onSignOut = (): void => {
-            this.setState(state => {
-                return {
-                    ...state,
-                    user: undefined,
-                    loading: false
-                };
-            });
+            this.setState(state => ({
+                ...state,
+                user: undefined,
+                loading: false
+            }));
         };
 
         firebase.auth.registerListeners(onSignIn, onSignOut).then();
@@ -103,23 +97,19 @@ class App extends React.Component<unknown, AppState> {
                         if (this.state.user && this.state.warehouse) {
                             return <MainMenu
                                 changeWarehouse={() => {
-                                    this.setState(state => {
-                                        return {
-                                            ...state,
-                                            warehouse: undefined
-                                        };
-                                    });
+                                    this.setState(state => ({
+                                        ...state,
+                                        warehouse: undefined
+                                    }));
                                 }}
                                 signOut={async () => {
                                     await firebase.auth.signOut();
-                                    this.setState(state => {
-                                        return {
-                                            ...state,
-                                            dialog: state.dialog,
-                                            user: null,
-                                            warehouse: null
-                                        };
-                                    });
+                                    this.setState(state => ({
+                                        ...state,
+                                        dialog: state.dialog,
+                                        user: null,
+                                        warehouse: null
+                                    }));
                                 }}
                                 user={this.state.user}
                                 setSearch={this.setSearch.bind(this)}
@@ -211,20 +201,28 @@ class App extends React.Component<unknown, AppState> {
      * This method allows for setting the search query
      * @param query
      */
-    private setSearch(query: SearchQuery): void {
+    private async setSearch(query: SearchQuery): Promise<void> {
         if (this.state.warehouse) {
             const warehouse = this.state.warehouse;
-            this.setState(state => {
-                return {
+
+            this.setState(state => ({
+                ...state,
+                search: {
+                    query: query,
+                    results: null
+                }
+            }));
+
+            const results = await warehouse.traySearch(query);
+            this.setState(state => ({
                     ...state,
                     search: {
                         query: query,
-                        results: warehouse.traySearch(query)
-                        //todo fixme finalise how and where this search is going to be performed
-                        // an alternative is to keep results null until this promise resolves.
+                        results: results
                     }
-                };
-            });
+                })
+            );
+
         } else {
             throw new Error("Can't perform search when the warehouse is undefined");
         }
@@ -237,15 +235,13 @@ class App extends React.Component<unknown, AppState> {
      * @param dialog The dialog to be displayed
      */
     private openDialog(dialog: Dialog): void {
-        this.setState(state => {
-            return {
-                ...state,
-                dialog: {
-                    dialog: dialog.dialog(this.closeDialog.bind(this)),
-                    closeOnDocumentClick: dialog.closeOnDocumentClick
-                }
-            };
-        });
+        this.setState(state => ({
+            ...state,
+            dialog: {
+                dialog: dialog.dialog(this.closeDialog.bind(this)),
+                closeOnDocumentClick: dialog.closeOnDocumentClick
+            }
+        }));
     }
 
     /**

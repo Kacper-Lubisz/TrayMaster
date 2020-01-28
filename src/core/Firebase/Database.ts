@@ -1,7 +1,7 @@
 import * as fb from "firebase/app";
 import "firebase/firestore";
-import Utils, {Queue} from "../WarehouseModel/Utils";
 import {ONLINE} from "../Firebase";
+import Utils, {Queue} from "../WarehouseModel/Utils";
 import {FirebaseError} from "./FirebaseError";
 
 type DocumentSnapshot = fb.firestore.DocumentSnapshot;

@@ -1,9 +1,9 @@
-import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
-import Utils, {Collection, Queue, Stack} from "../Utils";
-import {WarehouseModel} from "../../WarehouseModel";
-import {MiddleLayer} from "./MiddleLayer";
-import {BottomLayer} from "./BottomLayer";
 import firebase from "../../Firebase";
+import {WarehouseModel} from "../../WarehouseModel";
+import Utils, {Collection, Queue, Stack} from "../Utils";
+import {BottomLayer} from "./BottomLayer";
+import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
+import {MiddleLayer} from "./MiddleLayer";
 
 /**
  * Represents the top layer in the object model (that has children)

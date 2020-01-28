@@ -1,10 +1,10 @@
-import React from "react";
-import "../styles/settings.scss";
-import {RouteComponentProps, withRouter} from "react-router-dom";
+import {faArrowLeft, faHome} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faHome} from "@fortawesome/free-solid-svg-icons";
+import React from "react";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel";
+import "../styles/settings.scss";
 
 interface WarehouseSwitcherProps {
     user: User;
@@ -31,6 +31,12 @@ class WarehouseSwitcherPage extends React.Component<RouteComponentProps & Wareho
     render(): React.ReactNode {
         return <div>
             <h1>Change Warehouse</h1>
+
+            {this.props.user.accessibleWarehouses.some(warehouse => warehouse.id === this.props.user.lastWarehouseID) ?
+             <button className="key-btn" onClick={() => this.props.history.goBack()}>
+                 <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
+                 <p>Back</p>
+             </button> : undefined}
 
             {this.props.user.accessibleWarehouses.length === 0 ? <p>
                 You don't have access to any warehouse! Contact your administrator, more info in the manual

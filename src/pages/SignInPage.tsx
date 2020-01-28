@@ -1,8 +1,8 @@
 import React from "react";
-import "../styles/settings.scss";
 import {RouteComponentProps, withRouter} from "react-router-dom";
-import firebase from "../core/Firebase";
 import {LoadingSpinner} from "../components/LoadingSpinner";
+import firebase from "../core/Firebase";
+import "../styles/settings.scss";
 
 const authErrorMessages: Map<string, string> = new Map<string, string>([
     ["auth/invalid-email", "Invalid email address."],
@@ -51,12 +51,10 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
                     <input
                         onChange={(event) => {
                             const newEmail = event.target.value;
-                            this.setState(state => {
-                                return {
-                                    ...state,
-                                    emailField: newEmail
-                                };
-                            });
+                            this.setState(state => ({
+                                ...state,
+                                emailField: newEmail
+                            }));
                         }}
                         value={this.state?.emailField ?? ""}
                         type="text"
@@ -66,12 +64,10 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
                     <input
                         onChange={(event) => {
                             const newPassword = event.target.value;
-                            this.setState(state => {
-                                return {
-                                    ...state,
-                                    passwordField: newPassword
-                                };
-                            });
+                            this.setState(state => ({
+                                ...state,
+                                passwordField: newPassword
+                            }));
                         }}
                         value={this.state?.passwordField ?? ""}
                         type="password"
@@ -93,30 +89,24 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
     private async signIn(email: string | undefined, password: string | undefined): Promise<void> {
         if (email && password) {
             try {
-                this.setState(state => {
-                    return {
-                        ...state,
-                        loading: true,
-                    };
-                });
+                this.setState(state => ({
+                    ...state,
+                    loading: true,
+                }));
                 await firebase.auth.signIn(email, password);
             } catch (e) {
-                this.setState(state => {
-                    return {
-                        ...state,
-                        feedback: authErrorMessages.get(e.code) ?? "Authentication error occurred.",
-                        loading: false,
-                    };
-                });
+                this.setState(state => ({
+                    ...state,
+                    feedback: authErrorMessages.get(e.code) ?? "Authentication error occurred.",
+                    loading: false,
+                }));
             }
         } else {
-            this.setState(state => {
-                return {
-                    ...state,
-                    feedback: `${email ? "emailField is undefined " : ""}
+            this.setState(state => ({
+                ...state,
+                feedback: `${email ? "emailField is undefined " : ""}
                     ${password ? "passwordField is undefined " : ""}`
-                };
-            });
+            }));
         }
     }
 
