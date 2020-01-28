@@ -124,7 +124,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
             } else { // there are not enough tray spaces
                 const traysToAdd = missingTrays - existing.length;
                 const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
-                    return ({parentColumn: this, index: this.trays.length + index} as TraySpace);
+                        return ({parentColumn: this, index: this.trays.length + index} as TraySpace);
                     }
                 ).concat(existing);
 
