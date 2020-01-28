@@ -180,6 +180,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     }
 
     private renderSearchResults(): React.ReactNode {
+        const expiryColorMode = this.props.warehouse?.expiryColorMode ?? "warehouse";
         if (this.props.search?.results && this.props.search.results.length !== 0) {
             return <table>
                 <thead>
@@ -196,7 +197,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
                     const expiryStyle = (() => {
                         if (tray.expiry) {
-                            const background = getExpiryColor(tray.expiry);
+                            const background = getExpiryColor(tray.expiry, expiryColorMode);
                             return {
                                 backgroundColor: background,
                                 color: getTextColorForBackground(background)

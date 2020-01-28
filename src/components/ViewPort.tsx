@@ -347,6 +347,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const possibleColumnChanges = ViewPort.getPossibleSizeChanges(column);
         const possibleHeightChange = ViewPort.getPossibleHeightChanges(column);
 
+        const expiryColorMode = shelf.parentWarehouse.expiryColorMode;
+
         /* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
         return <div
             style={{
@@ -359,7 +361,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             column.getPaddedTrays().map((tray, index) => {
                 const expiryStyle = (() => {
                     if (tray instanceof Tray && tray.expiry) {
-                        const background = getExpiryColor(tray.expiry);
+                        const background = tray.expiry ? getExpiryColor(tray.expiry, expiryColorMode) : "";
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)

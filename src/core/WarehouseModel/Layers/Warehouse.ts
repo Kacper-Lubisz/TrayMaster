@@ -23,6 +23,7 @@ const defaultTraySizes: TraySize[] = [
 interface WarehouseFields {
     name: string;
     defaultTraySizeID: string;
+    expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
@@ -46,7 +47,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      * @returns The newly created warehouse
      */
     public static create(id?: string, name?: string): Warehouse {
-        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: ""});
+        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: "", expiryColorMode: "hybrid"});
     }
 
     /**
@@ -172,6 +173,14 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public set defaultTraySize(traySize: TraySize) {
         this.fields.defaultTraySizeID = this.traySizeCollection.getItemId(traySize);
+    }
+
+    public get expiryColorMode(): "computed" | "hybrid" | "warehouse" {
+        return this.fields.expiryColorMode;
+    }
+
+    public set expiryColorMode(expiryColorMode: "computed" | "hybrid" | "warehouse") {
+        this.fields.expiryColorMode = expiryColorMode;
     }
 
     //#endregion
