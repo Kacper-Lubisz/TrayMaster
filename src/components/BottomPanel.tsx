@@ -5,6 +5,7 @@ import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
+import "./styles/_bottompanel.scss";
 
 
 export interface BottomPanelProps {
@@ -138,8 +139,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         if (this.props.commonYear) {
 
             const from = new Date(this.props.commonYear, quarter * 3).getTime();
-            const to = new Date(this.props.commonYear + Math.floor(quarter / 4), (quarter + 1) * 3 % 4).getTime();
-
+            const to = new Date(this.props.commonYear + Math.floor(quarter / 3), (quarter + 1) % 4 * 3).getTime();
             this.props.expirySelected({
                 from: from,
                 to: to,
@@ -191,7 +191,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 };
             }).concat([
                 {
-                    name: "Clear",
+                    name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
                     selected: false
                 }
@@ -215,7 +215,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     })
 
                 }, {
-                    name: "Clear",
+                    name: "< Clear >",
                     onClick: () => this.props.expirySelected(null)
 
                 }
@@ -242,9 +242,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             }));
 
             // Create numpadSide for the side buttons
-            const numpadSide: KeyboardButtonProps[] = (["Backspace", "Clear"].concat(this.props.user.enableAutoAdvance
-                                                                                     ? ["Next Tray"]
-                                                                                     : []) as WeightKeyboardButton[])
+            const numpadSide: KeyboardButtonProps[] = ([
+                "Backspace", "< Clear >"
+            ].concat(this.props.user.enableAutoAdvance
+                     ? ["Next Tray"]
+                     : []) as WeightKeyboardButton[])
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,

@@ -1,10 +1,12 @@
 import {faArrowLeft, faHome} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel";
-import "../styles/settings.scss";
+import "../styles/warehouseswitcher.scss";
 
 interface WarehouseSwitcherProps {
     user: User;
@@ -29,41 +31,38 @@ class WarehouseSwitcherPage extends React.Component<RouteComponentProps & Wareho
 
 
     render(): React.ReactNode {
-        return <div>
-            <h1>Change Warehouse</h1>
+        return <>
+            <TrayMasterLogo/>
 
-            {this.props.user.accessibleWarehouses.some(warehouse => warehouse.id === this.props.user.lastWarehouseID) ?
-             <button className="key-btn" onClick={() => this.props.history.goBack()}>
-                 <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
-                 <p>Back</p>
-             </button> : undefined}
+            <div id="switch-box">
+                <h1>Select Warehouse</h1>
 
-            {this.props.user.accessibleWarehouses.length === 0 ? <p>
-                You don't have access to any warehouse! Contact your administrator, more info in the manual
-            </p> : <div id="warehouseList">{
-                this.props.user.accessibleWarehouses.map((warehouse, index) =>
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "row",
-                            cursor: "pointer"
-                        }}
-                        key={index}
-                        onClick={() => this.props.setWarehouse(warehouse)}
-                    >
-                        {/*todo this can be styled and displayed in any way, maybe move the last warehouse to the top or something*/}
-                        <FontAwesomeIcon
-                            style={warehouse.id === this.props.user.lastWarehouseID ? {
-                                color: "#ff0000"
-                            } : {}}
-                            icon={faHome}
-                        />
-                        <p>{warehouse.name}</p>
+                {this.props.user.accessibleWarehouses.length === 0 ? <>
+                    <button style={{cursor: "pointer"}} className="key-btn" onClick={() => this.props.history.goBack()}>
+                        <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
+                        <p>Back</p>
+                    </button>
+                    <p>You don't have access to any warehouses! You might want to contact your administrator.</p>
+                    {/*fixme add back button*//*<button onClick={() => this.props.history.goBack()}>Go back</button>*/}
+                </> : <div id="warehouse-list">
+                     <div id="warehouse-options-container">{
+                         this.props.user.accessibleWarehouses.map((warehouse, index) =>
+                             <div
+                                 className={classNames("warehouse-option", {
+                                     "warehouse-option-selected": warehouse.id === this.props.user.lastWarehouseID
+                                 })}
+                                 key={index}
+                                 onClick={() => this.props.setWarehouse(warehouse)}
+                             >
+                                 <FontAwesomeIcon icon={faHome}/>
+                                 <p>{warehouse.name}</p>
 
-                    </div>
-                )
-            }</div>}
-        </div>;
+                             </div>
+                         )
+                     }</div>
+                 </div>}
+            </div>
+        </>;
     }
 
 }

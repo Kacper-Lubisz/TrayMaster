@@ -3,10 +3,10 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {withRouter} from "react-router";
 import {RouteComponentProps} from "react-router-dom";
+import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Warehouse} from "../core/WarehouseModel";
-import logoSkew from "../Logo_skew.svg";
 import "../styles/mainmenu.scss";
 import {SearchQuery, SortBy} from "./SearchPage";
 
@@ -39,9 +39,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
     render(): React.ReactNode {
 
         return <div className="main-menu">
-            <div className="menu-header">
-                <img alt="TrayMaster Logo" src={logoSkew}/>
-            </div>
+            <TrayMasterLogo/>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
             {this.props.expiryAmount === 0 ? undefined : <div
                 className="alert"

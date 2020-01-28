@@ -1,0 +1,61 @@
+
+#switch-box {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+
+  h1 {
+    font-size: 40px;
+  }
+
+  // appears when user has access to no warehouses
+  > p {
+    font-size: 24px;
+    max-width: 40vw;
+  }
+
+  #warehouse-list {
+    // needed to stop the scrollbar (if applicable) from cropping content
+    padding-right: 30px;
+
+    max-height: 50vh;
+    overflow-y: auto;
+
+    #warehouse-options-container {
+      width: fit-content;
+
+      .warehouse-option {
+        background-color: #dddddd;
+        display: flex;
+        align-items: center;
+
+        font-size: 30px;
+        cursor: pointer;
+
+        min-width: fit-content;
+        width: 100%;
+
+        svg {
+          height: 50px;
+          width: 50px;
+          margin: 30px;
+        }
+
+        p {
+          margin-right: 30px;
+
+          white-space: nowrap;
+          overflow: hidden;
+        }
+
+        &:not(:last-child) {
+          border-bottom: 10px solid #ffffff;
+        }
+
+        &.warehouse-option-selected {
+          background-color: #cccccc;
+        }
+      }
+    }
+  }
+}

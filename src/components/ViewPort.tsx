@@ -13,6 +13,7 @@ import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {trayComparisonFunction} from "../utils/sortCells";
+import "./styles/_viewport.scss";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;

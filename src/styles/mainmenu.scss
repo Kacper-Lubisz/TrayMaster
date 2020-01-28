@@ -1,14 +1,5 @@
 //Main menu style sheet
 
-@import "./keyboard";
-
-.menu-header {
-  //TrayMaster icon
-  position: fixed;
-  top: 20px;
-  left: 40px;
-}
-
 .menu-btn-container {
   //container for all buttons
   display: flex;
@@ -55,6 +46,8 @@
   border-radius: 10px;
   border: 1px solid #bbbbbb;
   padding: 20px;
+
+  cursor: pointer;
 
   .alert-header {
     display: flex;

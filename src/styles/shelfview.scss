@@ -1,151 +1,58 @@
 // MAIN SHELF VIEW STYLING
 
-// Import system-wide variables: we need to know $accent-color here
-@import "./variables";
-// Import generic keyboard styling
-@import "./keyboard";
-// Import shelf view grid layout
-@import "./shelfviewgrid";
-// Import viewport toolbar styling
-@import "./toolbar";
 // Import shelf edit styling
 @import "./shelfedit";
 // Import shelf navigator styling
 @import "./shelfnavigator";
+// SHELF VIEW GRID LAYOUT
 
-// todo these styles should probably be broken out into their own files at some point tbh
+#shelfView {
+  // fill whole screen, centre text
+  text-align: center;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
 
-#viewPort {
-  background-color: #eeeeee;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  // define grid
+  display: grid;
+  // MASTER GRID PARAMETERS: USE THESE TO ADJUST RATIOS
+  grid-template-columns: 88fr 4fr 18fr;
+  grid-template-rows: 10fr 6fr;
 
-  touch-action: none;
-  user-select: none;
-  -webkit-touch-callout: none;
+  // these values specify what sectors of the grid each component takes up
 
-  // Import viewport styling
-  @import "./viewport";
-}
-
-#sideBar {
-  // arrange children
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  #navigatorButton {
-    border-radius: 5px;
-    cursor: pointer;
-
+  #toolBar {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 2;
   }
 
-  #navigatorButton.disabled {
-    background-color: #eee;
+  #viewPort {
+    // top left sector
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 1;
+    grid-row-end: 2;
   }
 
-  #side-keyboard-container {
-    width: 100%;
-    height: 100%;
+  #sideBar {
+    // top right sector
+    grid-column-start: 3;
+    grid-column-end: 4;
+    grid-row-start: 1;
+    grid-row-end: 2;
   }
 
-  // container for keyboard switch buttons
-  #kb-switcher {
-    // Define container layout
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-around;
-    align-items: stretch;
-    height: 50px;
-
-    // buttons inside the switcher
-    > button {
-      // fill available space
-      height: 100%;
-      flex-grow: 1;
-
-      // Styling
-      border: none;
-      background: none;
-      transition: color 0.2s;
-      cursor: pointer;
-      padding: 0;
-      margin: 0 5px;
-
-      // When active, appear blue
-      &.active {
-        color: $accent-color;
-      }
-
-      // Set icon to fill containing button
-      > svg {
-        height: 100%;
-        width: 100%;
-      }
-    }
-  }
-}
-
-// bottom keyboards
-#bottom {
-  padding: 5px;
-
-  // universal keyboard container
-  // centres keyboards that don't take up the full width
-  .keyboard-container {
-    display: flex;
-    justify-content: center;
-
-    height: 100%;
-
-    // divs directly inside .keyboard-container
-    > div {
-      // A small horizontal margin
-      margin: 0 10px;
-    }
-
-    #exp-special {
-      width: 10%;
-    }
-
-    // expiry keyboard: years
-    #exp-years {
-      width: 20%;
-    }
-
-    // expiry keyboard: quarters
-    #exp-quarters {
-      width: 15%;
-    }
-
-    // expiry keyboard: months
-    #exp-months {
-      width: 20%;
-    }
-
-    // weight keyboard: main numpad
-    #weight-numpad {
-      width: 30%;
-    }
-
-    // weight keyboard: side section (with backspace, enter etc0
-    #numpadR {
-      height: 100%;
-      width: 10%;
-      display: flex;
-      flex-direction: column;
-
-      #weight-numpad-side {
-        flex-grow: 1;
-      }
-    }
-
-    // vertical divider: used to separate keyboards where necessary
-    .vl {
-      width: 0;
-      border-left: 1px solid black;
-    }
+  #bottom {
+    // whole bottom row
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row-start: 2;
+    grid-row-end: 3;
   }
 }
