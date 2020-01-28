@@ -36,14 +36,12 @@ class WarehouseSwitcherPage extends React.Component<RouteComponentProps & Wareho
 
             <div id="switch-box">
                 <h1>Select Warehouse</h1>
-                {this.props.user.accessibleWarehouses.some(warehouse => warehouse.id === this.props.user.lastWarehouseID)
-                 ?
-                 <button className="key-btn" onClick={() => this.props.history.goBack()}>
-                     <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
-                     <p>Back</p>
-                 </button> : undefined}
 
                 {this.props.user.accessibleWarehouses.length === 0 ? <>
+                    <button style={{cursor: "pointer"}} className="key-btn" onClick={() => this.props.history.goBack()}>
+                        <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
+                        <p>Back</p>
+                    </button>
                     <p>You don't have access to any warehouses! You might want to contact your administrator.</p>
                     {/*fixme add back button*//*<button onClick={() => this.props.history.goBack()}>Go back</button>*/}
                 </> : <div id="warehouse-list">
