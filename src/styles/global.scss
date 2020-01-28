@@ -9,7 +9,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-button, input[type="submit"] {
+button:not(.btn-style-override), input[type="submit"] {
+  // ADD .btn-style-override CLASS TO OVERRIDE THESE STYLES
   font-size: 20px;
   background-color: #eeeeee;
   border: 1px solid #cccccc;

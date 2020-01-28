@@ -23,7 +23,7 @@ export class ToolBar extends React.Component<ToolBarProps> {
         return <div id="toolBar">{
             this.props.toolbar.map((tool, toolIndex) =>
                 <button
-                    className="tool"
+                    className="tool btn-style-override"
                     key={toolIndex}
                     name={tool.name}
                     onClick={tool.onClick}
