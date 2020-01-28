@@ -85,7 +85,7 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
             } catch (e) {
                 this.setState(state => ({
                     ...state,
-                    feedback: e.toString(),
+                    feedback: "Error: ".concat(e.toString()),
                     loading: false,
                 }));
             }
