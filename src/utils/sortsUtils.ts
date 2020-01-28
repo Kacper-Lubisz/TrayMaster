@@ -68,13 +68,16 @@ export function byNullSafe<T>(
         const keyA = key(a);
         const keyB = key(b);
 
-        if (keyA === keyB || (!keyB && !keyA)) {
+        const bIsUndefined = (keyB ?? null) === null;
+        const aIsUndefined = (keyA ?? null) === null;
+
+        if (keyA === keyB || (bIsUndefined && aIsUndefined)) {
             return 0;
 
-        } else if (!keyA) {
+        } else if (aIsUndefined) {
             return before ? -1 : 1;
 
-        } else if (!keyB) {
+        } else if (bIsUndefined) {
             return before ? 1 : -1;
 
         } else {

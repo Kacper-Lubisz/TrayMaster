@@ -1,13 +1,13 @@
-import React from "react";
-import {RouteComponentProps} from "react-router-dom";
-import {withRouter} from "react-router";
-import "../styles/mainmenu.scss";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExchangeAlt, faExclamationTriangle as warningIcon, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
-import {Warehouse} from "../core/WarehouseModel";
-import {User} from "../core/Firebase";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import React from "react";
+import {withRouter} from "react-router";
+import {RouteComponentProps} from "react-router-dom";
 import {Dialog} from "../core/Dialog";
+import {User} from "../core/Firebase";
+import {Warehouse} from "../core/WarehouseModel";
 import logoSkew from "../Logo_skew.svg";
+import "../styles/mainmenu.scss";
 import {SearchQuery, SortBy} from "./SearchPage";
 
 /**
@@ -65,7 +65,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
 
             <div className="menu-btn-container">
                 <button className="key-btn" onClick={() => this.props.history.push("/")}>
-                    <p>Back to Shelf View</p></button>
+                    <p>Shelf View</p></button>
                 <button className="key-btn"
                         onClick={(_) => {
                             this.props.setSearch({
@@ -79,6 +79,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                         }}><p>Search</p>
                 </button>
                 <button className="key-btn"
+                        disabled={true}
                         onClick={() => alert("Report")}><p>Report</p>
                 </button>
                 <button className="key-btn"

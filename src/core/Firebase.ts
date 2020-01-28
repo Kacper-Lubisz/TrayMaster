@@ -1,6 +1,6 @@
 import * as fb from "firebase/app";
-import {Database} from "./Firebase/Database";
 import {Authentication} from "./Firebase/Authentication";
+import {Database} from "./Firebase/Database";
 
 /**
  * If true, use firebase to load and save the warehouse model to and from the database

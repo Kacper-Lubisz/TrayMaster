@@ -1,10 +1,10 @@
-import React from "react";
-import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {KeyboardName} from "../pages/ShelfViewPage";
 import classNames from "classnames";
+import React from "react";
+import {KeyboardName} from "../pages/ShelfViewPage";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 
 
 /**
@@ -31,6 +31,10 @@ interface SideBarProps {
     locationString: string;
     /** This color is the color of the current zone */
     zoneColor: string;
+
+    /** Opens the navigator */
+    openNavigator?: () => void;
+    openNavigatorDisabled: boolean;
 }
 
 /**
@@ -86,10 +90,13 @@ export class SideBar extends React.Component<SideBarProps> {
         return <div id="sideBar">
 
             <div
-                style={{
+                id="navigatorButton"
+                className={this.props.openNavigatorDisabled ? "disabled" : undefined}
+                style={this.props.openNavigatorDisabled ? undefined : {
                     backgroundColor: this.props.zoneColor,
                     color: getTextColorForBackground(this.props.zoneColor)
                 }}
+                onClick={this.props.openNavigatorDisabled ? undefined : this.props.openNavigator}
             >
                 <h2>{this.props.locationString}</h2>
             </div>

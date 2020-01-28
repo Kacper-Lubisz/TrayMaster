@@ -1,10 +1,10 @@
-import Utils from "../Utils";
-import {TopLayer} from "./TopLayer";
-import {MiddleLayer} from "./MiddleLayer";
-import {BottomLayer} from "./BottomLayer";
-import {WarehouseModel} from "../../WarehouseModel";
 import firebase from "../../Firebase";
 import {DatabaseObject} from "../../Firebase/DatabaseObject";
+import {WarehouseModel} from "../../WarehouseModel";
+import Utils from "../Utils";
+import {BottomLayer} from "./BottomLayer";
+import {MiddleLayer} from "./MiddleLayer";
+import {TopLayer} from "./TopLayer";
 
 /**
  * Represents additional metadata for the top-level database model

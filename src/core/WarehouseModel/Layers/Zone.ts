@@ -1,5 +1,5 @@
-import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import {Bay, Column, Shelf, Tray, Warehouse, WarehouseModel} from "../../WarehouseModel";
+import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 

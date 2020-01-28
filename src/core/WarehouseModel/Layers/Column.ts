@@ -1,5 +1,5 @@
-import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import {Bay, Shelf, Tray, TrayCell, TraySize, TraySpace, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 interface ColumnFields {
@@ -124,7 +124,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
             } else { // there are not enough tray spaces
                 const traysToAdd = missingTrays - existing.length;
                 const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
-                        return ({column: this, index: this.trays.length + index} as TraySpace);
+                        return ({parentColumn: this, index: this.trays.length + index} as TraySpace);
                     }
                 ).concat(existing);
 
@@ -133,7 +133,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
             }
         } else { // build tray spaces
             const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
-                    return {column: this, index: this.trays.length + index};
+                    return {parentColumn: this, index: this.trays.length + index};
                 }
             );
             Column.traySpaces.set(this, newSpaces);

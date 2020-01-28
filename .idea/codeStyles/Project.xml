@@ -9,6 +9,7 @@
       <option name="FORCE_SEMICOLON_STYLE" value="true" />
       <option name="PREFER_AS_TYPE_CAST" value="true" />
       <option name="FORCE_QUOTE_STYlE" value="true" />
+      <option name="IMPORT_SORT_MODULE_NAME" value="true" />
     </TypeScriptCodeStyleSettings>
     <codeStyleSettings language="TypeScript">
       <option name="ALIGN_MULTILINE_CHAINED_METHODS" value="true" />

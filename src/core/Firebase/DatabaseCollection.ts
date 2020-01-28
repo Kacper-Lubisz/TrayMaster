@@ -1,6 +1,6 @@
-import Utils from "../WarehouseModel/Utils";
 import deepEqual from "deep-equal";
 import firebase from "../Firebase";
+import Utils from "../WarehouseModel/Utils";
 
 export class DatabaseCollection<TF> extends Map<string, TF> {
     protected readonly collectionPath: string;

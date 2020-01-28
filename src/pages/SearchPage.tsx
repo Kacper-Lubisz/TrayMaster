@@ -1,13 +1,13 @@
+import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
+import {RouteComponentProps, withRouter} from "react-router-dom";
+import {LoadingSpinner} from "../components/LoadingSpinner";
+import {PanelState, SearchPanel} from "../components/SearchPanel";
 import {Category, Tray, Warehouse} from "../core/WarehouseModel";
 import "../styles/search.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {RouteComponentProps, withRouter} from "react-router-dom";
-import {PanelState, SearchPanel} from "../components/SearchPanel";
-import {LoadingSpinner} from "../components/LoadingSpinner";
 
 
 export enum SortBy {
@@ -27,6 +27,7 @@ type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * Defines the search queries that can be run on the warehouse
+ * todo fixme document this properly
  */
 export interface SearchQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */
@@ -104,13 +105,11 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         </div>;
     }
 
-    private updatePanel(state: PanelState): void {
-        this.setState(oldState => {
-            return {
-                ...oldState,
-                panelState: state
-            };
-        });
+    private updatePanel(panelState: PanelState): void {
+        this.setState(state => ({
+            ...state,
+            panelState: panelState
+        }));
     }
 
     private renderSearchSentence(): React.ReactNode {
@@ -187,8 +186,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     <th>Weight</th>
                     <th>Location</th>
                     <th>Comment</th>
-                    <th/>
-                    {/* dummy table header for 'Go to tray' buttons */}
                 </tr>
                 </thead>
                 <tbody>
@@ -225,20 +222,13 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
                     const locationString = `${tray.parentZone.name} ${tray.parentBay.name}${tray.parentShelf.name}`;
 
-                    return (
-                        <tr key={i}>
-                            <td>{tray.category?.name ?? "?"}</td>
-                            <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
-                            <td className="weightCell">{weightString}</td>
-                            <td style={zoneStyle}>{locationString}</td>
-                            <td className="commentCell" style={{
-                                backgroundColor: tray.comment ? "#ffffff" : ""
-                            }}>{tray.comment}</td>
-                            <td>
-                                <button>Go To</button>
-                            </td>
-                        </tr>
-                    );
+                    return <tr key={i}>
+                        <td>{tray.category?.name ?? "?"}</td>
+                        <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
+                        <td className="weightCell">{weightString}</td>
+                        <td style={zoneStyle}>{locationString}</td>
+                        <td className="commentCell">{tray.comment}</td>
+                    </tr>;
                 })}
                 </tbody>
             </table>;

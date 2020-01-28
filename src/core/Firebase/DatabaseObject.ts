@@ -1,6 +1,6 @@
 import deepEqual from "deep-equal";
-import Utils from "../WarehouseModel/Utils";
 import firebase from "../Firebase";
+import Utils from "../WarehouseModel/Utils";
 
 export abstract class DatabaseObject<TFields> {
     public readonly id: string;

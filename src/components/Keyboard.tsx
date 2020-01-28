@@ -1,7 +1,7 @@
-import React from "react";
-import classNames from "classnames";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
+import React from "react";
 
 /**
  * The properties that get passed into KeyboardButton components

@@ -1,7 +1,7 @@
 import React from "react";
-import "../styles/loading.scss";
-import logoSkew from "../Logo_skew.svg";
 import {LoadingSpinner} from "../components/LoadingSpinner";
+import logoSkew from "../Logo_skew.svg";
+import "../styles/loading.scss";
 
 /**
  * Loading page component
