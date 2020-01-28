@@ -94,7 +94,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
      */
     protected async breadthFirstLoad(minLayer: WarehouseModel = this.layerID): Promise<void> {
         this.loadLayer();
-        this.childrenLoaded = minLayer < this.layerID;
+        this.childrenLoaded = minLayer < this.layerID || this.childrenLoaded;
 
         const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
             [this.collectionName, new Map<string, Layers>([[this.id, this]])]

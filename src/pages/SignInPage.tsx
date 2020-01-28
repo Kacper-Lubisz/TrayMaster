@@ -4,6 +4,19 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import firebase from "../core/Firebase";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 
+const authErrorMessages: Map<string, string> = new Map<string, string>([
+    ["auth/invalid-email", "Invalid email address."],
+    ["auth/user-disabled", "User account disabled."],
+    ["auth/user-not-found", "Invalid email address or password."],
+    ["auth/wrong-password", "Invalid email address or password."],
+    ["auth/too-many-requests", "Too many requests."],
+    ["auth/insecure", "Password length must be five characters or more."],
+    ["auth/password-too-short", "Password length must be eight characters or more."],
+    ["auth/password-single-case", "Password must contain at least one lower and upper case character."],
+    ["auth/email-already-in-use", "Email is already in use."],
+    ["auth/weak-password", "Password is too weak."]
+]);
+
 interface SignInPageState {
     emailField?: string;
     passwordField?: string;
@@ -91,7 +104,7 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
                 this.setState(state => {
                     return {
                         ...state,
-                        feedback: e.toString(),
+                        feedback: authErrorMessages.get(e.code) ?? "Authentication error occurred.",
                         loading: false,
                     };
                 });

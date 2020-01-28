@@ -33,14 +33,15 @@ export interface ExpiryRange {
  * Represents a tray space within a column
  */
 export interface TraySpace {
-    column: Column;
     index: number;
+    column: Column;
 }
 
 /**
  * Represents a single tray size option
  */
 export interface TraySize {
+    index: number;
     label: string;
     sizeRatio: number;
 }
@@ -49,6 +50,7 @@ export interface TraySize {
  * Represents a single tray category
  */
 export interface Category {
+    index: number;
     name: string;
     shortName: string | null;
 }
@@ -129,7 +131,7 @@ const trayExpires: ExpiryRange[] = [
  * @param randomMaxColumnHeight - Generate random maximum column heights per column
  */
 async function generateRandomWarehouse(id: string, name: string, randomMaxColumnHeight = false): Promise<Warehouse> {
-    const warehouse = await Warehouse.create(id, name).loadDepthFirst();
+    const warehouse = await Warehouse.create(id, name).load();
 
     for (const zoneColor of zoneColors) {
         const zone = Zone.create(zoneColor.name, zoneColor.color, warehouse);
@@ -186,7 +188,7 @@ export class WarehouseManager {
                     Warehouse.createFromFields(warehouseDocument.id, warehouseDocument.fields);
             }
         } else {
-            const warehouseNames = ["Chester-le-Street", "Durham", "Newcastle"];
+            const warehouseNames = ["Chester-le-Street", "Sunderland", "Newcastle"];
             for (let i = 0; i < warehouseNames.length; i++) {
                 const id = `MOCK_WAREHOUSE_${i}`;
                 this.warehouses[id] = await generateRandomWarehouse(id, warehouseNames[i]);

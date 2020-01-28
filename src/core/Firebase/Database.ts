@@ -24,11 +24,11 @@ interface DatabaseOperation<T> {
     obj?: T;
 }
 
-export class DatabaseDocument<TF> {
+export class DatabaseDocument<TFields> {
     public constructor(
         public readonly collectionPath: string,
         public readonly id: string,
-        public readonly fields: TF
+        public readonly fields: TFields
     ) {
     }
 
@@ -103,28 +103,28 @@ export class Database {
     //#endregion
 
     //#region Reading
-    public async loadDocument<TF>(path: string): Promise<DatabaseDocument<TF> | undefined> {
+    public async loadDocument<TFields>(path: string): Promise<DatabaseDocument<TFields> | undefined> {
         if (!ONLINE) {
             return;
         }
         const response: DocumentSnapshot = await this.db.doc(path).get();
-        return new DatabaseDocument<TF>(response.ref.parent.path, response.id, response.data() as TF);
+        return new DatabaseDocument<TFields>(response.ref.parent.path, response.id, response.data() as TFields);
     }
 
-    public async loadCollection<TF>(path: string): Promise<DatabaseDocument<TF>[]> {
+    public async loadCollection<TFields>(path: string): Promise<DatabaseDocument<TFields>[]> {
         if (!ONLINE) {
             return [];
         }
         return (await this.db.collection(path).get()).docs.map(snapshot =>
-            new DatabaseDocument<TF>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TF));
+            new DatabaseDocument<TFields>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TFields));
     }
 
-    public async loadQuery<TF>(query: Query): Promise<DatabaseDocument<TF>[]> {
+    public async loadQuery<TFields>(query: Query): Promise<DatabaseDocument<TFields>[]> {
         if (!ONLINE) {
             return [];
         }
         return (await query.get()).docs.map(snapshot =>
-            new DatabaseDocument<TF>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TF));
+            new DatabaseDocument<TFields>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TFields));
     }
 
     //#endregion
