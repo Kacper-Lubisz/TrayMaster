@@ -94,7 +94,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
      */
     protected async breadthFirstLoad(minLayer: WarehouseModel = this.layerID): Promise<void> {
         this.loadLayer();
-        this.childrenLoaded = minLayer < this.layerID;
+        this.childrenLoaded = minLayer < this.layerID || this.childrenLoaded;
 
         const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
             [this.collectionName, new Map<string, Layers>([[this.id, this]])]
@@ -105,7 +105,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             collectionName: string;
             childCollectionName: string;
             topLevelChildCollectionPath: string;
-            childIsSortable: boolean;
+            childIndexed: boolean;
         };
 
         let currentState: State = {
@@ -113,7 +113,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             collectionName: this.collectionName,
             childCollectionName: this.childCollectionName,
             topLevelChildCollectionPath: this.topLevelChildCollectionPath,
-            childIsSortable: false
+            childIndexed: false
         };
 
         for (let i = this.layerID - 1; i >= minLayer; i--) {
@@ -121,7 +121,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             let nextState: State | undefined;
 
             const query =
-                currentState.childIsSortable ?
+                currentState.childIndexed ?
                 firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index") :
                 firebase.database.db.collection(currentState.topLevelChildCollectionPath);
             for (const document of (await firebase.database.loadQuery<unknown & TopLevelFields>(query))) {
@@ -137,7 +137,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                             collectionName: child.collectionName,
                             childCollectionName: child.childCollectionName,
                             topLevelChildCollectionPath: child.topLevelChildCollectionPath,
-                            childIsSortable: child.childIsSortable
+                            childIndexed: child.childIndexed
                         };
                     }
                 }

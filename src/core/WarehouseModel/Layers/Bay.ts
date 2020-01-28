@@ -9,7 +9,7 @@ interface BayFields {
 
 export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
     public readonly layerID: WarehouseModel = WarehouseModel.bay;
-    public readonly childIsSortable = true;
+    public readonly childIndexed = true;
     public readonly collectionName = "bays";
     public readonly childCollectionName = "shelves";
 
