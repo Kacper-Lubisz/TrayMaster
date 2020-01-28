@@ -9,7 +9,7 @@ import Enzyme from "enzyme";
 import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
 import renderer from "react-test-renderer";
-import {createRenderer} from "react-test-renderer/shallow";
+import ShallowRenderer from "react-test-renderer/shallow";
 import {Keyboard} from "../components/Keyboard";
 
 // configure Enzyme to use React 16
