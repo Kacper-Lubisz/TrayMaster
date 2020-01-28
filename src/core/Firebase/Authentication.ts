@@ -40,7 +40,7 @@ export class User extends DatabaseObject<UserFields> {
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
 
-    public async load(forceLoad = false): Promise<User> {
+    public async load(forceLoad = false): Promise<this> {
         if (ONLINE) {
             await this.warehouseSettings.load(forceLoad);
             return super.load(forceLoad);
