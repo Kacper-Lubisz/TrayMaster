@@ -118,33 +118,5 @@
       }
     }
   }
-
-  #searchPanel {
-    background-color: #ffffff;
-    overflow-y: scroll;
-
-    .categoryGroup {
-      display: grid;
-      grid-template-columns: 1fr 5fr;
-    }
-
-    .categoryGroupTitle {
-
-    }
-
-    .categoryGroupCategories {
-
-      .searchPanelButton {
-        width: 80px;
-        height: 60px;
-      }
-
-      .searchPanelButton.selected {
-        background-color: #aaa;
-      }
-
-    }
-
-  }
 }
 

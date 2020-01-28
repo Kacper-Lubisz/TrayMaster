@@ -1,0 +1,37 @@
+#searchPanel {
+  #cat-table {
+    .categoryGroup {
+
+      .categoryGroupTitle {
+        font-size: 50px;
+        font-weight: bold;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+
+        > span {
+          width: 100%;
+        }
+      }
+
+      .categoryGroupCategories {
+        margin-bottom: -10px;
+        // todo flex is probably the best option here
+
+        .searchPanelButton {
+          font-size: 20px;
+          background-color: #eeeeee;
+          border: 1px solid #dddddd;
+          margin: 0 10px 10px 0;
+          height: 50px;
+          min-width: 120px;
+
+          &.selected {
+            background-color: #dddddd;
+          }
+        }
+      }
+    }
+  }
+}
