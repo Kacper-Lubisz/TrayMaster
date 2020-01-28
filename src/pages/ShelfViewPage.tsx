@@ -592,8 +592,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         }));
     }
 
-    // private addedColumns = new Set<Column>();
-
     /**
      * This method adds a new column to the current shelf and is called when the add column button is pressed.
      * @param shelf The shelf in question
