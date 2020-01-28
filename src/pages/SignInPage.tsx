@@ -92,8 +92,8 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
         } else {
             this.setState(state => ({
                 ...state,
-                feedback: `${email ? "passwordField is undefined " : ""}
-                    ${password ? "emailField is undefined " : ""}`
+                feedback: `${email ? "Please enter your password! " : ""}
+                    ${password ? "Please enter your email address!" : ""}`
             }));
         }
     }
