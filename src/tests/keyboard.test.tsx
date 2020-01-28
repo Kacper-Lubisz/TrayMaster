@@ -9,7 +9,7 @@ import Enzyme from "enzyme";
 import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
 import renderer from "react-test-renderer";
-import ShallowRenderer from "react-test-renderer/shallow";
+import {createRenderer} from "react-test-renderer/shallow";
 import {Keyboard} from "../components/Keyboard";
 
 // configure Enzyme to use React 16
@@ -315,7 +315,7 @@ describe("Keyboard matches snapshots:", () => {
             id: "BigBoy"
         };
 
-        const kbRenderer = new ShallowRenderer(); // shallow render needed because FontAwesomeIcons change between runs
+        const kbRenderer = createRenderer(); // shallow render needed because FontAwesomeIcons change between runs
         kbRenderer.render(<Keyboard {...props} />);
         expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
     });
@@ -476,7 +476,7 @@ describe("Keyboard matches snapshots:", () => {
             id: "BigBoy"
         };
 
-        const kbRenderer = new ShallowRenderer(); // shallow render needed because FontAwesomeIcons change between runs
+        const kbRenderer = createRenderer(); // shallow render needed because FontAwesomeIcons change between runs
         kbRenderer.render(<Keyboard {...props} />);
         expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
     });
