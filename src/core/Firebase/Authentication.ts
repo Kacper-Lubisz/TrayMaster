@@ -24,6 +24,8 @@ interface UserFields {
 
     enableAutoAdvance: boolean;
     onlySingleAutoAdvance: boolean;
+
+    showPreviousShelfButton: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
@@ -35,7 +37,8 @@ export class User extends DatabaseObject<UserFields> {
             name: "",
             lastWarehouseID: "",
             enableAutoAdvance: false,
-            onlySingleAutoAdvance: false
+            onlySingleAutoAdvance: false,
+            showPreviousShelfButton: false,
         });
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
@@ -98,13 +101,20 @@ export class User extends DatabaseObject<UserFields> {
         this.fields.enableAutoAdvance = enableAutoAdvance;
     }
 
-
     public get onlySingleAutoAdvance(): boolean {
         return this.fields.onlySingleAutoAdvance;
     }
 
     public set onlySingleAutoAdvance(onlySingleAutoAdvance: boolean) {
         this.fields.onlySingleAutoAdvance = onlySingleAutoAdvance;
+    }
+
+    public get showPreviousShelfButton(): boolean {
+        return this.fields.showPreviousShelfButton;
+    }
+
+    public set showPreviousShelfButton(showPreviousShelfButton: boolean) {
+        this.fields.showPreviousShelfButton = showPreviousShelfButton;
     }
 
 }
@@ -143,7 +153,8 @@ export class Authentication {
                     lastWarehouseID: "MOCK_WAREHOUSE_0",
                     isAdmin: true,
                     enableAutoAdvance: false,
-                    onlySingleAutoAdvance: false
+                    onlySingleAutoAdvance: false,
+                    showPreviousShelfButton: false,
                 }).load();
             onSignIn?.call(this, this.currentUser);
         }
@@ -168,7 +179,8 @@ export class Authentication {
                     lastWarehouseID: "",
                     isAdmin: true,
                     enableAutoAdvance: false,
-                    onlySingleAutoAdvance: false
+                    onlySingleAutoAdvance: false,
+                    showPreviousShelfButton: false,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
@@ -187,7 +199,8 @@ export class Authentication {
                     lastWarehouseID: "",
                     isAdmin: true,
                     enableAutoAdvance: false,
-                    onlySingleAutoAdvance: false
+                    onlySingleAutoAdvance: false,
+                    showPreviousShelfButton: false,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }

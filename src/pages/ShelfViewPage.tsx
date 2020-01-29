@@ -805,21 +805,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 <ToolBar
                     disabled={this.state.isEditShelf}
                     toolbar={[
-                        (() => {
-                            if (this.getSelectedTrayCells().length === 0) {
-                                return {
-                                    name: "Select All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "all")
-                                };
-                            } else {
-                                return {
-                                    name: "Deselect All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "none")
-                                };
-                            }
-                        })(),
+                        {
+                            name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
+                            icon: tickSolid,
+                            onClick: this.selectAll.bind(
+                                this,
+                                this.getSelectedTrayCells().length === 0 ? "all" : "none"
+                            )
+                        },
                         {
                             name: "Edit Comment",
                             icon: faCommentAlt,
@@ -855,9 +848,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {name: "Search", onClick: this.makeSearch.bind(this)},
                         {name: "Settings", onClick: () => this.props.history.push("/settings")},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
-                        // enabled = possibleMoveDirections.previousTray
-                        {name: "Next Shelf  ", onClick: this.changeView.bind(this, "next")},
-                        // enabled = possibleMoveDirections.nextTray
+                        this.props.user.showPreviousShelfButton ? {
+                            name: "Previous Shelf",
+                            onClick: this.changeView.bind(this, "previousShelf"),
+                            disabled: !possibleMoveDirections.get("previousShelf")
+                        } : null,
+                        {
+                            name: "Next Shelf",
+                            onClick: this.changeView.bind(this, "nextShelf"),
+                            disabled: !possibleMoveDirections.get("nextShelf")
+                        },
                     ]}
                     keyboards={[
                         {name: "category", icon: categoryIcon},
