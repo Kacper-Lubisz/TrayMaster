@@ -745,6 +745,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     }
 
+    /**
+     * This method performs a search for the categories of the currently selected trays
+     */
     private makeSearch(): void {
 
         const catSet = new Set(this.getSelectedTrays(false, false)
@@ -762,6 +765,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.props.history.push("/search");
     }
 
+    /**
+     * This method finds the expiry range start year which all selected trays have in common, if no year is in common
+     * then undefined.
+     */
     private getCommonYear(): number | undefined {
         const traysOnly = this.splitCells(this.getSelectedTrayCells()).trays;
         const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
@@ -770,6 +777,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         return firstYear !== undefined && traysOnly.every(item =>
             item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
         ) ? firstYear : undefined;
+    }
+
+    /**
+     * This method toggles if a shelf is in the picking area and stages the change.
+     * @param shelf The shelf to be toggled
+     */
+    private async togglePickingArea(shelf: Shelf): Promise<void> {
+        shelf.isPickingArea = !shelf.isPickingArea;
+        await shelf.stage(false, true);
+        this.forceUpdate();
     }
 
     render(): React.ReactNode {
@@ -840,6 +857,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     openNavigatorDisabled={this.state.isEditShelf}
 
                     buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
+                        {
+                            name: this.state.currentView.isPickingArea ? "Remove from Picking Area"
+                                                                       : "Add to Picking Area",
+                            onClick: this.togglePickingArea.bind(this, this.state.currentView)
+                        },
                         {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
