@@ -57,7 +57,7 @@ class App extends React.Component<unknown, AppState> {
                     }).catch((reason) => {
                         this.openDialog(buildErrorDialog(
                             "Load Failed",
-                            `Failed to load last warehouse ${reason}`,
+                            `Failed to load last warehouse, with error "${reason}"`,
                             false
                         ));
                     });

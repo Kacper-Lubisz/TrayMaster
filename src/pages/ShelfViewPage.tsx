@@ -839,13 +839,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             icon: faEraser,
                             onClick: this.clearTrays.bind(this),
                             disabled: this.getSelectedTrayCells().length === 0
-                        },
-                        // { /*This code adds a button which opens a test dialog*/
-                        //     name: "Test Error", onClick: this.props.openDialog.bind(undefined,
-                        //         buildErrorDialog("Error Title", "this is a big test", true)
-                        //     )
-                        // }
-
+                        }
                     ]}/>
                 <SideBar
                     zoneColor={zoneColor}
@@ -1028,34 +1022,37 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
     render(): React.ReactElement {
         return <>
             <DialogTitle title="Edit Comment"/>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                this.props.onSubmit(this.state.draft);
-            }}>
-                <input
-                    autoFocus={true}
-                    type="text"
-                    onChange={(event) => {
-                        const newValue = event.target.value;
-                        this.setState(state => ({
-                            ...state,
-                            draft: newValue.length === 0 ? null : newValue
-                        }));
-                    }}
-                    value={this.state.draft ?? ""}
-                /></form>
-            <DialogButtons buttons={[
-                {
-                    name: "Discard", buttonProps: {
-                        onClick: this.props.onDiscard,
-                        style: {borderColor: "red"}
+            <div className="dialogContent">
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    this.props.onSubmit(this.state.draft);
+                }}>
+                    <input
+                        id="editCommentInput"
+                        autoFocus={true}
+                        type="text"
+                        onChange={(event) => {
+                            const newValue = event.target.value;
+                            this.setState(state => ({
+                                ...state,
+                                draft: newValue.length === 0 ? null : newValue
+                            }));
+                        }}
+                        value={this.state.draft ?? ""}
+                    /></form>
+                <DialogButtons buttons={[
+                    {
+                        name: "Discard", buttonProps: {
+                            onClick: this.props.onDiscard,
+                            style: {borderColor: "red"}
+                        }
+                    }, {
+                        name: "Done", buttonProps: {
+                            onClick: () => this.props.onSubmit(this.state.draft),
+                        }
                     }
-                }, {
-                    name: "Done", buttonProps: {
-                        onClick: () => this.props.onSubmit(this.state.draft),
-                    }
-                }
-            ]}/>
+                ]}/>
+            </div>
         </>;
     }
 }
