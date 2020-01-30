@@ -1044,7 +1044,7 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
                     {
                         name: "Discard", buttonProps: {
                             onClick: this.props.onDiscard,
-                            style: {borderColor: "red"}
+                            className: "dialogBtnRed"
                         }
                     }, {
                         name: "Done", buttonProps: {

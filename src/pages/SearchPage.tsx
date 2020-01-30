@@ -27,7 +27,7 @@ type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * Defines the search queries that can be run on the warehouse
- * todo fixme document this properly <- is this documented properly now? If not, what needs adding?
+ * todo fixme document this properly
  */
 export interface SearchQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */

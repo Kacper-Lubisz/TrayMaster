@@ -66,13 +66,13 @@ export function buildErrorDialog(title: string, message: string, forceReload: bo
                     {
                         name: "Reload", buttonProps: {
                             onClick: () => window.location.reload(),
-                            style: {borderColor: "red"}
+                            className: "dialogBtnRed"
                         }
                     }
                 ].concat(forceReload ? [] : {
                     name: "Ok", buttonProps: {
                         onClick: close,
-                        style: {borderColor: "red"}
+                        className: "dialogBtnRed"
                     }
                 })}/>
             </div>
