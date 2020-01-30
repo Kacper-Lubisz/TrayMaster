@@ -1,8 +1,8 @@
 // Content that appears above columns when in edit shelf mode
-.edit-shelf-column {
+.editShelfColumn {
   visibility: hidden;
   z-index: 10;
-  background-color: #0003;
+  background-color: rgba(255, 255, 255, 0.9);
   position: absolute;
   top: 0;
   right: 0;

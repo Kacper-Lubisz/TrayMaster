@@ -65,15 +65,13 @@ export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
         }
 
         // set state to reflect trays being swapped
-        this.setState(state => {
-            return {
-                ...state,
-                animation: {
-                    [startTray]: swaps[0],
-                    [endTray]: swaps[1]
-                }
-            };
-        });
+        this.setState(state => ({
+            ...state,
+            animation: {
+                [startTray]: swaps[0],
+                [endTray]: swaps[1]
+            }
+        }));
     }
 
 

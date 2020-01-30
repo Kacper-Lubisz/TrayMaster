@@ -361,7 +361,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             column.getPaddedTrays().map((tray, index) => {
                 const expiryStyle = (() => {
                     if (tray instanceof Tray && tray.expiry) {
-                        const background = tray.expiry ? getExpiryColor(tray.expiry, expiryColorMode) : "";
+                        const background = getExpiryColor(tray.expiry, expiryColorMode);
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)
@@ -411,7 +411,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     </>}
                 </div>;
             })}
-            {this.props.isShelfEdit ? <div className="edit-shelf-column">
+            {this.props.isShelfEdit ? <div className="editShelfColumn">
                 <button className="colDeleteBtn"
                         onClick={() => this.props.removeColumn(column)}
                 > {/*todo revise these icons*/}
