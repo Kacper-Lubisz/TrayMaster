@@ -34,6 +34,10 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                 get: () => this.props.user.onlySingleAutoAdvance,
                 set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
                 label: "Don't Advance in Multi-select"
+            }, {
+                get: () => this.props.user.showPreviousShelfButton,
+                set: (value: boolean) => this.props.user.showPreviousShelfButton = value,
+                label: "Show Previous Shelf Button"
             }
         ];
 

@@ -743,6 +743,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     }
 
+    /**
+     * This method performs a search for the categories of the currently selected trays
+     */
     private makeSearch(): void {
 
         const catSet = new Set(this.getSelectedTrays(false, false)
@@ -760,6 +763,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.props.history.push("/search");
     }
 
+    /**
+     * This method finds the expiry range start year which all selected trays have in common, if no year is in common
+     * then undefined.
+     */
     private getCommonYear(): number | undefined {
         const traysOnly = this.splitCells(this.getSelectedTrayCells()).trays;
         const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
@@ -768,6 +775,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         return firstYear !== undefined && traysOnly.every(item =>
             item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
         ) ? firstYear : undefined;
+    }
+
+    /**
+     * This method toggles if a shelf is in the picking area and stages the change.
+     * @param shelf The shelf to be toggled
+     */
+    private async togglePickingArea(shelf: Shelf): Promise<void> {
+        shelf.isPickingArea = !shelf.isPickingArea;
+        await shelf.stage(false, true);
+        this.forceUpdate();
     }
 
     render(): React.ReactNode {
@@ -803,21 +820,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 <ToolBar
                     disabled={this.state.isEditShelf}
                     toolbar={[
-                        (() => {
-                            if (this.getSelectedTrayCells().length === 0) {
-                                return {
-                                    name: "Select All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "all")
-                                };
-                            } else {
-                                return {
-                                    name: "Deselect All",
-                                    icon: tickSolid,
-                                    onClick: this.selectAll.bind(this, "none")
-                                };
-                            }
-                        })(),
+                        {
+                            name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
+                            icon: tickSolid,
+                            onClick: this.selectAll.bind(
+                                this,
+                                this.getSelectedTrayCells().length === 0 ? "all" : "none"
+                            )
+                        },
                         {
                             name: "Edit Comment",
                             icon: faCommentAlt,
@@ -845,6 +855,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     openNavigatorDisabled={this.state.isEditShelf}
 
                     buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
+                        {
+                            name: this.state.currentView.isPickingArea ? "Remove from Picking Area"
+                                                                       : "Add to Picking Area",
+                            onClick: this.togglePickingArea.bind(this, this.state.currentView)
+                        },
                         {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
@@ -853,9 +868,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {name: "Search", onClick: this.makeSearch.bind(this)},
                         {name: "Settings", onClick: () => this.props.history.push("/settings")},
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
-                        // enabled = possibleMoveDirections.previousTray
-                        {name: "Next Shelf  ", onClick: this.changeView.bind(this, "next")},
-                        // enabled = possibleMoveDirections.nextTray
+                        this.props.user.showPreviousShelfButton ? {
+                            name: "Previous Shelf",
+                            onClick: this.changeView.bind(this, "previousShelf"),
+                            disabled: !possibleMoveDirections.get("previousShelf")
+                        } : null,
+                        {
+                            name: "Next Shelf",
+                            onClick: this.changeView.bind(this, "nextShelf"),
+                            disabled: !possibleMoveDirections.get("nextShelf")
+                        },
                     ]}
                     keyboards={[
                         {name: "category", icon: categoryIcon},
