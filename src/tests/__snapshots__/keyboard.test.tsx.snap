@@ -8,21 +8,21 @@ exports[`Keyboard matches snapshots: renders disabled keyboard 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
       Bob
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
       Geoffrey
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
@@ -33,21 +33,21 @@ exports[`Keyboard matches snapshots: renders disabled keyboard 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
       Steve
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
       Paul
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
@@ -65,25 +65,25 @@ exports[`Keyboard matches snapshots: renders keyboard with a number of buttons t
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Bob
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Geoffrey
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Doris
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Steve
@@ -93,13 +93,13 @@ exports[`Keyboard matches snapshots: renders keyboard with a number of buttons t
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Paul
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Dave
@@ -116,19 +116,19 @@ exports[`Keyboard matches snapshots: renders multi-line keyboards 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Bob
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Geoffrey
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Doris
@@ -138,19 +138,19 @@ exports[`Keyboard matches snapshots: renders multi-line keyboards 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Steve
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Paul
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Dave
@@ -173,7 +173,7 @@ exports[`Keyboard matches snapshots: renders one key 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Bob
@@ -190,19 +190,19 @@ exports[`Keyboard matches snapshots: renders selected buttons 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Bob
     </button>
     <button
-      className="key-btn key-btn-selected"
+      className="key-btn btn-style-override key-btn-selected"
       onClick={[Function]}
     >
       Geoffrey
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Doris
@@ -383,25 +383,25 @@ exports[`Keyboard matches snapshots: renders with a given id 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Bob
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Geoffrey
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Doris
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Steve
@@ -411,13 +411,13 @@ exports[`Keyboard matches snapshots: renders with a given id 1`] = `
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Paul
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Dave
@@ -435,27 +435,27 @@ exports[`Keyboard matches snapshots: renders with multiple disabled buttons 1`] 
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
       Bob
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
       Geoffrey
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Doris
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
@@ -466,14 +466,14 @@ exports[`Keyboard matches snapshots: renders with multiple disabled buttons 1`] 
     className="kb-row"
   >
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={true}
       onClick={[Function]}
     >
       Paul
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       disabled={false}
       onClick={[Function]}
     >
@@ -492,25 +492,25 @@ exports[`Keyboard matches snapshots: renders with multiple selected buttons 1`] 
     className="kb-row"
   >
     <button
-      className="key-btn key-btn-selected"
+      className="key-btn btn-style-override key-btn-selected"
       onClick={[Function]}
     >
       Bob
     </button>
     <button
-      className="key-btn key-btn-selected"
+      className="key-btn btn-style-override key-btn-selected"
       onClick={[Function]}
     >
       Geoffrey
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Doris
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Steve
@@ -520,13 +520,13 @@ exports[`Keyboard matches snapshots: renders with multiple selected buttons 1`] 
     className="kb-row"
   >
     <button
-      className="key-btn key-btn-selected"
+      className="key-btn btn-style-override key-btn-selected"
       onClick={[Function]}
     >
       Paul
     </button>
     <button
-      className="key-btn"
+      className="key-btn btn-style-override"
       onClick={[Function]}
     >
       Dave
