@@ -148,7 +148,7 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
             const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
 
             for (let k = 0; k < 5; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, false, bay);
+                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
 
                 for (let l = 0; l < 4; l++) {
                     const column = Column.create(l, warehouse.defaultTraySize, 3, shelf);
