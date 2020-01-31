@@ -29,9 +29,11 @@ jobs:
         env:
           CI: true
 
-      - uses: hallee/eslint-action@master
+      - name: Run ESLint
+        uses: reviewdog/action-eslint@v1
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.github_token }}
+          eslint_flags: 'src/'
 
       - name: Build app
         run: |
