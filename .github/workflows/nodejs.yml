@@ -31,6 +31,8 @@ jobs:
 
 
       - uses: stefanoeb/eslint-action@1.0.2
+        with:
+          files: src/
 
       - name: Build app
         run: |
