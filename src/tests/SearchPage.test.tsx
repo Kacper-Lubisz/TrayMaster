@@ -7,7 +7,7 @@ import {mockWarehouse, routeProps} from "./sharedTestValues";
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
-Enzyme.configure({adapter: new React16Adapter()})
+Enzyme.configure({adapter: new React16Adapter()});
 
 const mockSearch = {
     query: {
