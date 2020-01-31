@@ -361,7 +361,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             column.getPaddedTrays().map((tray, index) => {
                 const expiryStyle = (() => {
                     if (tray instanceof Tray && tray.expiry) {
-                        const background = tray.expiry ? getExpiryColor(tray.expiry, expiryColorMode) : "";
+                        const background = getExpiryColor(tray.expiry, expiryColorMode);
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)

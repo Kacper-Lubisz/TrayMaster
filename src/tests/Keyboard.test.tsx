@@ -15,6 +15,8 @@ import {Keyboard} from "../components/Keyboard";
 // configure Enzyme to use React 16
 Enzyme.configure({adapter: new React16Adapter()});
 
+// noinspection DuplicatedCode
+
 describe("Keyboard matches snapshots:", () => {
     it("renders no keys", () => {
         const props = {
