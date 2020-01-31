@@ -35,4 +35,3 @@ jobs:
           CI: true
 
       - uses: hallee/eslint-action@master
-      - name: Run ESLint
