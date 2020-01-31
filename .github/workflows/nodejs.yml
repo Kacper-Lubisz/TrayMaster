@@ -29,13 +29,13 @@ jobs:
         env:
           CI: true
 
-      - name: Run ESLint
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          eslint_flags: './src/ --ext .js,.jsx,.ts,.tsx'
-        env:
-          CI: true
+      - if: startsWith(matrix.os, 'ubuntu')
+        name: Run ESLint
+          uses: reviewdog/action-eslint@v1
+          with:
+            github_token: ${{ secrets.github_token }}
+            eslint_flags: './src/ --ext .js,.jsx,.ts,.tsx'
+
 
       - name: Build app
         run: |
