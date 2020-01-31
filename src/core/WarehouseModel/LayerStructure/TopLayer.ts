@@ -86,7 +86,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
 
     public abstract async loadChildren(forceLoad: boolean): Promise<void>;
 
-    // noinspection DuplicatedCode
     /**
      * Load down to minLayer a layer at a time (using the top-level structure in the database).
      * @async
@@ -105,7 +104,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             collectionName: string;
             childCollectionName: string;
             topLevelChildCollectionPath: string;
-            childIndexed: boolean;
         };
 
         let currentState: State = {
@@ -113,7 +111,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             collectionName: this.collectionName,
             childCollectionName: this.childCollectionName,
             topLevelChildCollectionPath: this.topLevelChildCollectionPath,
-            childIndexed: false
         };
 
         for (let i = this.layerID - 1; i >= minLayer; i--) {
@@ -121,9 +118,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             let nextState: State | undefined;
 
             const query =
-                currentState.childIndexed ?
-                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index") :
-                firebase.database.db.collection(currentState.topLevelChildCollectionPath);
+                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index");
             for (const document of (await firebase.database.loadQuery<unknown & TopLevelFields>(query))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
@@ -136,8 +131,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                             generator: child.createChild,
                             collectionName: child.collectionName,
                             childCollectionName: child.childCollectionName,
-                            topLevelChildCollectionPath: child.topLevelChildCollectionPath,
-                            childIndexed: child.childIndexed
+                            topLevelChildCollectionPath: child.topLevelChildCollectionPath
                         };
                     }
                 }
@@ -169,7 +163,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         return this;
     }
 
-    // noinspection DuplicatedCode
     public async delete(commit = false): Promise<void> {
         for (const child of this.children) {
             await child.delete();
@@ -179,6 +172,16 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
 
         if (commit) {
             await firebase.database.commit();
+        }
+    }
+
+    protected stageLayer(forceStage = false): void {
+        if (this.changed || forceStage) {
+            firebase.database.set(this.topLevelPath, {
+                ...this.fields,
+                layerIdentifiers: this.layerIdentifiers
+            });
+            this.fieldsSaved();
         }
     }
 

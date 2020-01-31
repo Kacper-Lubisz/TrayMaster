@@ -145,16 +145,16 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
         const zone = Zone.create(zoneFields.name, zoneFields.color, warehouse);
 
         for (let j = 0; j < 5; j++) {
-            const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
+            const bay = Bay.create(String.fromCharCode(65 + j), zone);
 
             for (let k = 0; k < 5; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, k === 1, bay);
+                const shelf = Shelf.create(`${k + 1}`, k === 1, bay);
 
                 for (let l = 0; l < 4; l++) {
-                    const column = Column.create(l, warehouse.defaultTraySize, 3, shelf);
+                    const column = Column.create(warehouse.defaultTraySize, 3, shelf);
 
                     for (let m = 0; m < 3; m++) {
-                        makeRandomTray(column, m);
+                        makeRandomTray(column);
                     }
                 }
             }
@@ -165,29 +165,29 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
         const zone = Zone.create(zoneFields.name, zoneFields.color, warehouse);
 
         for (let j = 0; j < 2; j++) {
-            const bay = Bay.create(j, String.fromCharCode(65 + j), zone);
+            const bay = Bay.create(String.fromCharCode(65 + j), zone);
 
             for (let k = 0; k < 4; k++) {
-                const shelf = Shelf.create(k, `${k + 1}`, false, bay);
+                const shelf = Shelf.create(`${k + 1}`, false, bay);
 
                 for (let l = 0; l < 4; l++) {
-                    const column = Column.create(l, warehouse.defaultTraySize, 3, shelf);
+                    const column = Column.create(warehouse.defaultTraySize, 3, shelf);
 
                     for (let m = 0; m < 3; m++) {
-                        makeRandomTray(column, m);
+                        makeRandomTray(column);
                     }
                 }
             }
         }
     }
 
-    function makeRandomTray(parentColumn: Column, index: number): void {
+    function makeRandomTray(parentColumn: Column): void {
         const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
         const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
         const weight = Math.random() < 0.25 ? undefined :
                        Number((15 * Math.random()).toFixed(2));
 
-        Tray.create(parentColumn, index, category, expiry, weight,
+        Tray.create(parentColumn, category, expiry, weight,
             Math.random() < 0.1 ? "This is a custom comment, it might be very long" : undefined);
     }
 
