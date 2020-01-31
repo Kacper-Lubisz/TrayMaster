@@ -32,6 +32,8 @@ jobs:
       - uses: hallee/eslint-action@master
         with:
           repo-token: ${{secrets.GITHUB_TOKEN}}
+        env:
+          CI: true
 
       - name: Build app
         run: |
