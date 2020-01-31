@@ -18,14 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - uses: hallee/eslint-action@master
-        with:
-          repo-token: ${{secrets.GITHUB_TOKEN}}
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
+      - uses: hallee/eslint-action@master
+        with:
+          repo-token: ${{secrets.GITHUB_TOKEN}}
+
 
       - name: npm install and build
         run: |
