@@ -29,10 +29,9 @@ jobs:
         env:
           CI: true
 
-
-      - uses: stefanoeb/eslint-action@1.0.2
+      - uses: hallee/eslint-action@master
         with:
-          files: src/
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Build app
         run: |
