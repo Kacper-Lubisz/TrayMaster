@@ -30,11 +30,11 @@ jobs:
           CI: true
 
       - name: Run ESLint
-          if: startsWith(matrix.os,'ubuntu')
-          uses: reviewdog/action-eslint@v1
-          with:
-            github_token: ${{ secrets.github_token }}
-            eslint_flags: './src/ --ext .js,.jsx,.ts,.tsx'
+        if: startsWith(matrix.os,'ubuntu')
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          eslint_flags: './src/ --ext .js,.jsx,.ts,.tsx'
 
 
       - name: Build app
