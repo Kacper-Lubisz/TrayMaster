@@ -2,14 +2,16 @@ import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {CategoryEditor} from "../components/CategoryEditor";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+
 import "../styles/settings.scss";
 
 interface SettingsProps {
     openDialog: (dialog: Dialog) => void;
-    warehouse: Warehouse | undefined;
+    warehouse: Warehouse;
     user: User;
 }
 
@@ -45,6 +47,12 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
             <div className="settings">
                 <div className="settings-header">
                     <h1>Settings</h1>
+                </div>
+                <div>
+                    <CategoryEditor
+                        categories={this.props.warehouse.categories}
+                        user={this.props.user}
+                    />
                 </div>
                 <div className="settings-btns">
                     <button className="key-btn" onClick={() => this.props.history.goBack()}>

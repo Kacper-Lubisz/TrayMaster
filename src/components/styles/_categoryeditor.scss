@@ -1,0 +1,17 @@
+.category {
+  //background-color: #eeeeee;
+  color: #000000;
+  cursor: pointer;
+
+  &:active:enabled {
+    background-color: #dddddd;
+  }
+}
+
+.cat-editor-btn {
+  background-color: #dddddd;
+
+  &.cat-selected {
+    background-color: blue;
+  }
+}
