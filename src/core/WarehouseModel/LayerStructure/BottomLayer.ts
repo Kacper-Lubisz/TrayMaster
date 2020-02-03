@@ -33,7 +33,7 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     /**
      * Get the index of the object within its parent's collection
      */
-    public get indexInParent(): number {
+    public get index(): number {
         return this.parent.getChildIndex(this);
     }
 
@@ -56,12 +56,23 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     }
 
     public async delete(commit = false): Promise<void> {
-        this.parent.children.splice(this.indexInParent, 1);
+        this.parent.children.splice(this.index, 1);
 
         firebase.database.delete(this.topLevelPath);
 
         if (commit) {
             await firebase.database.commit();
+        }
+    }
+
+    protected stageLayer(forceStage = false): void {
+        if (this.changed || forceStage) {
+            firebase.database.set(this.topLevelPath, {
+                ...this.fields,
+                layerIdentifiers: this.layerIdentifiers,
+                index: this.index,
+            });
+            this.fieldsSaved();
         }
     }
 

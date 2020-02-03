@@ -3,14 +3,12 @@ import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 interface ColumnFields {
-    index: number;
     traySizeId: string;
     maxHeight: number;
 }
 
 export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public readonly layerID: WarehouseModel = WarehouseModel.column;
-    public readonly childIndexed = true;
     public readonly collectionName = "columns";
     public readonly childCollectionName = "trays";
 
@@ -21,14 +19,12 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     private static traySpaces: Map<Column, TraySpace[]> = new Map<Column, TraySpace[]>();
 
     /**
-     * @param index - The (ordered) index of the column within the shelf
      * @param traySize - The size of the tray
      * @param maxHeight - The maximum number of trays that can be placed in this column
      * @param parent - The parent shelf
      */
-    public static create(index: number, traySize: TraySize, maxHeight: number, parent: Shelf): Column {
+    public static create(traySize: TraySize, maxHeight: number, parent: Shelf): Column {
         return new Column(Utils.generateRandomId(), {
-            index,
             traySizeId: parent.parentWarehouse.getTraySizeId(traySize),
             maxHeight
         }, parent);
@@ -49,14 +45,6 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     }
 
     //#region Field Getters and Setters
-    public get index(): number {
-        return this.fields.index;
-    }
-
-    public set index(index: number) {
-        this.fields.index = index;
-    }
-
     public get traySize(): TraySize | undefined {
         return this.parentWarehouse.getTraySizeByID(this.fields.traySizeId);
     }

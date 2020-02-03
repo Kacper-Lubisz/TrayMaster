@@ -74,15 +74,7 @@ export abstract class Layer<TFields> extends DatabaseObject<TFields> {
      */
     public abstract bfs(callback: (layer: Layers) => void): void;
 
-    protected stageLayer(forceStage = false): void {
-        if (this.changed || forceStage) {
-            firebase.database.set(this.topLevelPath, {
-                ...this.fields,
-                layerIdentifiers: this.layerIdentifiers
-            });
-            this.fieldsSaved();
-        }
-    }
+    protected abstract stageLayer(forceStage: boolean): void;
 
     protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
