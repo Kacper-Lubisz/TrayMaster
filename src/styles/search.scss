@@ -62,12 +62,11 @@
       margin: 0 10px 0 30px;
 
       button {
+        margin: 0;
+        border-radius: 0;
         height: 100%;
         width: 120px;
         font-size: 24px;
-        background-color: #eeeeee;
-        border: 1px solid #aaaaaa;
-        cursor: pointer;
       }
     }
   }
@@ -78,11 +77,18 @@
     padding: 0 20px;
 
     // loading spinner
-    svg {
+    svg, div#search-no-results {
       position: absolute;
       top: 20%;
       left: 50%;
       transform: translate(-50%, -50%);
+
+      // only really applies to div
+      font-size: 25px;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     table {
@@ -117,34 +123,6 @@
         background-color: #f4f4f4;
       }
     }
-  }
-
-  #searchPanel {
-    background-color: #ffffff;
-    overflow-y: scroll;
-
-    .categoryGroup {
-      display: grid;
-      grid-template-columns: 1fr 5fr;
-    }
-
-    .categoryGroupTitle {
-
-    }
-
-    .categoryGroupCategories {
-
-      .searchPanelButton {
-        width: 80px;
-        height: 60px;
-      }
-
-      .searchPanelButton.selected {
-        background-color: #aaa;
-      }
-
-    }
-
   }
 }
 

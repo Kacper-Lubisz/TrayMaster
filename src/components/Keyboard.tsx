@@ -33,7 +33,7 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render(): React.ReactNode {
         return (
             <button disabled={this.props.disabled}
-                    className={classNames("key-btn", {
+                    className={classNames("key-btn btn-style-override", {
                         "key-btn-selected": this.props.selected
                     })} onClick={(e) => {
                 // if button isn't disabled, and we've been given an onClick function, run it

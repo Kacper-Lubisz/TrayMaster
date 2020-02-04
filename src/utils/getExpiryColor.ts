@@ -99,8 +99,6 @@ function getSaturation(days: number): number {
     } else if (days <= 40) { // month
         return 1;
     } else if (days <= 100) { // quarter
-        return 0.75;
-    } else if (days <= 183) { // 6 months
         return 0.6;
     } else if (days <= 366) { // year
         return 0.5;

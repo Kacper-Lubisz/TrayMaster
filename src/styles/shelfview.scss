@@ -6,6 +6,16 @@
 @import "./shelfnavigator";
 // SHELF VIEW GRID LAYOUT
 
+#editCommentInput {
+  font-size: 28px;
+  padding: 10px;
+
+  background-color: #dddddd;
+  border: none;
+
+  width: calc(100% - 20px);
+}
+
 #shelfView {
   // fill whole screen, centre text
   text-align: center;

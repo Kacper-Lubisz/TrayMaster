@@ -3,6 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {withRouter} from "react-router";
 import {RouteComponentProps} from "react-router-dom";
+import {Keyboard, KeyboardButtonProps} from "../components/Keyboard";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase";
@@ -31,12 +32,40 @@ interface MainMenuProps {
 /**
  * This class creates the main menu, redirecting to other screens
  * by changing state values when buttons are pressed
- * TODO change which path it pushes to when those are added
  * Only shows the alert when an item is withing chosen expiry range
  */
 class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> {
 
     render(): React.ReactNode {
+
+        const menuButtons: KeyboardButtonProps[] = [
+            {
+                name: "Shelf View",
+                onClick: () => this.props.history.push("/")
+            },
+            {
+                name: "Search",
+                onClick: () => {
+                    this.props.setSearch({
+                        categories: null,
+                        weight: null,
+                        commentSubstring: null,
+                        excludePickingArea: true,
+                        sort: {orderAscending: true, type: SortBy.expiry}
+                    });
+                    this.props.history.push("/search");
+                }
+            },
+            {
+                name: "Report",
+                onClick: () => alert("Report"),
+                disabled: true
+            },
+            {
+                name: "Settings",
+                onClick: () => this.props.history.push("Settings")
+            }
+        ];
 
         return <div className="main-menu">
             <TrayMasterLogo/>
@@ -61,30 +90,8 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             </div>
             }
 
-            <div className="menu-btn-container">
-                <button className="key-btn" onClick={() => this.props.history.push("/")}>
-                    <p>Shelf View</p></button>
-                <button className="key-btn"
-                        onClick={(_) => {
-                            this.props.setSearch({
-                                categories: null,
-                                weight: null,
-                                commentSubstring: null,
-                                excludePickingArea: true,
-                                sort: {orderAscending: true, type: SortBy.expiry}
-                            });
-                            this.props.history.push("/search");
-                        }}><p>Search</p>
-                </button>
-                <button className="key-btn"
-                        disabled={true}
-                        onClick={() => alert("Report")}><p>Report</p>
-                </button>
-                <button className="key-btn"
-                        onClick={() => this.props.history.push("/settings")}><p>Settings</p>
-                </button>
+            <Keyboard id="menu-nav-kb" buttons={menuButtons} gridX={1}/>
 
-            </div>
             <div id="menu-warehouse-user-area">
                 <div>
                     <h1>{this.props.user.name}</h1>
