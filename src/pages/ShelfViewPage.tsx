@@ -852,8 +852,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
                         {
-                            name: this.state.currentView.isPickingArea ? "Remove from Picking Area"
-                                                                       : "Add to Picking Area",
+                            name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
+                                                                       : "Mark as Picking Area",
                             onClick: this.togglePickingArea.bind(this, this.state.currentView)
                         },
                         {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
