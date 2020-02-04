@@ -15,6 +15,8 @@ import {Keyboard} from "../components/Keyboard";
 // configure Enzyme to use React 16
 Enzyme.configure({adapter: new React16Adapter()});
 
+// noinspection DuplicatedCode
+
 describe("Keyboard matches snapshots:", () => {
     it("renders no keys", () => {
         const props = {
@@ -318,6 +320,7 @@ describe("Keyboard matches snapshots:", () => {
         const kbRenderer = createRenderer(); // shallow render needed because FontAwesomeIcons change between runs
         kbRenderer.render(<Keyboard {...props} />);
         expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
+        kbRenderer.unmount();
     });
 
     it("renders with multiple selected buttons", () => {
@@ -479,6 +482,7 @@ describe("Keyboard matches snapshots:", () => {
         const kbRenderer = createRenderer(); // shallow render needed because FontAwesomeIcons change between runs
         kbRenderer.render(<Keyboard {...props} />);
         expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
+        kbRenderer.unmount();
     });
 });
 
@@ -499,6 +503,7 @@ describe("Keyboard DOM tests:", () => {
         const keyboard = Enzyme.mount(<Keyboard {...props} />);
         keyboard.find("button").simulate("click");
         expect(mockCallback.mock.calls.length).toEqual(1);
+        keyboard.unmount();
     });
 
     it("Generates the right number of rows", () => {
@@ -518,6 +523,7 @@ describe("Keyboard DOM tests:", () => {
             const keyboard = Enzyme.mount(<Keyboard {...props} />);
             expect(keyboard.find("div.kb-row")).toHaveLength(Math.ceil(btnCount / gridX));
             expect(keyboard.find("div.kb-row:last-child button.key-btn")).toHaveLength(btnCount % gridX || gridX);
+            keyboard.unmount();
         }
     });
 });
