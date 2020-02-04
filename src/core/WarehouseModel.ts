@@ -78,7 +78,7 @@ const endZones = [
 /**
  * Mock warehouse tray expiries
  */
-const trayExpires: ExpiryRange[] = [
+const trayExpiries: ExpiryRange[] = [
     {
         from: null,
         to: null,
@@ -183,7 +183,7 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
 
     function makeRandomTray(parentColumn: Column): void {
         const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
-        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
+        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpiries);
         const weight = Math.random() < 0.25 ? undefined :
                        Number((15 * Math.random()).toFixed(2));
 
