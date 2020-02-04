@@ -17,14 +17,28 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: npm install and build
+      - name: Install dependencies
         run: |
           npm ci
+        env:
+          CI: true
+
+      - name: Run ESLint
+        if: startsWith(matrix.os,'ubuntu')
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          eslint_flags: './src/ --ext .js,.jsx,.ts,.tsx'
+
+
+      - name: Build app
+        run: |
           npm run build --if-present
         env:
           CI: true

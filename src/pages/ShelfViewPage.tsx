@@ -208,7 +208,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 currentZone: Zone = currentBay.parent,
                 shelfIndex: number = currentShelf.index,
                 bayIndex: number = currentBay.index,
-                zoneIndex: number = currentZone.indexInParent;
+                zoneIndex: number = currentZone.index;
 
             if (direction === "up" || direction === "down") { // vertical
 
@@ -378,7 +378,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 if (!ignoreAirSpaces || space.index === space.parentColumn.trays.length) {
                     const newTray = Tray.create(
                         space.parentColumn,
-                        space.index,
                         undefined,
                         undefined,
                         undefined);
@@ -425,7 +424,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     private advanceSelection(canGoToCell: boolean, selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
 
         const comparison = composeSorts<TrayCell>([
-            byNullSafe<TrayCell>(cell => cell.parentColumn.indexInParent, false, false),
+            byNullSafe<TrayCell>(cell => cell.parentColumn.index, false, false),
             byNullSafe<TrayCell>(cell => cell.index, false, false)
         ]);
 
@@ -598,7 +597,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private addColumn(shelf: Shelf): void {
         Column.create(
-            shelf.columns.length,
             this.props.warehouse.defaultTraySize,
             3,
             shelf
@@ -682,10 +680,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     tray.delete(true);
                 }
             }
-        });
-
-        reindexColumns.forEach((column) => {
-            column.trays.forEach((tray, index) => tray.index = index);
         });
 
         this.setSelected(newSelectedMap);
@@ -850,8 +844,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
                         {
-                            name: this.state.currentView.isPickingArea ? "Remove from Picking Area"
-                                                                       : "Add to Picking Area",
+                            name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
+                                                                       : "Mark as Picking Area",
                             onClick: this.togglePickingArea.bind(this, this.state.currentView)
                         },
                         {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
