@@ -1,6 +1,6 @@
-import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
-import database from "../Database";
+import firebase from "../../Firebase";
 import Utils from "../Utils";
+import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
 
 /**
  * Represents the bottom layer in the object model (that has a parent)
@@ -13,6 +13,7 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     protected constructor(id: string, fields: TFields, parent: TParent) {
         super(id, fields);
         this.parent = parent;
+        this.parent.children.push(this);
     }
 
     public get collectionPath(): string {
@@ -32,7 +33,7 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
     /**
      * Get the index of the object within its parent's collection
      */
-    public get indexInParent(): number {
+    public get index(): number {
         return this.parent.getChildIndex(this);
     }
 
@@ -54,12 +55,39 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends L
         return this;
     }
 
-    public async stage(
-        forceStage = false, commitAtEnd = false): Promise<void> {
-        await this.stageLayer(forceStage);
+    public async delete(commit = false): Promise<void> {
+        this.parent.children.splice(this.index, 1);
 
-        if (commitAtEnd) {
-            await database.commit();
+        firebase.database.delete(this.topLevelPath);
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
+    protected stageLayer(forceStage = false): void {
+        if (this.changed || forceStage) {
+            firebase.database.set(this.topLevelPath, {
+                ...this.fields,
+                layerIdentifiers: this.layerIdentifiers,
+                index: this.index,
+            });
+            this.fieldsSaved();
+        }
+    }
+
+    /**
+     * Stage changes to the object to the database
+     * @async
+     * @param forceStage - Stage the object regardless of whether fields have changed or not
+     * @param commit - Get the database to commit the changes at the end of staging
+     */
+    public async stage(
+        forceStage = false, commit = false): Promise<void> {
+        this.stageLayer(forceStage);
+
+        if (commit) {
+            await firebase.database.commit();
         }
     }
 }

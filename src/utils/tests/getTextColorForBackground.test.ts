@@ -1,5 +1,5 @@
-import {getTextColorForBackground} from "../getTextColorForBackground";
 import ColorContrastChecker from "color-contrast-checker";
+import {getTextColorForBackground} from "../getTextColorForBackground";
 
 const ccc = new ColorContrastChecker();
 

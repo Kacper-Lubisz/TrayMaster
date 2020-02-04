@@ -1,0 +1,149 @@
+// Defines loading spinner animations and animation classes
+
+// TRAY GRID PARAMETERS
+// ADJUSTING THESE WILL REQUIRE CHANGES IN "components/LoadingSpinner.tsx" AS WELL
+// ONLY MESS WITH THESE IF YOU KNOW WHAT YOU'RE DOING BECAUSE IT WILL MAKE THE ANIMATION LOOK RUBBISH / BREAK OTHERWISE
+$trayHeight: 20px;
+$trayWidth: 35px;
+$gridGutter: 5px;
+$gridRows: 3;
+$gridCols: 4;
+
+// GRID DIMENSIONS:
+// DERIVED FROM VARIABLES DEFINED IN "loading.scss"
+// noinspections used to tell WebStorm that we are aware of the fact that these variables won't necessarily be
+//  available
+// noinspection SassScssResolvedByNameOnly
+$gridX: $trayWidth + $gridGutter;
+// noinspection SassScssResolvedByNameOnly
+$gridY: $trayHeight + $gridGutter;
+
+// Properties to use for all animations
+$animationProps: 0.2s ease;
+
+// Epic flying tray spinner
+#spinner {
+  // calculate dimensions from given variables
+  width: ($trayWidth + $gridGutter) * $gridCols - $gridGutter;
+  height: ($trayHeight + $gridGutter) * $gridRows - $gridGutter;
+
+  // All SVG rectangles (that's moving trays *and* the static tray slots)
+  rect {
+    width: $trayWidth;
+    height: $trayHeight;
+    fill: #000000;
+
+    // Static tray slots only
+    &.spinner-tray-slot {
+      fill: #cccccc;
+    }
+
+    // all trays, all the time
+    &.spinner-tray {
+      transform: translate(0);
+      animation-fill-mode: none;
+
+      // Link animation classes to their respective animations
+      &.d1 {
+        animation: d1 $animationProps;
+      }
+
+      &.d2 {
+        animation: d2 $animationProps;
+      }
+
+      &.u1 {
+        animation: u1 $animationProps;
+      }
+
+      &.u2 {
+        animation: u2 $animationProps;
+      }
+
+      &.r1 {
+        animation: r1 $animationProps;
+      }
+
+      &.r2 {
+        animation: r2 $animationProps;
+      }
+
+      &.r3 {
+        animation: r3 $animationProps;
+      }
+
+      &.l1 {
+        animation: l1 $animationProps;
+      }
+
+      &.l2 {
+        animation: l2 $animationProps;
+      }
+
+      &.l3 {
+        animation: l3 $animationProps;
+      }
+    }
+  }
+}
+
+// the animations referred to above
+@keyframes d1 {
+  100% {
+    transform: translate(0, 1 * $gridY);
+  }
+}
+
+@keyframes d2 {
+  100% {
+    transform: translate(0, 2 * $gridY);
+  }
+}
+
+@keyframes u1 {
+  100% {
+    transform: translate(0, -1 * $gridY);
+  }
+}
+
+@keyframes u2 {
+  100% {
+    transform: translate(0, -2 * $gridY);
+  }
+}
+
+@keyframes r1 {
+  100% {
+    transform: translate(1 * $gridX, 0);
+  }
+}
+
+@keyframes r2 {
+  100% {
+    transform: translate(2 * $gridX, 0);
+  }
+}
+
+@keyframes r3 {
+  100% {
+    transform: translate(3 * $gridX, 0);
+  }
+}
+
+@keyframes l1 {
+  100% {
+    transform: translate(-1 * $gridX, 0);
+  }
+}
+
+@keyframes l2 {
+  100% {
+    transform: translate(-2 * $gridX, 0);
+  }
+}
+
+@keyframes l3 {
+  100% {
+    transform: translate(-3 * $gridX, 0);
+  }
+}

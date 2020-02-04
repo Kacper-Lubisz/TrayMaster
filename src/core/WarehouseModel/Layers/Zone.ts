@@ -1,5 +1,5 @@
-import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import {Bay, Column, Shelf, Tray, Warehouse, WarehouseModel} from "../../WarehouseModel";
+import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 
@@ -12,11 +12,6 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
     public readonly layerID: WarehouseModel = WarehouseModel.zone;
     public readonly collectionName = "zones";
     public readonly childCollectionName = "bays";
-
-    protected constructor(id: string, fields: ZoneFields, parent: Warehouse) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
 
     /**
      * @param name - The name of the zone

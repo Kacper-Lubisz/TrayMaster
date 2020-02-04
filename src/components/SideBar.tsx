@@ -1,10 +1,11 @@
-import React from "react";
-import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {KeyboardName} from "../pages/ShelfViewPage";
 import classNames from "classnames";
+import React from "react";
+import {KeyboardName} from "../pages/ShelfViewPage";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {Keyboard, KeyboardButtonProps} from "./Keyboard";
+import "./styles/_sidebar.scss";
 
 
 /**
@@ -18,8 +19,8 @@ interface SideBarProps {
      */
     keyboardSwitcher: (name: KeyboardName) => void;
 
-    /** List of buttons for the keyboard part of the side panel */
-    buttons: KeyboardButtonProps[];
+    /** List of buttons for the keyboard part of the side panel, null is just ignored */
+    buttons: (KeyboardButtonProps | null)[];
     /** List of button keyboard switches */
     keyboards: KeyboardSwitch[];
     /** The current keyboard, used for highlighting the active */
@@ -31,6 +32,10 @@ interface SideBarProps {
     locationString: string;
     /** This color is the color of the current zone */
     zoneColor: string;
+
+    /** Opens the navigator */
+    openNavigator?: () => void;
+    openNavigatorDisabled: boolean;
 }
 
 /**
@@ -45,19 +50,13 @@ interface KeyboardSwitch {
  * Props to pass into keyboard switch buttons
  */
 interface KeyboardSwitchBtnProps {
-    /**
-     * Whether the button is active (ie whether it should be blue)
-     */
+    /** Whether the button is active (ie whether it should be blue) */
     active: boolean;
 
-    /**
-     * Function to call when the button is clicked
-     */
+    /** Function to call when the button is clicked */
     onClick: any;
 
-    /**
-     * Icon to show on the button
-     */
+    /** Icon to show on the button */
     icon: IconDefinition;
 }
 
@@ -86,16 +85,24 @@ export class SideBar extends React.Component<SideBarProps> {
         return <div id="sideBar">
 
             <div
-                style={{
+                id="navigatorButton"
+                className={this.props.openNavigatorDisabled ? "disabled" : undefined}
+                style={this.props.openNavigatorDisabled ? undefined : {
                     backgroundColor: this.props.zoneColor,
                     color: getTextColorForBackground(this.props.zoneColor)
                 }}
+                onClick={this.props.openNavigatorDisabled ? undefined : this.props.openNavigator}
             >
                 <h2>{this.props.locationString}</h2>
             </div>
 
             <div id="side-keyboard-container"> {/* Constrains sidebar keyboard(s) vertically when necessary*/}
-                <Keyboard buttons={this.props.buttons} gridX={1}/>
+                <Keyboard
+                    buttons={this.props.buttons.filter((button): button is KeyboardButtonProps =>
+                        button !== null
+                    )}
+                    gridX={1}
+                />
             </div>
 
             {this.props.showKeyboardSwitcher ? <div id="kb-switcher">

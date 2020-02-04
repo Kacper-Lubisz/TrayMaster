@@ -1,6 +1,12 @@
 import dayjs, {Dayjs} from "dayjs";
 import {ExpiryRange} from "../core/WarehouseModel";
 
+interface SafeExpiryRange {
+    from: number;
+    to: number;
+    label: string;
+}
+
 
 /**
  * Period to use for a complete cycle around the hue color wheel
@@ -31,7 +37,7 @@ function rgbToHex(rgb: number): string {
  * @param   l       The lightness, in [0-1]
  * @return  string  The hex code corresponding to the given HSL value
  */
-export function hslToHex(h: number, s: number, l: number): string {
+function hslToHex(h: number, s: number, l: number): string {
     const hprime = h / 60;
     const c = l * s;
     const x = c * (1 - Math.abs(hprime % 2 - 1));
@@ -88,24 +94,21 @@ export function hslToHex(h: number, s: number, l: number): string {
  * @return number - the saturation to use for that range
  */
 function getSaturation(days: number): number {
-    if (days <= 0) {
+    if (days <= 0) { // not a valid range
+        return 0;
+    } else if (days <= 40) { // month
         return 1;
-    }        // not a valid range - TODO: decide whether to return 1 or 0 here
-    //if (days <= 20) return 1;       // less than a month  TODO: also decide whether we should throw errors for bad nos
-    if (days <= 40) {
-        return 1;
-    }     // month
-    if (days <= 100) {
+    } else if (days <= 100) { // quarter
         return 0.75;
-    }    // quarter
-    if (days <= 183) {
+    } else if (days <= 183) { // 6 months
         return 0.6;
-    }   // 6 months
-    if (days <= 366) {
+    } else if (days <= 366) { // year
         return 0.5;
-    }    // year
-    return 0;                       // more than a year
+    } else { // more than a year
+        return 0;
+    }
 }
+
 
 /**
  * Takes in an ExpiryRange object and returns a hex color to use for that range
@@ -114,7 +117,7 @@ function getSaturation(days: number): number {
  * @param range {ExpiryRange} - the expiry range to return a color for
  * @return string - the 7-digit hex value to use for that expiry range
  */
-export function getExpiryColor(range: ExpiryRange): string {
+function computeColorFromRange(range: SafeExpiryRange): string {
     // get a dayjs date corresponding to the from property of the range, to use later
     const djsDate: Dayjs = dayjs(range.from);
 
@@ -133,4 +136,62 @@ export function getExpiryColor(range: ExpiryRange): string {
     // get saturation from difference between from and to and return hex value
     const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
     return hslToHex(ratioPeriod * 360, saturation, 1);
+}
+
+/**
+ * Computes 'hybrid' colour:
+ * - hue derived from standard warehouse 5-year colour cycle
+ * - saturation derived from expiry range length
+ * @param range {ExpiryRange} - the expiry range to return a color for
+ * @return string - the 7-digit hex value to use for that expiry range
+ */
+function computeHybridColorFromRange(range: SafeExpiryRange): string {
+    const yearHueCycle = [
+        60,
+        180,
+        320,
+        290,
+        120
+    ];
+
+    const djsDate: Dayjs = dayjs(range.from);
+
+    const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
+    return hslToHex(yearHueCycle[djsDate.year() % 5], saturation, 1);
+}
+
+/**
+ * Computes 'warehouse' colour, derived from standard warehouse 5-year colour cycle
+ * @param range {ExpiryRange} - the expiry range to return a color for
+ * @return string - the 7-digit hex value to use for that expiry range
+ */
+function getWarehouseColor(range: SafeExpiryRange): string {
+    const yearCycle = [
+        "#fff44d",
+        "#0ea5ff",
+        "#ff97cc",
+        "#d597ff",
+        "#49ff55"
+    ];
+
+    return yearCycle[dayjs(range.from).year() % 5];
+}
+
+
+/**
+ * Takes in an ExpiryRange and chooses the colour to use for it, based on current settings
+ * @param range {ExpiryRange} - the expiry range to return a color for
+ * @param mode - The mode detailing how colouring should be done, either 'computed', 'hybrid or, 'warehouse'
+ * @return string - the 7-digit hex value to use for that expiry range
+ */
+export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" | "warehouse"): string {
+    if (range.from === null || range.to === null) {
+        return "#000000";
+    } else if (mode === "computed") {
+        return computeColorFromRange(range as SafeExpiryRange);
+    } else if (mode === "hybrid") {
+        return computeHybridColorFromRange(range as SafeExpiryRange);
+    } else {
+        return getWarehouseColor(range as SafeExpiryRange);
+    }
 }

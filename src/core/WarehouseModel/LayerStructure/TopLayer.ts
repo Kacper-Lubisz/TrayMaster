@@ -1,9 +1,9 @@
-import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
-import database from "../Database";
-import Utils, {Collection, Queue, Stack} from "../Utils";
+import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
-import {MiddleLayer} from "./MiddleLayer";
+import Utils, {Collection, Queue, Stack} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
+import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
+import {MiddleLayer} from "./MiddleLayer";
 
 /**
  * Represents the top layer in the object model (that has children)
@@ -14,7 +14,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
     public abstract readonly childCollectionName: string = "";
     public children: TChildren[];
     public childrenLoaded: boolean;
-    public childLoadComplete?: () => void;
 
     protected constructor(id: string, fields: TFields, children?: TChildren[]) {
         super(id, fields);
@@ -87,7 +86,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
 
     public abstract async loadChildren(forceLoad: boolean): Promise<void>;
 
-    // noinspection DuplicatedCode
     /**
      * Load down to minLayer a layer at a time (using the top-level structure in the database).
      * @async
@@ -95,7 +93,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
      */
     protected async breadthFirstLoad(minLayer: WarehouseModel = this.layerID): Promise<void> {
         this.loadLayer();
-        this.childrenLoaded = minLayer < this.layerID;
+        this.childrenLoaded = minLayer < this.layerID || this.childrenLoaded;
 
         const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
             [this.collectionName, new Map<string, Layers>([[this.id, this]])]
@@ -112,22 +110,22 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             generator: this.createChild,
             collectionName: this.collectionName,
             childCollectionName: this.childCollectionName,
-            topLevelChildCollectionPath: this.topLevelChildCollectionPath
+            topLevelChildCollectionPath: this.topLevelChildCollectionPath,
         };
 
         for (let i = this.layerID - 1; i >= minLayer; i--) {
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            const query =
+                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index");
+            for (const document of (await firebase.database.loadQuery<unknown & TopLevelFields>(query))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
                     const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
                     child.loaded = true;
-                    child.loadComplete?.call(child);
                     childMap.get(currentState.childCollectionName)?.set(document.id, child);
-                    parent.children.push(child);
                     if (child instanceof MiddleLayer && !nextState) {
                         nextState = {
                             generator: child.createChild,
@@ -145,12 +143,6 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
                 break;
             }
         }
-
-        this.dfs(layer => {
-            if (!(layer instanceof BottomLayer)) {
-                layer.childLoadComplete?.call(layer);
-            }
-        });
     }
 
     public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
@@ -171,9 +163,38 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         return this;
     }
 
+    public async delete(commit = false): Promise<void> {
+        for (const child of this.children) {
+            await child.delete();
+        }
+
+        firebase.database.delete(this.topLevelPath);
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
+    protected stageLayer(forceStage = false): void {
+        if (this.changed || forceStage) {
+            firebase.database.set(this.topLevelPath, {
+                ...this.fields,
+                layerIdentifiers: this.layerIdentifiers
+            });
+            this.fieldsSaved();
+        }
+    }
+
+    /**
+     * Stage changes to the object to the database
+     * @async
+     * @param forceStage - Stage the object regardless of whether fields have changed or not
+     * @param commit - Get the database to commit the changes at the end of staging
+     * @param minLayer - The minimum layer to stage down to
+     */
     public async stage(
-        forceStage = false, commitAtEnd = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
-        await this.stageLayer(forceStage);
+        forceStage = false, commit = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
+        this.stageLayer(forceStage);
 
         if (this.layerID >= minLayer) {
             for (const child of this.children) {
@@ -181,8 +202,8 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
             }
         }
 
-        if (commitAtEnd) {
-            await database.commit();
+        if (commit) {
+            await firebase.database.commit();
         }
     }
 

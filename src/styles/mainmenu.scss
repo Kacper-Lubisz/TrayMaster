@@ -1,23 +1,5 @@
 //Main menu style sheet
 
-@import "./keyboard";
-
-.main-menu {
-
-}
-
-.menu-header {
-  //shelfmaster text
-  position: fixed;
-  top: 20px;
-  left: 40px;
-  font-size: 40px;
-
-  h1 {
-    margin: 0;
-  }
-}
-
 .menu-btn-container {
   //container for all buttons
   display: flex;
@@ -30,16 +12,42 @@
 
 }
 
+#menu-warehouse-user-area {
+  display: flex;
+  flex-direction: column;
+
+  position: fixed;
+  right: 15px;
+  bottom: 15px;
+
+  > div {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    > button {
+      font-size: 2em;
+      margin: .33em;
+      padding: 14px 16px 14px 16px;
+    }
+
+  }
+
+}
+
 .alert {
   //container for the alert
   position: fixed;
-  width: 500px;
+  width: 400px;
   right: 30px;
   top: 30px;
   box-shadow: 0 0 30px -15px #000000;
   border-radius: 10px;
   border: 1px solid #bbbbbb;
   padding: 20px;
+
+  cursor: pointer;
 
   .alert-header {
     display: flex;
@@ -51,7 +59,7 @@
       color: #ff0000;
       height: 55px;
       width: 55px;
-      //TODO position should be dependent on .alert [what does this mean? -BC]
+      //TODO position should be dependent on .alert [what does this mean? -BC <-- any ideas?]
     }
 
     h2 {

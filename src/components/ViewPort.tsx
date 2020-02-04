@@ -1,28 +1,36 @@
-import React from "react";
-import "pepjs";
-import "../styles/shelfview.scss";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle as tickSolid,
     faMinus as minus,
     faPlus as plus,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames/bind";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import "pepjs";
+import React from "react";
+import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
+import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {trayComparisonFunction} from "../utils/sortCells";
+import "./styles/_viewport.scss";
 
 
 export type ViewPortLocation = Shelf | Zone | Warehouse;
 
 interface ViewPortProps {
-    isShelfEdit: boolean;
-    current: ViewPortLocation;
     selected: Map<TrayCell, boolean>;
     setSelected: (newMap: Map<TrayCell, boolean>, callback?: ((() => void) | undefined)) => void;
     isTraySelected: ((tray: TrayCell) => boolean | undefined);
     selectedTrayCells: TrayCell[];
+
+    removeColumn: (column: Column) => void;
+
+    current: ViewPortLocation;
+    isShelfEdit: boolean;
+
+    draftWeight: string | undefined;
+
 }
 
 /**
@@ -65,19 +73,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * released before the timeout finishes.
      * @param shelf The current shelf that is being displayed
      */
-    onDragSelectStart(shelf: Shelf): void {
+    private onDragSelectStart(shelf: Shelf): void {
         // Shallow clone the selected map from props, which we will save
         const selectedBefore = new Map(this.props.selected);
 
-        this.setState({
-            ...this.state,
+        this.setState(state => ({
+            ...state,
             longPress: this.state.longPress ? {
                 isHappening: true,
                 timeout: undefined,
                 dragFrom: this.state.longPress.dragFrom,
                 selectedBefore: selectedBefore,
             } : undefined,
-        }, () => {
+        }), () => {
             if (this.state.longPress) {
                 this.updateDragSelectionTo(shelf, this.state.longPress.dragFrom);
             }
@@ -91,7 +99,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param shelf The current shelf that is being displayed
      * @param to The tray that the pointer just entered, which triggered this listener
      */
-    updateDragSelectionTo(shelf: Shelf, to: TrayCell): void {
+    private updateDragSelectionTo(shelf: Shelf, to: TrayCell): void {
 
         // Shallow clone what was previously selected, which we will mutate
         const newSelectedMap = new Map(this.state.longPress?.selectedBefore ?? new Map<Tray, boolean>());
@@ -100,53 +108,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         const from = this.state.longPress?.dragFrom;
 
-        const boundIndices = {
-            from: {
-                column: -1,
-                tray: -1
-            },
-            to: {
-                column: -1,
-                tray: -1
-            }
-        };
-
         // This block takes all the trays in the current shelf and sorts them into the order that the drag select uses.
         // After they have been sorted into any order, anything between the from and to trays is then marked as selected
-        const trayOrdered = shelf.columns.flatMap((column, columnIndex) =>
-            column.getPaddedTrays().map((tray: TrayCell, trayIndex) => {
-                if (tray === from) {
-                    boundIndices.from.column = columnIndex;
-                    boundIndices.from.tray = trayIndex;
-                }
-                if (tray === to) {
-                    boundIndices.to.column = columnIndex;
-                    boundIndices.to.tray = trayIndex;
-                }
-
-                return { // this maps all trays to an object which contains the tray and relevant indices
-                    columnIndex: columnIndex,
-                    trayIndex: trayIndex,
-                    tray: tray
-                };
-            })
-        ).sort(((a, b) => {
-
-            // this is a multi level sort
-
-            if (a.columnIndex < b.columnIndex) {
-                return -1;
-            } else if (a.columnIndex > b.columnIndex) {
-                return 1;
-            } else if (a.trayIndex < b.trayIndex) {
-                return 1;
-            } else if (a.trayIndex > b.trayIndex) {
-                return -1;
-            } else {
-                return 0;
-            }
-
-        })).map(it => it.tray);
+        const trayOrdered = shelf.columns
+                                 .flatMap(column => column.getPaddedTrays())
+                                 .sort(trayComparisonFunction);
 
         // now that the trays are ordered, this reduce (or fold) goes through in order and selects all trays between
         // the from and to trays
@@ -168,12 +134,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when a drag event is ended by pointer up, or when the pointer leaves the viewport during a
      * drag. After drag finishes and the state is set, the callback is to fix the UI select display mode
      */
-    onDragSelectEnd(): void {
+    private onDragSelectEnd(): void {
 
-        this.setState({
-            ...this.state,
+        this.setState(state => ({
+            ...state,
             longPress: null,
-        });
+        }));
     }
 
     /**
@@ -182,7 +148,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * called after a pointer drag event if the event ends on the same TrayCell as it started.
      * @param trayCell The TrayCell that is clicked
      */
-    onTrayClick(trayCell: TrayCell): void {
+    private onTrayClick(trayCell: TrayCell): void {
 
         // Shallow clone the selected map from props, which we will mutate
         const newSelectedMap = new Map(this.props.selected);
@@ -205,7 +171,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param tray The tray on which the pointer is pressed
      * @param e The react pointer event that triggered this call
      */
-    onTrayPointerDown(shelf: Shelf, tray: TrayCell, e: React.PointerEvent<HTMLDivElement>): void {
+    private onTrayPointerDown(shelf: Shelf, tray: TrayCell, e: React.PointerEvent<HTMLDivElement>): void {
         e.currentTarget.releasePointerCapture(e.pointerId);
         const timeout: number = window.setTimeout(() => { // await hold time
             if (this.state.longPress) { // not interrupted
@@ -213,15 +179,15 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             }
         }, LONG_PRESS_TIMEOUT);
 
-        this.setState({
-            ...this.state,
+        this.setState(state => ({
+            ...state,
             longPress: {
                 selectedBefore: new Map(),
                 isHappening: false,
                 timeout: timeout,
                 dragFrom: tray
             }
-        });
+        }));
     }
 
     /**
@@ -229,17 +195,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * timeout, finalises a current dragging event or performs a pointer click.
      * @param tray The tray over which the even is triggered
      */
-    onTrayPointerUp(tray: TrayCell): void {
+    private onTrayPointerUp(tray: TrayCell): void {
 
         if (this.state.longPress) {
             if (this.state.longPress.isHappening) {
                 this.onDragSelectEnd(); // end of drag
             } else {
                 window.clearTimeout(this.state.longPress?.timeout);
-                this.setState({
-                    ...this.state,
+                this.setState(state => ({
+                    ...state,
                     longPress: null
-                });
+                }));
                 this.onTrayClick(tray);
             }
         }
@@ -250,16 +216,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * This method is called when the pointer leaves the DOM element which represents any tray.  This method stops a
      * pointer down event from starting a drag event if the pointer leaves that tray.
      */
-    onTrayPointerLeave(): void {
+    private onTrayPointerLeave(): void {
 
         if (this.state.longPress && !this.state.longPress.isHappening) {
             // is between pointer down and drag start
             window.clearTimeout(this.state.longPress?.timeout);
 
-            this.setState({ // kills the long press
-                ...this.state,
+            this.setState(state => ({ // kills the long press
+                ...state,
                 longPress: null
-            });
+            }));
         }
     }
 
@@ -268,7 +234,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param shelf The current shelf that is being displayed
      * @param tray The tray over which the pointer entered
      */
-    onTrayPointerEnter(shelf: Shelf, tray: TrayCell): void {
+    private onTrayPointerEnter(shelf: Shelf, tray: TrayCell): void {
         if (this.state.longPress?.isHappening) {
             this.updateDragSelectionTo(shelf, tray);
         }
@@ -312,7 +278,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column to inc/dec
      * @param changeType Either increment or decrement
      */
-    changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
+    private changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
         column.maxHeight = Math.max(change + column.maxHeight, 1);
@@ -325,7 +291,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column in question
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
-    getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
+    private static getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
         // todo decide if there ought to be max max height
         if (column.maxHeight) {
             return {inc: true, dec: column.maxHeight !== 1};
@@ -340,7 +306,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column to inc/dec
      * @param changeType Either increase or decrease
      */
-    changeColumnSize(column: Column, changeType: "inc" | "dec"): void {
+    private changeColumnSize(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
 
@@ -360,7 +326,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column in question
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
-    getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
+    private static getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
         const traySizes = column.parentWarehouse.traySizes;
 
         if (column.traySize) {
@@ -372,24 +338,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     }
 
     /**
-     * The listener for removing a column
-     * @param column The column to remove
-     */
-    removeColumn(column: Column): void {
-        const index = column.parentShelf.columns.indexOf(column);
-        column.parentShelf.columns.splice(index, 1);
-        this.forceUpdate();
-    }
-
-    /**
      * This method renters a column.  It can either render it in or out of shelf edit mode depending on the props.
      * @param shelf The current shelf that is being displayed
      * @param column The column to draw
      * @param order The index of the column
      */
-    renderColumn(shelf: Shelf, column: Column, order: number): React.ReactNode {
-        const possibleColumnChanges = this.getPossibleSizeChanges(column);
-        const possibleHeightChange = this.getPossibleHeightChanges(column);
+    private renderColumn(shelf: Shelf, column: Column, order: number): React.ReactNode {
+        const possibleColumnChanges = ViewPort.getPossibleSizeChanges(column);
+        const possibleHeightChange = ViewPort.getPossibleHeightChanges(column);
+
+        const expiryColorMode = shelf.parentWarehouse.expiryColorMode;
 
         /* DO NOT attach any touch/onClick/pointer stuff to .column, it won't receive them */
         return <div
@@ -401,14 +359,22 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             key={order}
         >{
             column.getPaddedTrays().map((tray, index) => {
-                let expiryStyle;
-                if (tray instanceof Tray) {
-                    const bg = tray.expiry ? getExpiryColor(tray.expiry) : "";
-                    expiryStyle = {
-                        backgroundColor: bg,
-                        color: getTextColorForBackground(bg)
-                    };
-                }
+                const expiryStyle = (() => {
+                    if (tray instanceof Tray && tray.expiry) {
+                        const background = tray.expiry ? getExpiryColor(tray.expiry, expiryColorMode) : "";
+                        return {
+                            backgroundColor: background,
+                            color: getTextColorForBackground(background)
+                        };
+                    } else {
+                        return {
+                            backgroundColor: "#ffffff00",
+                            color: "#000000"
+                        };
+                    }
+                })();
+
+                const isSelected = this.props.isTraySelected(tray);
                 return <div
                     className={classNames("tray", {
                         "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
@@ -424,25 +390,30 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 >
                     <FontAwesomeIcon
                         className={classNames("tray-tickbox", {
-                            "tick-selected": this.props.isTraySelected(tray)
+                            "tick-selected": isSelected
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
-                        <div className="trayCategory">{tray.category?.name ?? "Mixed"}</div>
+                        <div className="trayCategory">{tray.category?.name ?? "?"}</div>
 
                         <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
 
-                        <div className="trayWeight">{tray.weight ?? "?"}kg</div>
-                        <div className="trayCustomField">{tray.comment ?? ""}</div>
+                        <div className={classNames("trayWeight", {
+                            // "trayWeightEdit": this.props.draftWeight && isSelected
+                        })}>
+                            {this.props.draftWeight && isSelected ? this.props.draftWeight
+                                                                  : tray.weight ?? "?"}kg
+                        </div>
+                        <div className="trayComment">{tray.comment ?? ""}</div>
                     </> : null}
-                    {!(tray instanceof Tray) && index === column.trays.length ? <>
-                        <p>EMPTY TRAY {tray.index}</p>
-                    </> : null}
+                    {tray instanceof Tray ? null : <>
+                        <p>EMPTY SPACE</p>
+                    </>}
                 </div>;
             })}
             {this.props.isShelfEdit ? <div className="edit-shelf-column">
                 <button className="colDeleteBtn"
-                        onClick={this.removeColumn.bind(this, column)}
+                        onClick={() => this.props.removeColumn(column)}
                 > {/*todo revise these icons*/}
                     <FontAwesomeIcon icon={trash}/>
                 </button>

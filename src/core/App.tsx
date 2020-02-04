@@ -1,194 +1,258 @@
-import React, {ReactNode} from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
-
-import SettingsPage from "../pages/SettingsPage";
-import PageNotFoundPage from "../pages/PageNotFoundPage";
-
-import {Settings, SettingsManager} from "./Settings";
-import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
-import {LoadingPage} from "../pages/Loading";
+import React from "react";
+import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import Popup from "reactjs-popup";
-import ShelfView from "../pages/ShelfViewPage";
-import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
-import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
+import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
+import PageNotFoundPage from "../pages/PageNotFoundPage";
+import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
+import SettingsPage from "../pages/SettingsPage";
+import ShelfViewPage from "../pages/ShelfViewPage";
+import SignInPage from "../pages/SignInPage";
+import WarehouseSwitcher from "../pages/WarehouseSwitcher";
+import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
+import ErrorHandler from "./ErrorHandler";
 
-/**
- * This interface exists because these are never null together
- */
-interface LoadedContent {
-    warehouse: Warehouse;
-    settings: Settings;
-}
+import firebase, {User} from "./Firebase";
+import {Warehouse, WarehouseManager} from "./WarehouseModel";
+
 
 interface AppState {
-    loaded?: LoadedContent;
-    dialog?: Dialog | null;
+    search?: SearchResults;
+    loading: boolean;
+    user?: User | null;
+    warehouse?: Warehouse | null;
+    dialog?: StoredDialog | null;
 }
 
-class App extends React.Component<any, AppState> {
+class App extends React.Component<unknown, AppState> {
 
-    constructor(props: any) {
+    constructor(props: unknown) {
         super(props);
 
-        this.state = {};
+        if (process.env.NODE_ENV === "test") {
+            this.state = {loading: true};
+            return;
+        }
+        if (typeof (Storage) === "undefined") {
+            throw Error("This browser isn't supported"); // supported in IE 11, should be fine
+        }
 
-        if (process.env.NODE_ENV !== "test") {
-            const loadPromise = Promise.all([
-                SettingsManager.loadSettings(),
-                WarehouseManager.loadWarehouses()
-            ]);
+        const onSignIn = (user: User): void => {
+            WarehouseManager.loadWarehouses().then(() => {
 
-            loadPromise.then(async (result) => {
-                const [settings, warehouses] = result;
-                console.log("Settings Loaded:", settings);
-                console.log("Warehouse List Loaded: ", warehouses);
-
-                const warehouse: Warehouse | undefined = await WarehouseManager.loadWarehouse("Chester-le-Street");
-                if (warehouse === undefined) {
-                    throw new Error("Warehouse is undefined (the desired warehouse could not be found)");
+                if (user.lastWarehouseID === null) {
+                    this.setState(state => ({
+                        ...state,
+                        user: user,
+                        loading: false
+                    }));
                 } else {
-                    console.log("Warehouse Loaded:", warehouse);
-
-                    this.setState(state => {
-                        return {
+                    WarehouseManager.loadWarehouseByID(user.lastWarehouseID).then(warehouse => {
+                        this.setState(state => ({
                             ...state,
-                            loaded: {
-                                warehouse: warehouse,
-                                settings: settings,
-                            }
-                        };
+                            user: user,
+                            warehouse: warehouse,
+                            loading: false
+                        }));
+                    }).catch((reason) => {
+                        this.openDialog(buildErrorDialog(
+                            "Load Failed",
+                            `Failed to load last warehouse ${reason}`,
+                            false
+                        ));
                     });
                 }
-            }).catch(e => {
-                this.openDialog(App.buildErrorDialog(
-                    `Failed to load the warehouse or the settings (${e}).`,
-                    true
-                ));
             });
-        }
+        };
+
+        const onSignOut = (): void => {
+            this.setState(state => ({
+                ...state,
+                user: undefined,
+                loading: false
+            }));
+        };
+
+        firebase.auth.registerListeners(onSignIn, onSignOut).then();
+
+        this.state = {
+            loading: true
+        };
+
     }
 
     render(): React.ReactNode {
         return <>
-            {this.state.loaded === undefined ? <LoadingPage/> : (
-                <BrowserRouter>
-                    <Switch>
-                        <Route path="/" component={((loaded: LoadedContent) => {
-                            return <ShelfView
-                                openDialog={this.openDialog.bind(this)}
-                                settings={loaded.settings}
-                                warehouse={loaded.warehouse}
+            {this.state === null || this.state.loading ? <LoadingPage/> : <BrowserRouter><ErrorHandler>
+                <Switch>
+                    <Route path="/" component={() =>
+                        this.state.user && this.state.warehouse ? <ShelfViewPage
+                            setSearch={this.setSearch.bind(this)}
+                            openDialog={this.openDialog.bind(this)}
+
+                            warehouse={this.state.warehouse}
+                            user={this.state.user}
+                        /> : <Redirect to="/menu"/>} exact/>
+                    <Route path="/menu" component={() => (() => {
+                        if (this.state.user && this.state.warehouse) {
+                            return <MainMenu
+                                changeWarehouse={() => {
+                                    this.setState(state => ({
+                                        ...state,
+                                        warehouse: undefined
+                                    }));
+                                }}
+                                signOut={async () => {
+                                    await firebase.auth.signOut();
+                                    this.setState(state => ({
+                                        ...state,
+                                        dialog: state.dialog,
+                                        user: null,
+                                        warehouse: null
+                                    }));
+                                }}
+                                user={this.state.user}
+                                setSearch={this.setSearch.bind(this)}
+                                warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
+                                expiryAmount={5}//todo fixme
                             />;
-                        }).bind(this, this.state.loaded)} exact/>
-                        <Route path="/menu"
-                               component={() => <MainMenu openDialog={this.openDialog.bind(this)} expiryAmount={5}/>}/>
-                        <Route path="/settings"
-                               component={() => <SettingsPage openDialog={this.openDialog.bind(this)}/>}/>
-                        <Route component={PageNotFoundPage}/>
-                    </Switch>
-                </BrowserRouter>)}
+
+                        } else if (!this.state.user) {
+                            return <Redirect to={"/signin"}/>;
+                        } else {
+                            return <Redirect to={"/warehouses"}/>;
+                        }
+                    })()}/>
+                    <Route path="/settings" component={() => (() => {
+                        if (!this.state.user) {
+                            return <Redirect to={"/signin"}/>;
+                        } else if (!this.state.warehouse) {
+                            return <Redirect to={"/warehouses"}/>;
+                        } else {
+                            return <SettingsPage
+                                user={this.state.user}
+                                warehouse={this.state.warehouse}
+                                openDialog={this.openDialog.bind(this)}
+                            />;
+                        }
+                    })()}/>
+                    <Route path="/signin" component={() =>
+                        this.state.user ? <Redirect to={"/menu"}/> : <SignInPage/>
+                    }/>
+                    <Route path="/warehouses" component={() => (() => {
+                        if (this.state.user && this.state.warehouse) {
+                            return <Redirect to={"/menu"}/>;
+                        } else if (!this.state.user) {
+                            return <Redirect to={"/signin"}/>;
+                        } else {
+                            return <WarehouseSwitcher
+                                user={this.state.user}
+                                setWarehouse={this.setWarehouse.bind(this)}
+                            />;
+                        }
+                    })()}/>
+                    <Route path="/search" component={() => {
+                        return this.state.user && this.state.warehouse ?
+                               this.state.search ? <SearchPage
+                                   warehouse={this.state.warehouse}
+                                   search={this.state.search}
+                                   setQuery={this.setSearch.bind(this)}
+                               /> : <Redirect to="/"/>
+                                                                       : <Redirect to="/menu"/>;
+                    }}/>
+                    <Route component={PageNotFoundPage}/>
+                </Switch>
+            </ErrorHandler>
+            </BrowserRouter>
+            }
             <Popup
                 open={!!this.state?.dialog} //double negate because of falsy magic
                 closeOnDocumentClick={this.state?.dialog?.closeOnDocumentClick}
                 onClose={this.closeDialog.bind(this)}
-            ><>{this.state.dialog?.dialog(this.closeDialog.bind(this))}</>
+            ><>{this.state.dialog?.dialog}</>
             </Popup>
         </>;
 
     }
 
     /**
+     * This method sets the current warehouse
+     * @param warehouse The warehouse to be set
+     */
+    private setWarehouse(warehouse: Warehouse): void {
+        this.setState(state => {
+            if (state.user) {
+                state.user.lastWarehouseID = warehouse.id;
+                if (!warehouse.childrenLoaded) {
+                    WarehouseManager.loadWarehouse(warehouse).then(); // todo change to async await with loading screen
+                }
+                state.user.stage(false, true).then();
+            }
+            //todo decide if this needs to call any load the warehouse or anything like that
+            return {
+                ...state,
+                warehouse: warehouse
+            };
+        });
+    }
+
+
+    /**
+     * This method allows for setting the search query
+     * @param query
+     */
+    private async setSearch(query: SearchQuery): Promise<void> {
+        if (this.state.warehouse) {
+            const warehouse = this.state.warehouse;
+
+            this.setState(state => ({
+                ...state,
+                search: {
+                    query: query,
+                    results: null
+                }
+            }));
+
+            const results = await warehouse.traySearch(query);
+            this.setState(state => ({
+                    ...state,
+                    search: {
+                        query: query,
+                        results: results
+                    }
+                })
+            );
+
+        } else {
+            throw new Error("Can't perform search when the warehouse is undefined");
+        }
+    }
+
+
+    /**
      * This method opens a dialog.  The dialog is passed as a function which generates the dialog given a function which
      * will close the dialog.  Only one dialog can be open at a time.
      * @param dialog The dialog to be displayed
      */
-    public openDialog(dialog: Dialog): void {
-        this.setState((state) => {
-            return {...state, dialog: dialog};
-        });
+    private openDialog(dialog: Dialog): void {
+        this.setState(state => ({
+            ...state,
+            dialog: {
+                dialog: dialog.dialog(this.closeDialog.bind(this)),
+                closeOnDocumentClick: dialog.closeOnDocumentClick
+            }
+        }));
     }
 
     /**
      * This method closes the currently open dialog, if none is open then it does nothing.
      */
-    public closeDialog(): void {
+    private closeDialog(): void {
         this.setState((state) => {
             return {...state, dialog: null};
         });
     }
 
-    /**
-     * This method builds a dialog function for a standard error message.
-     * @param message The body of the dialog
-     * @param forceReload If the dialog forces the page to be reloaded
-     */
-    static buildErrorDialog(message: string, forceReload: boolean): Dialog {
-
-
-        return {
-            closeOnDocumentClick: !forceReload,
-            dialog: (close: () => void) => <>
-                <DialogTitle title="Error" iconProps={{icon: warningIcon, color: "red"}}/>
-                <p>{message}</p>
-                <DialogButtons buttons={[
-                    {
-                        name: "Reload", buttonProps: {
-                            onClick: () => window.location.reload(),
-                            style: {borderColor: "red"}
-                        }
-                    }
-                ].concat(forceReload ? [] : {
-                    name: "Ok", buttonProps: {
-                        onClick: close,
-                        style: {borderColor: "red"}
-                    }
-                })}/>
-            </>
-        };
-    }
-
-}
-
-export type Dialog = {
-    dialog: (close: () => void) => ReactNode;
-    closeOnDocumentClick: boolean;
-};
-
-export type DialogTitleProps = { title: string; iconProps?: FontAwesomeIconProps };
-
-/**
- * The standard dialog sub component which contains the title and icon
- */
-export class DialogTitle extends React.Component<DialogTitleProps> {
-    render(): React.ReactNode {
-        return <h1 className={"dialogTitle"}> {this.props.iconProps ?
-                                               <FontAwesomeIcon {...this.props.iconProps}/> : null}
-            {this.props.title}
-        </h1>;
-    }
-}
-
-/**
- * This is the interface to represent the buttons of a dialog
- */
-export interface DialogButton {
-    name: string;
-    buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
-}
-
-
-export type DialogButtonsProps = { buttons: DialogButton[] };
-
-/**
- * The standard dialog sub component which contains buttons
- */
-export class DialogButtons extends React.Component<DialogButtonsProps> {
-    render(): React.ReactNode {
-        return <div className="dialogButtons">{this.props.buttons.map((button, index) =>
-            <button key={index} {...button.buttonProps}>{button.name}</button>
-        )}</div>;
-    }
 }
 
 export default App;

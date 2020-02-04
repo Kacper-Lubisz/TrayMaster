@@ -1,8 +1,8 @@
-import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer} from "./Layer";
-import database from "../Database";
-import Utils, {Queue} from "../Utils";
+import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
+import Utils, {Queue} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
+import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer} from "./Layer";
 
 /**
  * Represents a middle layer in the object model (that has children and a parent)
@@ -11,17 +11,17 @@ import {BottomLayer} from "./BottomLayer";
  * @template TChildren - The type of the type's children
  */
 export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren extends LowerLayer> extends Layer<TFields> {
-    public abstract readonly childCollectionName: string = "";
+    public abstract readonly childCollectionName: string;
     public parent: TParent;
     public children: TChildren[];
     public childrenLoaded: boolean;
-    public childLoadComplete?: () => void;
 
     protected constructor(id: string, fields: TFields, parent: TParent, children?: TChildren[]) {
         super(id, fields);
         this.parent = parent;
         this.children = children ?? [];
         this.childrenLoaded = typeof children !== "undefined";
+        this.parent.children.push(this);
     }
 
     public get collectionPath(): string {
@@ -47,17 +47,17 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         return this.children.indexOf(child);
     }
 
-    /**
-     * Get the index of the object within its parent's collection
-     */
-    public get indexInParent(): number {
-        return this.parent.getChildIndex(this);
-    }
-
     public get layerIdentifiers(): LayerIdentifiers {
         const refs: LayerIdentifiers = this.parent?.layerIdentifiers ?? {};
         refs[this.collectionName] = this.id;
         return refs;
+    }
+
+    /**
+     * Get the index of the object within its parent's collection
+     */
+    public get index(): number {
+        return this.parent.getChildIndex(this);
     }
 
     public dfs(callback: (layer: Layers) => void, minLayer = 0): void {
@@ -91,15 +91,14 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
      */
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database.db.collection(this.topLevelChildCollectionPath)
+            const query = firebase.database.db.collection(this.topLevelChildCollectionPath)
                                   .where(`layerIdentifiers.${this.collectionName}`, "==", this.id);
-            this.children = (await database.loadQuery<unknown>(query))
+            this.children = (await firebase.database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
     }
 
-    // noinspection DuplicatedCode
     /**
      * Load down to minLayer a layer at a time (using the top-level structure in the database).
      * @async
@@ -131,15 +130,15 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
             childMap.set(currentState.childCollectionName, new Map<string, Layers>());
             let nextState: State | undefined;
 
-            for (const document of (await database.loadCollection<unknown & TopLevelFields>(currentState.topLevelChildCollectionPath))) {
+            const query =
+                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index");
+            for (const document of (await firebase.database.loadQuery<unknown & TopLevelFields>(query))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
                     parent.childrenLoaded = true;
                     const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
                     child.loaded = true;
-                    child.loadComplete?.call(child);
                     childMap.get(currentState.childCollectionName)?.set(document.id, child);
-                    parent.children.push(child);
                     if (child instanceof MiddleLayer && !nextState) {
                         nextState = {
                             generator: child.createChild,
@@ -157,12 +156,6 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
                 break;
             }
         }
-
-        this.dfs(layer => {
-            if (!(layer instanceof BottomLayer)) {
-                layer.childLoadComplete?.call(layer);
-            }
-        });
     }
 
     public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
@@ -183,9 +176,44 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         return this;
     }
 
+    public async delete(commit = false): Promise<void> {
+        for (const child of this.children) {
+            await child.delete();
+        }
+
+        this.parent.children.splice(this.index, 1);
+
+        firebase.database.delete(this.topLevelPath);
+
+        if (commit) {
+            await firebase.database.commit();
+        }
+    }
+
+    protected stageLayer(forceStage = false): void {
+        if (this.changed || forceStage) {
+            firebase.database.set(this.topLevelPath, {
+                ...this.fields,
+                layerIdentifiers: this.layerIdentifiers,
+                index: this.index,
+            });
+            this.fieldsSaved();
+        }
+    }
+
+    /**
+     * Stage changes to the object to the database
+     * @async
+     * @param forceStage - Stage the object regardless of whether fields have changed or not
+     * @param commit - Get the database to commit the changes at the end of staging
+     * @param minLayer - The minimum layer to stage down to
+     */
     public async stage(
-        forceStage = false, commitAtEnd = false, minLayer: WarehouseModel = this.layerID): Promise<void> {
-        await this.stageLayer(forceStage);
+        forceStage = false,
+        commit = false,
+        minLayer: WarehouseModel = this.layerID
+    ): Promise<void> {
+        this.stageLayer(forceStage);
 
         if (this.layerID >= minLayer) {
             for (const child of this.children) {
@@ -193,8 +221,8 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
             }
         }
 
-        if (commitAtEnd) {
-            await database.commit();
+        if (commit) {
+            await firebase.database.commit();
         }
     }
 

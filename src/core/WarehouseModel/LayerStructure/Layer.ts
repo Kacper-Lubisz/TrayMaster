@@ -1,10 +1,10 @@
-import Utils from "../Utils";
-import deepEqual from "deep-equal";
-import database from "../Database";
-import {TopLayer} from "./TopLayer";
-import {MiddleLayer} from "./MiddleLayer";
-import {BottomLayer} from "./BottomLayer";
+import firebase from "../../Firebase";
+import {DatabaseObject} from "../../Firebase/DatabaseObject";
 import {WarehouseModel} from "../../WarehouseModel";
+import Utils from "../Utils";
+import {BottomLayer} from "./BottomLayer";
+import {MiddleLayer} from "./MiddleLayer";
+import {TopLayer} from "./TopLayer";
 
 /**
  * Represents additional metadata for the top-level database model
@@ -37,27 +37,12 @@ export type LowerLayer = MiddleLayer<any, any, any> | BottomLayer<any, any>;
  * Represents data and methods common to all layers in the object model
  * @template TFields - The Fields type to have its members saved to and loaded from the database
  */
-export abstract class Layer<TFields> {
-    public abstract readonly layerID: WarehouseModel;
+export abstract class Layer<TFields> extends DatabaseObject<TFields> {
     public abstract readonly collectionName: string;
-    public readonly id: string;
-    public loaded: boolean;
-    public loadComplete?: () => void;
-    protected fields: TFields;
-    protected originalFields: TFields;
+    public abstract readonly layerID: WarehouseModel;
 
     protected constructor(id: string, fields: TFields) {
-        this.id = id;
-        this.fields = fields;
-        this.originalFields = Object.assign({}, fields);
-        this.loaded = false;
-    }
-
-    /**
-     * The database path of the object
-     */
-    public get path(): string {
-        return Utils.joinPaths(this.collectionPath, this.id);
+        super(id, fields);
     }
 
     /**
@@ -66,11 +51,6 @@ export abstract class Layer<TFields> {
     public get topLevelPath(): string {
         return Utils.joinPaths(this.topLayerPath, this.collectionName, this.id);
     }
-
-    /**
-     * The database path of the collection the object belongs to
-     */
-    public abstract get collectionPath(): string;
 
     /**
      * The database path to the top layer object
@@ -94,51 +74,18 @@ export abstract class Layer<TFields> {
      */
     public abstract bfs(callback: (layer: Layers) => void): void;
 
-    protected get changed(): boolean {
-        return !deepEqual(this.fields, this.originalFields);
-    }
-
-    protected fieldsSaved(): void {
-        this.originalFields = Object.assign({}, this.fields);
-    }
-
-    protected async stageLayer(forceStage = false): Promise<void> {
-        if (this.changed || forceStage) {
-            await Promise.all([
-                database.set(this.path, this.fields),
-                database.set(this.topLevelPath, {
-                    ...this.fields,
-                    layerIdentifiers: this.layerIdentifiers
-                })
-            ]);
-            this.fieldsSaved();
-        }
-    }
+    protected abstract stageLayer(forceStage: boolean): void;
 
     protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
-            this.fields = (await database.loadDocument<TFields>(this.path))?.fields ?? this.fields;
+            this.fields = (await firebase.database.loadDocument<TFields>(this.topLevelPath))?.fields ?? this.fields;
             this.fieldsSaved();
             this.loaded = true;
-            this.loadComplete?.call(this);
         }
         return this;
     }
 
-    /**
-     * Commit all staged changes to the database
-     */
-    public async commitAllStaged(): Promise<void> {
-        await database.commit();
-    }
-
-    /**
-     * Save the object
-     * @async
-     * @param forceStage - Save the object regardless of whether fields have changed or not
-     * @param commitAtEnd - Force the database to commit the changes at the end of saving
-     */
-    public abstract stage(forceStage: boolean, commitAtEnd: boolean): Promise<void>;
+    public abstract async delete(commit: boolean): Promise<void>;
 
     /**
      * Load the object (breadth first)

@@ -1,9 +1,8 @@
-import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import {Bay, Shelf, Tray, TrayCell, TraySize, TraySpace, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 interface ColumnFields {
-    index: number;
     traySizeId: string;
     maxHeight: number;
 }
@@ -13,11 +12,6 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public readonly collectionName = "columns";
     public readonly childCollectionName = "trays";
 
-    protected constructor(id: string, fields: ColumnFields, parent: Shelf) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
-
     /**
      * This stores the tray spaces.  The tray spaces must be stored and not rebuild each time because otherwise the two
      * different object would be different keys of the selection map
@@ -25,14 +19,12 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     private static traySpaces: Map<Column, TraySpace[]> = new Map<Column, TraySpace[]>();
 
     /**
-     * @param index - The (ordered) index of the column within the shelf
      * @param traySize - The size of the tray
      * @param maxHeight - The maximum number of trays that can be placed in this column
      * @param parent - The parent shelf
      */
-    public static create(index: number, traySize: TraySize, maxHeight: number, parent: Shelf): Column {
+    public static create(traySize: TraySize, maxHeight: number, parent: Shelf): Column {
         return new Column(Utils.generateRandomId(), {
-            index,
             traySizeId: parent.parentWarehouse.getTraySizeId(traySize),
             maxHeight
         }, parent);
@@ -49,18 +41,10 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public createChild = Tray.createFromFields;
 
     public toString(): string {
-        return `Column(${this.index}, ${this.traySize?.label}, ${this.maxHeight})`;
+        return `Column(${this.parentShelf.toString()}, ${this.index}, ${this.traySize?.label}, ${this.maxHeight})`;
     }
 
     //#region Field Getters and Setters
-    public get index(): number {
-        return this.fields.index;
-    }
-
-    public set index(index: number) {
-        this.fields.index = index;
-    }
-
     public get traySize(): TraySize | undefined {
         return this.parentWarehouse.getTraySizeByID(this.fields.traySizeId);
     }
@@ -128,7 +112,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
             } else { // there are not enough tray spaces
                 const traysToAdd = missingTrays - existing.length;
                 const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
-                        return ({column: this, index: this.trays.length + index} as TraySpace);
+                    return ({parentColumn: this, index: this.trays.length + index} as TraySpace);
                     }
                 ).concat(existing);
 
@@ -137,7 +121,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
             }
         } else { // build tray spaces
             const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
-                    return {column: this, index: this.trays.length + index};
+                return {parentColumn: this, index: this.trays.length + index};
                 }
             );
             Column.traySpaces.set(this, newSpaces);

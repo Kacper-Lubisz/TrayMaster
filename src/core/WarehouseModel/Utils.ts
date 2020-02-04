@@ -146,4 +146,22 @@ export default abstract class Utils {
     public static randItem<T>(items: T[]): T {
         return items[Math.floor(items.length * Math.random())];
     }
+
+    /**
+     * RFC 5322 email regex courtesy https://emailregex.com/
+     * @email - The email to check the validity of
+     * @returns true if the email is valid, false if not
+     */
+    public static isEmailValid(email: string): boolean {
+        return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+    }
+
+    /**
+     * Check if a string is whitespace
+     * @param text - The text to check for whitespace
+     * @returns true if the string is only whitespace
+     */
+    public static isWhiteSpace(text: string): boolean {
+        return !/\S/.test(text);
+    }
 }

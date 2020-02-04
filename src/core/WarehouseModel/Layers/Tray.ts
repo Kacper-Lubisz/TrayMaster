@@ -1,9 +1,8 @@
-import {BottomLayer} from "../LayerStructure/BottomLayer";
 import {Bay, Category, Column, ExpiryRange, Shelf, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {BottomLayer} from "../LayerStructure/BottomLayer";
 import Utils from "../Utils";
 
 interface TrayFields {
-    index: number;
     categoryId: string;
     expiry: ExpiryRange | null;
     weight: number | null;
@@ -16,17 +15,15 @@ export class Tray extends BottomLayer<Column, TrayFields> {
 
     /**
      * @param parent - The (nullable) parent column
-     * @param index - The index of the tray within the column
      * @param category - The tray's (nullable) category
      * @param expiry - The tray's (nullable) expiry range
      * @param weight - The tray's (nullable) weight
-     * @param comment - The tray's (nullable) custom field
+     * @param comment - The tray's (nullable) custom comment
      */
-    public static create(parent: Column, index: number, category?: Category, expiry?: ExpiryRange, weight?: number,
+    public static create(parent: Column, category?: Category, expiry?: ExpiryRange, weight?: number,
                          comment?: string
     ): Tray {
         return new Tray(Utils.generateRandomId(), {
-            index,
             categoryId: parent.parentWarehouse.getCategoryID(category),
             expiry: expiry ?? null,
             weight: weight ?? null,
@@ -47,14 +44,6 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     }
 
     //#region Field Getters and Setters
-    public get index(): number {
-        return this.fields.index;
-    }
-
-    public set index(index: number) {
-        this.fields.index = index;
-    }
-
     public get category(): Category | undefined {
         return this.parentWarehouse.getCategoryByID(this.fields.categoryId);
     }
@@ -111,4 +100,22 @@ export class Tray extends BottomLayer<Column, TrayFields> {
     }
 
     //#endregion
+
+    //region derived properties
+    public get locationString(): string {
+        return `${
+            this.parentZone.index
+        }_${
+            this.parentBay.index
+        }_${
+            this.parentShelf.index
+        }_${
+            this.parentColumn.index
+        }_${
+            this.index
+        }`;
+    }
+
+    //endregion
+
 }

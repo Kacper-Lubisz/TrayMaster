@@ -1,24 +1,30 @@
+import {SearchQuery, SortBy} from "../../../pages/SearchPage";
+import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
+import firebase from "../../Firebase";
+import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
-import Utils from "../Utils";
 import {TopLayer} from "../LayerStructure/TopLayer";
-import database, {DatabaseCollection} from "../Database";
+import Utils from "../Utils";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
-    "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
-    "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
-    "Sponge Pud.", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas"
+    "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk",
+    "Miscellaneous",
+    "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pudding", "Savoury Treats", "Soup", "Spaghetti",
+    "Sponge Pudding", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
 ];
 
 const defaultTraySizes: TraySize[] = [
-    {label: "small", sizeRatio: 1.5},
-    {label: "normal", sizeRatio: 2.5},
-    {label: "big", sizeRatio: 3.5},
+    {index: 0, label: "narrow", sizeRatio: 1.5},
+    {index: 1, label: "standard", sizeRatio: 2.5},
+    {index: 2, label: "wide", sizeRatio: 3.5}
 ];
 
 
 interface WarehouseFields {
     name: string;
+    defaultTraySizeID: string;
+    expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
@@ -31,8 +37,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     private constructor(id: string, fields: WarehouseFields) {
         super(id, fields);
-        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"));
-        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"));
+        this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"), true);
+        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"), true);
     }
 
     /**
@@ -42,7 +48,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      * @returns The newly created warehouse
      */
     public static create(id?: string, name?: string): Warehouse {
-        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? ""});
+        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: "", expiryColorMode: "hybrid"});
     }
 
     /**
@@ -56,8 +62,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public async loadChildren(forceLoad = false): Promise<void> {
         if (!this.childrenLoaded || forceLoad) {
-            const query = database.db.collection(this.topLevelChildCollectionPath);
-            this.children = (await database.loadQuery<unknown>(query))
+            const query = firebase.database.db.collection(this.topLevelChildCollectionPath);
+            this.children = (await firebase.database.loadQuery<unknown>(query))
                 .map(document => this.createChild(document.id, document.fields, this));
             this.childrenLoaded = true;
         }
@@ -77,12 +83,12 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     }
 
     private async loadCollections(forceLoad: boolean): Promise<void> {
-        await this.categoryCollection.load(forceLoad);
-        await this.traySizeCollection.load(forceLoad);
+        await this.categoryCollection.load(forceLoad, "index");
+        await this.traySizeCollection.load(forceLoad, "index");
 
         if (this.categoryCollection.size === 0) {
-            for (const defaultCategory of defaultCategories) {
-                this.categoryCollection.add({name: defaultCategory, shortName: defaultCategory});
+            for (let i = 0; i < defaultCategories.length; i++) {
+                this.categoryCollection.add({index: i, name: defaultCategories[i], shortName: defaultCategories[i]});
             }
         }
 
@@ -148,7 +154,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         await this.traySizeCollection.stage(forceStage);
 
         if (this.changed || forceStage) {
-            database.set(this.path, this.fields);
+            firebase.database.set(this.topLevelPath, this.fields);
             this.fieldsSaved();
         }
     }
@@ -160,6 +166,22 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public set name(name: string) {
         this.fields.name = name;
+    }
+
+    public get defaultTraySize(): TraySize {
+        return this.traySizeCollection.get(this.fields.defaultTraySizeID) ?? this.traySizes[1];
+    }
+
+    public set defaultTraySize(traySize: TraySize) {
+        this.fields.defaultTraySizeID = this.traySizeCollection.getItemId(traySize);
+    }
+
+    public get expiryColorMode(): "computed" | "hybrid" | "warehouse" {
+        return this.fields.expiryColorMode;
+    }
+
+    public set expiryColorMode(expiryColorMode: "computed" | "hybrid" | "warehouse") {
+        this.fields.expiryColorMode = expiryColorMode;
     }
 
     //#endregion
@@ -186,4 +208,75 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     }
 
     //#endregion
+
+    //region search
+    public async traySearch(query: SearchQuery): Promise<Tray[]> {
+
+        return await new Promise((resolve, _) => {
+            //todo make this feature full, it's actually a complete mess right now, needs a redoing
+
+            const filteredTrays = this.trays.filter(tray =>
+                query.categories === null ||
+                (query.categories === "set" && tray.category) ||
+                (query.categories === "unset" && !tray.category) ||
+                (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
+            ).filter(tray => {
+                if (query.weight === null) {
+                    return true;
+                } else if (query.weight === "set") {
+                    return tray.weight;
+                } else if (query.weight === "unset") {
+                    return !tray.weight;
+                } else {
+                    return tray.weight && query.weight.from <= tray.weight && tray.weight <= query.weight.to;
+                }
+            }).filter(tray => {
+                if (!query.commentSubstring || tray.comment) {
+                    return true;
+                } else {
+                    return query.commentSubstring.includes(query.commentSubstring);
+                }
+            }).filter(tray => {
+                return !query.excludePickingArea || !tray.parentShelf.isPickingArea;
+            });
+
+            const defaultSort = composeSorts<Tray>([
+                partitionBy<Tray>((a) => !!(a.expiry)), // draw a diagram to understand this
+                partitionBy<Tray>((a) => !(!a.expiry?.from && a.expiry?.to)),
+                partitionBy<Tray>((a) => (!a.expiry?.from && !a.expiry?.to)),
+
+                byNullSafe<Tray>((a) => a.expiry?.from, true),
+                byNullSafe<Tray>((a) => a.expiry?.to, false, false),
+                byNullSafe<Tray>((a) => a.category?.name, false, true),
+                byNullSafe<Tray>((a) => a.weight, false, true),
+            ]);
+
+            const sort = (() => {
+                if (query.sort.type === SortBy.category) {
+                    return composeSort(
+                        byNullSafe<Tray>((a) => a.category?.name, false, true),
+                        defaultSort
+                    );
+                } else if (query.sort.type === SortBy.location) {
+                    return composeSort(
+                        byNullSafe<Tray>((a) => a.locationString, false, true),
+                        defaultSort
+                    );
+                } else if (query.sort.type === SortBy.weight) {
+                    return composeSort(
+                        byNullSafe<Tray>((a) => a.weight, false, true),
+                        defaultSort
+                    );
+                } else { // none or SortBy.expiry
+                    return defaultSort;
+                }
+            })();
+
+            resolve(filteredTrays.sort(sort));
+
+        });
+
+    }
+
+    //endregion
 }

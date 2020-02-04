@@ -1,9 +1,8 @@
-import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import {Column, Shelf, Tray, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 interface BayFields {
-    index: number;
     name: string;
 }
 
@@ -12,18 +11,12 @@ export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
     public readonly collectionName = "bays";
     public readonly childCollectionName = "shelves";
 
-    protected constructor(id: string, fields: BayFields, parent: Zone) {
-        super(id, fields, parent);
-        this.childLoadComplete = () => this.children.sort((a, b) => a.index - b.index);
-    }
-
     /**
      * @param name - The name of the bay
-     * @param index - The (ordered) index of the bay within the zone
      * @param parent - The parent zone
      */
-    public static create(index: number, name: string, parent: Zone): Bay {
-        return new Bay(Utils.generateRandomId(), {index, name}, parent);
+    public static create(name: string, parent: Zone): Bay {
+        return new Bay(Utils.generateRandomId(), {name}, parent);
     }
 
     /**
@@ -41,14 +34,6 @@ export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
     public createChild = Shelf.createFromFields;
 
     //#region Field Getters and Setters
-    public get index(): number {
-        return this.fields.index;
-    }
-
-    public set index(index: number) {
-        this.fields.index = index;
-    }
-
     public get name(): string {
         return this.fields.name;
     }
