@@ -10,7 +10,6 @@ interface ZoneFields {
 
 export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
     public readonly layerID: WarehouseModel = WarehouseModel.zone;
-    public readonly childIndexed = true;
     public readonly collectionName = "zones";
     public readonly childCollectionName = "bays";
 

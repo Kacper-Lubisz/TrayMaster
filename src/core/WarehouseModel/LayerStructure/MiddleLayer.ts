@@ -12,7 +12,6 @@ import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer}
  */
 export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren extends LowerLayer> extends Layer<TFields> {
     public abstract readonly childCollectionName: string;
-    public abstract readonly childIndexed: boolean;
     public parent: TParent;
     public children: TChildren[];
     public childrenLoaded: boolean;
@@ -48,17 +47,17 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         return this.children.indexOf(child);
     }
 
-    /**
-     * Get the index of the object within its parent's collection
-     */
-    public get indexInParent(): number {
-        return this.parent.getChildIndex(this);
-    }
-
     public get layerIdentifiers(): LayerIdentifiers {
         const refs: LayerIdentifiers = this.parent?.layerIdentifiers ?? {};
         refs[this.collectionName] = this.id;
         return refs;
+    }
+
+    /**
+     * Get the index of the object within its parent's collection
+     */
+    public get index(): number {
+        return this.parent.getChildIndex(this);
     }
 
     public dfs(callback: (layer: Layers) => void, minLayer = 0): void {
@@ -100,7 +99,6 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         }
     }
 
-    // noinspection DuplicatedCode
     /**
      * Load down to minLayer a layer at a time (using the top-level structure in the database).
      * @async
@@ -119,15 +117,13 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
             collectionName: string;
             childCollectionName: string;
             topLevelChildCollectionPath: string;
-            childIsSortable: boolean;
         };
 
         let currentState: State = {
             generator: this.createChild,
             collectionName: this.collectionName,
             childCollectionName: this.childCollectionName,
-            topLevelChildCollectionPath: this.topLevelChildCollectionPath,
-            childIsSortable: false
+            topLevelChildCollectionPath: this.topLevelChildCollectionPath
         };
 
         for (let i = this.layerID - 1; i >= minLayer; i--) {
@@ -135,9 +131,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
             let nextState: State | undefined;
 
             const query =
-                currentState.childIsSortable ?
-                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index") :
-                firebase.database.db.collection(currentState.topLevelChildCollectionPath);
+                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index");
             for (const document of (await firebase.database.loadQuery<unknown & TopLevelFields>(query))) {
                 const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
                 if (parent && !(parent instanceof BottomLayer)) {
@@ -150,8 +144,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
                             generator: child.createChild,
                             collectionName: child.collectionName,
                             childCollectionName: child.childCollectionName,
-                            topLevelChildCollectionPath: child.topLevelChildCollectionPath,
-                            childIsSortable: child.childIndexed
+                            topLevelChildCollectionPath: child.topLevelChildCollectionPath
                         };
                     }
                 }
@@ -183,18 +176,28 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren
         return this;
     }
 
-    // noinspection DuplicatedCode
     public async delete(commit = false): Promise<void> {
         for (const child of this.children) {
             await child.delete();
         }
 
-        this.parent.children.splice(this.indexInParent, 1);
+        this.parent.children.splice(this.index, 1);
 
         firebase.database.delete(this.topLevelPath);
 
         if (commit) {
             await firebase.database.commit();
+        }
+    }
+
+    protected stageLayer(forceStage = false): void {
+        if (this.changed || forceStage) {
+            firebase.database.set(this.topLevelPath, {
+                ...this.fields,
+                layerIdentifiers: this.layerIdentifiers,
+                index: this.index,
+            });
+            this.fieldsSaved();
         }
     }
 

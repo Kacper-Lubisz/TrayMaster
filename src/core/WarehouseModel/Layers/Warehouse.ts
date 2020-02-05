@@ -8,15 +8,16 @@ import Utils from "../Utils";
 
 const defaultCategories: string[] = [
     "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
-    "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk", "Misc",
-    "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pud.", "Savoury Treats", "Soup", "Spaghetti",
+    "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk",
+    "Miscellaneous",
+    "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pudding", "Savoury Treats", "Soup", "Spaghetti",
     "Sponge Pudding", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
 ];
 
 const defaultTraySizes: TraySize[] = [
-    {index: 0, label: "small", sizeRatio: 1.5},
-    {index: 1, label: "regular", sizeRatio: 2.5},
-    {index: 2, label: "large", sizeRatio: 3.5},
+    {index: 0, label: "narrow", sizeRatio: 1.5},
+    {index: 1, label: "standard", sizeRatio: 2.5},
+    {index: 2, label: "wide", sizeRatio: 3.5}
 ];
 
 

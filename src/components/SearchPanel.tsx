@@ -2,6 +2,7 @@ import classNames from "classnames";
 import React from "react";
 import {Category, Warehouse} from "../core/WarehouseModel";
 import {SearchQuery, SearchResults} from "../pages/SearchPage";
+import "./styles/_searchpanel.scss";
 
 export type PanelState = "category" | "weight" | "expiry";
 
@@ -59,6 +60,26 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
             });
 
             return <div id="searchPanel">
+                <div id="cat-table">
+                    {Array.from(groups.keys()).sort((a, b) =>
+                        a < b ? -1 : 1
+                    ).map((group, i) =>
+                        <div
+                            className="categoryGroup"
+                            key={i}
+                        >
+                            <div className="categoryGroupTitle"><span>{group}</span></div>
+                            <div className="categoryGroupCategories"
+                            >{groups.get(group)?.map(cat => <button
+                                key={cat.name}
+                                className={classNames("searchPanelButton", {
+                                    "selected": searchCategories.has(cat)
+                                })}
+                                onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
+                            }</div>
+                        </div>
+                    )}
+                </div>
                 {/*<div className="categoryGroup" key={-1}>*/}
                 {/*<h1 className="categoryGroupTitle">{"~"}</h1>*/}
                 {/*<div className="categoryGroupCategories">*/}
@@ -71,25 +92,7 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
                 {/*    </button>*/}
 
                 {/*</div>*/}
-                {/*</div>*/}
-                {Array.from(groups.keys()).sort((a, b) =>
-                    a < b ? -1 : 1
-                ).map((group, i) =>
-                    <div
-                        className="categoryGroup"
-                        key={i}
-                    >
-                        <h1 className="categoryGroupTitle">{group}</h1>
-                        <div className="categoryGroupCategories"
-                        >{groups.get(group)?.map(cat => <button
-                            key={cat.name}
-                            className={classNames("searchPanelButton", {
-                                "selected": searchCategories.has(cat)
-                            })}
-                            onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
-                        }</div>
-                    </div>
-                )}</div>;
+                {/*</div>*/}</div>;
         }
     }
 

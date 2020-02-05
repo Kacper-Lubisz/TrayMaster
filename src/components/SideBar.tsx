@@ -67,7 +67,7 @@ class KeyboardSwitchBtn extends React.Component<KeyboardSwitchBtnProps> {
     render(): React.ReactNode {
         return (
             // by this point this.props.onClick has had bind called on it 2 times
-            <button className={classNames({
+            <button className={classNames("btn-style-override", {
                 "active": this.props.active
             })} onClick={this.props.onClick}>
                 <FontAwesomeIcon icon={this.props.icon}/>

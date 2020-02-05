@@ -105,7 +105,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                 </div>
 
                 <div className="settings-btns">
-                    <button className="key-btn" onClick={() => this.props.history.goBack()}>
+                    <button onClick={() => this.props.history.goBack()}>
                         <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                         <p>Back</p>
                     </button>

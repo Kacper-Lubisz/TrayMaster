@@ -239,9 +239,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         } else if (!this.props.search?.results) {
             return <LoadingSpinner/>;
         } else if (this.props.search.results.length === 0) {
-            return <div>
-                Couldn't find any trays which match this search
-            </div>; //todo restyle
+            return <div id="search-no-results">
+                Couldn't find any trays which match this search!
+            </div>;
         }
 
     }

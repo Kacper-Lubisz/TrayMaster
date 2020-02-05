@@ -1,14 +1,11 @@
 //Main menu style sheet
 
-.menu-btn-container {
-  //container for all buttons
-  display: flex;
-  flex-direction: column;
-  position: fixed;
+#menu-nav-kb {
+  position: absolute;
   left: 15px;
   bottom: 15px;
-  height: 300px;
-  width: 250px;
+  height: 40%;
+  width: 300px;
 
 }
 
@@ -59,7 +56,6 @@
       color: #ff0000;
       height: 55px;
       width: 55px;
-      //TODO position should be dependent on .alert [what does this mean? -BC <-- any ideas?]
     }
 
     h2 {

@@ -3,25 +3,22 @@ import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 interface ShelfFields {
-    index: number;
     name: string;
     isPickingArea: boolean;
 }
 
 export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     public readonly layerID: WarehouseModel = WarehouseModel.shelf;
-    public readonly childIndexed = true;
     public readonly collectionName = "shelves";
     public readonly childCollectionName = "columns";
 
     /**
-     * @param index - The (ordered) index of the shelf within the bay
      * @param name - The name of the shelf
      * @param isPickingArea - true if in picking area
      * @param parent - The parent bay
      */
-    public static create(index: number, name: string, isPickingArea: boolean, parent: Bay): Shelf {
-        return new Shelf(Utils.generateRandomId(), {index, name, isPickingArea}, parent);
+    public static create(name: string, isPickingArea: boolean, parent: Bay): Shelf {
+        return new Shelf(Utils.generateRandomId(), {name, isPickingArea}, parent);
     }
 
     /**
@@ -39,14 +36,6 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
     }
 
     //#region Field Getters and Setters
-    public get index(): number {
-        return this.fields.index;
-    }
-
-    public set index(index: number) {
-        this.fields.index = index;
-    }
-
     public get name(): string {
         return this.fields.name;
     }

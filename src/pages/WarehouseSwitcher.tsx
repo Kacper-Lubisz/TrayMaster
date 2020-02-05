@@ -38,7 +38,7 @@ class WarehouseSwitcherPage extends React.Component<RouteComponentProps & Wareho
                 <h1>Select Warehouse</h1>
 
                 {this.props.user.accessibleWarehouses.length === 0 ? <>
-                    <button style={{cursor: "pointer"}} className="key-btn" onClick={() => this.props.history.goBack()}>
+                    <button style={{cursor: "pointer"}} onClick={() => this.props.history.goBack()}>
                         <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                         <p>Back</p>
                     </button>

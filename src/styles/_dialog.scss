@@ -1,0 +1,39 @@
+.popup-content {
+  padding: 10px 20px !important;
+
+  .dialogTitle {
+    margin: 0 0 10px 0;
+    font-size: 50px;
+
+    svg {
+      margin-right: 20px;
+    }
+  }
+
+  .dialogButtons {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+
+    .dialogBtnRed {
+      border-color: #ff0000;
+    }
+  }
+
+  .dialogContent {
+    display: flex;
+
+    .errorDialogContent {
+      font-size: 28px;
+    }
+
+    > *:not(.dialogButtons) {
+      flex-grow: 5;
+    }
+
+    .dialogButtons {
+      position: static;
+      margin: 0 0 0 10px;
+    }
+  }
+}

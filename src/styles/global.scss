@@ -8,3 +8,28 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+button:not(.btn-style-override), input[type="submit"] {
+  // ADD ".btn-style-override" CLASS TO OVERRIDE THESE STYLES
+  font-size: 20px;
+  background-color: #eeeeee;
+  border: 1px solid #cccccc;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  margin: 5px;
+
+  transition: box-shadow ease 0.5s;
+
+  > * {
+    margin: 0;
+  }
+
+  &:enabled {
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0 0 20px -10px #000000;
+    }
+  }
+}
