@@ -1,3 +1,9 @@
+
+.list-categories {
+  position: absolute;
+  scroll-behavior: auto;
+}
+
 .category {
   //background-color: #eeeeee;
   color: #000000;
@@ -14,4 +20,11 @@
   &.cat-selected {
     background-color: blue;
   }
+}
+.add-cat-btn {
+  margin-left: 200px;
+}
+
+.edit-category {
+margin-left: 150px;
 }
