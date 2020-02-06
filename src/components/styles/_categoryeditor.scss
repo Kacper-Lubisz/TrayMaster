@@ -9,20 +9,13 @@
   color: #000000;
   cursor: pointer;
 
-  &:active:enabled {
+  &.cat-selected {
     background-color: #dddddd;
   }
 }
 
-.cat-editor-btn {
-  background-color: #dddddd;
-
-  &.cat-selected {
-    background-color: blue;
-  }
-}
 .add-cat-btn {
-  margin-left: 200px;
+  margin-left: 300px;
 }
 
 .edit-category {

@@ -31,31 +31,24 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 label: "Show Previous Shelf Button"
             }
         ];
-        return (
-            <div>
-            {
-                settings.map(setting =>
-                    <div className="settings-setting" key={setting.label}
-                         onClick={() => {
-                             setting.set(!setting.get());
-                             this.forceUpdate();
-                         }}>
-                        <input
-                            type="checkbox"
-                            checked={setting.get()}
-                            onChange={async e => {
-                                setting.set(e.target.checked);
-                                await this.props.user.stage(true, true);
-                                this.forceUpdate();
-                            }}
-                        />
-                        <p>{setting.label}</p>
-                    </div>
-                )}
+        return settings.map(setting =>
+            <div className="settings-setting" key={setting.label}
+                 onClick={() => {
+                     setting.set(!setting.get());
+                     this.forceUpdate();
+                 }}>
+                <input
+                    type="checkbox"
+                    checked={setting.get()}
+                    onChange={async e => {
+                        setting.set(e.target.checked);
+                        await this.props.user.stage(true, true);
+                        this.forceUpdate();
+                    }}
+                />
+                <p>{setting.label}</p>
             </div>
-
-    )
-        ;
+        );
     }
 
 }

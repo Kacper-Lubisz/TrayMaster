@@ -53,6 +53,9 @@ export interface Category {
     index: number;
     name: string;
     shortName: string | null;
+    lowStock: number;
+    highStock: number;
+    type: "default" | "custom";
 }
 
 /**

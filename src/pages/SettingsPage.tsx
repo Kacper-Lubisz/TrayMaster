@@ -49,6 +49,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
             return <CategoryEditor
                 categories={this.props.warehouse.categories}
                 user={this.props.user}
+                warehouse={this.props.warehouse}
             />;
         } else if (this.state.currentTab === "wh-edit") {
             //return warehouse editor
