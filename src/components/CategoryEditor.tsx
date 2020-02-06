@@ -1,6 +1,5 @@
-import classNames from "classnames";
-import {type} from "os";
 import React from "react";
+import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, Warehouse} from "../core/WarehouseModel";
 
@@ -8,9 +7,11 @@ import "./styles/_categoryeditor.scss";
 
 
 interface CategoryEditorProps {
+    openDialog: (dialog: Dialog) => void;
     categories: Category[];
     user: User;
     warehouse: Warehouse;
+    updatePage: () => void;
 }
 
 
@@ -51,20 +52,50 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private selectCategory(cat: Category): void {
         if (this.checkIfCatChanged()) {
+            this.props.openDialog({
+                closeOnDocumentClick: true,
+                dialog: (close: () => void) => {
+                    return <>
+                        <DialogTitle title="Do You Want to Save?"/>
+                        <div className="dialogContent">
+                            <DialogButtons buttons={[
+                                {
+                                    name: "Cancel", buttonProps: {
+                                        onClick: () => close,
+                                        className: "dialogBtnRed"
+                                    }
+                                }, {
+                                    name: "Don't Save", buttonProps: {
+                                        onClick: () => this.cancelCategory(),
+                                    }
+                                }, {
+                                    name: "Save", buttonProps: {
+                                        onClick: () => this.saveCategory()
+                                    }
+                                }
+                            ]}/>
+                        </div>
+                    </>;
+                }
+            });
             /**
              *TODO popup, choose continue with, without saving or cancel
              */
         } else {
-            this.setState(state => ({
-                ...state,
-                catSelected: cat,
-                catName: cat.name,
-                catShortName: cat.shortName ? cat.shortName : "",
-                catLow: cat.lowStock,
-                catHigh: cat.highStock,
-                catID: this.props.warehouse.getCategoryID(cat),
-            }));
+            this.changeCategory(cat);
         }
+    }
+
+    private changeCategory(cat: Category): void {
+        this.setState(state => ({
+            ...state,
+            catSelected: cat,
+            catName: cat.name,
+            catShortName: cat.shortName ? cat.shortName : "",
+            catLow: cat.lowStock,
+            catHigh: cat.highStock,
+            catID: this.props.warehouse.getCategoryID(cat),
+        }));
     }
 
     /**
@@ -74,61 +105,59 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
 
     private editCategory(): any {
-        return <div id="cat-edit-controls">
-            <h2>Edit {this.state.catSelected?.name}</h2>
-            <h3>Name</h3>
-            <input type="text"
-                   value={this.state.catName}
-                   onChange={e => this.setState({...this.state, catName: e.target.value})}
-            />
-            <h3>Short Name</h3>
-            <input type="text"
-                   value={this.state.catShortName}
-                   onChange={e => this.setState({...this.state, catShortName: e.target.value})}
-            />
-            <h3>Low Stock Level</h3>
-            <input type="number"
-                   min="0"
-                   max={this.state.catHigh}
-                   value={this.state.catLow}
-                   onChange={(e) => {
-                       this.setState({...this.state, catLow: Number(e.target.value)});
-                   }
-                   }
-            /> trays
-            <h3>High Stock Level</h3>
-            <input type="number"
-                   min={this.state.catLow}
-                   value={this.state.catHigh}
-                   onChange={(e) => {
-                       this.setState({...this.state, catHigh: Number(e.target.value)});
-                   }
-                   }
-            /> trays
-            <br/>
-            <button
-                onClick={() => this.deleteCategory()}>Delete Category
-            </button>
-            <button onClick={() => this.cancelCategory()}>Cancel</button>
-            <button onClick={() => {
-                if (this.checkIfCatChanged()) {
-                    this.saveCategory();
-                }
-            }}>Save
-            </button>
-
-        </div>;
+        return <>
+            <div id="cat-edit-controls">
+                <h2>{this.state.catSelected ? "Edit" : "New Category"}</h2>
+                <h3>Name</h3>
+                <input type="text"
+                       value={this.state.catName}
+                       onChange={e => this.setState({...this.state, catName: e.target.value})}
+                />
+                <h3>Short Name</h3>
+                <input type="text"
+                       value={this.state.catShortName}
+                       onChange={e => this.setState({...this.state, catShortName: e.target.value})}
+                />
+                <h3>Low Stock Level</h3>
+                <input type="number"
+                       min="0"
+                       max={this.state.catHigh}
+                       value={this.state.catLow}
+                       onChange={(e) => {
+                           this.setState({...this.state, catLow: Number(e.target.value)});
+                       }
+                       }
+                /> trays
+                <h3>High Stock Level</h3>
+                <input type="number"
+                       min={this.state.catLow}
+                       value={this.state.catHigh}
+                       onChange={(e) => {
+                           this.setState({...this.state, catHigh: Number(e.target.value)});
+                       }
+                       }
+                /> trays
+                <br/>
+            </div>
+            <div>
+                <button
+                    onClick={() => this.deleteCategory()}>Delete Category
+                </button>
+                <button onClick={() => this.cancelCategory()}>Cancel</button>
+                <button onClick={() => {
+                    if (this.checkIfCatChanged()) {
+                        this.saveCategory();
+                    }
+                }}>Save
+                </button>
+            </div>
+        </>;
     }
 
     /**
      * Is called if user clicks button to add a new category
      */
     private newCategory(): void {
-        /**
-         * Open fields to add new category
-         * Create new index??
-         * Type should be "custom"
-         */
         this.setState(state => ({
             ...state,
             catSelected: null,
@@ -171,6 +200,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 ...state,
                 catSelected: editedCat
             }));
+            this.props.updatePage();
         } else {
             this.saveNewCategory();
         }
@@ -196,6 +226,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 type: "custom"
             }
         }));
+        this.props.updatePage();
     }
 
     private cancelCategory(): void {
@@ -204,7 +235,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             const catName = this.state.catSelected.name;
             const catShortName = this.state.catSelected.shortName ? this.state.catSelected.shortName : "";
             const catLow = this.state.catSelected.lowStock;
-                const catHigh= this.state.catSelected.highStock;
+            const catHigh = this.state.catSelected.highStock;
             this.setState(state => ({
                 ...state,
                 catName: catName,
@@ -227,14 +258,18 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             this.props.warehouse.removeCategory(this.state.catSelected);
             this.props.warehouse.stage(true, true).then(() => {
                     if (this.state.catSelected && this.state.catSelected.index !== this.props.categories.length - 1) {
+                        this.props.updatePage();
                         for (let j = this.state.catSelected.index; j < this.props.categories.length - 1; j++) {
-                            console.log(j);
                             const category = this.props.categories[j];
                             const id = this.props.warehouse.getCategoryID(category);
                             category.index = j;
                             this.props.warehouse.editCategory(id, category);
                         }
                     }
+                    this.setState(state => ({
+                        ...state,
+                        catSelected: this.props.categories[0]
+                    }));
                 }
             );
         }

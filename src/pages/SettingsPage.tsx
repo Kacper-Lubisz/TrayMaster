@@ -45,9 +45,11 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor
+                openDialog={() => this.props.openDialog.bind(this)}
                 categories={this.props.warehouse.categories}
                 user={this.props.user}
                 warehouse={this.props.warehouse}
+                updatePage={() => this.forceUpdate()}
             />;
         } else if (this.state.currentTab === "wh-edit") {
             //return warehouse editor
@@ -70,7 +72,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                         })}
                              onClick={() => this.setState(state => ({...state, currentTab: "personal"}))}
                         >
-                            Personal Settings
+                            Personal <br/> Settings
                         </div>
                     </div>
                     {this.props.user.isAdmin ?
@@ -82,14 +84,14 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                              })}
                                   onClick={() => this.setState(state => ({...state, currentTab: "cat-edit"}))}
                              >
-                                 Category Editor
+                                 Category <br/> Editor
                              </div>
                              <div className={classNames("tab", {
                                  "tab-selected": this.state.currentTab === "wh-edit"
                              })}
                                   onClick={() => this.setState(state => ({...state, currentTab: "wh-edit"}))}
                              >
-                                 Warehouse Editor
+                                 Warehouse <br/> Editor
                              </div>
                          </div>
                          <div>
