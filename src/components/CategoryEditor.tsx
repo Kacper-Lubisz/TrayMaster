@@ -73,68 +73,79 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Creates the right-hand side of the screen
      * Displays content of categories and allows user to edit them
      */
-    private editCategory(): any {
-        return <div id="edit-category">
-            <h2>Edit {this.state.catSelected.name}</h2>
-            <h4>Name</h4>
-            <input type="text"
-                   value={this.state.catName}
-                   onChange={e => this.setState({...this.state, catName: e.target.value})}
-            />
-            <h4>Short Name</h4>
-            <input type="text"
-                   value={this.state.catShortName}
-                   onChange={e => this.setState({...this.state, catShortName: e.target.value})}/>
-            <h4>Low Stock Level</h4>
+    private editCategory(): React.ReactNode {
+        return <>
+            <div id="cat-edit-controls">
+                <h2>Edit {this.state.catSelected.name}</h2>
+                <h3>Name</h3>
+                <input type="text"
+                       value={this.state.catName}
+                       onChange={e => this.setState({...this.state, catName: e.target.value})}
+                />
+                <h3>Short Name</h3>
+                <input type="text"
+                       value={this.state.catShortName}
+                       onChange={e => this.setState({...this.state, catShortName: e.target.value})}
+                />
 
-            <button className="plus-minus-btns"
-                    onClick={() => {
-                        if (this.state.catLow < this.state.catHigh) {
-                            this.setState(state => ({
-                                ...state, catLow: (state.catLow + 1)
-                            }));
-                        }
-                    }}>
-                +
-            </button>
-            <p>{this.state.catLow} trays</p>
-            <button className="plus-minus-btns"
-                    onClick={() => {
-                        if (this.state.catLow > 0) {
-                            this.setState(state => ({
-                                ...state,
-                                catLow: (state.catLow - 1)
-                            }));
-                        }
-                    }}>
-                -
-            </button>
+                <h3>Low Stock Level</h3>
+                <div className="stock-btns">
+                    <button className="plus-minus-btn"
+                            onClick={() => {
+                                if (this.state.catLow > 0) {
+                                    this.setState(state => ({
+                                        ...state,
+                                        catLow: (state.catLow - 1)
+                                    }));
+                                }
+                            }}
+                    >
+                        -
+                    </button>
+                    <p>{this.state.catLow} trays</p>
+                    <button className="plus-minus-btn"
+                            onClick={() => {
+                                if (this.state.catLow < this.state.catHigh) {
+                                    this.setState(state => ({
+                                        ...state, catLow: (state.catLow + 1)
+                                    }));
+                                }
+                            }}
+                    >
+                        +
+                    </button>
+                </div>
 
-            <h4>High Stock Level</h4>
-            <button className="plus-minus-btns"
-                    onClick={() => this.setState(state => ({
-                        ...state, catHigh: (state.catHigh + 1)
-                    }))}>
-                +
-            </button>
-            <p>{this.state.catHigh} trays</p>
-            <button className="plus-minus-btns"
-                    onClick={() => {
-                        if (this.state.catHigh > this.state.catLow) {
-                            this.setState(state => ({
-                                ...state,
-                                catHigh: (state.catHigh - 1)
-                            }));
-                        }
-                    }}>
-                -
-            </button>
-            <br/>
-            <button>Delete Category</button>
-            <button>Cancel</button>
-            <button onClick={() => this.saveCategory.bind(this)}>Save</button>
-
-        </div>;
+                <h3>High Stock Level</h3>
+                <div className="stock-btns">
+                    <button className="plus-minus-btn"
+                            onClick={() => {
+                                if (this.state.catHigh > this.state.catLow) {
+                                    this.setState(state => ({
+                                        ...state,
+                                        catHigh: (state.catHigh - 1)
+                                    }));
+                                }
+                            }}
+                    >
+                        -
+                    </button>
+                    <p>{this.state.catHigh} trays</p>
+                    <button className="plus-minus-btn"
+                            onClick={() => this.setState(state => ({
+                                ...state, catHigh: (state.catHigh + 1)
+                            }))}
+                    >
+                        +
+                    </button>
+                </div>
+            </div>
+            <div>
+                <button>Delete Category</button>
+                <button>Cancel</button>
+                <button onClick={() => this.saveCategory.bind(this)}>Save</button>
+            </div>
+        </>;
     }
 
     /**

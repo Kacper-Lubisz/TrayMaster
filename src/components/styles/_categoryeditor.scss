@@ -55,5 +55,40 @@
     grid-column-end: 3;
 
     padding-left: 50px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    #cat-edit-controls {
+      flex-grow: 1;
+
+      h2 {
+        font-size: 36px;
+      }
+
+      h3 {
+        font-size: 24px;
+        margin-bottom: 5px;
+      }
+
+      input[type=text] {
+        font-size: 24px;
+        padding: 10px;
+        background-color: #eeeeee;
+        border: none;
+      }
+
+      .stock-btns {
+        display: flex;
+        align-items: center;
+        width: 300px;
+
+        p {
+          flex-grow: 1;
+          text-align: center;
+        }
+      }
+    }
   }
 }
