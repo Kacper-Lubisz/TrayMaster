@@ -35,13 +35,13 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
             <div>
             {
                 settings.map(setting =>
-                    <div className="settings-setting" key={setting.label}
-                         onClick={() => {
-                             setting.set(!setting.get());
-                             this.forceUpdate();
-                         }}>
+                    <label key={setting.label} onClick={() => {
+                        setting.set(!setting.get());
+                        this.forceUpdate();
+                    }}>
                         <input
                             type="checkbox"
+                            name={setting.label}
                             checked={setting.get()}
                             onChange={async e => {
                                 setting.set(e.target.checked);
@@ -49,8 +49,8 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                                 this.forceUpdate();
                             }}
                         />
-                        <p>{setting.label}</p>
-                    </div>
+                        {setting.label}
+                    </label>
                 )}
             </div>
 

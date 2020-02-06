@@ -89,11 +89,13 @@
   grid-row-start: 1;
   grid-row-end: 2;
 
-  display: block;
+  padding: 20px;
 
-  > .settings-setting {
-    display: flex;
-    flex-direction: row;
-    padding-top: 20px;
+  label {
+    display: block;
+
+    &:not(:last-child) {
+      margin-bottom: 20px;
+    }
   }
 }
