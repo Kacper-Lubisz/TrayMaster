@@ -4,7 +4,6 @@ import React from "react";
 import {User} from "../core/Firebase";
 import {Category, Warehouse} from "../core/WarehouseModel";
 
-import "../styles/settings.scss";
 import "./styles/_categoryeditor.scss";
 
 
@@ -73,19 +72,21 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Displays content of categories and allows user to edit them
      * TODO delete should be disables if type is not "custom"
      */
+
     private editCategory(): any {
-        return <div className="edit-category">
+        return <div id="cat-edit-controls">
             <h2>Edit {this.state.catSelected?.name}</h2>
-            <h4>Name</h4>
+            <h3>Name</h3>
             <input type="text"
                    value={this.state.catName}
                    onChange={e => this.setState({...this.state, catName: e.target.value})}
             />
-            <h4>Short Name</h4>
+            <h3>Short Name</h3>
             <input type="text"
                    value={this.state.catShortName}
-                   onChange={e => this.setState({...this.state, catShortName: e.target.value})}/>
-            <h4>Low Stock Level</h4>
+                   onChange={e => this.setState({...this.state, catShortName: e.target.value})}
+            />
+            <h3>Low Stock Level</h3>
             <input type="number"
                    min="0"
                    max={this.state.catHigh}
@@ -95,7 +96,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                    }
                    }
             /> trays
-            <h4>High Stock Level</h4>
+            <h3>High Stock Level</h3>
             <input type="number"
                    min={this.state.catLow}
                    value={this.state.catHigh}
@@ -242,24 +243,21 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
     render(): React.ReactNode {
 
-        return <div className="settings-setting">
-            <div className="list-categories">
-                {this.props.categories.map((cat: Category) => {
-                        return <div className={classNames("category", {
-                            "cat-selected": this.state.catSelected === cat
-                        })}
-                                    key={cat.name}><p
-                            onClick={() => this.selectCategory(cat)}>{cat.name}</p>
-                        </div>;
-                    }
-                )}
-            </div>
-            <div className="add-cat-btn">
-                <button onClick={() => this.newCategory()}>Add New Category</button>
-            </div>
-            {this.editCategory()}
-            <div>
+        return <div id="category-editor">
+            <div id="category-sidebar">
+                <div id="category-list">
+                    {this.props.categories.map((cat: Category) => {
+                            return <div className="category-list-item" key={cat.name}><p
+                                onClick={() => this.selectCategory(cat)}>{cat.name}</p>
+                            </div>;
+                        }
+                    )}
+                </div>
+                <button id="add-cat-btn" onClick={() => this.newCategory()}>Add Category</button>
 
+            </div>
+            <div id="cat-edit-main">
+                {this.editCategory()}
             </div>
         </div>;
     }
