@@ -5,9 +5,11 @@
 #sideBar {
   // arrange children
   padding: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  //display: flex;
+  //flex-direction: column;
+  //justify-content: space-between;
+
+  display: grid;
 
   #navigatorButton {
     border-radius: 5px;
@@ -16,11 +18,6 @@
 
   #navigatorButton.disabled {
     background-color: #eee;
-  }
-
-  #side-keyboard-container {
-    width: 100%;
-    height: 100%;
   }
 
   // container for keyboard switch buttons

@@ -3,11 +3,11 @@ import {
     faArrowRight as rightArrow,
     faCheckCircle as tickSolid,
     faClock as expiryIcon,
-    faCommentAlt,
     faCube as categoryIcon,
     faEraser,
+    faStickyNote,
     faTimes as cross,
-    faWeightHanging as weightIcon
+    faCalculator as weightIcon
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
@@ -824,7 +824,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         },
                         {
                             name: "Edit Comment",
-                            icon: faCommentAlt,
+                            icon: faStickyNote,
                             onClick: this.editTrayComment.bind(this),
                             disabled: this.getSelectedTrays(false, false).length === 0
                         },

@@ -29,7 +29,7 @@ export interface KeyboardButtonProps {
  * KeyboardButton component: returns a button to go into a keyboard
  * @see KeyboardButtonProps
  */
-class KeyboardButton extends React.Component<KeyboardButtonProps> {
+export class KeyboardButton extends React.Component<KeyboardButtonProps> {
     render(): React.ReactNode {
         return (
             <button disabled={this.props.disabled}
