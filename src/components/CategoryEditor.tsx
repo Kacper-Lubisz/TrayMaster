@@ -74,7 +74,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Displays content of categories and allows user to edit them
      */
     private editCategory(): any {
-        return <div className="edit-category">
+        return <div id="edit-category">
             <h2>Edit {this.state.catSelected.name}</h2>
             <h4>Name</h4>
             <input type="text"
@@ -185,21 +185,20 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
     render(): React.ReactNode {
 
-        return <div className="settings-setting">
-            <div className="list-categories">
-                {this.props.categories.map((cat: Category) => {
-                        return <div className="category" key={cat.name}><p
-                            onClick={() => this.selectCategory(cat)}>{cat.name}</p>
-                        </div>;
-                    }
-                )}
+        return <div id="category-editor">
+            <div id="category-sidebar">
+                <div id="category-list">
+                    {this.props.categories.map((cat: Category) => {
+                            return <div className="category-list-item" key={cat.name}><p
+                                onClick={() => this.selectCategory(cat)}>{cat.name}</p>
+                            </div>;
+                        }
+                    )}
+                </div>
+                <button id="add-cat-btn" onClick={() => this.addCategory.bind(this)}>Add Category</button>
             </div>
-            <div className="cat-editor-btns">
-                <button className="add-cat-btn" onClick={() => this.addCategory.bind(this)}>Add Category</button>
-            </div>
-            {this.editCategory()}
-            <div>
-
+            <div id="cat-edit-main">
+                {this.editCategory()}
             </div>
         </div>;
     }
