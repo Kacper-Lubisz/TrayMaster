@@ -1,7 +1,7 @@
 import React from "react";
 import {User} from "../core/Firebase/Authentication";
 
-import "../styles/settings.scss";
+import "./styles/_usersettings.scss";
 
 
 interface UserSettingsProps {
@@ -32,26 +32,26 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
             }
         ];
         return (
-            <div>
-            {
-                settings.map(setting =>
-                    <label key={setting.label} onClick={() => {
-                        setting.set(!setting.get());
-                        this.forceUpdate();
-                    }}>
-                        <input
-                            type="checkbox"
-                            name={setting.label}
-                            checked={setting.get()}
-                            onChange={async e => {
-                                setting.set(e.target.checked);
-                                await this.props.user.stage(true, true);
-                                this.forceUpdate();
-                            }}
-                        />
-                        {setting.label}
-                    </label>
-                )}
+            <div id="user-settings">
+                {
+                    settings.map(setting =>
+                        <label key={setting.label} onClick={() => {
+                            setting.set(!setting.get());
+                            this.forceUpdate();
+                        }}>
+                            <input
+                                type="checkbox"
+                                name={setting.label}
+                                checked={setting.get()}
+                                onChange={async e => {
+                                    setting.set(e.target.checked);
+                                    await this.props.user.stage(true, true);
+                                    this.forceUpdate();
+                                }}
+                            />
+                            {setting.label}
+                        </label>
+                    )}
             </div>
 
     )

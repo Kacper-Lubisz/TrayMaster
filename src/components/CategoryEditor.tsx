@@ -1,9 +1,7 @@
-import classNames from "classnames";
 import React from "react";
 import {User} from "../core/Firebase";
 import {Category} from "../core/WarehouseModel";
 
-import "../styles/settings.scss";
 import "./styles/_categoryeditor.scss";
 
 

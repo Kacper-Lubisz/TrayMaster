@@ -90,12 +90,4 @@
   grid-row-end: 2;
 
   padding: 20px;
-
-  label {
-    display: block;
-
-    &:not(:last-child) {
-      margin-bottom: 20px;
-    }
-  }
 }
