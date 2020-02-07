@@ -55,27 +55,10 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             this.props.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => {
-                    return <>
-                        <DialogTitle title="Do You Want to Save?"/>
-                        <div className="dialogContent">
-                            <DialogButtons buttons={[
-                                {
-                                    name: "Cancel", buttonProps: {
-                                        onClick: () => close,
-                                        className: "dialogBtnRed"
-                                    }
-                                }, {
-                                    name: "Don't Save", buttonProps: {
-                                        onClick: () => this.cancelCategory(),
-                                    }
-                                }, {
-                                    name: "Save", buttonProps: {
-                                        onClick: () => this.saveCategory()
-                                    }
-                                }
-                            ]}/>
-                        </div>
-                    </>;
+                    return <EditCategoryDialog
+                        onDiscard={close}
+                        message="Please Save or Cancel"
+                    />;
                 }
             });
             /**
@@ -103,7 +86,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Displays content of categories and allows user to edit them
      * TODO delete should be disables if type is not "custom"
      */
-
     private editCategory(): any {
         return <>
             <div id="cat-edit-controls">
@@ -145,9 +127,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 </button>
                 <button onClick={() => this.cancelCategory()}>Cancel</button>
                 <button onClick={() => {
-                    if (this.checkIfCatChanged()) {
-                        this.saveCategory();
-                    }
+                    if(this.checkIfCatChanged())
+                        this.saveCategory()
                 }}>Save
                 </button>
             </div>
@@ -183,10 +164,19 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      *Saves changes to categories
      */
     private saveCategory(): void {
-        /**
-         * Check if name is same as another category
-         */
-        if (this.state.catSelected) {
+        console.log("hey");
+        if(this.props.categories.filter(cat => this.state.catName.includes(cat.name))){
+            this.props.openDialog({
+                closeOnDocumentClick: true,
+                dialog: (close: () => void) => {
+                    return <EditCategoryDialog
+                        onDiscard={close}
+                        message="Category Already Exists"
+                    />;
+                }
+            });
+        }
+        else if (this.state.catSelected) {
             const editedCat = {
                 index: this.state.catSelected.index,
                 name: this.state.catName,
@@ -295,5 +285,31 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 {this.editCategory()}
             </div>
         </div>;
+    }
+}
+
+interface EditCategoryDialogProps  {
+    onDiscard: () => void;
+    message: string;
+}
+
+/**
+ *Dialog to notify user of something
+ */
+class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
+
+    render(): React.ReactElement {
+        return <>
+            <DialogTitle title={this.props.message}/>
+            <div className="dialogContent">
+                <DialogButtons buttons={[
+                    {
+                        name: "OK", buttonProps: {
+                            onClick: this.props.onDiscard,
+                        }
+                    }
+                ]}/>
+            </div>
+        </>;
     }
 }
