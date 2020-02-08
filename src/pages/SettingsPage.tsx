@@ -72,7 +72,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                         })}
                              onClick={() => this.setState(state => ({...state, currentTab: "personal"}))}
                         >
-                            Personal <br/> Settings
+                            Personal Settings
                         </div>
                     </div>
                     {this.props.user.isAdmin ?
@@ -84,14 +84,14 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                              })}
                                   onClick={() => this.setState(state => ({...state, currentTab: "cat-edit"}))}
                              >
-                                 Category <br/> Editor
+                                 Category Editor
                              </div>
                              <div className={classNames("tab", {
                                  "tab-selected": this.state.currentTab === "wh-edit"
                              })}
                                   onClick={() => this.setState(state => ({...state, currentTab: "wh-edit"}))}
                              >
-                                 Warehouse <br/> Editor
+                                 Warehouse Editor
                              </div>
                          </div>
                          <div>
