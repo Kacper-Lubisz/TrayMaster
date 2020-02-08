@@ -88,11 +88,22 @@
       background-color: #eeeeee;
       border: none;
     }
+
     input[type=number] {
       font-size: 24px;
       padding: 10px;
       background-color: #eeeeee;
       border: none;
+    }
+  }
+
+  #cat-edit-bottom-btns {
+    max-width: 100%;
+    width: 700px;
+    display: flex;
+
+    > :first-child {
+      flex-grow: 1;
     }
   }
 }

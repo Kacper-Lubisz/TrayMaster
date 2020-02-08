@@ -89,7 +89,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     private editCategory(): any {
         return <>
             <div id="cat-edit-controls">
-                <h2>{this.state.catSelected ? "Edit" : "New Category"}</h2>
+                <h2>{this.state.catSelected ? `Edit ${this.state.catName}` : "New Category"}</h2>
                 <h3>Name</h3>
                 <input type="text"
                        value={this.state.catName}
@@ -120,16 +120,21 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                        }
                 /> trays
             </div>
-            <div>
-                <button
-                    onClick={() => this.deleteCategory()}>Delete Category
-                </button>
-                <button onClick={() => this.cancelCategory()}>Cancel</button>
-                <button onClick={() => {
-                    if(this.checkIfCatChanged())
-                        this.saveCategory()
-                }}>Save
-                </button>
+            <div id="cat-edit-bottom-btns">
+                <div>
+                    <button
+                        onClick={() => this.deleteCategory()}>Delete Category
+                    </button>
+                </div>
+                <div>
+                    <button onClick={() => this.cancelCategory()}>Cancel</button>
+                    <button onClick={() => {
+                        if (this.checkIfCatChanged()) {
+                            this.saveCategory();
+                        }
+                    }}>Save
+                    </button>
+                </div>
             </div>
         </>;
     }
@@ -164,7 +169,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private saveCategory(): void {
         console.log("hey");
-        if(this.props.categories.filter(cat => this.state.catName.includes(cat.name))){
+        if (this.props.categories.filter(cat => this.state.catName.includes(cat.name))) {
             this.props.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => {
@@ -174,8 +179,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     />;
                 }
             });
-        }
-        else if (this.state.catSelected) {
+        } else if (this.state.catSelected) {
             const editedCat = {
                 index: this.state.catSelected.index,
                 name: this.state.catName,
