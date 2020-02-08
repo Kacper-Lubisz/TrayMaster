@@ -119,7 +119,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                        }
                        }
                 /> trays
-                <br/>
             </div>
             <div>
                 <button
