@@ -13,6 +13,7 @@ import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {trayComparisonFunction} from "../utils/sortCells";
+import {LoadingSpinner} from "./LoadingSpinner";
 import "./styles/_viewport.scss";
 
 
@@ -244,6 +245,20 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     render(): React.ReactNode {
+
+        if (!(this.props.current.loaded && this.props.current.childrenLoaded)) {
+            // todo fixme restyle this, ensure this is appropriate usage
+            return <div id="loading-box" style={{margin: "auto"}}>
+                <LoadingSpinner/>
+                <h2>Loading...</h2>
+            </div>;
+
+            // return <div style={{
+            //     margin: "auto"
+            // }}>
+            //     <LoadingSpinner message="Loading..."/>
+            // </div>;
+        }
 
         if (this.props.current instanceof Warehouse) {
             return <div id="viewPort">
