@@ -1,5 +1,5 @@
 import React from "react";
-import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
+import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, Warehouse} from "../core/WarehouseModel";
 
