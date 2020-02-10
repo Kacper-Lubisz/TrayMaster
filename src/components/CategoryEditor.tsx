@@ -96,6 +96,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                        value={this.state.catShortName}
                        onChange={e => this.setState({...this.state, catShortName: e.target.value})}
                 />
+                <button onClick={() => this.setState(state => ({
+                    catShortName: state.catName
+                }))}>Same as "Name"</button>
                 <h3>Low Stock Level</h3>
                 <input type="number"
                        min="0"
