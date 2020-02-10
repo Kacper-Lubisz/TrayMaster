@@ -3,6 +3,7 @@ import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
+import {LayerFields} from "../LayerStructure/Layer";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import Utils from "../Utils";
 
@@ -20,7 +21,7 @@ const defaultTraySizes: TraySize[] = [
 ];
 
 
-interface WarehouseFields {
+interface WarehouseFields extends LayerFields {
     name: string;
     defaultTraySizeID: string;
     expiryColorMode: "computed" | "hybrid" | "warehouse";
@@ -47,7 +48,13 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      * @returns The newly created warehouse
      */
     public static create(id?: string, name?: string): Warehouse {
-        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: "", expiryColorMode: "hybrid"});
+        return new Warehouse(id ?? Utils.generateRandomId(), {
+            lastModified: Date.now(),
+            blame: "",
+            name: name ?? "",
+            defaultTraySizeID: "",
+            expiryColorMode: "hybrid"
+        });
     }
 
     /**

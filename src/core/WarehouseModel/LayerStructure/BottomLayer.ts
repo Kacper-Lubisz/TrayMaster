@@ -1,13 +1,13 @@
 import firebase from "../../Firebase";
 import Utils from "../Utils";
-import {Layer, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
+import {Layer, LayerFields, LayerIdentifiers, Layers, UpperLayer} from "./Layer";
 
 /**
  * Represents the bottom layer in the object model (that has a parent)
  * @template TParent - The type of the type's parent
  * @template TFields - The Fields type to have its members saved to and loaded from the database
  */
-export abstract class BottomLayer<TParent extends UpperLayer, TFields> extends Layer<TFields> {
+export abstract class BottomLayer<TParent extends UpperLayer, TFields extends LayerFields> extends Layer<TFields> {
     public parent: TParent;
 
     protected constructor(id: string, fields: TFields, parent: TParent) {

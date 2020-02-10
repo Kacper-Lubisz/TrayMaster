@@ -20,6 +20,11 @@ export interface LayerIdentifiers {
     [collectionName: string]: string;
 }
 
+export interface LayerFields {
+    lastModified: number;
+    blame: string;
+}
+
 /**
  * Represents one of the three sub-classes of Layer
  */
@@ -37,12 +42,14 @@ export type LowerLayer = MiddleLayer<any, any, any> | BottomLayer<any, any>;
  * Represents data and methods common to all layers in the object model
  * @template TFields - The Fields type to have its members saved to and loaded from the database
  */
-export abstract class Layer<TFields> extends DatabaseObject<TFields> {
+export abstract class Layer<TFields extends LayerFields> extends DatabaseObject<TFields> {
     public abstract readonly collectionName: string;
     public abstract readonly layerID: WarehouseModel;
 
     protected constructor(id: string, fields: TFields) {
         super(id, fields);
+        this.fields.lastModified = Date.now();
+        this.fields.blame = firebase.auth.currentUser?.id ?? "";
     }
 
     /**

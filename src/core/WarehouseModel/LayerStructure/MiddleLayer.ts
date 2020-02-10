@@ -2,7 +2,7 @@ import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
 import Utils, {Queue} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
-import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer} from "./Layer";
+import {Layer, LayerFields, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer} from "./Layer";
 
 /**
  * Represents a middle layer in the object model (that has children and a parent)
@@ -10,7 +10,7 @@ import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields, UpperLayer}
  * @template TFields - The Fields type to have its members saved to and loaded from the database
  * @template TChildren - The type of the type's children
  */
-export abstract class MiddleLayer<TParent extends UpperLayer, TFields, TChildren extends LowerLayer> extends Layer<TFields> {
+export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends LayerFields, TChildren extends LowerLayer> extends Layer<TFields> {
     public abstract readonly childCollectionName: string;
     public parent: TParent;
     public children: TChildren[];

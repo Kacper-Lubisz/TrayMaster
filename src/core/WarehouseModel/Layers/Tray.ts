@@ -1,8 +1,9 @@
 import {Bay, Category, Column, ExpiryRange, Shelf, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
 import {BottomLayer} from "../LayerStructure/BottomLayer";
+import {LayerFields} from "../LayerStructure/Layer";
 import Utils from "../Utils";
 
-interface TrayFields {
+interface TrayFields extends LayerFields {
     categoryId: string;
     expiry: ExpiryRange | null;
     weight: number | null;
@@ -24,6 +25,8 @@ export class Tray extends BottomLayer<Column, TrayFields> {
                          comment?: string
     ): Tray {
         return new Tray(Utils.generateRandomId(), {
+            lastModified: Date.now(),
+            blame: "",
             categoryId: parent.parentWarehouse.getCategoryID(category),
             expiry: expiry ?? null,
             weight: weight ?? null,

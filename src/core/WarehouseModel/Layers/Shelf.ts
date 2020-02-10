@@ -1,8 +1,9 @@
 import {Bay, Column, Tray, TrayCell, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {LayerFields} from "../LayerStructure/Layer";
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
-interface ShelfFields {
+interface ShelfFields extends LayerFields {
     name: string;
     isPickingArea: boolean;
 }
@@ -18,7 +19,12 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
      * @param parent - The parent bay
      */
     public static create(name: string, isPickingArea: boolean, parent: Bay): Shelf {
-        return new Shelf(Utils.generateRandomId(), {name, isPickingArea}, parent);
+        return new Shelf(Utils.generateRandomId(), {
+            lastModified: Date.now(),
+            blame: "",
+            name,
+            isPickingArea
+        }, parent);
     }
 
     /**
