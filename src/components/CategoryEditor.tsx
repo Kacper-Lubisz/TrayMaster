@@ -51,7 +51,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * @param cat
      */
     private selectCategory(cat: Category): void {
-        if (this.checkIfCatChanged()) {
+        /*if (this.checkIfCatChanged()) {
             this.props.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => {
@@ -61,12 +61,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     />;
                 }
             });
-            /**
-             *TODO popup, choose continue with, without saving or cancel
-             */
-        } else {
-            this.changeCategory(cat);
-        }
+        } else {*/
+        this.changeCategory(cat);
+
     }
 
     private changeCategory(cat: Category): void {
@@ -84,12 +81,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     /**
      * Creates the right-hand side of the screen
      * Displays content of categories and allows user to edit them
-     * TODO delete should be disables if type is not "custom"
      */
     private editCategory(): any {
         return <>
             <div id="cat-edit-controls">
-                <h2>{this.state.catSelected ? `Edit ${this.state.catName}` : "New Category"}</h2>
+                <h2>{this.state.catSelected ? `Edit ${this.state.catSelected.name}` : "New Category"}</h2>
                 <h3>Name</h3>
                 <input type="text"
                        value={this.state.catName}
@@ -122,8 +118,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             </div>
             <div id="cat-edit-bottom-btns">
                 <div>
-                    <button
-                        onClick={() => this.deleteCategory()}>Delete Category
+                    <button disabled={this.state.catSelected?.type === "default" ||
+                    this.state.catSelected === null}
+                            onClick={() => this.deleteCategory()}>Delete Category
                     </button>
                 </div>
                 <div>
@@ -165,21 +162,24 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     }
 
     /**
-     *Saves changes to categories
+     *Saves changes to categories, doesn't let user save category with empty name
      */
     private saveCategory(): void {
-        console.log("hey");
-        if (this.props.categories.filter(cat => this.state.catName.includes(cat.name))) {
-            this.props.openDialog({
-                closeOnDocumentClick: true,
-                dialog: (close: () => void) => {
-                    return <EditCategoryDialog
-                        onDiscard={close}
-                        message="Category Already Exists"
-                    />;
-                }
-            });
+        if (this.state.catName === "") {
+            return;
         } else if (this.state.catSelected) {
+            /*if (this.props.categories.filter(cat => this.state.catName.includes(cat.name)) &&
+                this.props.warehouse.getCategoryID(this.state.catSelected) !== this.state.catID) {
+                this.props.openDialog({
+                    closeOnDocumentClick: true,
+                    dialog: (close: () => void) => {
+                        return <EditCategoryDialog
+                            onDiscard={close}
+                            message="Category Already Exists"
+                        />;
+                    }
+                });
+            } else {*/
             const editedCat = {
                 index: this.state.catSelected.index,
                 name: this.state.catName,
@@ -194,6 +194,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 catSelected: editedCat
             }));
             this.props.updatePage();
+
         } else {
             this.saveNewCategory();
         }
@@ -263,6 +264,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         ...state,
                         catSelected: this.props.categories[0]
                     }));
+                    this.props.updatePage();
                 }
             );
         }
@@ -291,7 +293,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     }
 }
 
-interface EditCategoryDialogProps  {
+interface EditCategoryDialogProps {
     onDiscard: () => void;
     message: string;
 }
