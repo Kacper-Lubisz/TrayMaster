@@ -16,10 +16,8 @@ interface SettingsProps {
 }
 
 interface SettingsState {
-    currentTab: Tab;
+    currentTab: "personal" | "wh-edit" | "cat-edit" | "handle-users";
 }
-
-type Tab = "personal" | "wh-edit" | "cat-edit" | "handle-users";
 
 
 /**

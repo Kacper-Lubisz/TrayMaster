@@ -73,7 +73,6 @@ export class DatabaseCollection<TFields> extends Map<string, TFields> {
     }
 
     public delete(id: string): boolean {
-        console.log("in delete");
         if (this.get(id)) {
             this.deleted.add(id);
             this.changed = true;

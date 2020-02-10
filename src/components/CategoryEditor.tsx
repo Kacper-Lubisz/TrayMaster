@@ -224,7 +224,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     }
 
     private cancelCategory(): void {
-        console.log(this.props.categories);
         if (this.state.catSelected) {
             const catName = this.state.catSelected.name;
             const catShortName = this.state.catSelected.shortName ? this.state.catSelected.shortName : "";
