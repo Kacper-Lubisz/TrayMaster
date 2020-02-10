@@ -293,7 +293,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     }
 }
 
-interface EditCategoryDialogProps {
+/*interface EditCategoryDialogProps {
     onDiscard: () => void;
     message: string;
 }
@@ -301,7 +301,7 @@ interface EditCategoryDialogProps {
 /**
  *Dialog to notify user of something
  */
-class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
+/*class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
 
     render(): React.ReactElement {
         return <>
@@ -318,3 +318,4 @@ class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
         </>;
     }
 }
+*/
