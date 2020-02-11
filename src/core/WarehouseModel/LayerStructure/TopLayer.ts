@@ -95,10 +95,10 @@ export abstract class TopLayer<TFields extends LayerFields, TChildren extends Lo
     public async load(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
         await this.loadLayer(forceLoad);
 
-        const queriesResults = await Promise.all(collectionNameRange(minLayer, this.layerID)
-            .map(async colName => firebase.database.loadQuery<unknown & TopLevelFields>(firebase.database.db.collection(Utils.joinPaths(this.topLayerPath, colName)).orderBy("index"))));
-
         if (!this.childrenLoaded) {
+            const queriesResults = await Promise.all(collectionNameRange(minLayer, this.layerID)
+                .map(async colName => firebase.database.loadQuery<unknown & TopLevelFields>(firebase.database.db.collection(Utils.joinPaths(this.topLayerPath, colName)).orderBy("index"))));
+
             type State = {
                 generator: (id: string, fields: unknown, parent: any) => LowerLayer;
                 collectionName: string;
