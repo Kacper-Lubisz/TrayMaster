@@ -38,6 +38,10 @@ export type UpperLayer = TopLayer<any, any> | MiddleLayer<any, any, any>;
  */
 export type LowerLayer = MiddleLayer<any, any, any> | BottomLayer<any, any>;
 
+export function collectionNameRange(minLayer: WarehouseModel, currentLayer: WarehouseModel): string[] {
+    return ["trays", "columns", "shelves", "bays", "zones", "warehouses"].slice(minLayer, currentLayer).reverse();
+}
+
 /**
  * Represents data and methods common to all layers in the object model
  * @template TFields - The Fields type to have its members saved to and loaded from the database
@@ -98,11 +102,5 @@ export abstract class Layer<TFields extends LayerFields> extends DatabaseObject<
      * Load the object (breadth first)
      * @async
      */
-    public abstract load(): Promise<this>;
-
-    /**
-     * Load the object (depth first)
-     * @param forceLoad
-     */
-    public abstract loadDepthFirst(forceLoad: boolean): Promise<this>;
+    public abstract load(forceLoad: boolean): Promise<this>;
 }

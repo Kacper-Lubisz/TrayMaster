@@ -45,11 +45,6 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields extends La
         callback(this);
     }
 
-    public async loadDepthFirst(forceLoad = false): Promise<this> {
-        await this.loadLayer(forceLoad);
-        return this;
-    }
-
     public async load(): Promise<this> {
         await this.loadLayer(true);
         return this;

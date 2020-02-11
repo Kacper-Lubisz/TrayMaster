@@ -230,7 +230,7 @@ export class WarehouseManager {
     }
 
     public static async loadWarehouse(warehouse: Warehouse): Promise<Warehouse> {
-        return await warehouse.load(WarehouseModel.shelf);
+        return await warehouse.load(false, WarehouseModel.shelf);
     }
 
     /**

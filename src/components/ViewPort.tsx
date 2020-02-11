@@ -27,7 +27,7 @@ interface ViewPortProps {
 
     removeColumn: (column: Column) => void;
 
-    current: ViewPortLocation;
+    current?: Shelf;
     isShelfEdit: boolean;
 
     draftWeight: string | undefined;
@@ -245,35 +245,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     render(): React.ReactNode {
-
-        if (!(this.props.current.loaded && this.props.current.childrenLoaded)) {
-            // todo fixme restyle this, ensure this is appropriate usage
-            return <div id="loading-box" style={{margin: "auto"}}>
-                <LoadingSpinner/>
-                <h2>Loading...</h2>
-            </div>;
-
-            // return <div style={{
-            //     margin: "auto"
-            // }}>
-            //     <LoadingSpinner message="Loading..."/>
-            // </div>;
-        }
-
-        if (this.props.current instanceof Warehouse) {
-            return <div id="viewPort">
-                <div>{/* container needed to centre text inside viewport properly */}
-                    <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
-                    <p>todo add a button to go to settings or wherever this can be changed</p>
-                </div>
-            </div>;
-        } else if (this.props.current instanceof Zone) {
-            return <div id="viewPort">
-                <h1>Current zone {this.props.current.toString()} has no bays</h1>
-                <p>todo add a button to go to settings or wherever this can be changed</p>
-            </div>;
-        } else {
+        if (this.props.current) {
             const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
+
+            if (!(shelf.loaded && shelf.childrenLoaded)) {
+                // todo fixme restyle this, ensure this is appropriate usage
+                return <div id="loading-box" style={{margin: "auto"}}>
+                    <LoadingSpinner/>
+                    <h2>Loading...</h2>
+                </div>;
+            }
+
             return (
                 <div id="viewPort" touch-action="none" onPointerUp={this.onDragSelectEnd.bind(this)}
                      onPointerLeave={this.onDragSelectEnd.bind(this)}>
@@ -283,6 +265,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                             this.renderColumn(shelf, column, columnIndex)
                         )}
                     </div>
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <h2><b><i>NOTHING LOADED, SORT IT OUT</i></b></h2> // todo fixme SORT IT OUT
                 </div>
             );
         }
@@ -376,7 +364,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             column.getPaddedTrays().map((tray, index) => {
                 const expiryStyle = (() => {
                     if (tray instanceof Tray && tray.expiry) {
-                        const background = tray.expiry ? getExpiryColor(tray.expiry, expiryColorMode) : "";
+                        const background = getExpiryColor(tray.expiry, expiryColorMode);
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)

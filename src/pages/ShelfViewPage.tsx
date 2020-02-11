@@ -51,12 +51,7 @@ export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
  * The directions in which you can navigate
  */
 type ShelfMoveDirection =
-    "left"
-    | "right"
-    | "up"
-    | "down"
-    | "next"
-    | "nextShelf"
+    "nextShelf"
     | "previousShelf"
     | "nextZone"
     | "previousZone";
@@ -95,6 +90,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 } else if (this.props.warehouse.shelves.length === 0) {
                     return this.props.warehouse.zones[0];
                 } else {
+                    this.props.warehouse.shelves[0].load(false, WarehouseModel.tray).then(() => {
+                        this.forceUpdate();
+                    });
                     return this.props.warehouse.shelves[0];
                 }
             })(),
@@ -150,31 +148,21 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param direction The shelf to move to or otherwise the direction in which to move.
      */
     private changeView(direction: ShelfMoveDirection | Shelf): void {
-
         if (direction instanceof Shelf) { // to specific shelf
+            direction.load(false, WarehouseModel.tray).then(() => {
+                this.forceUpdate();
+            });
             this.setState(state => ({
                 ...state,
                 selected: new Map(),
                 currentView: direction
             }));
             return;
-        } else if (direction === "next") { // decide if next zone or shelf
-
-            if (this.state.currentView instanceof Zone) {
-                this.changeView("nextZone");
-            } else if (this.state.currentView instanceof Shelf) {
-                this.changeView("nextShelf");
-            } else {
-                throw Error("Can't change view in direction 'next' when looking at a warehouse");
-            }
-
         } else if (this.state.currentView instanceof Warehouse) {
             throw Error("Trying to navigate an empty warehouse");
             // this can't be navigated and ought not to happen
 
         } else if (this.state.currentView instanceof Zone && (
-            direction === "left" || direction === "right" ||
-            direction === "up" || direction === "down" ||
             direction === "nextShelf" || direction === "previousShelf"
         )) {
             throw Error("These move directions are not possible when the current view is a Zone");
@@ -182,7 +170,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         } else if (this.state.currentView instanceof Zone) { // if we're moving from a zone
             const increment = direction === "nextZone" ? 1 : -1; // only nextZone or previousZone possible
 
-            const zoneIndex = this.props.warehouse.zones.indexOf(this.state.currentView);
+            const zoneIndex = this.state.currentView.index;
             const newZoneIndex = properMod(zoneIndex + increment, this.props.warehouse.zones.length);
             const newZone = this.props.warehouse.zones[newZoneIndex];
 
@@ -200,6 +188,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentView: newBay.shelves.length === 0 ? newZone
                                                              : newBay.shelves[0]
                 }));
+
+                if (!newBay.shelves.length) {
+                    newBay.shelves[0].load(false, WarehouseModel.tray).then(() => {
+                        this.forceUpdate();
+                    });
+                }
             }
         } else { // moving from a shelf
             const
@@ -210,14 +204,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 bayIndex: number = currentBay.index,
                 zoneIndex: number = currentZone.index;
 
-            if (direction === "up" || direction === "down") { // vertical
+            // "nextShelf", "previousShelf", "nextZone", "previousZone"
+            // cyclic, inc/dec shelf -> bay -> zone
+            const increment = direction === "nextShelf" || direction === "nextZone" ? 1 : -1;
+            const isZone = direction === "nextZone" || direction === "previousZone";
 
-                const increment = direction === "up" ? 1 : -1;
-                const newShelfIndex: number = shelfIndex + increment;
+            if (shelfIndex + increment !== currentBay.shelves.length &&
+                shelfIndex + increment !== -1 && !isZone) {// increment shelfIndex
 
-                if (newShelfIndex < 0 || newShelfIndex >= currentBay.shelves.length) {
-                    return;
-                }
+                const newShelfIndex = shelfIndex + increment;
 
                 this.setState(state => ({
                     ...state,
@@ -225,79 +220,58 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentView: currentBay.shelves[newShelfIndex]
                 }));
 
-            } else if (direction === "left" || direction === "right") { // horizontal
+                currentBay.shelves[newShelfIndex].load(false, WarehouseModel.tray).then(() => {
+                    this.forceUpdate();
+                });
+            } else if (bayIndex + increment !== currentZone.bays.length
+                && bayIndex + increment !== -1 && !isZone) { // increment bayIndex
 
-                const increment = direction === "right" ? 1 : -1;
-                const newBayIndex: number = bayIndex + increment;
+                const newBay = currentZone.bays[bayIndex + increment];
+                const newShelfIndex = direction === "nextShelf" ? 0
+                                                                : newBay.shelves.length - 1;
 
-                if (newBayIndex < 0 || newBayIndex >= currentZone.bays.length) {
-                    return;
-                }
-
-                const newShelfIndex: number = Math.max(Math.min(
-                    shelfIndex,
-                    currentZone.bays[newBayIndex].shelves.length - 1),
-                    0
-                );
                 this.setState(state => ({
                     ...state,
                     selected: new Map(),
-                    currentView: currentZone.bays[newBayIndex].shelves[newShelfIndex]
+                    currentView: newBay.shelves.length === 0 ? currentZone
+                                                             : newBay.shelves[newShelfIndex]
                 }));
 
-            } else {
-                // "nextShelf", "previousShelf", "nextZone", "previousZone"
-                // cyclic, inc/dec shelf -> bay -> zone
-                const increment = direction === "nextShelf" || direction === "nextZone" ? 1 : -1;
-                const isZone = direction === "nextZone" || direction === "previousZone";
+                if (newBay.shelves.length) {
+                    newBay.shelves[newShelfIndex].load(false, WarehouseModel.tray).then(() => {
+                        this.forceUpdate();
+                    });
+                }
+            } else { // increment zone
 
-                if (shelfIndex + increment !== currentBay.shelves.length &&
-                    shelfIndex + increment !== -1 && !isZone) {// increment shelfIndex
+                const newZone = currentZone.parent.zones[properMod(zoneIndex + increment,
+                    currentZone.parent.zones.length)];
 
-                    const newShelfIndex = shelfIndex + increment;
+                if (newZone.bays.length === 0) {
                     this.setState(state => ({
                         ...state,
                         selected: new Map(),
-                        currentView: currentBay.shelves[newShelfIndex]
+                        currentView: newZone
                     }));
-                } else if (bayIndex + increment !== currentZone.bays.length
-                    && bayIndex + increment !== -1 && !isZone) { // increment bayIndex
+                } else {
+                    const bayIndex = increment === 1 ? 0
+                                                     : newZone.bays.length - 1;
+                    const newBay = newZone.bays[bayIndex];
 
-                    const newBay = currentZone.bays[bayIndex + increment];
-                    const newShelfIndex = direction === "nextShelf" ? 0
-                                                                    : newBay.shelves.length - 1;
+                    const newShelfIndex = increment === 1 ? 0
+                                                          : newBay.shelves.length - 1;
 
                     this.setState(state => ({
                         ...state,
                         selected: new Map(),
-                        currentView: newBay.shelves.length === 0 ? currentZone
+                        currentView: newBay.shelves.length === 0 ? newZone
                                                                  : newBay.shelves[newShelfIndex]
                     }));
-                } else { // increment zone
 
-                    const newZone = currentZone.parent.zones[properMod(zoneIndex + increment,
-                        currentZone.parent.zones.length)];
-
-                    if (newZone.bays.length === 0) {
-                        this.setState(state => ({
-                            ...state,
-                            selected: new Map(),
-                            currentView: newZone
-                        }));
-                    } else {
-                        const bayIndex = increment === 1 ? 0
-                                                         : newZone.bays.length - 1;
-                        const newBay = newZone.bays[bayIndex];
-
-                        const newShelfIndex = increment === 1 ? 0
-                                                              : newBay.shelves.length - 1;
-
-                        this.setState(state => ({
-                            ...state,
-                            selected: new Map(),
-                            currentView: newBay.shelves.length === 0 ? newZone
-                                                                     : newBay.shelves[newShelfIndex]
-                        }));
+                    if (newBay.shelves.length) {
+                        newBay.shelves[newShelfIndex].load(false, WarehouseModel.tray).then(() => {
+                            this.forceUpdate();
+                        });
                     }
                 }
             }
@@ -321,10 +295,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         }
 
         return new Map([
-            ["left", location.parentBay.index - 1 !== -1],
-            ["right", location.parentBay.index + 1 !== location.parentZone.bays.length],
-            ["up", location.index + 1 !== location.parentBay.shelves.length],
-            ["down", location.index - 1 !== -1],
             ["nextShelf", location.parentWarehouse.shelves.length > 1],
             ["previousShelf", location.parentWarehouse.shelves.length > 1],
             ["nextZone", location.parentWarehouse.zones.length > 1],
@@ -808,7 +778,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     removeColumn={this.removeColumn.bind(this)}
 
-                    current={this.state.currentView}
+                    current={this.state.currentView instanceof Shelf ? this.state.currentView : undefined}
                     isShelfEdit={this.state.isEditShelf}
 
                     draftWeight={this.state.weight}
@@ -866,7 +836,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         this.props.user.showPreviousShelfButton ? {
                             name: "Previous Shelf",
-                            onClick: this.changeView.bind(this, "previousShelf"),
+                            onClick: this.changeView.bind(this,"previousShelf"),
                             disabled: !possibleMoveDirections.get("previousShelf")
                         } : null,
                         {

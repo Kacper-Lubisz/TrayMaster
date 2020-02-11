@@ -75,15 +75,10 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         }
     }
 
-    public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
-        await this.loadCollections(forceLoad);
-        return super.loadDepthFirst(forceLoad, minLayer);
-    }
-
-    public async load(minLayer = this.layerID, forceLoad = false): Promise<this> {
+    public async load(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
         await this.loadCollections(forceLoad);
         if ((!this.loaded || (!this.childrenLoaded && this.layerID > minLayer)) || forceLoad) {
-            return super.load(minLayer);
+            return super.load(forceLoad, minLayer);
         }
         return this;
     }
