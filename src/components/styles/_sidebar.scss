@@ -5,19 +5,39 @@
 #sideBar {
   // arrange children
   padding: 5px;
-  //display: flex;
-  //flex-direction: column;
-  //justify-content: space-between;
+  display: flex;
+  flex-direction: column;
 
-  display: grid;
-
-  #navigatorButton {
-    border-radius: 5px;
+  #shelfName {
     cursor: pointer;
   }
 
-  #navigatorButton.disabled {
+  #shelfName.disabled {
     background-color: #eee;
+  }
+
+  #sidebar-buttons-main {
+    flex-grow: 1;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 1fr;
+
+    > button {
+      grid-column: span 2;
+      padding: 0;
+
+      &.halfWidth {
+        grid-column: span 1;
+        min-width: 0;
+      }
+
+      > svg {
+        width: 100%;
+        height: 50px;
+        // todo make sure this height works on all screen sizes - add breakpoints if not
+      }
+    }
   }
 
   // container for keyboard switch buttons

@@ -35,6 +35,11 @@
 
   // these values specify what sectors of the grid each component takes up
 
+  > div {
+    min-height: 0;
+    min-width: 0;
+  }
+
   #toolBar {
     grid-column-start: 2;
     grid-column-end: 3;

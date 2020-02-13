@@ -4,9 +4,13 @@ import classNames from "classnames";
 import React from "react";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-import {KeyboardButtonProps} from "./Keyboard";
+import {CustomButtonProps} from "./Keyboard";
 import "./styles/_sidebar.scss";
 
+
+export type SideBarButtonProps = CustomButtonProps & {
+    halfWidth: boolean;
+};
 
 /**
  * Props to be passed into SideBar
@@ -20,7 +24,7 @@ interface SideBarProps {
     keyboardSwitcher: (name: KeyboardName) => void;
 
     /** List of buttons for the keyboard part of the side panel, null is just ignored */
-    buttons: (KeyboardButtonProps | null)[];
+    buttons: (SideBarButtonProps | null)[];
     /** List of button keyboard switches */
     keyboards: KeyboardSwitch[];
     /** The current keyboard, used for highlighting the active */
@@ -54,7 +58,7 @@ export class SideBar extends React.Component<SideBarProps> {
     render(): React.ReactNode {
         return <div id="sideBar">
             <div
-                id="navigatorButton"
+                id="shelfName"
                 className={this.props.openNavigatorDisabled ? "disabled" : undefined}
                 style={this.props.openNavigatorDisabled ? undefined : {
                     backgroundColor: this.props.zoneColor,
@@ -65,8 +69,8 @@ export class SideBar extends React.Component<SideBarProps> {
                 <h2>{this.props.locationString}</h2>
             </div>
 
-            {
-                this.props.buttons.filter((props): props is KeyboardButtonProps =>
+            <div id="sidebar-buttons-main">{
+                this.props.buttons.filter((props): props is SideBarButtonProps =>
                     props !== null).map((button, index) =>
                     <button
                         key={index}
@@ -74,12 +78,14 @@ export class SideBar extends React.Component<SideBarProps> {
                             button?.onClick?.call(undefined, e);
                             e.currentTarget.blur();
                         }}
+                        className={button.halfWidth ? "halfWidth" : ""}
                     >{
                         button.icon ? <FontAwesomeIcon icon={button.icon} title={button.name}/>
                                     : button.name
                     }</button>
                 )
-            }
+            }</div>
+
             {this.props.showKeyboardSwitcher ? <div id="kb-switcher">{
                 this.props.keyboards.map((keyboard, index) =>
                     <button

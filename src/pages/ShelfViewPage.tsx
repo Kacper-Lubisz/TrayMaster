@@ -1,13 +1,15 @@
 import {
     faArrowLeft as leftArrow,
     faArrowRight as rightArrow,
+    faCalculator as weightIcon,
     faCheckCircle as tickSolid,
     faClock as expiryIcon,
+    faCog as settingsIcon,
     faCube as categoryIcon,
     faEraser,
+    faHome as menuIcon,
     faStickyNote,
-    faTimes as cross,
-    faCalculator as weightIcon
+    faTimes as cross
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
@@ -846,26 +848,55 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {
                             name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
                                                                        : "Mark as Picking Area",
-                            onClick: this.togglePickingArea.bind(this, this.state.currentView)
+                            onClick: this.togglePickingArea.bind(this, this.state.currentView),
+                            halfWidth: false
                         },
-                        {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
+                        {
+                            name: "Add Column",
+                            onClick: this.addColumn.bind(this, this.state.currentView),
+                            halfWidth: false
+                        },
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
-                        {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
+                        {
+                            name: "Save",
+                            onClick: this.finaliseEditShelf.bind(this, this.state.currentView),
+                            halfWidth: false
+                        },
                     ] : [ // Generate sidebar buttons
-                        {name: "Main Menu", onClick: () => this.props.history.push("/menu")},
-                        {name: "Search", onClick: this.makeSearch.bind(this)},
-                        {name: "Settings", onClick: () => this.props.history.push("/settings")},
-                        {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
+                        {
+                            name: "Main Menu",
+                            icon: menuIcon,
+                            onClick: () => this.props.history.push("/menu"),
+                            halfWidth: true
+                        },
+                        {
+                            name: "Settings",
+                            icon: settingsIcon,
+                            onClick: () => this.props.history.push("/settings"),
+                            halfWidth: true
+                        },
+                        {
+                            name: "Search",
+                            onClick: this.makeSearch.bind(this),
+                            halfWidth: false
+                        },
+                        {
+                            name: "Edit Shelf",
+                            onClick: this.enterEditShelf.bind(this),
+                            halfWidth: false
+                        },
                         this.props.user.showPreviousShelfButton ? {
                             name: "Previous Shelf",
                             onClick: this.changeView.bind(this, "previousShelf"),
-                            disabled: !possibleMoveDirections.get("previousShelf")
+                            disabled: !possibleMoveDirections.get("previousShelf"),
+                            halfWidth: true
                         } : null,
                         {
                             name: "Next Shelf",
                             onClick: this.changeView.bind(this, "nextShelf"),
-                            disabled: !possibleMoveDirections.get("nextShelf")
-                        },
+                            disabled: !possibleMoveDirections.get("nextShelf"),
+                            halfWidth: this.props.user.showPreviousShelfButton
+                        }
                     ]}
                     keyboards={[
                         {name: "category", icon: categoryIcon},
