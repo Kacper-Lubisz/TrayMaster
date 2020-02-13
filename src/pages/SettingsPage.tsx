@@ -38,6 +38,10 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                 get: () => this.props.user.showPreviousShelfButton,
                 set: (value: boolean) => this.props.user.showPreviousShelfButton = value,
                 label: "Show Previous Shelf Button"
+            }, {
+                get: () => this.props.user.clearAboveSelection,
+                set: (value: boolean) => this.props.user.clearAboveSelection = value,
+                label: "Clear all trays above when clearing"
             }
         ];
 
