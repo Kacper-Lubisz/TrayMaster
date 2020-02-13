@@ -83,17 +83,19 @@ class App extends React.Component<unknown, AppState> {
 
     render(): React.ReactNode {
         return <>
-            {this.state === null || this.state.loading ? <LoadingPage/> : <BrowserRouter><ErrorHandler>
+            {this.state === null || this.state.loading ? <LoadingPage/> : <BrowserRouter
+                forceRefresh={false}><ErrorHandler>
                 <Switch>
-                    <Route path="/" component={() =>
-                        this.state.user && this.state.warehouse ? <ShelfViewPage
+                    <Route path="/" exact>
+                        {this.state.user && this.state.warehouse ? <ShelfViewPage
                             setSearch={this.setSearch.bind(this)}
                             openDialog={this.openDialog.bind(this)}
 
                             warehouse={this.state.warehouse}
                             user={this.state.user}
-                        /> : <Redirect to="/menu"/>} exact/>
-                    <Route path="/menu" component={() => (() => {
+                        /> : <Redirect to="/menu"/>}
+                    </Route>
+                    <Route path="/menu">{(() => {
                         if (this.state.user && this.state.warehouse) {
                             return <MainMenu
                                 changeWarehouse={() => {
@@ -122,8 +124,8 @@ class App extends React.Component<unknown, AppState> {
                         } else {
                             return <Redirect to={"/warehouses"}/>;
                         }
-                    })()}/>
-                    <Route path="/settings" component={() => (() => {
+                    })}</Route>
+                    <Route path="/settings"> {(() => {
                         if (!this.state.user) {
                             return <Redirect to={"/signin"}/>;
                         } else if (!this.state.warehouse) {
@@ -135,11 +137,11 @@ class App extends React.Component<unknown, AppState> {
                                 openDialog={this.openDialog.bind(this)}
                             />;
                         }
-                    })()}/>
-                    <Route path="/signin" component={() =>
+                    })()}</Route>
+                    <Route path="/signin">{
                         this.state.user ? <Redirect to={"/menu"}/> : <SignInPage/>
-                    }/>
-                    <Route path="/warehouses" component={() => (() => {
+                    }</Route>
+                    <Route path="/warehouses">{(() => {
                         if (this.state.user && this.state.warehouse) {
                             return <Redirect to={"/menu"}/>;
                         } else if (!this.state.user) {
@@ -150,16 +152,15 @@ class App extends React.Component<unknown, AppState> {
                                 setWarehouse={this.setWarehouse.bind(this)}
                             />;
                         }
-                    })()}/>
-                    <Route path="/search" component={() => {
-                        return this.state.user && this.state.warehouse ?
-                               this.state.search ? <SearchPage
-                                   warehouse={this.state.warehouse}
-                                   search={this.state.search}
-                                   setQuery={this.setSearch.bind(this)}
-                               /> : <Redirect to="/"/>
-                                                                       : <Redirect to="/menu"/>;
-                    }}/>
+                    })()}</Route>
+                    <Route path="/search">{
+                        this.state.user && this.state.warehouse ?
+                        this.state.search ? <SearchPage
+                            warehouse={this.state.warehouse}
+                            search={this.state.search}
+                            setQuery={this.setSearch.bind(this)}
+                        /> : <Redirect to="/"/> : <Redirect to="/menu"/>
+                    }</Route>
                     <Route component={PageNotFoundPage}/>
                 </Switch>
             </ErrorHandler>
