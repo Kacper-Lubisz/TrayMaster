@@ -50,32 +50,38 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     constructor(props: BottomPanelProps) {
         super(props);
 
-        // Expiry keyboard structure
+        // Expiry keyboard structures
         this.years = [];
         // TODO: consider applying database settings to this
         const thisYear = new Date().getFullYear();
         for (let i = thisYear; i < thisYear + 8; i++) {
             this.years.push({
                 name: i.toString(), onClick: () => {
-                    this.selectYear(i);
-                }
-            });
-        }
-
-        this.quarters = [];
-        for (let i = 0; i < 4; i++) {
-            this.quarters.push({
-                name: this.quartersTranslator[i], onClick: () => {
-                    this.selectQuarter(i);
+                    this.selectRange(i);
                 }
             });
         }
 
         this.months = [];
-        for (let i = 0; i < 12; i++) {
+        const thisMonth = new Date().getMonth();
+        for (let i = thisMonth; i < thisMonth + 12; i++) {
+            const year = thisYear + Math.floor(i / 12);
+            const month = i % 12;
             this.months.push({
-                name: this.monthsTranslator[i], onClick: () => {
-                    this.selectMonth(i);
+                name: `${this.monthsTranslator[month]} ${year.toString()}`, onClick: () => {
+                    this.selectRange(year, {month: month});
+                }
+            });
+        }
+
+        this.quarters = [];
+        const thisQuarter = Math.floor(thisMonth / 3);
+        for (let i = thisQuarter; i < thisQuarter + 8; i++) {
+            const year = thisYear + Math.floor(i / 4);
+            const quarter = i % 4;
+            this.quarters.push({
+                name: `Q${(quarter + 1).toString()} ${thisYear.toString()}`, onClick: () => {
+                    this.selectRange(year, {quarter: quarter});
                 }
             });
         }
@@ -114,58 +120,47 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         }
     }
 
-    /**
-     * Called when a year button is pressed
-     * Sets selectedYear and current tray expiry to that year
-     * @param year - number representing the current year
-     */
-    private selectYear(year: number): void {
-        const from = new Date(year, 0).getTime();
-        const to = new Date(year + 1, 0).getTime();
+    private selectRange(year: number, yearPeriod?: { quarter?: number; month?: number }): void {
+        const rangeType: "year" | "quarter" | "month" = (() => {
+            if (yearPeriod?.month !== undefined) {
+                return "month";
+            } else if (yearPeriod?.quarter !== undefined) {
+                return "quarter";
+            }
+            return "year";
+        })();
+        const [m, q] = [yearPeriod?.month as number, yearPeriod?.quarter as number];
+
+        const [from, to]: Date[] = (() => {
+            if (rangeType === "month") {
+                return [
+                    new Date(year, m),
+                    new Date(year + Math.floor(m / 11), (m + 1) % 12)
+                ];
+            } else if (rangeType === "quarter") {
+                return [
+                    new Date(year, q * 3),
+                    new Date(year + Math.floor(q / 3), (q + 1) % 4 * 3)
+                ];
+            }
+            return [
+                new Date(year, 0),
+                new Date(year + 1, 0)
+            ];
+        })();
 
         this.props.expirySelected({
-            from: from,
-            to: to,
-            label: year.toString()
+            from: from.getTime(),
+            to: to.getTime(),
+            label: `${(() => {
+                if (rangeType === "month") {
+                    return `${this.monthsTranslator[m]} `;
+                } else if (rangeType === "quarter") {
+                    return `${this.quartersTranslator[q]} `;
+                }
+                return "";
+            })()}${year.toString()}`
         });
-    }
-
-    /**
-     * Called when a quarter button is pressed
-     * Sets current tray expiry to that quarter in selectedYear
-     * @param quarter - number in [0-3] inclusive representing the current quarter
-     */
-    private selectQuarter(quarter: number): void {
-        if (this.props.commonYear) {
-
-            const from = new Date(this.props.commonYear, quarter * 3).getTime();
-            const to = new Date(this.props.commonYear + Math.floor(quarter / 3), (quarter + 1) % 4 * 3).getTime();
-            this.props.expirySelected({
-                from: from,
-                to: to,
-                label: `${this.quartersTranslator[quarter]} ${this.props.commonYear.toString()}`
-            });
-        }
-    }
-
-    /**
-     * Called when a month button is pressed
-     * Sets current tray expiry to that month in selectedYear
-     * @param month - number in [0-11] inclusive representing the current month
-     */
-    private selectMonth(month: number): void {
-        if (this.props.commonYear) {
-
-            const from = new Date(this.props.commonYear, month).getTime();
-            const to = new Date(month === 11 ? this.props.commonYear + 1
-                                             : this.props.commonYear, (month + 1) % 12).getTime();
-
-            this.props.expirySelected({
-                from: from,
-                to: to,
-                label: `${this.monthsTranslator[month]} ${this.props.commonYear.toString()}`
-            });
-        }
     }
 
     /**
@@ -223,10 +218,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             return <div className="keyboard-container">
                 <Keyboard id="exp-special" disabled={disabled} buttons={specialButtons} gridX={1}/>
-                <div className="vl"/>
                 <Keyboard id="exp-years" disabled={disabled} buttons={this.years} gridX={2}/>
-                <div className="vl"/>
-                <Keyboard id="exp-quarters" disabled={!this.props.commonYear} buttons={this.quarters} gridX={1}/>
+                <Keyboard id="exp-quarters" disabled={!this.props.commonYear} buttons={this.quarters} gridX={2}/>
                 <Keyboard id="exp-months" disabled={!this.props.commonYear} buttons={this.months} gridX={3}/>
             </div>;
 
