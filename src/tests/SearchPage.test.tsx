@@ -54,7 +54,7 @@ describe("Results rendering tests:", () => {
     });
 
     it("displays a message to tell the user that there are no results", () => {
-        expect(page.find("div#searchResults > div").text()).toEqual("Couldn't find any trays which match this search");
+        expect(page.find("div#searchResults > div").text()).toEqual("Couldn't find any trays which match this search!");
         page.unmount();
     });
 
