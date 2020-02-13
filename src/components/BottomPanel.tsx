@@ -16,7 +16,7 @@ export interface BottomPanelProps {
     categories: Category[];
 
     selectedTrayCells: TrayCell[];
-    commonYear?: number;
+    commonRange?: ExpiryRange;
 
     weight?: string;
     setWeight: (weight: string | undefined, couldAdvance: boolean) => void;
@@ -24,6 +24,9 @@ export interface BottomPanelProps {
     user: User;
 }
 
+type ExpiryKeyboardButtonProps = KeyboardButtonProps & {
+    expiryFrom: number;
+};
 type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
 
 /**
@@ -31,9 +34,9 @@ type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
  * @see BottomPanelPage
  */
 export class BottomPanel extends React.Component<BottomPanelProps> {
-    private readonly years: KeyboardButtonProps[];
-    private readonly quarters: KeyboardButtonProps[];
-    private readonly months: KeyboardButtonProps[];
+    private readonly years: ExpiryKeyboardButtonProps[];
+    private readonly quarters: ExpiryKeyboardButtonProps[];
+    private readonly months: ExpiryKeyboardButtonProps[];
     private readonly quartersTranslator: string[] = [
         "Jan-Mar",
         "Apr-Jun",
@@ -58,7 +61,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             this.years.push({
                 name: i.toString(), onClick: () => {
                     this.selectRange(i);
-                }
+                },
+                expiryFrom: new Date(i, 0).getTime()
             });
         }
 
@@ -70,7 +74,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             this.months.push({
                 name: `${this.monthsTranslator[month]} ${year.toString()}`, onClick: () => {
                     this.selectRange(year, {month: month});
-                }
+                },
+                expiryFrom: new Date(year, month).getTime()
             });
         }
 
@@ -82,7 +87,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             this.quarters.push({
                 name: `Q${(quarter + 1).toString()} ${year.toString()}`, onClick: () => {
                     this.selectRange(year, {quarter: quarter});
-                }
+                },
+                expiryFrom: new Date(year, quarter * 3).getTime()
             });
         }
     }
@@ -195,12 +201,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
-
-            // todo decide whether to keep this for the new expiry keyboard
-            // set the button corresponding to selectedYear to be visibly selected
-            /*for (const year of this.years) {
-                year.selected = year.name === this.props.commonYear?.toString();
-            }*/
+            this.highlightExpiryKey();
 
             const specialButtons = [
                 {
@@ -264,6 +265,22 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             </div>;
         }
 
+    }
+
+    private highlightExpiryKey(): void {
+        const isYear = this.props.commonRange?.label.length === 4;
+        const isMonth = this.props.commonRange?.label.length === 8;
+        const isQuarter = !isYear && !isMonth;
+
+        for (const year of this.years) {
+            year.selected = isYear && year.expiryFrom === this.props.commonRange?.from;
+        }
+        for (const month of this.months) {
+            month.selected = isMonth && month.expiryFrom === this.props.commonRange?.from;
+        }
+        for (const quarter of this.quarters) {
+            quarter.selected = isQuarter && quarter.expiryFrom === this.props.commonRange?.from;
+        }
     }
 
     /**

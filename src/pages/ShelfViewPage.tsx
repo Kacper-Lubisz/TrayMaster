@@ -761,14 +761,13 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method finds the expiry range start year which all selected trays have in common, if no year is in common
      * then undefined.
      */
-    private getCommonYear(): number | undefined {
+    private getCommonRange(): ExpiryRange | undefined {
         const traysOnly = this.splitCells(this.getSelectedTrayCells()).trays;
-        const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
-        const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
+        const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry;
 
-        return firstYear !== undefined && traysOnly.every(item =>
-            item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
-        ) ? firstYear : undefined;
+        return firstExp !== undefined && traysOnly.every(item =>
+            item.expiry && item.expiry === firstExp
+        ) ? firstExp : undefined;
     }
 
     /**
@@ -880,7 +879,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     categories={this.props.warehouse.categories}
                     categorySelected={this.onCategorySelected.bind(this)}
                     expirySelected={this.onExpirySelected.bind(this)}
-                    commonYear={this.state.currentKeyboard === "expiry" ? this.getCommonYear() : undefined}
+                    commonRange={this.state.currentKeyboard === "expiry" ? this.getCommonRange() : undefined}
                     weight={this.state.weight}
                     setWeight={this.setWeight.bind(this)}
                     keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
