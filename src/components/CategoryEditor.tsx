@@ -1,5 +1,5 @@
 import React from "react";
-import {Dialog} from "../core/Dialog";
+import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, Warehouse} from "../core/WarehouseModel";
 
@@ -51,7 +51,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * @param cat
      */
     private selectCategory(cat: Category): void {
-        /*if (this.checkIfCatChanged()) {
+        if (this.checkIfCatChanged()) {
             this.props.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => {
@@ -61,9 +61,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     />;
                 }
             });
-        } else {*/
-        this.changeCategory(cat);
-
+        } else {
+            this.changeCategory(cat);
+        }
     }
 
     private changeCategory(cat: Category): void {
@@ -98,7 +98,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 />
                 <button onClick={() => this.setState(state => ({
                     catShortName: state.catName
-                }))}>Same as "Name"</button>
+                }))}>Copy From Name
+                </button>
                 <h3>Low Stock Level</h3>
                 <input type="number"
                        min="0"
@@ -169,20 +170,16 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private saveCategory(): void {
         if (this.state.catName === "") {
-            return;
+            this.props.openDialog({
+                closeOnDocumentClick: true,
+                dialog: (close: () => void) => {
+                    return <EditCategoryDialog
+                        onDiscard={close}
+                        message="Please Enter a Category Name"
+                    />;
+                }
+            });
         } else if (this.state.catSelected) {
-            /*if (this.props.categories.filter(cat => this.state.catName.includes(cat.name)) &&
-                this.props.warehouse.getCategoryID(this.state.catSelected) !== this.state.catID) {
-                this.props.openDialog({
-                    closeOnDocumentClick: true,
-                    dialog: (close: () => void) => {
-                        return <EditCategoryDialog
-                            onDiscard={close}
-                            message="Category Already Exists"
-                        />;
-                    }
-                });
-            } else {*/
             const editedCat = {
                 index: this.state.catSelected.index,
                 name: this.state.catName,
@@ -295,7 +292,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     }
 }
 
-/*interface EditCategoryDialogProps {
+interface EditCategoryDialogProps {
     onDiscard: () => void;
     message: string;
 }
@@ -303,7 +300,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 /**
  *Dialog to notify user of something
  */
-/*class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
+class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
 
     render(): React.ReactElement {
         return <>
@@ -320,4 +317,3 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         </>;
     }
 }
-*/

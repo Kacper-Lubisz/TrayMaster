@@ -235,6 +235,7 @@ class App extends React.Component<unknown, AppState> {
      * @param dialog The dialog to be displayed
      */
     private openDialog(dialog: Dialog): void {
+        console.log("opening dialog");
         this.setState(state => ({
             ...state,
             dialog: {

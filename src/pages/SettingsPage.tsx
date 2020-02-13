@@ -43,7 +43,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor
-                openDialog={() => this.props.openDialog.bind(this)}
+                openDialog={this.props.openDialog}
                 categories={this.props.warehouse.categories}
                 user={this.props.user}
                 warehouse={this.props.warehouse}
