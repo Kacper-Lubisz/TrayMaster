@@ -26,6 +26,8 @@ interface UserFields {
     onlySingleAutoAdvance: boolean;
 
     showPreviousShelfButton: boolean;
+
+    clearAboveSelection: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
@@ -39,6 +41,7 @@ export class User extends DatabaseObject<UserFields> {
             enableAutoAdvance: false,
             onlySingleAutoAdvance: false,
             showPreviousShelfButton: false,
+            clearAboveSelection: true
         });
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
@@ -117,6 +120,15 @@ export class User extends DatabaseObject<UserFields> {
         this.fields.showPreviousShelfButton = showPreviousShelfButton;
     }
 
+    public get clearAboveSelection(): boolean {
+        return this.fields.clearAboveSelection;
+    }
+
+    public set clearAboveSelection(clearAboveSelection: boolean) {
+        this.fields.clearAboveSelection = clearAboveSelection;
+    }
+
+
 }
 
 export class Authentication {
@@ -155,6 +167,7 @@ export class Authentication {
                     enableAutoAdvance: false,
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
+                    clearAboveSelection: true
                 }).load();
             onSignIn?.call(this, this.currentUser);
         }
@@ -181,6 +194,7 @@ export class Authentication {
                     enableAutoAdvance: false,
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
+                    clearAboveSelection: true
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
@@ -201,6 +215,7 @@ export class Authentication {
                     enableAutoAdvance: false,
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
+                    clearAboveSelection: true
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
