@@ -201,6 +201,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
 
         } else if (this.props.keyboardState === "expiry") {
+            // todo this might be worth making a setting for; it's the kind of thing someone might want to disable for
+            //  performance on low-end devices
             this.highlightExpiryKey();
 
             const specialButtons = [
@@ -267,7 +269,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
     }
 
+    /**
+     * Highlight the key corresponding to the current selection
+     */
     private highlightExpiryKey(): void {
+        // this isn't the best way to do this but it's more performant than other options
         const isYear = this.props.commonRange?.label.length === 4;
         const isMonth = this.props.commonRange?.label.length === 8;
         const isQuarter = !isYear && !isMonth;
