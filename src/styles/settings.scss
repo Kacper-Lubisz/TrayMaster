@@ -34,25 +34,16 @@
   position: fixed;
   left: 15px;
   bottom: 15px;
-  height: 75px;
+  height: 100px;
   width: 250px;
 
-  button {
-    position: relative;
-  }
+  > button {
+    flex-grow: 1;
+    min-height: 0;
 
-  .line {
-    //line above 'back'
-    background: gray;
-    height: 3px;
-    width: inherit;
-  }
-
-  .back-btn {
-    //back button icon
-    position: absolute;
-    top: 50%;
-    transform: translate(0, -50%);
-    left: 50px;
+    > svg {
+      width: 100% !important;
+      height: 60%;
+    }
   }
 }
