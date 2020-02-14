@@ -1,14 +1,18 @@
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
+import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
+import {byNullSafe} from "../utils/sortsUtils";
 import {Keyboard, KeyboardButtonProps} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 
 
 export interface BottomPanelProps {
+    openDialog: (dialog: Dialog) => void;
+
     keyboardState: KeyboardName;
     categorySelected: (category: Category | null) => void;
     expirySelected: (expiry: ExpiryRange | null) => void;
@@ -179,24 +183,72 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         if (this.props.keyboardState === "category") {
 
             const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
-            const commonCat = firstCat === undefined ? undefined
-                                                     : traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
-                                                       ? firstCat : null;
+            const commonCat = firstCat !== undefined && traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
+                              ? firstCat : null;
 
-            const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
-                return {
-                    name: cat.shortName ?? cat.name,
-                    onClick: () => this.props.categorySelected(cat),
-                    selected: cat.name === commonCat
-                };
-            }).concat([
+
+            const categoryGroups: Map<string, [Category]> = new Map();
+            this.props.categories.forEach(cat => {
+
+                if (cat.group === undefined) { // todo fixme remove this when this is propagated to the db
+                    cat.group = null;
+                }
+
+                if (cat.group !== null) {
+                    if (categoryGroups.has(cat.group)) {
+                        categoryGroups.get(cat.group)?.push(cat);
+                    } else {
+                        categoryGroups.set(cat.group, [cat]);
+                    }
+                }
+            });
+
+            const noneGroupedButtons = this.props.categories.filter(cat =>
+                cat.group === null
+            ).map((cat) => ({
+                name: cat.shortName ?? cat.name,
+                onClick: () => this.props.categorySelected(cat),
+                selected: cat.name === commonCat
+            }));
+
+            const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
+                name: group,
+                onClick: this.props.openDialog.bind(undefined, {
+                    dialog: (close: () => void) => {
+                        const groupButtons = categories.map((cat) => ({
+                            name: cat.shortName ?? cat.name,
+                            onClick: () => {
+                                this.props.categorySelected(cat);
+                                close();
+                            },
+                            selected: cat.name === commonCat
+                        }));
+                        return <GroupedCategoriesDialog groupTitle={group}
+                                                        categoryButtons={groupButtons}
+                                                        close={close}/>;
+                    },
+                    closeOnDocumentClick: true,
+                }),
+                selected: false
+            }));
+
+            const categoryButtons: KeyboardButtonProps[] = noneGroupedButtons
+                .concat(groupedButtons)
+                .sort(byNullSafe(button => button.name));
+
+            const specialButtons: KeyboardButtonProps[] = [
                 {
                     name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
                     selected: false
                 }
-            ]);
-            return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
+            ];
+
+            return <Keyboard id="cat-keyboard"
+                             disabled={disabled}
+                             buttons={categoryButtons.concat(specialButtons)}
+                             gridX={7}
+            />;
 
         } else if (this.props.keyboardState === "expiry") {
 
@@ -279,5 +331,30 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         return <div id="bottom">
             {this.chooseKeyboard(!this.props.selectedTrayCells.length)}
         </div>;
+    }
+}
+
+interface GroupedCategoriesDialogProps {
+    groupTitle: string;
+    categoryButtons: KeyboardButtonProps[];
+    close: () => void;
+}
+
+/**
+ * This is the the content of the dialog which is shown when the comment on a tray is being edited
+ */
+class GroupedCategoriesDialog extends React.Component<GroupedCategoriesDialogProps> {
+    render(): React.ReactElement {
+        return <>
+            <DialogTitle title={this.props.groupTitle}/>
+            <div className="dialogContent" style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr"
+            }}>{
+                this.props.categoryButtons.map(cat =>
+                    <button onClick={cat.onClick}>{cat.name}</button>
+                )
+            }</div>
+        </>;
     }
 }

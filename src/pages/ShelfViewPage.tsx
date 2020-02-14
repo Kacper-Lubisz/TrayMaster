@@ -906,6 +906,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentKeyboard={this.state.currentKeyboard}
                 />
                 <BottomPanel
+                    openDialog={this.props.openDialog}
                     categories={this.props.warehouse.categories}
                     categorySelected={this.onCategorySelected.bind(this)}
                     expirySelected={this.onExpirySelected.bind(this)}

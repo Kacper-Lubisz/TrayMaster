@@ -6,12 +6,48 @@ import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from
 import {TopLayer} from "../LayerStructure/TopLayer";
 import Utils from "../Utils";
 
-const defaultCategories: string[] = [
-    "Baby Care", "Baby Food", "Nappies", "Beans", "Biscuits", "Cereal", "Choc/Sweet", "Coffee", "Cleaning", "Custard",
-    "Feminine Hygiene", "Fish", "Fruit", "Fruit Juice", "Hot Choc", "Instant Meals", "Jam", "Meat", "Milk",
-    "Miscellaneous",
-    "Pasta", "Pasta Sauce", "Pet Food", "Potatoes", "Rice", "Rice Pudding", "Savoury Treats", "Soup", "Spaghetti",
-    "Sponge Pudding", "Sugar", "Tea Bags", "Toiletries", "Tomatoes", "Vegetables", "Christmas", "Mixed"
+const defaultCategories: { name: string; group?: string }[] = [
+    {name: "Baby Care", group: "Baby.."},
+    {name: "Baby Food", group: "Baby.."},
+    {name: "Nappies", group: "Baby.."},
+    {name: "Beans"},
+    {name: "Biscuits"},
+    {name: "Cereal"},
+    {name: "Choc/Sweet"},
+    {name: "Coffee"},
+    {name: "Cleaning"},
+    {name: "Custard"},
+    {name: "Feminine Hygiene", group: "Toiletries.."},
+    {name: "Fish"},
+    {name: "Fruit"},
+    {name: "Fruit Juice"},
+    {name: "Hot Choc"},
+    {name: "Instant Meals"},
+    {name: "Jam"},
+    {name: "Meat"},
+    {name: "Men's Toiletries", group: "Toiletries.."},
+    {name: "Milk"},
+    {name: "Misc."},
+    {name: "Misc. Toiletries", group: "Toiletries.."},
+    {name: "Pasta"},
+    {name: "Pasta Sauce"},
+    {name: "Pet Food"},
+    {name: "Potatoes"},
+    {name: "Rice"},
+    {name: "Rice Pudding"},
+    {name: "Savoury Treats"},
+    {name: "Shampoo", group: "Toiletries.."},
+    {name: "Soup"},
+    {name: "Soap & Shower Gel", group: "Toiletries.."},
+    {name: "Spaghetti"},
+    {name: "Sponge Pudding"},
+    {name: "Sugar"},
+    {name: "Tea Bags"},
+    {name: "Toilet Rolls", group: "Toiletries.."},
+    {name: "Tomatoes"},
+    {name: "Vegetables"},
+    {name: "Christmas"},
+    {name: "Mixed"}
 ];
 
 const defaultTraySizes: TraySize[] = [
@@ -94,11 +130,13 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             for (let i = 0; i < defaultCategories.length; i++) {
                 this.categoryCollection.add({
                     index: i,
-                    name: defaultCategories[i],
-                    shortName: defaultCategories[i],
+                    name: "-",
+                    shortName: null,
                     lowStock: 0,
                     highStock: 100,
-                    type: "default"
+                    type: "default",
+                    group: null,
+                    ...defaultCategories[i],
                 });
             }
         }

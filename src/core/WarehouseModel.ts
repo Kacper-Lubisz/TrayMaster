@@ -56,6 +56,7 @@ export interface Category {
     lowStock: number;
     highStock: number;
     type: "default" | "custom";
+    group: string | null;
 }
 
 /**

@@ -22,6 +22,7 @@ interface CategoryEditorState {
     catLow: number;
     catHigh: number;
     catID: string;
+    group: string | null;
 }
 
 /**
@@ -41,6 +42,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             catLow: this.props.categories[0].lowStock,
             catHigh: this.props.categories[0].highStock,
             catID: this.props.warehouse.getCategoryID(this.props.categories[0]),
+            group: this.props.categories[0].group
         };
     }
 
@@ -107,8 +109,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                        value={this.state.catLow}
                        onChange={(e) => {
                            this.setState({...this.state, catLow: Number(e.target.value)});
-                       }
-                       }
+                       }}
                 /> trays
                 <h3>High Stock Level</h3>
                 <input type="number"
@@ -116,14 +117,20 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                        value={this.state.catHigh}
                        onChange={(e) => {
                            this.setState({...this.state, catHigh: Number(e.target.value)});
-                       }
-                       }
+                       }}
                 /> trays
+                <h3>Group Title</h3>
+                <input type="text"
+                       value={this.state.group ?? ""}
+                       onChange={(e) => {
+                           const newGroup = e.target.value.length === 0 ? null : e.target.value;
+                           this.setState(state => ({...state, group: newGroup}));
+                       }}
+                />
             </div>
             <div id="cat-edit-bottom-btns">
                 <div>
-                    <button disabled={this.state.catSelected?.type === "default" ||
-                    this.state.catSelected === null}
+                    <button disabled={this.state.catSelected?.type === "default"}
                             onClick={() => this.deleteCategory()}>Delete Category
                     </button>
                 </div>
@@ -150,7 +157,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             catName: "",
             catShortName: "",
             catLow: 0,
-            catHigh: 100
+            catHigh: 100,
+            group: null
         }));
 
     }
@@ -162,7 +170,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         return this.state.catSelected?.name !== this.state.catName
             || this.state.catSelected.shortName !== this.state.catShortName
             || this.state.catSelected.lowStock !== this.state.catLow
-            || this.state.catSelected.highStock !== this.state.catHigh;
+            || this.state.catSelected.highStock !== this.state.catHigh
+            || this.state.catSelected.group !== this.state.group;
     }
 
     /**
@@ -190,7 +199,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 shortName: this.state.catShortName ? this.state.catShortName : null,
                 lowStock: this.state.catLow,
                 highStock: this.state.catHigh,
-                type: this.state.catSelected.type
+                type: this.state.catSelected.type,
+                group: this.state.group
             };
             this.props.warehouse.editCategory(this.state.catID, editedCat);
             this.setState(state => ({
@@ -211,7 +221,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             shortName: this.state.catShortName ? this.state.catShortName : null,
             lowStock: this.state.catLow,
             highStock: this.state.catHigh,
-            type: "custom"
+            type: "custom",
+            group: this.state.group
         });
         this.setState(state => ({
             ...state,
@@ -221,7 +232,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 shortName: this.state.catShortName ? this.state.catShortName : null,
                 lowStock: this.state.catLow,
                 highStock: this.state.catHigh,
-                type: "custom"
+                type: "custom",
+                group: this.state.group
             }
         }));
         this.props.updatePage();
