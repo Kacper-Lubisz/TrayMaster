@@ -149,7 +149,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private changeView(direction: ShelfMoveDirection | Shelf): void {
         if (direction instanceof Shelf) { // to specific shelf
-            direction.load(false, WarehouseModel.tray).then(() => {
+            direction.load(true, WarehouseModel.tray).then(() => {
                 this.forceUpdate();
             });
             this.setState(state => ({
@@ -190,7 +190,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }));
 
                 if (!newBay.shelves.length) {
-                    newBay.shelves[0].load(false, WarehouseModel.tray).then(() => {
+                    newBay.shelves[0].load(true, WarehouseModel.tray).then(() => {
                         this.forceUpdate();
                     });
                 }
@@ -220,7 +220,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentView: currentBay.shelves[newShelfIndex]
                 }));
 
-                currentBay.shelves[newShelfIndex].load(false, WarehouseModel.tray).then(() => {
+                currentBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
                     this.forceUpdate();
                 });
             } else if (bayIndex + increment !== currentZone.bays.length
@@ -238,7 +238,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }));
 
                 if (newBay.shelves.length) {
-                    newBay.shelves[newShelfIndex].load(false, WarehouseModel.tray).then(() => {
+                    newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
                         this.forceUpdate();
                     });
                 }
@@ -269,7 +269,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     }));
 
                     if (newBay.shelves.length) {
-                        newBay.shelves[newShelfIndex].load(false, WarehouseModel.tray).then(() => {
+                        newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
                             this.forceUpdate();
                         });
                     }
