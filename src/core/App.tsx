@@ -98,7 +98,7 @@ class App extends React.Component<unknown, AppState> {
                         <DialogTitle title="TrayMaster Update"/>
                         <div className="dialogContent">
                             <p>You've been updated
-                                from {oldVersion ?? "unknown"} to {process.env.REACT_APP_VERSION ?? ""} </p>
+                                from {oldVersion ?? "a previous version"} to {process.env.REACT_APP_VERSION ?? "the latest version"}!</p>
                             <DialogButtons buttons={[{name: "Thanks!", buttonProps: {onClick: close,}}]}/>
                         </div>
                     </>;
