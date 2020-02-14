@@ -88,9 +88,9 @@ class App extends React.Component<unknown, AppState> {
         // or
         // localStorage.setItem("VERSION_NUMBER", "test version");
 
-        if (process.env.REACT_APP_VERSION_NUMBER !== localStorage.getItem("VERSION_NUMBER")) {
+        if (process.env.REACT_APP_VERSION !== localStorage.getItem("VERSION_NUMBER")) {
             const oldVersion = localStorage.getItem("VERSION_NUMBER");
-            localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION_NUMBER ?? "");
+            localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION ?? "");
             this.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => {
@@ -98,7 +98,7 @@ class App extends React.Component<unknown, AppState> {
                         <DialogTitle title="TrayMaster Update"/>
                         <div className="dialogContent">
                             <p>You've been updated
-                                from {oldVersion ?? "unknown"} to {process.env.REACT_APP_VERSION_NUMBER ?? ""} </p>
+                                from {oldVersion ?? "unknown"} to {process.env.REACT_APP_VERSION ?? ""} </p>
                             <DialogButtons buttons={[{name: "Thanks!", buttonProps: {onClick: close,}}]}/>
                         </div>
                     </>;
