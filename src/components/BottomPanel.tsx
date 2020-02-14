@@ -4,7 +4,7 @@ import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
-import {Keyboard, KeyboardButtonProps} from "./Keyboard";
+import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 
 
@@ -46,9 +46,9 @@ type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
  * @see BottomPanelPage
  */
 export class BottomPanel extends React.Component<BottomPanelProps> {
-    private readonly years: ExpiryKeyboardButtonProps[];
-    private readonly quarters: ExpiryKeyboardButtonProps[];
-    private readonly months: ExpiryKeyboardButtonProps[];
+    private readonly years: CustomButtonProps[];
+    private readonly quarters: CustomButtonProps[];
+    private readonly months: CustomButtonProps[];
     private readonly monthsTranslator: string[] = [
         "Jan", "Feb", "Mar",
         "Apr", "May", "Jun",
@@ -183,7 +183,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                                                      : traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
                                                        ? firstCat : null;
 
-            const buttons: KeyboardButtonProps[] = this.props.categories.map((cat) => {
+            const buttons: CustomButtonProps[] = this.props.categories.map((cat) => {
                 return {
                     name: cat.shortName ?? cat.name,
                     onClick: () => this.props.categorySelected(cat),
@@ -238,7 +238,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             }));
 
             // Create numpadSide for the side buttons
-            const numpadSide: KeyboardButtonProps[] = ([
+            const numpadSide: CustomButtonProps[] = ([
                 "Backspace", "< Clear >"
             ].concat(this.props.user.enableAutoAdvance
                      ? ["Next Tray"]
