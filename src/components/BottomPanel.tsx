@@ -24,6 +24,18 @@ export interface BottomPanelProps {
     user: User;
 }
 
+interface ExpiryYear {
+    year: number;
+}
+
+interface ExpiryQuarter extends ExpiryYear {
+    quarter: number;
+}
+
+interface ExpiryMonth extends ExpiryYear {
+    month: number;
+}
+
 type ExpiryKeyboardButtonProps = KeyboardButtonProps & {
     expiryFrom: number;
 };
@@ -37,12 +49,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     private readonly years: ExpiryKeyboardButtonProps[];
     private readonly quarters: ExpiryKeyboardButtonProps[];
     private readonly months: ExpiryKeyboardButtonProps[];
-    private readonly quartersTranslator: string[] = [
-        "Jan-Mar",
-        "Apr-Jun",
-        "Jul-Sep",
-        "Oct-Dec"
-    ];
     private readonly monthsTranslator: string[] = [
         "Jan", "Feb", "Mar",
         "Apr", "May", "Jun",
@@ -60,7 +66,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         for (let i = thisYear; i < thisYear + 8; i++) {
             this.years.push({
                 name: i.toString(), onClick: () => {
-                    this.selectRange(i);
+                    this.selectRange({year: i});
                 },
                 expiryFrom: new Date(i, 0).getTime()
             });
@@ -73,7 +79,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const month = i % 12;
             this.months.push({
                 name: `${this.monthsTranslator[month]} ${year.toString()}`, onClick: () => {
-                    this.selectRange(year, {month: month});
+                    this.selectRange({year: year, month: month});
                 },
                 expiryFrom: new Date(year, month).getTime()
             });
@@ -86,7 +92,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const quarter = i % 4;
             this.quarters.push({
                 name: `Q${(quarter + 1).toString()} ${year.toString()}`, onClick: () => {
-                    this.selectRange(year, {quarter: quarter});
+                    this.selectRange({year: year, quarter: quarter});
                 },
                 expiryFrom: new Date(year, quarter * 3).getTime()
             });
@@ -126,32 +132,25 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         }
     }
 
-    private selectRange(year: number, yearPeriod?: { quarter?: number; month?: number }): void {
-        const rangeType: "year" | "quarter" | "month" = (() => {
-            if (yearPeriod?.month !== undefined) {
-                return "month";
-            } else if (yearPeriod?.quarter !== undefined) {
-                return "quarter";
-            }
-            return "year";
-        })();
-        const [m, q] = [yearPeriod?.month as number, yearPeriod?.quarter as number];
-
+    private selectRange(basicRange: ExpiryYear | ExpiryQuarter | ExpiryMonth): void {
         const [from, to]: Date[] = (() => {
-            if (rangeType === "month") {
+            const y = basicRange.year;
+            if ("month" in basicRange) {
+                const m = basicRange.month;
                 return [
-                    new Date(year, m),
-                    new Date(year + Math.floor(m / 11), (m + 1) % 12)
+                    new Date(y, m),
+                    new Date(y + Math.floor(m / 11), (m + 1) % 12)
                 ];
-            } else if (rangeType === "quarter") {
+            } else if ("quarter" in basicRange) {
+                const q = basicRange.quarter;
                 return [
-                    new Date(year, q * 3),
-                    new Date(year + Math.floor(q / 3), (q + 1) % 4 * 3)
+                    new Date(y, q * 3),
+                    new Date(y + Math.floor(q / 3), (q + 1) % 4 * 3)
                 ];
             }
             return [
-                new Date(year, 0),
-                new Date(year + 1, 0)
+                new Date(y, 0),
+                new Date(y + 1, 0)
             ];
         })();
 
@@ -159,14 +158,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             from: from.getTime(),
             to: to.getTime(),
             label: `${(() => {
-                if (rangeType === "month") {
-                    return `${this.monthsTranslator[m]} `;
-                } else if (rangeType === "quarter") {
-                    // todo decide on this vs (`Q${(q+1).toString()} `)
-                    return `${this.quartersTranslator[q]} `;
+                if ("month" in basicRange) {
+                    return `${this.monthsTranslator[basicRange.month]} `;
+                } else if ("quarter" in basicRange) {
+                    return `Q${(basicRange.quarter + 1).toString()} `;
                 }
                 return "";
-            })()}${year.toString()}`
+            })()}${basicRange.year.toString()}`
         });
     }
 
