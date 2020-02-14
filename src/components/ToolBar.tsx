@@ -1,6 +1,6 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
-import {KeyboardButtonProps} from "./Keyboard";
+import {CustomButtonProps} from "./Keyboard";
 import "./styles/_toolbar.scss";
 
 /**
@@ -11,7 +11,7 @@ interface ToolBarProps {
     disabled: boolean;
 
     /** List of toolbar buttons */
-    toolbar: KeyboardButtonProps[];
+    toolbar: CustomButtonProps[];
 }
 
 /**

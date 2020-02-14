@@ -36,14 +36,13 @@ jobs:
           github_token: ${{ secrets.github_token }}
           eslint_flags: './src/ --ext .js,.jsx,.ts,.tsx'
 
+      - name: Run tests
+        run: npm test
+        env:
+          CI: true
 
       - name: Build app
         run: |
           npm run build --if-present
-        env:
-          CI: true
-
-      - name: Run tests
-        run: npm test
         env:
           CI: true
