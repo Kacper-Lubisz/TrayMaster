@@ -36,7 +36,7 @@ interface ExpiryMonth extends ExpiryYear {
     month: number;
 }
 
-type ExpiryKeyboardButtonProps = KeyboardButtonProps & {
+type ExpiryKeyboardButtonProps = CustomButtonProps & {
     expiryFrom: number;
 };
 type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
@@ -46,9 +46,9 @@ type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
  * @see BottomPanelPage
  */
 export class BottomPanel extends React.Component<BottomPanelProps> {
-    private readonly years: CustomButtonProps[];
-    private readonly quarters: CustomButtonProps[];
-    private readonly months: CustomButtonProps[];
+    private readonly years: ExpiryKeyboardButtonProps[];
+    private readonly quarters: ExpiryKeyboardButtonProps[];
+    private readonly months: ExpiryKeyboardButtonProps[];
     private readonly monthsTranslator: string[] = [
         "Jan", "Feb", "Mar",
         "Apr", "May", "Jun",
