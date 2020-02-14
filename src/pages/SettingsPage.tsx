@@ -27,10 +27,25 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
             label: string;
         }[] = [
             {
-                get: () => this.props.user.enableAutoAdvance,
-                set: (value: boolean) => this.props.user.enableAutoAdvance = value,
-                label: "Enable Auto Advance"
+                get: () => this.props.user.autoAdvanceMode === "off",
+                set: (value: boolean) => this.props.user.autoAdvanceMode = "off",
+                label: "Enable Auto Advance off"
+            },
+            {
+                get: () => this.props.user.autoAdvanceMode === "ce",
+                set: (value: boolean) => this.props.user.autoAdvanceMode = "ce",
+                label: "Enable Auto Advance ce"
             }, {
+                get: () => this.props.user.autoAdvanceMode === "w",
+                set: (value: boolean) => this.props.user.autoAdvanceMode = "w",
+                label: "Enable Auto Advance w"
+            },
+            {
+                get: () => this.props.user.autoAdvanceMode === "cew",
+                set: (value: boolean) => this.props.user.autoAdvanceMode = "cew",
+                label: "Enable Auto Advance cew"
+            },
+            {
                 get: () => this.props.user.onlySingleAutoAdvance,
                 set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
                 label: "Don't Advance in Multi-select"
