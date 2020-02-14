@@ -68,10 +68,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
         ];
 
         return <div className="main-menu">
-            <div
-                style={{color: "#bbbbbb"}}
-            >Version: {process.env.REACT_APP_VERSION} {/*todo fixme put this somewhere else*/}</div>
-            <TrayMasterLogo/>
+            <TrayMasterLogo message={<>{`v${process.env.REACT_APP_VERSION}`}</>}/>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
             {this.props.expiryAmount === 0 ? undefined : <div
                 className="alert"
