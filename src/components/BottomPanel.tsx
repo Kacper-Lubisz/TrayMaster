@@ -203,7 +203,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 }
             });
 
-            const noneGroupedButtons = this.props.categories.filter(cat =>
+            const buttonsWithoutGroups = this.props.categories.filter(cat =>
                 cat.group === null
             ).map((cat) => ({
                 name: cat.shortName ?? cat.name,
@@ -232,7 +232,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 selected: false
             }));
 
-            const categoryButtons: KeyboardButtonProps[] = noneGroupedButtons
+            const categoryButtons: KeyboardButtonProps[] = buttonsWithoutGroups
                 .concat(groupedButtons)
                 .sort(byNullSafe(button => button.name));
 
