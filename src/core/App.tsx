@@ -9,7 +9,7 @@ import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
-import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
+import {buildErrorDialog, Dialog, DialogButtons, DialogTitle, StoredDialog} from "./Dialog";
 import ErrorHandler from "./ErrorHandler";
 
 import firebase, {User} from "./Firebase";
@@ -81,7 +81,35 @@ class App extends React.Component<unknown, AppState> {
 
     }
 
+    componentDidMount(): void {
+
+        // to force this to trigger, call
+        // localStorage.clear("VERSION_NUMBER")
+        // or
+        // localStorage.setItem("VERSION_NUMBER", "test version");
+
+        if (process.env.REACT_APP_VERSION_NUMBER !== localStorage.getItem("VERSION_NUMBER")) {
+            const oldVersion = localStorage.getItem("VERSION_NUMBER");
+            localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION_NUMBER ?? "");
+            this.openDialog({
+                closeOnDocumentClick: true,
+                dialog: (close: () => void) => {
+                    return <>
+                        <DialogTitle title="TrayMaster Update"/>
+                        <div className="dialogContent">
+                            <p>You've been updated
+                                from {oldVersion ?? "unknown"} to {process.env.REACT_APP_VERSION_NUMBER ?? ""} </p>
+                            <DialogButtons buttons={[{name: "Thanks!", buttonProps: {onClick: close,}}]}/>
+                        </div>
+                    </>;
+                }
+            });
+        }
+
+    }
+
     render(): React.ReactNode {
+
         return <>
             {this.state === null || this.state.loading ? <LoadingPage/> : <BrowserRouter><ErrorHandler>
                 <Switch>

@@ -717,8 +717,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.props.openDialog({
             closeOnDocumentClick: true,
             dialog: (close: () => void) => {
-
-
                 const trays = this.getSelectedTrayCells();
                 return <EditCommentContent
                     onDiscard={close}
