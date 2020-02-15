@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import _ from "lodash";
+import reduce from "lodash/reduce";
 import React from "react";
 
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -460,7 +460,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     ]);
 
                 } else if (shelf.columns.length !== columnIndex + 1) {
-                    const nextColumn = _.reduce(shelf.columns, (acc, cur) => {
+                    const nextColumn = reduce(shelf.columns, (acc, cur) => {
 
                         const cellLength = canGoToCell ? cur.getPaddedTrays().length
                                                        : cur.trays.length;
