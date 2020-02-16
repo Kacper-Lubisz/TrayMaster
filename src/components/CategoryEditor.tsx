@@ -19,10 +19,12 @@ interface CategoryEditorState {
     catSelected: Category | null;
     catName: string;
     catShortName?: string;
-    catLow: number;
-    catHigh: number;
+    understockThreshold: number;
+    overstockThreshold: number;
     catID: string;
 }
+
+type CategoryField = "name" | "shortName" | "understockThreshold" | "overstockThreshold";
 
 /**
  * This class displays all categories in the warehouse, lets the user
@@ -38,8 +40,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             catSelected: this.props.categories[0],
             catName: this.props.categories[0].name,
             catShortName: this.props.categories[0].shortName ? this.props.categories[0].shortName : undefined,
-            catLow: this.props.categories[0].lowStock,
-            catHigh: this.props.categories[0].highStock,
+            understockThreshold: this.props.categories[0].understockThreshold,
+            overstockThreshold: this.props.categories[0].overstockThreshold,
             catID: this.props.warehouse.getCategoryID(this.props.categories[0]),
         };
     }
@@ -72,8 +74,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             catSelected: cat,
             catName: cat.name,
             catShortName: cat.shortName ? cat.shortName : "",
-            catLow: cat.lowStock,
-            catHigh: cat.highStock,
+            understockThreshold: cat.understockThreshold,
+            overstockThreshold: cat.overstockThreshold,
             catID: this.props.warehouse.getCategoryID(cat),
         }));
     }
@@ -82,19 +84,19 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Creates the right-hand side of the screen
      * Displays content of categories and allows user to edit them
      */
-    private editCategory(): any {
+    private renderEditPanel(): any {
         return <>
             <div id="cat-edit-controls">
                 <h2>{this.state.catSelected ? `Edit ${this.state.catSelected.name}` : "New Category"}</h2>
                 <h3>Name</h3>
                 <input type="text"
                        value={this.state.catName}
-                       onChange={e => this.setState({...this.state, catName: e.target.value})}
+                       onChange={e => this.inputChanged("name",e.target.value)}
                 />
                 <h3>Short Name</h3>
                 <input type="text"
                        value={this.state.catShortName}
-                       onChange={e => this.setState({...this.state, catShortName: e.target.value})}
+                       onChange={e => this.inputChanged("shortName",e.target.value)}
                 />
                 <button onClick={() => this.setState(state => ({
                     catShortName: state.catName
@@ -103,19 +105,19 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 <h3>Low Stock Level</h3>
                 <input type="number"
                        min="0"
-                       max={this.state.catHigh}
-                       value={this.state.catLow}
+                       max={this.state.overstockThreshold}
+                       value={this.state.understockThreshold}
                        onChange={(e) => {
-                           this.setState({...this.state, catLow: Number(e.target.value)});
+                           this.inputChanged("understockThreshold",e.target.value)
                        }
                        }
                 /> trays
                 <h3>High Stock Level</h3>
                 <input type="number"
-                       min={this.state.catLow}
-                       value={this.state.catHigh}
+                       min={this.state.understockThreshold}
+                       value={this.state.overstockThreshold}
                        onChange={(e) => {
-                           this.setState({...this.state, catHigh: Number(e.target.value)});
+                           this.inputChanged("overstockThreshold",e.target.value)
                        }
                        }
                 /> trays
@@ -140,6 +142,24 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         </>;
     }
 
+    private inputChanged(categoryField: CategoryField, newValue: string): void {
+        if(categoryField == "name"){
+            this.setState({...this.state, catName: newValue})
+        }
+        if(categoryField == "shortName"){
+            this.setState({...this.state, catName: newValue})
+
+        }
+        if(categoryField == "understockThreshold"){
+            this.setState({...this.state, understockThreshold: Number(newValue)})
+
+        }
+        if(categoryField == "overstockThreshold"){
+            this.setState({...this.state, overstockThreshold: Number(newValue)})
+
+        }
+    }
+
     /**
      * Is called if user clicks button to add a new category
      */
@@ -149,8 +169,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             catSelected: null,
             catName: "",
             catShortName: "",
-            catLow: 0,
-            catHigh: 100
+            understockThreshold: 0,
+            overstockThreshold: 100
         }));
 
     }
@@ -161,8 +181,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     checkIfCatChanged(): boolean {
         return this.state.catSelected?.name !== this.state.catName
             || this.state.catSelected.shortName !== this.state.catShortName
-            || this.state.catSelected.lowStock !== this.state.catLow
-            || this.state.catSelected.highStock !== this.state.catHigh;
+            || this.state.catSelected.understockThreshold !== this.state.understockThreshold
+            || this.state.catSelected.overstockThreshold !== this.state.overstockThreshold;
     }
 
     /**
@@ -184,8 +204,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 index: this.state.catSelected.index,
                 name: this.state.catName,
                 shortName: this.state.catShortName ? this.state.catShortName : null,
-                lowStock: this.state.catLow,
-                highStock: this.state.catHigh,
+                understockThreshold: this.state.understockThreshold,
+                overstockThreshold: this.state.overstockThreshold,
                 type: this.state.catSelected.type
             };
             this.props.warehouse.editCategory(this.state.catID, editedCat);
@@ -205,8 +225,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             index: this.props.categories.length,
             name: this.state.catName,
             shortName: this.state.catShortName ? this.state.catShortName : null,
-            lowStock: this.state.catLow,
-            highStock: this.state.catHigh,
+            understockThreshold: this.state.understockThreshold,
+            overstockThreshold: this.state.overstockThreshold,
             type: "custom"
         });
         this.setState(state => ({
@@ -215,8 +235,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 index: this.props.categories.length,
                 name: this.state.catName,
                 shortName: this.state.catShortName ? this.state.catShortName : null,
-                lowStock: this.state.catLow,
-                highStock: this.state.catHigh,
+                understockThreshold: this.state.understockThreshold,
+                overstockThreshold: this.state.overstockThreshold,
                 type: "custom"
             }
         }));
@@ -227,13 +247,13 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.state.catSelected) {
             const catName = this.state.catSelected.name;
             const catShortName = this.state.catSelected.shortName ? this.state.catSelected.shortName : "";
-            const catLow = this.state.catSelected.lowStock;
-            const catHigh = this.state.catSelected.highStock;
+            const understockThreshold = this.state.catSelected.understockThreshold;
+            const catHigh = this.state.catSelected.overstockThreshold;
             this.setState(state => ({
                 ...state,
                 catName: catName,
                 catShortName: catShortName,
-                catLow: catLow,
+                understockThreshold: understockThreshold,
                 catHigh: catHigh
             }));
         } else {
@@ -286,7 +306,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
             </div>
             <div id="cat-edit-main">
-                {this.editCategory()}
+                {this.renderEditPanel()}
             </div>
         </div>;
     }

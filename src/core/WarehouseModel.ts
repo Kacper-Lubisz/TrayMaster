@@ -53,8 +53,8 @@ export interface Category {
     index: number;
     name: string;
     shortName: string | null;
-    lowStock: number;
-    highStock: number;
+    understockThreshold: number;
+    overstockThreshold: number;
     type: "default" | "custom";
 }
 
