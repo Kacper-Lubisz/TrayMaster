@@ -105,7 +105,7 @@ class App extends React.Component<unknown, AppState> {
                 if (verDiff === 1) {
                     return `You've been updated from ${oldVersion ?? "a previous version"} to ${process.env.REACT_APP_VERSION ?? "the latest version"}!`;
                 } else if (verDiff === -1) {
-                    return `We've rolled you back from ${oldVersion ?? "a newer version"} to ${process.env.REACT_APP_VERSION ?? "a previous version"}.This has probably been done so that we can work to iron out some bugs that you might have encountered!`;
+                    return `We've rolled you back from ${oldVersion ?? "a newer version"} to ${process.env.REACT_APP_VERSION ?? "a previous version"}. This has probably been done so that we can work to iron out some bugs that you might have encountered!`;
                 }
                 return "Your version number has changed, but something seems to have gone wrong. Sorry!";
             })();
