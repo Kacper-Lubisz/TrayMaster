@@ -9,6 +9,7 @@ import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
+import {compareVersions} from "../utils/compareVersions";
 import {buildErrorDialog, Dialog, DialogButtons, DialogTitle, StoredDialog} from "./Dialog";
 import ErrorHandler from "./ErrorHandler";
 
@@ -88,17 +89,34 @@ class App extends React.Component<unknown, AppState> {
         // or
         // localStorage.setItem("VERSION_NUMBER", "test version");
 
-        if (process.env.REACT_APP_VERSION !== localStorage.getItem("VERSION_NUMBER")) {
-            const oldVersion = localStorage.getItem("VERSION_NUMBER");
+        const oldVersion = localStorage.getItem("VERSION_NUMBER");
+        if (process.env.REACT_APP_VERSION !== oldVersion) {
             localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION ?? "");
+            const verDiff: 1 | 0 | -1 = ((old, current) => {
+                if (old === null) {
+                    return 1;
+                } else if (current === undefined) {
+                    return 0;
+                }
+                return compareVersions(old, current);
+            })(oldVersion, process.env.REACT_APP_VERSION);
+
+            const message: string = (() => {
+                if (verDiff === 1) {
+                    return `You've been updated from ${oldVersion ?? "a previous version"} to ${process.env.REACT_APP_VERSION ?? "the latest version"}!`;
+                } else if (verDiff === -1) {
+                    return `We've rolled you back from ${oldVersion ?? "a newer version"} to ${process.env.REACT_APP_VERSION ?? "a previous version"}.This has probably been done so that we can work to iron out some bugs that you might have encountered!`;
+                }
+                return "Your version number has changed, but something seems to have gone wrong. Sorry!";
+            })();
+
             this.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => {
                     return <>
                         <DialogTitle title="TrayMaster Update"/>
                         <div className="dialogContent">
-                            <p>You've been updated
-                                from {oldVersion ?? "a previous version"} to {process.env.REACT_APP_VERSION ?? "the latest version"}!</p>
+                            <p>{message}</p>
                             <DialogButtons buttons={[{name: "Thanks!", buttonProps: {onClick: close,}}]}/>
                         </div>
                     </>;
