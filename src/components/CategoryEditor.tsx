@@ -37,7 +37,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
     private blankCat: Category = {
         index: -1,
-        name: "Enter a name",
+        name: "",
         shortName: null,
         lowStock: 0,
         highStock: 100,
@@ -94,7 +94,16 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     <h3>Name</h3>
                     <input type="text"
                            value={this.state.draftCat.name}
-                        // onChange={e => this.setState({...this.state, catName: e.target.value})}
+                           placeholder="Enter a name"
+                           onChange={e => {
+                               const newName = e.target.value;
+                               this.setState(state => {
+                                   if(state.draftCat){
+                                       state.draftCat.name = newName;
+                                   }
+                                   return state;
+                               });
+                           }}
                     />
                     <h3>Short Name</h3>
                     <input type="text"

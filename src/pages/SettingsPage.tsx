@@ -47,11 +47,11 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                 categories={this.props.warehouse.categories}
                 user={this.props.user}
 
-                addCategory={this.props.warehouse.addCategory.bind(this)}
-                removeCategory={this.props.warehouse.removeCategory.bind(this)}
-                editCategory={this.props.warehouse.editCategory.bind(this)}
-                getCategoryID={this.props.warehouse.getCategoryID.bind(this)}
-                stage={this.props.warehouse.stage.bind(this)}
+                addCategory={this.props.warehouse.addCategory.bind(this.props.warehouse)}
+                removeCategory={this.props.warehouse.removeCategory.bind(this.props.warehouse)}
+                editCategory={this.props.warehouse.editCategory.bind(this.props.warehouse)}
+                getCategoryID={this.props.warehouse.getCategoryID.bind(this.props.warehouse)}
+                stage={this.props.warehouse.stage.bind(this.props.warehouse)}
 
                 updatePage={() => this.forceUpdate()}
             />;
