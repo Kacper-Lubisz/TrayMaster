@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import SettingsPage from "../pages/SettingsPage";
+import SettingsPage from "../pages/SettingsProps";
 import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */

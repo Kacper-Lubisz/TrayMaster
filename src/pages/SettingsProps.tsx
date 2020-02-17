@@ -1,3 +1,5 @@
+import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -9,22 +11,21 @@ import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 
 import "../styles/settings.scss";
 
-interface SettingsProps {
+interface SettingsPageProps {
     openDialog: (dialog: Dialog) => void;
     warehouse: Warehouse;
     user: User;
 }
 
-interface SettingsState {
+interface SettingsPageState {
     currentTab: "personal" | "wh-edit" | "cat-edit" | "handle-users";
 }
-
 
 /**
  * RouteComponentProps enables the history.push to change paths
  * TODO change paths when those screens are added
  */
-class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, SettingsState> {
+class SettingsPage extends React.Component<RouteComponentProps & SettingsPageProps, SettingsPageState> {
 
     constructor(props: any) {
         super(props);
@@ -114,7 +115,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
 
                 <div id="settings-btns">
                     <button onClick={() => this.props.history.goBack()}>
-                        Back
+                        <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                     </button>
                 </div>
 

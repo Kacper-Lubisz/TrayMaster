@@ -80,7 +80,7 @@
 
         // Currently selected shelf
         &.currentShelf {
-          box-shadow: 0 0 40px -5px #000000;
+          box-shadow: 0 0 0 2px #000000;
 
           > p {
             font-weight: bold;
