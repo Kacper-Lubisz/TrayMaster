@@ -425,6 +425,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private advanceSelection(canGoToCell: boolean, selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
 
+        if (this.props.user.autoAdvanceMode === "off") {
+            return selection;
+        }
+
         const comparison = composeSorts<TrayCell>([
             byNullSafe<TrayCell>(cell => cell.parentColumn.index, false, false),
             byNullSafe<TrayCell>(cell => cell.index, false, false)
@@ -434,6 +438,25 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                               .filter(([_, selected]) => selected);
 
         if (selected.length === 1 || !this.props.user.onlySingleAutoAdvance) {
+
+            if ((this.props.user.autoAdvanceMode === "ce" || this.props.user.autoAdvanceMode === "cew")
+                && this.state.currentKeyboard === "category") { // go to expiry keyboard
+
+                this.switchKeyboard("expiry");
+                return selection;
+
+            } else if (this.props.user.autoAdvanceMode === "cew" && this.state.currentKeyboard === "expiry") {// go to weight keyboard
+
+                this.switchKeyboard("weight");
+                return selection;
+
+            } else if ((this.props.user.autoAdvanceMode === "cew" && this.state.currentKeyboard === "weight") ||
+                (this.props.user.autoAdvanceMode === "ce" && this.state.currentKeyboard === "expiry")) {// go to category keyboard
+
+                this.switchKeyboard("category");
+
+            }
+            // no return => move on
 
             const maxSelected = selected.map(([cell, _]) => cell)
                                         .reduce((max, cur) => {
@@ -511,7 +534,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.enableAutoAdvance ? "cell" : null
+            this.props.user.autoAdvanceMode === "off" ? null : "cell"
         ).forEach((tray) => {
             tray.category = category ?? undefined;
             tray.expiry = undefined;
@@ -537,7 +560,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.enableAutoAdvance ? "tray" : null
+            this.props.user.autoAdvanceMode === "off" ? null : "tray"
         ).forEach((tray) => {
             tray.expiry = expiry ?? undefined;
         });
@@ -557,7 +580,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            couldAdvance && this.props.user.enableAutoAdvance ? "tray" : null
+            couldAdvance && this.props.user.autoAdvanceMode !== "off" ? "tray" : null
         ).forEach((tray) => {
             tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
         });
