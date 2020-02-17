@@ -5,11 +5,6 @@
   grid-template-rows: 1fr;
 
   height: 100%;
-
-
-  &.cat-selected {
-    background-color: #dddddd;
-  }
 }
 
 .add-cat-btn {
@@ -38,6 +33,10 @@
     .category-list-item {
       font-size: 30px;
       cursor: pointer;
+
+      &.cat-selected {
+        background-color: #dddddd;
+      }
 
       &:active:enabled {
         background-color: #dddddd;

@@ -46,7 +46,13 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, 
                 openDialog={this.props.openDialog}
                 categories={this.props.warehouse.categories}
                 user={this.props.user}
-                warehouse={this.props.warehouse}
+
+                addCategory={this.props.warehouse.addCategory.bind(this.props.warehouse)}
+                removeCategory={this.props.warehouse.removeCategory.bind(this.props.warehouse)}
+                editCategory={this.props.warehouse.editCategory.bind(this.props.warehouse)}
+                getCategoryID={this.props.warehouse.getCategoryID.bind(this.props.warehouse)}
+                stage={this.props.warehouse.stage.bind(this.props.warehouse)}
+
                 updatePage={() => this.forceUpdate()}
             />;
         } else if (this.state.currentTab === "wh-edit") {
