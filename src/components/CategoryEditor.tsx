@@ -1,3 +1,4 @@
+import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import {cloneDeep, isEqual} from "lodash";
 import React from "react";
@@ -39,8 +40,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         index: -1,
         name: "",
         shortName: null,
-        understockThreshold: 0,
-        overstockThreshold: 100,
+        underStockThreshold: 0,
+        overStockThreshold: 100,
         type: "custom"
     };
 
@@ -61,14 +62,15 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private selectCategory(cat: Category): void {
         if (this.unsavedChanges()) {
+            // this.props.openDialog(buildUnsavedChangesDialog(
+            //     this.saveCategory.bind(this),
+            //     this.discardChanges.bind(this),
+            //     this.selectCategory.bind(this, cat)
+            // ));
+
             this.props.openDialog({
                 closeOnDocumentClick: true,
-                dialog: (close: () => void) => {
-                    return <EditCategoryDialog
-                        onDiscard={close}
-                        message="Please Save or Cancel your changes first"
-                    />;
-                }
+                dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
             });
         } else {
             this.setState((state) => ({
@@ -90,62 +92,97 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 <div id="cat-edit-controls">
                     <h2>{this.state.oldCat ? `Edit ${this.state.oldCat.name}` : "New Category"}</h2>
                     <h3>Name</h3>
-                    <input type="text"
-                           value={this.state.draftCat.name}
-                           placeholder="Enter a name"
-                           onChange={e => {
-                               const newName = e.target.value;
-                               this.setState(state => {
-                                   if(state.draftCat){
-                                       state.draftCat.name = newName;
-                                   }
-                                   return state;
-                               });
-                           }}
+                    <input
+                        type="text"
+                        value={this.state.draftCat.name}
+                        placeholder="Enter a name"
+                        onChange={e => {
+                            const newName = e.target.value;
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.name = newName;
+                                }
+                                return state;
+                            });
+                        }}
                     />
                     <h3>Short Name</h3>
-                    <input type="text"
-                           value={this.state.draftCat?.shortName ?? ""}
-                        // onChange={e => this.setState({...this.state, catShortName: e.target.value})}
+                    <input
+                        type="text"
+                        value={this.state.draftCat?.shortName ?? ""}
+                        onChange={e => {
+                            const newShortName = e.target.value;
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.shortName = newShortName;
+                                }
+                                return state;
+                            });
+                        }}
                     />
-                    {/*<button onClick={() => this.setState(state => ({*/}
-                    {/*    catShortName: state.catName*/}
-                    {/*}))}>Copy From Name*/}
-                    {/*</button>*/}
-                    <h3>Low Stock Level</h3>
-                    <input type="number"
-                           min="0"
-                           max={this.state.draftCat.overstockThreshold}
-                           value={this.state.draftCat.understockThreshold}
-                        // onChange={(e) => {
-                        //     this.setState({...this.state, catLow: Number(e.target.value)});
-                        // }
-                        // }
+                    <button onClick={_ => {
+                        this.setState(state => {
+                            if (state.draftCat) {
+                                state.draftCat.shortName = state.draftCat.name;
+                            }
+                            return state;
+                        });
+                    }}>Copy From Name
+                    </button>
+                    <h3>Under-Stock Threshold</h3>
+                    <input
+                        type="number"
+                        min="0"
+                        max={this.state.draftCat.overStockThreshold ?? undefined}
+                        value={this.state.draftCat.underStockThreshold ?? undefined}
+                        placeholder={"No Understock Threshold Specified"}
+                        onChange={e => {
+                            const newUnderStock = e.target.value.length === 0 ? null
+                                                                              : Number(e.target.value);
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.underStockThreshold = newUnderStock;
+                                }
+                                return state;
+                            });
+                        }}
                     /> trays
-                    <h3>High Stock Level</h3>
-                    <input type="number"
-                           min={this.state.draftCat.understockThreshold}
-                           value={this.state.draftCat.overstockThreshold}
-                        // onChange={(e) => {
-                        //     this.setState({...this.state, catHigh: Number(e.target.value)});
-                        // }
-                        // }
+                    <h3>Over-Stock Threshold</h3>
+                    <input
+                        type="number"
+                        min={this.state.draftCat.underStockThreshold ?? undefined}
+                        value={this.state.draftCat.overStockThreshold ?? undefined}
+                        placeholder={"No Overstock Threshold Specified"}
+                        onChange={e => {
+                            const newOverstock = e.target.value.length === 0 ? null
+                                                                             : Number(e.target.value);
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.overStockThreshold = newOverstock;
+                                }
+                                return state;
+                            });
+                        }}
                     /> trays
                 </div>
                 <div id="cat-edit-bottom-btns">
                     <div>
-                        <button disabled={this.state.oldCat?.type === "default"}
-                                onClick={() => this.state.oldCat?.type === "default" ? null
-                                                                                     : this.deleteCategory()}>Delete
-                            Category
+                        <button
+                            disabled={this.state.oldCat?.type === "default"}
+                            onClick={this.deleteCategory.bind(this)}
+                        >Delete Category
                         </button>
                         {this.state.oldCat?.type === "default" ? <div>You cannot delete a default category.</div>
                                                                : null}
                     </div>
                     <div>
-                        <button onClick={() => this.cancelCategory()}>Cancel</button>
-                        <button disabled={!this.unsavedChanges()}
-                                onClick={() => this.unsavedChanges() ? this.saveCategory() : null}
+                        <button
+                            onClick={this.discardChanges.bind(this)}
+                        >Cancel
+                        </button>
+                        <button
+                            disabled={!this.unsavedChanges()}
+                            onClick={this.unsavedChanges() ? this.saveCategory.bind(this) : undefined}
                         >Save
                         </button>
                     </div>
@@ -163,23 +200,21 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     private newCategory(): void {
 
         if (this.unsavedChanges()) {
+            // this.props.openDialog(buildUnsavedChangesDialog(
+            //     this.saveCategory.bind(this),
+            //     this.discardChanges.bind(this),
+            //     this.newCategory.bind(this)
+            // ));
             this.props.openDialog({
                 closeOnDocumentClick: true,
-                dialog: (close: () => void) => {
-                    return <EditCategoryDialog
-                        onDiscard={close}
-                        message="Please Save or Cancel your changes first"
-                    />;
-                }
+                dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
             });
         } else {
-            this.setState(state => {
-                return {
-                    ...state,
-                    oldCat: undefined,
-                    draftCat: cloneDeep(this.blankCat)
-                };
-            });
+            this.setState(state => ({
+                ...state,
+                oldCat: undefined,
+                draftCat: cloneDeep(this.blankCat)
+            }));
         }
     }
 
@@ -215,11 +250,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         }
     }
 
-    private cancelCategory(): void {
+    private discardChanges(): void {
         this.setState(state => ({
             ...state,
             oldCat: undefined,
-            draftCat: undefined
+            draftCat: this.state.oldCat ? cloneDeep(this.state.oldCat) : undefined
         }));
     }
 
@@ -233,7 +268,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         // todo fixme Not sure who wrote this - this needs checking for correctness. Does it definitely re-sync all
         // indices changes to DB? Surely the adjustments happen in the then, which occurs afterwards?
 
-        if (this.state.oldCat) {
+        if (this.state.oldCat && this.state.draftCat?.type !== "default") {
             this.props.removeCategory(this.state.oldCat);
             this.props.stage(true, true).then(() => {
                     if (this.state.oldCat && this.state.oldCat.index !== this.props.categories.length - 1) {
@@ -262,19 +297,15 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         return <div id="category-editor">
             <div id="category-sidebar">
                 <div id="category-list">
-                    {this.props.categories.map((cat: Category) => {
-                            return <div
-                                className={
-                                    classNames("category-list-item", {
-                                        "cat-selected": isEqual(this.state.oldCat, cat)
-                                    })}
-                                key={cat.name}>
-                                <p onClick={() => this.selectCategory(cat)}>{cat.name}</p>
-                            </div>;
-                        }
-                    )}
+                    {this.props.categories.map(cat => <div
+                        className={classNames("category-list-item", {
+                            "cat-selected": isEqual(this.state.oldCat, cat)
+                        })}
+                        key={cat.name}>
+                        <p onClick={this.selectCategory.bind(this, cat)}>{cat.name}</p>
+                    </div>)}
                 </div>
-                <button id="add-cat-btn" onClick={() => this.newCategory()}>Add Category</button>
+                <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>Add Category</button>
 
             </div>
             <div id="cat-edit-main">
@@ -286,7 +317,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
 interface EditCategoryDialogProps {
     onDiscard: () => void;
-    message: string;
 }
 
 /**
@@ -296,16 +326,55 @@ class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
 
     render(): React.ReactElement {
         return <>
-            <DialogTitle title={this.props.message}/>
+            <DialogTitle title="Unsaved Changes" iconProps={{icon: faInfoCircle, color: "blue"}}/>
             <div className="dialogContent">
+                <h2>Please save or discard your current changes before proceeding</h2>
                 <DialogButtons buttons={[
-                    {
-                        name: "OK", buttonProps: {
-                            onClick: this.props.onDiscard,
-                        }
-                    }
+                    {name: "OK", buttonProps: {onClick: this.props.onDiscard,}}
                 ]}/>
             </div>
         </>;
     }
 }
+
+// export function buildUnsavedChangesDialog(
+//     save: () => void,
+//     discard: () => void,
+//     then: () => void,
+//     title = "Unsaved Changes",
+//     message = "Please save or discard your current changes before proceeding",
+// ): Dialog {
+//     return {
+//         closeOnDocumentClick: true,
+//         dialog: (close: () => void) => <>
+//             <DialogTitle title={title} iconProps={{icon: faInfoCircle, color: "blue"}}/>
+//             <div className="dialogContent">
+//                 <p className="errorDialogContent">{message}</p>
+//                 <DialogButtons buttons={[
+//                     {
+//                         name: "Save", buttonProps: {
+//                             onClick: () => {
+//                                 console.log("saving")
+//                                 save();
+//                                 console.log("closing")
+//                                 close();
+//                                 console.log("continuing")
+//                                 then();
+//                             }
+//                         }
+//                     },
+//                     {
+//                         name: "Don't Save", buttonProps: {
+//                             onClick: () => {
+//                                 discard();
+//                                 close();
+//                                 then();
+//                             }
+//                         }
+//                     },
+//                     {name: "Cancel", buttonProps: {onClick: close}}
+//                 ]}/>
+//             </div>
+//         </>
+//     };
+// }
