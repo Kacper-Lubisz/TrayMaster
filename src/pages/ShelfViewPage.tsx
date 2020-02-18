@@ -14,6 +14,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import _ from "lodash";
 import React from "react";
+import firebase from "../core/Firebase";
 
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import Popup from "reactjs-popup";
@@ -37,6 +38,7 @@ import {
     Zone
 } from "../core/WarehouseModel";
 import "../styles/shelfview.scss";
+import Utils from "../core/WarehouseModel/Utils";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
@@ -658,7 +660,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.setSelected(newSelectedMap);
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
-
     }
 
     /**
@@ -980,7 +981,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
 }
 
-type TrayInfoDialogState = { draft: string | null };
+type TrayInfoDialogState = { draft: string | null; blameName?: string };
 type TrayInfoDialogProps = {
     onDiscard: () => void;
     onSubmit: (draft: string | null) => void;
@@ -995,7 +996,16 @@ type TrayInfoDialogProps = {
 class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialogState> {
     constructor(props: TrayInfoDialogProps) {
         super(props);
-        this.state = {draft: this.props.draft};
+        this.state = {draft: this.props.draft, blameName: undefined};
+
+        if (this.props.blame) {
+            firebase.database.db.doc(Utils.joinPaths("users", this.props.blame))
+                .get().then(doc =>
+                this.setState(state => ({
+                    ...state,
+                    blameName: (doc.data()?.name ?? "") as string
+                })));
+        }
     }
 
     render(): React.ReactElement {
@@ -1035,8 +1045,8 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
 
             <div className="infoBottom">
                 {
-                    this.props.blame && this.props.lastModified ? <div>This tray was last modified
-                                                                    by {this.props.blame} at {new Date(this.props.lastModified).toLocaleString()}
+                    this.state.blameName && this.props.lastModified ? <div>This tray was last modified
+                                                                    by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString()}
                                                                 </div>
                                                                 : <>
                         <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
@@ -1045,8 +1055,6 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
                         Modified data.</>
                 }
             </div>
-
-
         </>;
     }
 }
