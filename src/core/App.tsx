@@ -5,7 +5,7 @@ import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
 import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
-import SettingsPage from "../pages/SettingsProps";
+import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
