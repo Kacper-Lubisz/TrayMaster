@@ -96,8 +96,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     index: i,
                     name: defaultCategories[i],
                     shortName: defaultCategories[i],
-                    underStockThreshold: 0,
-                    overStockThreshold: 100,
+                    underStockThreshold: null,
+                    overStockThreshold: null,
                     type: "default"
                 });
             }
