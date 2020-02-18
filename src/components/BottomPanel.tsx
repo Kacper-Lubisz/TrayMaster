@@ -132,19 +132,30 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         }
     }
 
+    /**
+     * Passed into expiry buttons: generates & selects ExpiryRange from year (and quarter or month index if applicable)
+     * @param basicRange object representing a simplified expiry range attached to the button
+     */
     private selectRange(basicRange: ExpiryYear | ExpiryQuarter | ExpiryMonth): void {
+        // choose range start and end points
         const [from, to]: Date[] = (() => {
             const y = basicRange.year;
             if ("month" in basicRange) {
                 const m = basicRange.month;
                 return [
                     new Date(y, m),
+                    // would be just Date(y, m+1) - rest deals with the special case when the month is December
+                    //  (if month is December, the end of the range is the new year so we need to correct for that)
+                    //  floor dividing by 11 returns 0 if month before December, 1 if month is December (or later)
+                    //  modulo 12 keeps month in valid range (0~11) if it's overflowed into the next year
                     new Date(y + Math.floor(m / 11), (m + 1) % 12)
                 ];
             } else if ("quarter" in basicRange) {
                 const q = basicRange.quarter;
                 return [
                     new Date(y, q * 3),
+                    // would be just Date(y, (q+1) * 3) but we need to deal with the fourth quarter as above
+                    //  same concepts as above are applied here, multiplying by 3 to get month number from quarter
                     new Date(y + Math.floor(q / 3), (q + 1) % 4 * 3)
                 ];
             }
@@ -154,13 +165,16 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             ];
         })();
 
+        // generate and set ExpiryRange object
         this.props.expirySelected({
             from: from.getTime(),
             to: to.getTime(),
+            // "[if not year then [month or quarter name (eg Jan, Q1) plus trailing space]][year]"
             label: `${(() => {
                 if ("month" in basicRange) {
                     return `${this.monthsTranslator[basicRange.month]} `;
                 } else if ("quarter" in basicRange) {
+                    // need to add 1 because quarters are zero-indexed and users expect Q[1..4], not Q[0..3]
                     return `Q${(basicRange.quarter + 1).toString()} `;
                 }
                 return "";
@@ -219,7 +233,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 }
             ];
 
-            return <div className="keyboard-container">
+            return <div className="keyboard-container expiry-container">
                 <Keyboard id="exp-special" disabled={disabled} buttons={specialButtons} gridX={1}/>
                 <Keyboard id="exp-years" disabled={disabled} buttons={this.years} gridX={2}/>
                 <Keyboard id="exp-quarters" disabled={disabled} buttons={this.quarters} gridX={2}/>
@@ -250,12 +264,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     onClick: () => this.weightKeyHandler(a)
                 }));
 
-            return <div className="keyboard-container">
+            return <div className="keyboard-container weight-container">
                 <Keyboard id="weight-numpad" buttons={numpadButtons} gridX={3}/>
                 <div id="numpadR">
-                    <div id="weight-numpad-side">
-                        <Keyboard buttons={numpadSide} gridX={1}/>
-                    </div>
+                    <Keyboard buttons={numpadSide} gridX={1}/>
                 </div>
             </div>;
 
