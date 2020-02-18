@@ -34,27 +34,45 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
         return (
             <div id="user-settings">
-                {
-                    settings.map(setting =>
-                        <label key={setting.label} onClick={() => {
-                            setting.set(!setting.get());
-                            this.forceUpdate();
-                        }}>
-                            <input
-                                type="checkbox"
-                                name={setting.label}
-                                checked={setting.get()}
-                                onChange={async e => {
-                                    setting.set(e.target.checked);
-                                    await this.props.user.stage(true, true);
-                                    this.forceUpdate();
-                                }}
-                            />
-                            {setting.label}
-                        </label>
-                    )}
+                {settings.map(setting =>
+                    <SettingsComponent get={setting.get} set={setting.set} label={setting.label}
+                                       user={this.props.user}/>
+                )}
             </div>
         );
     }
 
+}
+
+
+interface SettingsComponentProps {
+    get: () => boolean;
+    set: (value: boolean) => void;
+    label: string;
+    user: User;
+}
+
+class SettingsComponent extends React.Component<SettingsComponentProps> {
+
+    render(): React.ReactNode {
+
+        return (
+            <div className="settings-setting" key={this.props.label}
+                 onClick={() => {
+                     this.props.set(!this.props.get());
+                     this.forceUpdate();
+                 }}>
+                <input
+                    type="checkbox"
+                    checked={this.props.get()}
+                    onChange={async e => {
+                        this.props.set(e.target.checked);
+                        await this.props.user.stage(true, true);
+                        this.forceUpdate();
+                    }}
+                />
+                <p>{this.props.label}</p>
+            </div>
+        );
+    }
 }
