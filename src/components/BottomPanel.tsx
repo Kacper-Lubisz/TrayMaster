@@ -39,7 +39,8 @@ interface ExpiryMonth extends ExpiryYear {
 type ExpiryKeyboardButtonProps = CustomButtonProps & {
     expiryFrom: number;
 };
-type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
+
+type WeightKeyboardButton = "Next Tray" | "< Clear >" | "Backspace" | number | ".";
 
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
@@ -107,7 +108,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         if (key === "Next Tray") {
             this.props.setWeight(this.props.weight, true);
-        } else if (key === "Clear") {
+        } else if (key === "< Clear >") {
             this.props.setWeight(undefined, false);
         } else {
             // Must be a number or decimal point, just append
@@ -254,9 +255,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             // Create numpadSide for the side buttons
             const numpadSide: CustomButtonProps[] = ([
                 "Backspace", "< Clear >"
-            ].concat(this.props.user.enableAutoAdvance
-                     ? ["Next Tray"]
-                     : []) as WeightKeyboardButton[])
+            ].concat(this.props.user.autoAdvanceMode === "off" ? [] : ["Next Tray"]) as WeightKeyboardButton[])
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
