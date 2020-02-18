@@ -25,6 +25,12 @@ button:not(.btn-style-override), input[type="submit"] {
     margin: 0;
   }
 
+  svg {
+    // make icons the same size as text
+    width: 20px !important;
+    height: 20px;
+  }
+
   &:enabled {
     cursor: pointer;
 
