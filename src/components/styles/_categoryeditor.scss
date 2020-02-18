@@ -33,21 +33,14 @@
     .category-list-item {
       font-size: 30px;
       cursor: pointer;
+      padding: 10px;
 
       &.cat-selected {
         background-color: #dddddd;
       }
 
-      &:active:enabled {
-        background-color: #dddddd;
-      }
-
       > p {
-        margin: 10px 10px;
-      }
-
-      &:not(:last-child) p {
-        margin-bottom: 20px;
+        margin: 0;
       }
     }
   }
