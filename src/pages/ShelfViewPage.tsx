@@ -3,9 +3,10 @@ import {
     faArrowRight as rightArrow,
     faCheckCircle as tickSolid,
     faClock as expiryIcon,
-    faCommentAlt,
     faCube as categoryIcon,
     faEraser,
+    faExclamationTriangle,
+    faInfo,
     faTimes as cross,
     faWeightHanging as weightIcon
 } from "@fortawesome/free-solid-svg-icons";
@@ -682,9 +683,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * Opens a popup which allows for editing the custom comment
+     * Opens a popup of tray information
      */
-    private editTrayComment(): void {
+    private trayInfo(): void {
 
         this.props.openDialog({
             closeOnDocumentClick: true,
@@ -692,9 +693,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
 
                 const trays = this.getSelectedTrayCells();
-                return <EditCommentContent
+                return <TrayInfoContent
                     onDiscard={close}
                     draft={trays.length === 1 && trays[0] instanceof Tray ? trays[0].comment ?? null : null}
+                    numberOfTrays={trays.length}
+                    blame={trays.length === 1 && trays[0] instanceof Tray ? trays[0].blame : undefined}
+                    lastModified={trays.length === 1 && trays[0] instanceof Tray ? trays[0].lastModified : undefined}
                     onSubmit={(comment) => {
                         this.getSelectedTrays(true, false).forEach(tray => {
                                 tray.comment = comment ?? undefined;
@@ -795,9 +799,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             )
                         },
                         {
-                            name: "Edit Comment",
-                            icon: faCommentAlt,
-                            onClick: this.editTrayComment.bind(this),
+                            name: "Information",
+                            icon: faInfo,
+                            onClick: this.trayInfo.bind(this),
                             disabled: this.getSelectedTrays(false, false).length === 0
                         },
                         {
@@ -836,7 +840,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
                         this.props.user.showPreviousShelfButton ? {
                             name: "Previous Shelf",
-                            onClick: this.changeView.bind(this,"previousShelf"),
+                            onClick: this.changeView.bind(this, "previousShelf"),
                             disabled: !possibleMoveDirections.get("previousShelf")
                         } : null,
                         {
@@ -976,40 +980,46 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
 }
 
-type EditCommentDialogState = { draft: string | null };
-type EditCommentDialogProps = {
+type TrayInfoDialogState = { draft: string | null };
+type TrayInfoDialogProps = {
     onDiscard: () => void;
     onSubmit: (draft: string | null) => void;
-} & EditCommentDialogState;
+    numberOfTrays: number;
+    blame?: string;
+    lastModified?: number;
+} & TrayInfoDialogState;
 
 /**
  * This is the the content of the dialog which is shown when the comment on a tray is being edited
  */
-class EditCommentContent extends React.Component<EditCommentDialogProps, EditCommentDialogState> {
-    constructor(props: EditCommentDialogProps) {
+class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialogState> {
+    constructor(props: TrayInfoDialogProps) {
         super(props);
         this.state = {draft: this.props.draft};
     }
 
     render(): React.ReactElement {
         return <>
-            <DialogTitle title="Edit Comment"/>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                this.props.onSubmit(this.state.draft);
-            }}>
-                <input
-                    autoFocus={true}
-                    type="text"
-                    onChange={(event) => {
-                        const newValue = event.target.value;
-                        this.setState(state => ({
-                            ...state,
-                            draft: newValue.length === 0 ? null : newValue
-                        }));
-                    }}
-                    value={this.state.draft ?? ""}
-                /></form>
+            <DialogTitle title="Information"/>
+            <div className="editCommentForm">
+                <div>Comment:</div>
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    this.props.onSubmit(this.state.draft);
+                }}>
+                    <input
+                        autoFocus={true}
+                        type="text"
+                        onChange={(event) => {
+                            const newValue = event.target.value;
+                            this.setState(state => ({
+                                ...state,
+                                draft: newValue.length === 0 ? null : newValue
+                            }));
+                        }}
+                        value={this.state.draft ?? ""}
+                    /></form>
+            </div>
             <DialogButtons buttons={[
                 {
                     name: "Discard", buttonProps: {
@@ -1022,6 +1032,21 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
                     }
                 }
             ]}/>
+
+            <div className="infoBottom">
+                {
+                    this.props.blame && this.props.lastModified ? <div>This tray was last modified
+                                                                    by {this.props.blame} at {new Date(this.props.lastModified).toLocaleString()}
+                                                                </div>
+                                                                : <>
+                        <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
+                        Multiple trays selected!<br/>
+                        Adding a comment will overwrite any existing comments. Select a single tray to view Last
+                        Modified data.</>
+                }
+            </div>
+
+
         </>;
     }
 }

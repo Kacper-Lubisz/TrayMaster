@@ -63,6 +63,14 @@ export abstract class Layer<TFields extends LayerFields> extends DatabaseObject<
         return Utils.joinPaths(this.topLayerPath, this.collectionName, this.id);
     }
 
+    public get blame(): string {
+        return this.fields.blame;
+    }
+
+    public get lastModified(): number {
+        return this.fields.lastModified;
+    }
+
     /**
      * The database path to the top layer object
      */
