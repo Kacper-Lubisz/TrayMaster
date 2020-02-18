@@ -1,7 +1,10 @@
+import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import classNames from "classnames";
+import {cloneDeep, isEqual} from "lodash";
 import React from "react";
-import {Dialog} from "../core/Dialog";
+import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
-import {Category, Warehouse} from "../core/WarehouseModel";
+import {Category, WarehouseModel} from "../core/WarehouseModel";
 
 import "./styles/_categoryeditor.scss";
 
@@ -10,19 +13,20 @@ interface CategoryEditorProps {
     openDialog: (dialog: Dialog) => void;
     categories: Category[];
     user: User;
-    warehouse: Warehouse;
+
+    addCategory: (category: Category) => void;
+    removeCategory: (category: Category) => void;
+    editCategory: (id: string, category: Category) => void;
+    getCategoryID: (category?: Category) => string;
+    stage: (forceStage?: boolean, commit?: boolean, minLayer?: WarehouseModel) => Promise<void>;
+
     updatePage: () => void;
 }
 
 
 interface CategoryEditorState {
-    catSelected: Category | null;
-    catName: string;
-    catShortName?: string;
-    catLow: number;
-    catHigh: number;
-    catID: string;
-    group: string | null;
+    oldCat?: Category;
+    draftCat?: Category;
 }
 
 /**
@@ -32,17 +36,24 @@ interface CategoryEditorState {
 
 export class CategoryEditor extends React.Component<CategoryEditorProps, CategoryEditorState> {
 
+    private static readonly DEFAULT_NAME = "Unnamed";
+
+    private static readonly BLANK_CATEGORY: Category = {
+        index: -1,
+        name: "",
+        shortName: null,
+        underStockThreshold: 0,
+        overStockThreshold: 100,
+        type: "custom",
+        group: null
+    };
+
     constructor(props: CategoryEditorProps) {
         super(props);
 
         this.state = {
-            catSelected: this.props.categories[0],
-            catName: this.props.categories[0].name,
-            catShortName: this.props.categories[0].shortName ? this.props.categories[0].shortName : undefined,
-            catLow: this.props.categories[0].lowStock,
-            catHigh: this.props.categories[0].highStock,
-            catID: this.props.warehouse.getCategoryID(this.props.categories[0]),
-            group: this.props.categories[0].group
+            oldCat: undefined,
+            draftCat: undefined
         };
     }
 
@@ -53,208 +64,213 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * @param cat
      */
     private selectCategory(cat: Category): void {
-        /*if (this.checkIfCatChanged()) {
+        if (this.hasUnsavedChanges()) {
             this.props.openDialog({
                 closeOnDocumentClick: true,
-                dialog: (close: () => void) => {
-                    return <EditCategoryDialog
-                        onDiscard={close}
-                        message="Please Save or Cancel"
-                    />;
-                }
+                dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
             });
-        } else {*/
-        this.changeCategory(cat);
-
-    }
-
-    private changeCategory(cat: Category): void {
-        this.setState(state => ({
-            ...state,
-            catSelected: cat,
-            catName: cat.name,
-            catShortName: cat.shortName ? cat.shortName : "",
-            catLow: cat.lowStock,
-            catHigh: cat.highStock,
-            catID: this.props.warehouse.getCategoryID(cat),
-        }));
+        } else {
+            this.setState((state) => ({
+                ...state,
+                oldCat: cat,
+                draftCat: cloneDeep(cat)
+            }));
+        }
     }
 
     /**
      * Creates the right-hand side of the screen
      * Displays content of categories and allows user to edit them
      */
-    private editCategory(): any {
-        return <>
-            <div id="cat-edit-controls">
-                <h2>{this.state.catSelected ? `Edit ${this.state.catSelected.name}` : "New Category"}</h2>
-                <h3>Name</h3>
-                <input type="text"
-                       value={this.state.catName}
-                       onChange={e => this.setState({...this.state, catName: e.target.value})}
-                />
-                <h3>Short Name</h3>
-                <input type="text"
-                       value={this.state.catShortName}
-                       onChange={e => this.setState({...this.state, catShortName: e.target.value})}
-                />
-                <button onClick={() => this.setState(state => ({
-                    catShortName: state.catName
-                }))}>Same as "Name"
-                </button>
-                <h3>Low Stock Level</h3>
-                <input type="number"
-                       min="0"
-                       max={this.state.catHigh}
-                       value={this.state.catLow}
-                       onChange={(e) => {
-                           this.setState({...this.state, catLow: Number(e.target.value)});
-                       }}
-                /> trays
-                <h3>High Stock Level</h3>
-                <input type="number"
-                       min={this.state.catLow}
-                       value={this.state.catHigh}
-                       onChange={(e) => {
-                           this.setState({...this.state, catHigh: Number(e.target.value)});
-                       }}
-                /> trays
-                <h3>Group Title</h3>
-                <input type="text"
-                       value={this.state.group ?? ""}
-                       onChange={(e) => {
-                           const newGroup = e.target.value.length === 0 ? null : e.target.value;
-                           this.setState(state => ({...state, group: newGroup}));
-                       }}
-                />
-            </div>
-            <div id="cat-edit-bottom-btns">
-                <div>
-                    <button disabled={this.state.catSelected?.type === "default"}
-                            onClick={() => this.deleteCategory()}>Delete Category
+    private renderEditPanel(): React.ReactNode {
+
+        if (this.state.draftCat) {
+            return <>
+                <div id="cat-edit-controls">
+                    <h2>{this.state.oldCat ? `Edit ${this.state.oldCat.name}${this.hasUnsavedChanges() ? "*" : ""}`
+                                           : "New Category"}</h2>
+                    <h3>Name</h3>
+                    <input
+                        type="text"
+                        value={this.state.draftCat.name}
+                        placeholder="Unnamed"
+                        onChange={e => {
+                            const newName = e.target.value;
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.name = newName;
+                                }
+                                return state;
+                            });
+                        }}
+                    />
+                    <h3>Short Name</h3>
+                    <input
+                        type="text"
+                        value={this.state.draftCat?.shortName ?? ""}
+                        onChange={e => {
+                            const newShortName = e.target.value;
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.shortName = newShortName;
+                                }
+                                return state;
+                            });
+                        }}
+                    />
+                    <button onClick={_ => {
+                        this.setState(state => {
+                            if (state.draftCat) {
+                                state.draftCat.shortName = state.draftCat.name;
+                            }
+                            return state;
+                        });
+                    }}>Copy From Name
                     </button>
+                    <h3>Under-Stock Threshold</h3>
+                    <input
+                        type="number"
+                        min="0"
+                        max={this.state.draftCat.overStockThreshold ?? undefined}
+                        value={this.state.draftCat.underStockThreshold ?? ""}
+                        placeholder={"No Understock Threshold"}
+                        onChange={e => {
+                            const newUnderStock = e.target.value.length === 0 ? null
+                                                                              : Number(e.target.value);
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.underStockThreshold = newUnderStock;
+                                }
+                                return state;
+                            });
+                        }}
+                    /> trays
+                    <h3>Over-Stock Threshold</h3>
+                    <input
+                        type="number"
+                        min={this.state.draftCat.underStockThreshold ?? undefined}
+                        value={this.state.draftCat.overStockThreshold ?? ""}
+                        placeholder={"No Overstock Threshold"}
+                        onChange={e => {
+                            const newOverstock = e.target.value.length === 0 ? null
+                                                                             : Number(e.target.value);
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.overStockThreshold = newOverstock;
+                                }
+                                return state;
+                            });
+                        }}
+                    /> trays
+                    <h3>Group Title</h3>
+                    <input
+                        type="text"
+                        value={this.state.draftCat.group ?? ""}
+                        onChange={(e) => {
+                            const newGroup = e.target.value.length === 0 ? null : e.target.value;
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.group = newGroup;
+                                }
+                                return state;
+                            });
+                        }}
+                    />
                 </div>
-                <div>
-                    <button onClick={() => this.cancelCategory()}>Cancel</button>
-                    <button onClick={() => {
-                        if (this.checkIfCatChanged()) {
-                            this.saveCategory();
-                        }
-                    }}>Save
-                    </button>
+                <div id="cat-edit-bottom-btns">
+                    <div>
+                        <button
+                            disabled={this.state.oldCat?.type === "default"}
+                            onClick={this.deleteCategory.bind(this)}
+                        >Delete Category
+                        </button>
+                        {this.state.oldCat?.type === "default" ? <div>You cannot delete a default category.</div>
+                                                               : null}
+                    </div>
+                    <div>
+                        <button
+                            onClick={this.discardChanges.bind(this)}
+                        >Cancel
+                        </button>
+                        <button
+                            disabled={!this.hasUnsavedChanges()}
+                            onClick={this.hasUnsavedChanges() ? this.saveCategory.bind(this) : undefined}
+                        >Save
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </>;
+            </>;
+        } else {
+            return <div>Select a category on the left, or add a new one!</div>;
+        }
+
     }
 
     /**
      * Is called if user clicks button to add a new category
      */
     private newCategory(): void {
-        this.setState(state => ({
-            ...state,
-            catSelected: null,
-            catName: "",
-            catShortName: "",
-            catLow: 0,
-            catHigh: 100,
-            group: null
-        }));
 
+        if (this.hasUnsavedChanges()) {
+            this.props.openDialog({
+                closeOnDocumentClick: true,
+                dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
+            });
+        } else {
+            this.setState(state => ({
+                ...state,
+                oldCat: undefined,
+                draftCat: cloneDeep(CategoryEditor.BLANK_CATEGORY)
+            }));
+        }
     }
 
     /**
      * Checks if any of the fields in the currently displayed category has changed
      */
-    checkIfCatChanged(): boolean {
-        return this.state.catSelected?.name !== this.state.catName
-            || this.state.catSelected.shortName !== this.state.catShortName
-            || this.state.catSelected.lowStock !== this.state.catLow
-            || this.state.catSelected.highStock !== this.state.catHigh
-            || this.state.catSelected.group !== this.state.group;
+    hasUnsavedChanges(): boolean {
+        return !isEqual(this.state.draftCat, CategoryEditor.BLANK_CATEGORY) && !isEqual(this.state.oldCat, this.state.draftCat);
     }
 
     /**
      *Saves changes to categories, doesn't let user save category with empty name
      */
     private saveCategory(): void {
-        if (this.state.catName === "") {
-            return;
-        } else if (this.state.catSelected) {
-            /*if (this.props.categories.filter(cat => this.state.catName.includes(cat.name)) &&
-                this.props.warehouse.getCategoryID(this.state.catSelected) !== this.state.catID) {
-                this.props.openDialog({
-                    closeOnDocumentClick: true,
-                    dialog: (close: () => void) => {
-                        return <EditCategoryDialog
-                            onDiscard={close}
-                            message="Category Already Exists"
-                        />;
-                    }
-                });
-            } else {*/
-            const editedCat = {
-                index: this.state.catSelected.index,
-                name: this.state.catName,
-                shortName: this.state.catShortName ? this.state.catShortName : null,
-                lowStock: this.state.catLow,
-                highStock: this.state.catHigh,
-                type: this.state.catSelected.type,
-                group: this.state.group
-            };
-            this.props.warehouse.editCategory(this.state.catID, editedCat);
-            this.setState(state => ({
-                ...state,
-                catSelected: editedCat
-            }));
+        if (this.state.draftCat) {
+
+            const newCategory = cloneDeep(this.state.draftCat); // to avoid altering the state here
+            if (newCategory.name.length === 0) {
+                newCategory.name = CategoryEditor.DEFAULT_NAME;
+            }
+
+            if (this.state.oldCat) {
+                this.props.editCategory(this.props.getCategoryID(this.state.oldCat), newCategory);
+
+                this.setState(state => ({
+                    ...state,
+                    oldCat: newCategory,
+                    draftCat: cloneDeep(newCategory)
+                }));
+            } else {
+                newCategory.index = this.props.categories.length;
+                this.setState(state => ({
+                    ...state,
+                    oldCat: newCategory,
+                    draftCat: cloneDeep(newCategory)
+                }));
+                this.props.addCategory(newCategory);
+            }
             this.props.updatePage();
 
-        } else {
-            this.saveNewCategory();
         }
     }
 
-    private saveNewCategory(): void {
-        this.props.warehouse.addCategory({
-            index: this.props.categories.length,
-            name: this.state.catName,
-            shortName: this.state.catShortName ? this.state.catShortName : null,
-            lowStock: this.state.catLow,
-            highStock: this.state.catHigh,
-            type: "custom",
-            group: this.state.group
-        });
+    private discardChanges(): void {
         this.setState(state => ({
             ...state,
-            catSelected: {
-                index: this.props.categories.length,
-                name: this.state.catName,
-                shortName: this.state.catShortName ? this.state.catShortName : null,
-                lowStock: this.state.catLow,
-                highStock: this.state.catHigh,
-                type: "custom",
-                group: this.state.group
-            }
+            oldCat: undefined,
+            draftCat: undefined
         }));
-        this.props.updatePage();
-    }
-
-    private cancelCategory(): void {
-        if (this.state.catSelected) {
-            const catName = this.state.catSelected.name;
-            const catShortName = this.state.catSelected.shortName ? this.state.catSelected.shortName : "";
-            const catLow = this.state.catSelected.lowStock;
-            const catHigh = this.state.catSelected.highStock;
-            this.setState(state => ({
-                ...state,
-                catName: catName,
-                catShortName: catShortName,
-                catLow: catLow,
-                catHigh: catHigh
-            }));
-        } else {
-            this.newCategory();
-        }
     }
 
 
@@ -263,21 +279,26 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * indices after removing one category
      */
     private deleteCategory(): void {
-        if (this.state.catSelected) {
-            this.props.warehouse.removeCategory(this.state.catSelected);
-            this.props.warehouse.stage(true, true).then(() => {
-                    if (this.state.catSelected && this.state.catSelected.index !== this.props.categories.length - 1) {
+
+        // todo fixme Not sure who wrote this - this needs checking for correctness. Does it definitely re-sync all
+        // indices changes to DB? Surely the adjustments happen in the then, which occurs afterwards?
+
+        if (this.state.oldCat && this.state.draftCat?.type !== "default") {
+            this.props.removeCategory(this.state.oldCat);
+            this.props.stage(true, true).then(() => {
+                    if (this.state.oldCat && this.state.oldCat.index !== this.props.categories.length - 1) {
                         this.props.updatePage();
-                        for (let j = this.state.catSelected.index; j < this.props.categories.length - 1; j++) {
+                        for (let j = this.state.oldCat.index; j < this.props.categories.length - 1; j++) {
                             const category = this.props.categories[j];
-                            const id = this.props.warehouse.getCategoryID(category);
+                            const id = this.props.getCategoryID(category);
                             category.index = j;
-                            this.props.warehouse.editCategory(id, category);
+                            this.props.editCategory(id, category);
                         }
                     }
                     this.setState(state => ({
                         ...state,
-                        catSelected: this.props.categories[0]
+                        oldCat: undefined,
+                        draftCat: undefined
                     }));
                     this.props.updatePage();
                 }
@@ -291,46 +312,41 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         return <div id="category-editor">
             <div id="category-sidebar">
                 <div id="category-list">
-                    {this.props.categories.map((cat: Category) => {
-                            return <div className="category-list-item" key={cat.name}><p
-                                onClick={() => this.selectCategory(cat)}>{cat.name}</p>
-                            </div>;
-                        }
-                    )}
+                    {this.props.categories.map(cat => <div
+                        className={classNames("category-list-item", {
+                            "cat-selected": isEqual(this.state.oldCat, cat)
+                        })}
+                        key={cat.name}>
+                        <p onClick={this.selectCategory.bind(this, cat)}>{cat.name}</p>
+                    </div>)}
                 </div>
-                <button id="add-cat-btn" onClick={() => this.newCategory()}>Add Category</button>
-
+                <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>Add Category</button>
             </div>
             <div id="cat-edit-main">
-                {this.editCategory()}
+                {this.renderEditPanel()}
             </div>
         </div>;
     }
 }
 
-/*interface EditCategoryDialogProps {
+interface EditCategoryDialogProps {
     onDiscard: () => void;
-    message: string;
 }
 
 /**
  *Dialog to notify user of something
  */
-/*class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
+class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
 
     render(): React.ReactElement {
         return <>
-            <DialogTitle title={this.props.message}/>
+            <DialogTitle title="Unsaved Changes" iconProps={{icon: faInfoCircle, color: "blue"}}/>
             <div className="dialogContent">
+                <h2>Please save or discard your current changes before proceeding</h2>
                 <DialogButtons buttons={[
-                    {
-                        name: "OK", buttonProps: {
-                            onClick: this.props.onDiscard,
-                        }
-                    }
+                    {name: "OK", buttonProps: {onClick: this.props.onDiscard,}}
                 ]}/>
             </div>
         </>;
     }
 }
-*/

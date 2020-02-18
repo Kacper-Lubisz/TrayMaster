@@ -1,6 +1,6 @@
 {
   "name": "software_engineering",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "engines": {
     "node": "12.x"
   },
@@ -27,7 +27,6 @@
     "pepjs": "^0.5.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-input-number": "^5.0.18",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.3.0",
     "reactjs-popup": "^1.5.0",

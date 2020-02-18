@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {withRouter} from "react-router";
 import {RouteComponentProps} from "react-router-dom";
-import {Keyboard, KeyboardButtonProps} from "../components/Keyboard";
+import {CustomButtonProps, Keyboard} from "../components/Keyboard";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase";
@@ -38,7 +38,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
 
     render(): React.ReactNode {
 
-        const menuButtons: KeyboardButtonProps[] = [
+        const menuButtons: CustomButtonProps[] = [
             {
                 name: "Shelf View",
                 onClick: () => this.props.history.push("/")
@@ -68,7 +68,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
         ];
 
         return <div className="main-menu">
-            <TrayMasterLogo/>
+            <TrayMasterLogo message={<>{`v${process.env.REACT_APP_VERSION}`}</>}/>
             {/*todo fixme the expiry amount ought to be derived from warehouse*/}
             {this.props.expiryAmount === 0 ? undefined : <div
                 className="alert"

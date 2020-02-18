@@ -1,17 +1,19 @@
 import {
     faArrowLeft as leftArrow,
     faArrowRight as rightArrow,
+    faCalculator as weightIcon,
     faCheckCircle as tickSolid,
     faClock as expiryIcon,
-    faCommentAlt,
+    faCog as settingsIcon,
     faCube as categoryIcon,
     faEraser,
-    faTimes as cross,
-    faWeightHanging as weightIcon
+    faHome as menuIcon,
+    faStickyNote,
+    faTimes as cross
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import _ from "lodash";
+import reduce from "lodash/reduce";
 import React from "react";
 
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -423,6 +425,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private advanceSelection(canGoToCell: boolean, selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
 
+        if (this.props.user.autoAdvanceMode === "off") {
+            return selection;
+        }
+
         const comparison = composeSorts<TrayCell>([
             byNullSafe<TrayCell>(cell => cell.parentColumn.index, false, false),
             byNullSafe<TrayCell>(cell => cell.index, false, false)
@@ -432,6 +438,25 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                               .filter(([_, selected]) => selected);
 
         if (selected.length === 1 || !this.props.user.onlySingleAutoAdvance) {
+
+            if ((this.props.user.autoAdvanceMode === "ce" || this.props.user.autoAdvanceMode === "cew")
+                && this.state.currentKeyboard === "category") { // go to expiry keyboard
+
+                this.switchKeyboard("expiry");
+                return selection;
+
+            } else if (this.props.user.autoAdvanceMode === "cew" && this.state.currentKeyboard === "expiry") {// go to weight keyboard
+
+                this.switchKeyboard("weight");
+                return selection;
+
+            } else if ((this.props.user.autoAdvanceMode === "cew" && this.state.currentKeyboard === "weight") ||
+                (this.props.user.autoAdvanceMode === "ce" && this.state.currentKeyboard === "expiry")) {// go to category keyboard
+
+                this.switchKeyboard("category");
+
+            }
+            // no return => move on
 
             const maxSelected = selected.map(([cell, _]) => cell)
                                         .reduce((max, cur) => {
@@ -460,7 +485,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     ]);
 
                 } else if (shelf.columns.length !== columnIndex + 1) {
-                    const nextColumn = _.reduce(shelf.columns, (acc, cur) => {
+                    const nextColumn = reduce(shelf.columns, (acc, cur) => {
 
                         const cellLength = canGoToCell ? cur.getPaddedTrays().length
                                                        : cur.trays.length;
@@ -509,7 +534,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.enableAutoAdvance ? "cell" : null
+            this.props.user.autoAdvanceMode === "off" ? null : "cell"
         ).forEach((tray) => {
             tray.category = category ?? undefined;
             tray.expiry = undefined;
@@ -535,7 +560,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.enableAutoAdvance ? "tray" : null
+            this.props.user.autoAdvanceMode === "off" ? null : "tray"
         ).forEach((tray) => {
             tray.expiry = expiry ?? undefined;
         });
@@ -555,7 +580,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            couldAdvance && this.props.user.enableAutoAdvance ? "tray" : null
+            couldAdvance && this.props.user.autoAdvanceMode !== "off" ? "tray" : null
         ).forEach((tray) => {
             tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
         });
@@ -746,8 +771,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.props.openDialog({
             closeOnDocumentClick: true,
             dialog: (close: () => void) => {
-
-
                 const trays = this.getSelectedTrayCells();
                 return <EditCommentContent
                     onDiscard={close}
@@ -853,7 +876,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         },
                         {
                             name: "Edit Comment",
-                            icon: faCommentAlt,
+                            icon: faStickyNote,
                             onClick: this.editTrayComment.bind(this),
                             disabled: this.getSelectedTrays(false, false).length === 0
                         },
@@ -875,26 +898,55 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {
                             name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
                                                                        : "Mark as Picking Area",
-                            onClick: this.togglePickingArea.bind(this, this.state.currentView)
+                            onClick: this.togglePickingArea.bind(this, this.state.currentView),
+                            halfWidth: false
                         },
-                        {name: "Add Column", onClick: this.addColumn.bind(this, this.state.currentView)},
+                        {
+                            name: "Add Column",
+                            onClick: this.addColumn.bind(this, this.state.currentView),
+                            halfWidth: false
+                        },
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
-                        {name: "Save", onClick: this.finaliseEditShelf.bind(this, this.state.currentView)},
+                        {
+                            name: "Save",
+                            onClick: this.finaliseEditShelf.bind(this, this.state.currentView),
+                            halfWidth: false
+                        },
                     ] : [ // Generate sidebar buttons
-                        {name: "Main Menu", onClick: () => this.props.history.push("/menu")},
-                        {name: "Search", onClick: this.makeSearch.bind(this)},
-                        {name: "Settings", onClick: () => this.props.history.push("/settings")},
-                        {name: "Edit Shelf", onClick: this.enterEditShelf.bind(this)},
+                        {
+                            name: "Main Menu",
+                            icon: menuIcon,
+                            onClick: () => this.props.history.push("/menu"),
+                            halfWidth: true
+                        },
+                        {
+                            name: "Settings",
+                            icon: settingsIcon,
+                            onClick: () => this.props.history.push("/settings"),
+                            halfWidth: true
+                        },
+                        {
+                            name: "Search",
+                            onClick: this.makeSearch.bind(this),
+                            halfWidth: false
+                        },
+                        {
+                            name: "Edit Shelf",
+                            onClick: this.enterEditShelf.bind(this),
+                            halfWidth: false
+                        },
                         this.props.user.showPreviousShelfButton ? {
                             name: "Previous Shelf",
                             onClick: this.changeView.bind(this, "previousShelf"),
-                            disabled: !possibleMoveDirections.get("previousShelf")
+                            disabled: !possibleMoveDirections.get("previousShelf"),
+                            halfWidth: true
                         } : null,
                         {
                             name: "Next Shelf",
                             onClick: this.changeView.bind(this, "nextShelf"),
-                            disabled: !possibleMoveDirections.get("nextShelf")
-                        },
+                            disabled: !possibleMoveDirections.get("nextShelf"),
+                            halfWidth: this.props.user.showPreviousShelfButton
+                        }
                     ]}
                     keyboards={[
                         {name: "category", icon: categoryIcon},

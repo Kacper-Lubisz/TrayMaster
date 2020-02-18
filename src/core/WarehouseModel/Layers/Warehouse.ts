@@ -130,10 +130,10 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             for (let i = 0; i < defaultCategories.length; i++) {
                 this.categoryCollection.add({
                     index: i,
-                    name: "-",
+                    name: "Unnamed",
                     shortName: null,
-                    lowStock: 0,
-                    highStock: 100,
+                    underStockThreshold: null,
+                    overStockThreshold: null,
                     type: "default",
                     group: null,
                     ...defaultCategories[i],

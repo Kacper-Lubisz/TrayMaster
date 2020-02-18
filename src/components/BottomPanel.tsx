@@ -6,7 +6,7 @@ import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {byNullSafe} from "../utils/sortsUtils";
-import {Keyboard, KeyboardButtonProps} from "./Keyboard";
+import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 
 
@@ -28,16 +28,16 @@ export interface BottomPanelProps {
     user: User;
 }
 
-type WeightKeyboardButton = "Next Tray" | "Clear" | "Backspace" | number | ".";
+type WeightKeyboardButton = "Next Tray" | "< Clear >" | "Backspace" | number | ".";
 
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
  * @see BottomPanelPage
  */
 export class BottomPanel extends React.Component<BottomPanelProps> {
-    private readonly years: KeyboardButtonProps[];
-    private readonly quarters: KeyboardButtonProps[];
-    private readonly months: KeyboardButtonProps[];
+    private readonly years: CustomButtonProps[];
+    private readonly quarters: CustomButtonProps[];
+    private readonly months: CustomButtonProps[];
     private readonly quartersTranslator: string[] = [
         "Jan-Mar",
         "Apr-Jun",
@@ -93,7 +93,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         if (key === "Next Tray") {
             this.props.setWeight(this.props.weight, true);
-        } else if (key === "Clear") {
+        } else if (key === "< Clear >") {
             this.props.setWeight(undefined, false);
         } else {
             // Must be a number or decimal point, just append
@@ -232,11 +232,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 selected: false
             }));
 
-            const categoryButtons: KeyboardButtonProps[] = buttonsWithoutGroups
+            const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
                 .concat(groupedButtons)
                 .sort(byNullSafe(button => button.name));
 
-            const specialButtons: KeyboardButtonProps[] = [
+            const specialButtons: CustomButtonProps[] = [
                 {
                     name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
@@ -294,11 +294,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             }));
 
             // Create numpadSide for the side buttons
-            const numpadSide: KeyboardButtonProps[] = ([
+            const numpadSide: CustomButtonProps[] = ([
                 "Backspace", "< Clear >"
-            ].concat(this.props.user.enableAutoAdvance
-                     ? ["Next Tray"]
-                     : []) as WeightKeyboardButton[])
+            ].concat(this.props.user.autoAdvanceMode === "off" ? [] : ["Next Tray"]) as WeightKeyboardButton[])
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
@@ -336,7 +334,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
 interface GroupedCategoriesDialogProps {
     groupTitle: string;
-    categoryButtons: KeyboardButtonProps[];
+    categoryButtons: CustomButtonProps[];
     close: () => void;
 }
 
