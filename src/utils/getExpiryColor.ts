@@ -1,6 +1,8 @@
 import dayjs, {Dayjs} from "dayjs";
 import {ExpiryRange} from "../core/WarehouseModel";
 
+
+// interface specifying an ExpiryRange with non-null from and to
 interface SafeExpiryRange {
     from: number;
     to: number;
@@ -164,6 +166,7 @@ function computeHybridColorFromRange(range: SafeExpiryRange): string {
  * @return string - the 7-digit hex value to use for that expiry range
  */
 function getWarehouseColor(range: SafeExpiryRange): string {
+    // todo consider making this a setting
     const yearCycle = [
         "#fff44d",
         "#0ea5ff",

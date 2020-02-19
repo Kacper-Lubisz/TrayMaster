@@ -4,6 +4,7 @@ import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
+import {getExpiryColor} from "../utils/getExpiryColor";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 
@@ -64,12 +65,20 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         this.years = [];
         // TODO: consider applying database settings to this
         const thisYear = new Date().getFullYear();
+        const yearColors: any = {};
+
         for (let i = thisYear; i < thisYear + 8; i++) {
+            yearColors[i] = getExpiryColor({
+                from: new Date(i, 0).getTime(),
+                to: new Date(i + 1, 0).getTime(),
+                label: i.toString()
+            }, "warehouse");
             this.years.push({
                 name: i.toString(), onClick: () => {
                     this.selectRange({year: i});
                 },
-                expiryFrom: new Date(i, 0).getTime()
+                expiryFrom: new Date(i, 0).getTime(),
+                bg: yearColors[i]
             });
         }
 
@@ -82,7 +91,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 name: `${this.monthsTranslator[month]} ${year.toString()}`, onClick: () => {
                     this.selectRange({year: year, month: month});
                 },
-                expiryFrom: new Date(year, month).getTime()
+                expiryFrom: new Date(year, month).getTime(),
+                bg: yearColors[year]
             });
         }
 
@@ -95,7 +105,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 name: `Q${(quarter + 1).toString()} ${year.toString()}`, onClick: () => {
                     this.selectRange({year: year, quarter: quarter});
                 },
-                expiryFrom: new Date(year, quarter * 3).getTime()
+                expiryFrom: new Date(year, quarter * 3).getTime(),
+                bg: yearColors[year]
             });
         }
     }
