@@ -142,28 +142,34 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         const [from, to]: Date[] = (() => {
             const y = basicRange.year;
             if ("month" in basicRange) {
-                const m = basicRange.month;
+                let toMonth = basicRange.month + 1, toYear = y;
+                if (toMonth >= 12) {
+                    toYear += Math.floor(toMonth / 12);
+                    toMonth %= 12;
+                }
                 return [
-                    new Date(y, m),
-                    // would be just Date(y, m+1) - rest deals with the special case when the month is December
-                    //  (if month is December, the end of the range is the new year so we need to correct for that)
-                    //  floor dividing by 11 returns 0 if month before December, 1 if month is December (or later)
-                    //  modulo 12 keeps month in valid range (0~11) if it's overflowed into the next year
-                    new Date(y + Math.floor(m / 11), (m + 1) % 12)
+                    new Date(basicRange.year, basicRange.month),
+                    new Date(toYear, toMonth)
                 ];
             } else if ("quarter" in basicRange) {
                 const q = basicRange.quarter;
+                let toQuarter = basicRange.quarter + 1, toYear = y;
+                if (toQuarter >= 4) {
+                    toYear += Math.floor(toQuarter / 4);
+                    toQuarter %= 4;
+                }
                 return [
+                    // Multiply by 3 to map quarter indices to the first month in that range
                     new Date(y, q * 3),
-                    // would be just Date(y, (q+1) * 3) but we need to deal with the fourth quarter as above
-                    //  same concepts as above are applied here, multiplying by 3 to get month number from quarter
-                    new Date(y + Math.floor(q / 3), (q + 1) % 4 * 3)
+                    new Date(toYear, toQuarter * 3)
+                ];
+            } else {
+                // Year
+                return [
+                    new Date(y, 0),
+                    new Date(y + 1, 0)
                 ];
             }
-            return [
-                new Date(y, 0),
-                new Date(y + 1, 0)
-            ];
         })();
 
         // generate and set ExpiryRange object
