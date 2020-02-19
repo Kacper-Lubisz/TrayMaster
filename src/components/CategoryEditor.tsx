@@ -87,8 +87,21 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.state.draftCat) {
             return <>
                 <div id="cat-edit-controls">
-                    <h2>{this.state.oldCat ? `Edit ${this.state.oldCat.name}${this.hasUnsavedChanges() ? "*" : ""}`
-                                           : "New Category"}</h2>
+                    <div id="cat-edit-header">
+                        <h2>{this.state.oldCat ? `Edit ${this.state.oldCat.name}${this.hasUnsavedChanges() ? "*" : ""}`
+                                               : "New Category"}</h2>
+                        <div>
+                            <button
+                                onClick={this.discardChanges.bind(this)}
+                            >Discard Changes
+                            </button>
+                            <button
+                                disabled={!this.hasUnsavedChanges()}
+                                onClick={this.hasUnsavedChanges() ? this.saveCategory.bind(this) : undefined}
+                            >Save Changes
+                            </button>
+                        </div>
+                    </div>
                     <h3>Name</h3>
                     <input
                         type="text"
@@ -133,7 +146,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         min="0"
                         max={this.state.draftCat.overStockThreshold ?? undefined}
                         value={this.state.draftCat.underStockThreshold ?? ""}
-                        placeholder={"No Understock Threshold"}
+                        placeholder={"No threshold"}
                         onChange={e => {
                             const newUnderStock = e.target.value.length === 0 ? null
                                                                               : Number(e.target.value);
@@ -150,7 +163,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         type="number"
                         min={this.state.draftCat.underStockThreshold ?? undefined}
                         value={this.state.draftCat.overStockThreshold ?? ""}
-                        placeholder={"No Overstock Threshold"}
+                        placeholder={"No threshold"}
                         onChange={e => {
                             const newOverstock = e.target.value.length === 0 ? null
                                                                              : Number(e.target.value);
@@ -178,26 +191,13 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     />
                 </div>
                 <div id="cat-edit-bottom-btns">
-                    <div>
-                        <button
-                            disabled={this.state.oldCat?.type === "default"}
-                            onClick={this.deleteCategory.bind(this)}
-                        >Delete Category
-                        </button>
-                        {this.state.oldCat?.type === "default" ? <div>You cannot delete a default category.</div>
-                                                               : null}
-                    </div>
-                    <div>
-                        <button
-                            onClick={this.discardChanges.bind(this)}
-                        >Cancel
-                        </button>
-                        <button
-                            disabled={!this.hasUnsavedChanges()}
-                            onClick={this.hasUnsavedChanges() ? this.saveCategory.bind(this) : undefined}
-                        >Save
-                        </button>
-                    </div>
+                    <button
+                        disabled={this.state.oldCat?.type === "default"}
+                        onClick={this.deleteCategory.bind(this)}
+                    >Delete This Category
+                    </button>
+                    {this.state.oldCat?.type === "default" ? <div id="del-msg">You cannot delete a default
+                        category!</div> : null}
                 </div>
             </>;
         } else {
@@ -320,7 +320,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         <p onClick={this.selectCategory.bind(this, cat)}>{cat.name}</p>
                     </div>)}
                 </div>
-                <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>Add Category</button>
+                <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>New Category</button>
             </div>
             <div id="cat-edit-main">
                 {this.renderEditPanel()}
