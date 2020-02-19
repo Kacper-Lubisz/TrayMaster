@@ -1,94 +1,130 @@
 import {faArrowLeft} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {CategoryEditor} from "../components/CategoryEditor";
+import {UserSettings} from "../components/UserSettings";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+
 import "../styles/settings.scss";
 
-interface SettingsProps {
+interface SettingsPageProps {
     openDialog: (dialog: Dialog) => void;
-    warehouse: Warehouse | undefined;
+    warehouse: Warehouse;
     user: User;
+}
+
+interface SettingsPageState {
+    currentTab: "personal" | "wh-edit" | "cat-edit" | "handle-users";
 }
 
 /**
  * RouteComponentProps enables the history.push to change paths
  * TODO change paths when those screens are added
  */
-class SettingsPage extends React.Component<RouteComponentProps & SettingsProps, any> {
+class SettingsPage extends React.Component<RouteComponentProps & SettingsPageProps, SettingsPageState> {
+
+    constructor(props: any) {
+        super(props);
+
+        this.state = {
+            currentTab: "personal"
+        };
+    }
+
+
+    showCurrentSetting(): React.ReactNode {
+
+        if (this.state.currentTab === "personal") {
+            return <UserSettings
+                user={this.props.user}
+            />;
+        } else if (this.state.currentTab === "cat-edit") {
+            return <CategoryEditor
+                openDialog={this.props.openDialog}
+                categories={this.props.warehouse.categories}
+                user={this.props.user}
+
+                addCategory={this.props.warehouse.addCategory.bind(this.props.warehouse)}
+                removeCategory={this.props.warehouse.removeCategory.bind(this.props.warehouse)}
+                editCategory={this.props.warehouse.editCategory.bind(this.props.warehouse)}
+                getCategoryID={this.props.warehouse.getCategoryID.bind(this.props.warehouse)}
+                stage={this.props.warehouse.stage.bind(this.props.warehouse)}
+
+                updatePage={() => this.forceUpdate()}
+            />;
+        } else if (this.state.currentTab === "wh-edit") {
+            //return warehouse editor
+        }
+    }
 
     render(): React.ReactNode {
 
-        const settings: {
-            get: () => boolean;
-            set: (value: boolean) => void;
-            label: string;
-        }[] = [
-            {//todo fixme add a drop down for this, or something that makes more sense.
-                get: () => this.props.user.autoAdvanceMode === "off",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "off",
-                label: "Enable Auto Advance off"
-            },
-            {
-                get: () => this.props.user.autoAdvanceMode === "ce",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "ce",
-                label: "Enable Auto Advance ce"
-            }, {
-                get: () => this.props.user.autoAdvanceMode === "w",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "w",
-                label: "Enable Auto Advance w"
-            },
-            {
-                get: () => this.props.user.autoAdvanceMode === "cew",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "cew",
-                label: "Enable Auto Advance cew"
-            },
-            {
-                get: () => this.props.user.onlySingleAutoAdvance,
-                set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
-                label: "Don't Advance in Multi-select"
-            }, {
-                get: () => this.props.user.showPreviousShelfButton,
-                set: (value: boolean) => this.props.user.showPreviousShelfButton = value,
-                label: "Show Previous Shelf Button"
-            }
-        ];
-
-        return (
-            <div className="settings">
-                <div className="settings-header">
+        return <div id="settings">
+            <div id="settings-sidebar">
+                <div id="settings-header">
                     <h1>Settings</h1>
                 </div>
-                <div className="settings-btns">
+
+                <div id="settings-tabs">
+                    <div>
+                        <h2>User</h2>
+                        <div className={classNames("tab", {
+                            "tab-selected": this.state.currentTab === "personal"
+                        })}
+                             onClick={() => this.setState(state => ({...state, currentTab: "personal"}))}
+                        >
+                            Personal Settings
+                        </div>
+                    </div>
+                    {this.props.user.isAdmin ?
+                     <>
+                         <div>
+                             <h2>Warehouse</h2>
+                             <div className={classNames("tab", {
+                                 "tab-selected": this.state.currentTab === "cat-edit"
+                             })}
+                                  onClick={() => this.setState(state => ({...state, currentTab: "cat-edit"}))}
+                             >
+                                 Category Editor
+                             </div>
+                             <div className={classNames("tab", {
+                                 "tab-selected": this.state.currentTab === "wh-edit"
+                             })}
+                                  onClick={() => this.setState(state => ({...state, currentTab: "wh-edit"}))}
+                             >
+                                 Warehouse Editor
+                             </div>
+                         </div>
+                         <div>
+                             <h2>Admin</h2>
+                             <div className={classNames("tab", {
+                                 "tab-selected": this.state.currentTab === "handle-users"
+                             })}
+                                  onClick={() => this.setState(state => ({...state, currentTab: "handle-users"}))}
+                             >
+                                 Handle Users
+                             </div>
+                         </div>
+                     </>
+                                             : undefined}
+                </div>
+
+                <div id="settings-btns">
                     <button onClick={() => this.props.history.goBack()}>
                         <FontAwesomeIcon className="back-btn" icon={faArrowLeft}/>
                     </button>
                 </div>
-                <div className="settings-content">
-                    <h1>User Settings</h1>
-                    {settings.map(setting =>
-                        <div className="settings-setting" key={setting.label}
-                             onClick={() => {
-                                 setting.set(!setting.get());
-                                 this.forceUpdate();
-                             }}>
-                            <input
-                                type="checkbox"
-                                checked={setting.get()}
-                                onChange={async e => {
-                                    setting.set(e.target.checked);
-                                    await this.props.user.stage(true, true);
-                                    this.forceUpdate();
-                                }}
-                            />
-                            <p>{setting.label}</p>
-                        </div>
-                    )}
-                </div>
+
             </div>
-        );
+
+            <div id="settings-content">
+                {this.showCurrentSetting()}
+            </div>
+        </div>;
     }
 
 }

@@ -48,7 +48,11 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      * @returns The newly created warehouse
      */
     public static create(id?: string, name?: string): Warehouse {
-        return new Warehouse(id ?? Utils.generateRandomId(), {name: name ?? "", defaultTraySizeID: "", expiryColorMode: "hybrid"});
+        return new Warehouse(id ?? Utils.generateRandomId(), {
+            name: name ?? "",
+            defaultTraySizeID: "",
+            expiryColorMode: "hybrid"
+        });
     }
 
     /**
@@ -88,7 +92,14 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
         if (this.categoryCollection.size === 0) {
             for (let i = 0; i < defaultCategories.length; i++) {
-                this.categoryCollection.add({index: i, name: defaultCategories[i], shortName: defaultCategories[i]});
+                this.categoryCollection.add({
+                    index: i,
+                    name: defaultCategories[i],
+                    shortName: defaultCategories[i],
+                    underStockThreshold: null,
+                    overStockThreshold: null,
+                    type: "default"
+                });
             }
         }
 
@@ -118,6 +129,10 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public addCategory(category: Category): void {
         this.categoryCollection.add(category);
+    }
+
+    public editCategory(id: string, category: Category): void {
+        this.categoryCollection.set(id, category);
     }
 
     public removeCategory(category: Category): void {
