@@ -145,7 +145,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         min="0"
                         max={this.state.draftCat.overStockThreshold ?? undefined}
                         value={this.state.draftCat.underStockThreshold ?? ""}
-                        placeholder={"No Understock Threshold"}
+                        placeholder={"No threshold"}
                         onChange={e => {
                             const newUnderStock = e.target.value.length === 0 ? null
                                                                               : Number(e.target.value);
@@ -162,7 +162,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         type="number"
                         min={this.state.draftCat.underStockThreshold ?? undefined}
                         value={this.state.draftCat.overStockThreshold ?? ""}
-                        placeholder={"No Overstock Threshold"}
+                        placeholder={"No threshold"}
                         onChange={e => {
                             const newOverstock = e.target.value.length === 0 ? null
                                                                              : Number(e.target.value);
