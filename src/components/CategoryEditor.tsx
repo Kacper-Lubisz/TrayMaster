@@ -36,7 +36,9 @@ interface CategoryEditorState {
 
 export class CategoryEditor extends React.Component<CategoryEditorProps, CategoryEditorState> {
 
-    private blankCat: Category = {
+    private static readonly DEFAULT_NAME = "Unnamed";
+
+    private static readonly BLANK_CATEGORY: Category = {
         index: -1,
         name: "",
         shortName: null,
@@ -61,13 +63,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * @param cat
      */
     private selectCategory(cat: Category): void {
-        if (this.unsavedChanges()) {
-            // this.props.openDialog(buildUnsavedChangesDialog(
-            //     this.saveCategory.bind(this),
-            //     this.discardChanges.bind(this),
-            //     this.selectCategory.bind(this, cat)
-            // ));
-
+        if (this.hasUnsavedChanges()) {
             this.props.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
@@ -90,12 +86,26 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.state.draftCat) {
             return <>
                 <div id="cat-edit-controls">
-                    <h2>{this.state.oldCat ? `Edit ${this.state.oldCat.name}` : "New Category"}</h2>
+                    <div id="cat-edit-header">
+                        <h2>{this.state.oldCat ? `Edit ${this.state.oldCat.name}${this.hasUnsavedChanges() ? "*" : ""}`
+                                               : "New Category"}</h2>
+                        <div>
+                            <button
+                                onClick={this.discardChanges.bind(this)}
+                            >Discard Changes
+                            </button>
+                            <button
+                                disabled={!this.hasUnsavedChanges()}
+                                onClick={this.hasUnsavedChanges() ? this.saveCategory.bind(this) : undefined}
+                            >Save Changes
+                            </button>
+                        </div>
+                    </div>
                     <h3>Name</h3>
                     <input
                         type="text"
                         value={this.state.draftCat.name}
-                        placeholder="Enter a name"
+                        placeholder="Unnamed"
                         onChange={e => {
                             const newName = e.target.value;
                             this.setState(state => {
@@ -134,8 +144,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         type="number"
                         min="0"
                         max={this.state.draftCat.overStockThreshold ?? undefined}
-                        value={this.state.draftCat.underStockThreshold ?? undefined}
-                        placeholder={"No Understock Threshold Specified"}
+                        value={this.state.draftCat.underStockThreshold ?? ""}
+                        placeholder={"No threshold"}
                         onChange={e => {
                             const newUnderStock = e.target.value.length === 0 ? null
                                                                               : Number(e.target.value);
@@ -151,8 +161,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     <input
                         type="number"
                         min={this.state.draftCat.underStockThreshold ?? undefined}
-                        value={this.state.draftCat.overStockThreshold ?? undefined}
-                        placeholder={"No Overstock Threshold Specified"}
+                        value={this.state.draftCat.overStockThreshold ?? ""}
+                        placeholder={"No threshold"}
                         onChange={e => {
                             const newOverstock = e.target.value.length === 0 ? null
                                                                              : Number(e.target.value);
@@ -166,26 +176,13 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     /> trays
                 </div>
                 <div id="cat-edit-bottom-btns">
-                    <div>
-                        <button
-                            disabled={this.state.oldCat?.type === "default"}
-                            onClick={this.deleteCategory.bind(this)}
-                        >Delete Category
-                        </button>
-                        {this.state.oldCat?.type === "default" ? <div>You cannot delete a default category.</div>
-                                                               : null}
-                    </div>
-                    <div>
-                        <button
-                            onClick={this.discardChanges.bind(this)}
-                        >Cancel
-                        </button>
-                        <button
-                            disabled={!this.unsavedChanges()}
-                            onClick={this.unsavedChanges() ? this.saveCategory.bind(this) : undefined}
-                        >Save
-                        </button>
-                    </div>
+                    <button
+                        disabled={this.state.oldCat?.type === "default"}
+                        onClick={this.deleteCategory.bind(this)}
+                    >Delete This Category
+                    </button>
+                    {this.state.oldCat?.type === "default" ? <div id="del-msg">You cannot delete a default
+                        category!</div> : null}
                 </div>
             </>;
         } else {
@@ -199,12 +196,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private newCategory(): void {
 
-        if (this.unsavedChanges()) {
-            // this.props.openDialog(buildUnsavedChangesDialog(
-            //     this.saveCategory.bind(this),
-            //     this.discardChanges.bind(this),
-            //     this.newCategory.bind(this)
-            // ));
+        if (this.hasUnsavedChanges()) {
             this.props.openDialog({
                 closeOnDocumentClick: true,
                 dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
@@ -213,7 +205,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             this.setState(state => ({
                 ...state,
                 oldCat: undefined,
-                draftCat: cloneDeep(this.blankCat)
+                draftCat: cloneDeep(CategoryEditor.BLANK_CATEGORY)
             }));
         }
     }
@@ -221,8 +213,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     /**
      * Checks if any of the fields in the currently displayed category has changed
      */
-    unsavedChanges(): boolean {
-        return !isEqual(this.state.draftCat, this.blankCat) && !isEqual(this.state.oldCat, this.state.draftCat);
+    hasUnsavedChanges(): boolean {
+        return !isEqual(this.state.draftCat, CategoryEditor.BLANK_CATEGORY) && !isEqual(this.state.oldCat, this.state.draftCat);
     }
 
     /**
@@ -231,20 +223,28 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     private saveCategory(): void {
         if (this.state.draftCat) {
 
-            if (this.state.oldCat) {
-                this.props.editCategory(this.props.getCategoryID(this.state.oldCat), this.state.draftCat);
-            } else {
-                // This is pretty bad practice, but we'll re-render with updatePage() anyway
-                // eslint-disable-next-line react/no-direct-mutation-state
-                this.state.draftCat.index = this.props.categories.length;
-                this.props.addCategory(this.state.draftCat);
+            const newCategory = cloneDeep(this.state.draftCat); // to avoid altering the state here
+            if (newCategory.name.length === 0) {
+                newCategory.name = CategoryEditor.DEFAULT_NAME;
             }
 
-            this.setState(state => ({
-                ...state,
-                oldCat: this.state.draftCat,
-                draftCat: cloneDeep(this.state.draftCat)
-            }));
+            if (this.state.oldCat) {
+                this.props.editCategory(this.props.getCategoryID(this.state.oldCat), newCategory);
+
+                this.setState(state => ({
+                    ...state,
+                    oldCat: newCategory,
+                    draftCat: cloneDeep(newCategory)
+                }));
+            } else {
+                newCategory.index = this.props.categories.length;
+                this.setState(state => ({
+                    ...state,
+                    oldCat: newCategory,
+                    draftCat: cloneDeep(newCategory)
+                }));
+                this.props.addCategory(newCategory);
+            }
             this.props.updatePage();
 
         }
@@ -254,7 +254,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.setState(state => ({
             ...state,
             oldCat: undefined,
-            draftCat: this.state.oldCat ? cloneDeep(this.state.oldCat) : undefined
+            draftCat: undefined
         }));
     }
 
@@ -305,8 +305,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         <p onClick={this.selectCategory.bind(this, cat)}>{cat.name}</p>
                     </div>)}
                 </div>
-                <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>Add Category</button>
-
+                <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>New Category</button>
             </div>
             <div id="cat-edit-main">
                 {this.renderEditPanel()}
@@ -336,45 +335,3 @@ class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
         </>;
     }
 }
-
-// export function buildUnsavedChangesDialog(
-//     save: () => void,
-//     discard: () => void,
-//     then: () => void,
-//     title = "Unsaved Changes",
-//     message = "Please save or discard your current changes before proceeding",
-// ): Dialog {
-//     return {
-//         closeOnDocumentClick: true,
-//         dialog: (close: () => void) => <>
-//             <DialogTitle title={title} iconProps={{icon: faInfoCircle, color: "blue"}}/>
-//             <div className="dialogContent">
-//                 <p className="errorDialogContent">{message}</p>
-//                 <DialogButtons buttons={[
-//                     {
-//                         name: "Save", buttonProps: {
-//                             onClick: () => {
-//                                 console.log("saving")
-//                                 save();
-//                                 console.log("closing")
-//                                 close();
-//                                 console.log("continuing")
-//                                 then();
-//                             }
-//                         }
-//                     },
-//                     {
-//                         name: "Don't Save", buttonProps: {
-//                             onClick: () => {
-//                                 discard();
-//                                 close();
-//                                 then();
-//                             }
-//                         }
-//                     },
-//                     {name: "Cancel", buttonProps: {onClick: close}}
-//                 ]}/>
-//             </div>
-//         </>
-//     };
-// }
