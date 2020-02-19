@@ -2,6 +2,7 @@ import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
+import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import "./styles/_keyboard.scss";
 
 /**
@@ -23,6 +24,9 @@ export interface CustomButtonProps {
 
     /**  Whether the button should be disabled */
     disabled?: boolean;
+
+    /** Background colour to apply to the button */
+    bg?: string;
 }
 
 /**
@@ -35,17 +39,24 @@ class KeyboardButton extends React.Component<CustomButtonProps> {
             <button disabled={this.props.disabled}
                     className={classNames("key-btn btn-style-override", {
                         "key-btn-selected": this.props.selected
-                    })} onClick={(e) => {
-                // if button isn't disabled, and we've been given an onClick function, run it
-                if (!this.props.disabled && this.props.onClick) {
-                    this.props.onClick(e);
-                    // This prevents the blue/orange outline that Chrome adds to buttons after clicking
-                    // It's better to blur (de-focus) element after clicking rather than use CSS to hide the outline
-                    // for accessibility reasons, because users who "tab" around the buttons need the outline
-                    e.currentTarget.blur();
-                }
-            }}>{this.props.icon ? <FontAwesomeIcon icon={this.props.icon} title={this.props.name}/>
-                                : this.props.name}</button>
+                    })}
+                    style={this.props.bg && !this.props.disabled ? {
+                        background: this.props.bg,
+                        color: getTextColorForBackground(this.props.bg)
+                    } : {}}
+                    onClick={(e) => {
+                        // if button isn't disabled, and we've been given an onClick function, run it
+                        if (!this.props.disabled && this.props.onClick) {
+                            this.props.onClick(e);
+                            // This prevents the blue/orange outline that Chrome adds to buttons after clicking
+                            // It's better to blur (de-focus) element after clicking rather than use CSS to hide the
+                            // outline for accessibility reasons, because users who "tab" around the buttons need the
+                            // outline
+                            e.currentTarget.blur();
+                        }
+                    }}
+            >{this.props.icon ? <FontAwesomeIcon icon={this.props.icon} title={this.props.name}/>
+                              : this.props.name}</button>
         );
     }
 }

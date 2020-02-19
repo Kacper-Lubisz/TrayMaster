@@ -183,7 +183,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                                                      : traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
                                                        ? firstCat : null;
 
-            const buttons: CustomButtonProps[] = this.props.categories.map((cat) => {
+            const buttons: CustomButtonProps[] = this.props.categories.map((cat): CustomButtonProps => {
                 return {
                     name: cat.shortName ?? cat.name,
                     onClick: () => this.props.categorySelected(cat),
@@ -193,7 +193,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 {
                     name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
-                    selected: false
+                    selected: false,
+                    bg: "#ffffff"
                 }
             ]);
             return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
@@ -216,8 +217,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
                 }, {
                     name: "< Clear >",
-                    onClick: () => this.props.expirySelected(null)
-
+                    onClick: () => this.props.expirySelected(null),
+                    bg: "#ffffff"
                 }
             ];
 
@@ -249,7 +250,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
                     disabled: this.props.selectedTrayCells.length === 0,
-                    onClick: () => this.weightKeyHandler(a)
+                    onClick: () => this.weightKeyHandler(a),
+                    bg: a === "< Clear >" ? "#ffffff" : undefined
                 }));
 
             return <div className="keyboard-container">
