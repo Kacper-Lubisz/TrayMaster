@@ -120,7 +120,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     <h3>Short Name</h3>
                     <input
                         type="text"
-                        value={this.state.draftCat?.shortName ?? ""}
+                        value={this.state.draftCat.shortName ?? ""}
                         onChange={e => {
                             const newShortName = e.target.value;
                             this.setState(state => {
