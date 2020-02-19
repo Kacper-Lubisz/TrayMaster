@@ -135,58 +135,43 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
     /**
      * Passed into expiry buttons: generates & selects ExpiryRange from year (and quarter or month index if applicable)
-     * @param basicRange object representing a simplified expiry range attached to the button
+     * @param range object representing a simplified expiry range attached to the button
      */
-    private selectRange(basicRange: ExpiryYear | ExpiryQuarter | ExpiryMonth): void {
+    private selectRange(range: ExpiryYear | ExpiryQuarter | ExpiryMonth): void {
         // choose range start and end points
-        const [from, to]: Date[] = (() => {
-            const y = basicRange.year;
-            if ("month" in basicRange) {
-                let toMonth = basicRange.month + 1, toYear = y;
-                if (toMonth >= 12) {
-                    toYear += Math.floor(toMonth / 12);
-                    toMonth %= 12;
-                }
-                return [
-                    new Date(basicRange.year, basicRange.month),
-                    new Date(toYear, toMonth)
-                ];
-            } else if ("quarter" in basicRange) {
-                const q = basicRange.quarter;
-                let toQuarter = basicRange.quarter + 1, toYear = y;
-                if (toQuarter >= 4) {
-                    toYear += Math.floor(toQuarter / 4);
-                    toQuarter %= 4;
-                }
-                return [
-                    // Multiply by 3 to map quarter indices to the first month in that range
-                    new Date(y, q * 3),
-                    new Date(toYear, toQuarter * 3)
-                ];
-            } else {
-                // Year
-                return [
-                    new Date(y, 0),
-                    new Date(y + 1, 0)
-                ];
-            }
-        })();
 
-        // generate and set ExpiryRange object
-        this.props.expirySelected({
-            from: from.getTime(),
-            to: to.getTime(),
-            // "[if not year then [month or quarter name (eg Jan, Q1) plus trailing space]][year]"
-            label: `${(() => {
-                if ("month" in basicRange) {
-                    return `${this.monthsTranslator[basicRange.month]} `;
-                } else if ("quarter" in basicRange) {
-                    // need to add 1 because quarters are zero-indexed and users expect Q[1..4], not Q[0..3]
-                    return `Q${(basicRange.quarter + 1).toString()} `;
-                }
-                return "";
-            })()}${basicRange.year.toString()}`
-        });
+        if ("month" in range) {
+
+            const fromDate = new Date(range.year, range.month);
+            const toDate = new Date(fromDate);
+            toDate.setMonth(fromDate.getMonth() + 1);
+
+            this.props.expirySelected({
+                from: fromDate.getTime(), to: toDate.getTime(),
+                label: `${this.monthsTranslator[range.month]} ${range.year}`
+            });
+
+        } else if ("quarter" in range) {
+
+            // Multiply by 3 to map quarter indices to the first month in that range
+            const fromDate = new Date(range.year, range.quarter * 3);
+            const toDate = new Date(fromDate);
+
+            toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
+
+            this.props.expirySelected({
+                from: fromDate.getTime(), to: toDate.getTime(),
+                label: `Q${(range.quarter + 1).toString()} ${range.year}`
+            });
+
+        } else { // Year
+
+            this.props.expirySelected({
+                from: new Date(range.year, 0).getTime(),
+                to: new Date(range.year + 1, 0).getTime(),
+                label: `${range.year}`
+            });
+        }
     }
 
     /**
@@ -204,13 +189,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                                                      : traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
                                                        ? firstCat : null;
 
-            const buttons: CustomButtonProps[] = this.props.categories.map((cat) => {
-                return {
-                    name: cat.shortName ?? cat.name,
-                    onClick: () => this.props.categorySelected(cat),
-                    selected: cat.name === commonCat
-                };
-            }).concat([
+            const buttons: CustomButtonProps[] = this.props.categories.map((cat) => ({
+                name: cat.shortName ?? cat.name,
+                onClick: () => this.props.categorySelected(cat),
+                selected: cat.name === commonCat
+            })).concat([
                 {
                     name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
@@ -228,15 +211,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 {
                     name: "Indefinite",
                     onClick: () => this.props.expirySelected({
-                        from: null,
-                        to: null,
+                        from: null, to: null,
                         label: "Indefinite"
                     })
-
                 }, {
                     name: "< Clear >",
                     onClick: () => this.props.expirySelected(null)
-
                 }
             ];
 
