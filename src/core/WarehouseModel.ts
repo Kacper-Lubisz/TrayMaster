@@ -56,6 +56,7 @@ export interface Category {
     underStockThreshold: number | null;
     overStockThreshold: number | null;
     type: "default" | "custom";
+    group: string | null;
 }
 
 /**

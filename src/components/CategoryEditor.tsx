@@ -44,7 +44,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         shortName: null,
         underStockThreshold: 0,
         overStockThreshold: 100,
-        type: "custom"
+        type: "custom",
+        group: null
     };
 
     constructor(props: CategoryEditorProps) {
@@ -119,7 +120,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     <h3>Short Name</h3>
                     <input
                         type="text"
-                        value={this.state.draftCat?.shortName ?? ""}
+                        value={this.state.draftCat.shortName ?? ""}
                         onChange={e => {
                             const newShortName = e.target.value;
                             this.setState(state => {
@@ -174,6 +175,20 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                             });
                         }}
                     /> trays
+                    <h3>Group Title</h3>
+                    <input
+                        type="text"
+                        value={this.state.draftCat.group ?? ""}
+                        onChange={(e) => {
+                            const newGroup = e.target.value.length === 0 ? null : e.target.value;
+                            this.setState(state => {
+                                if (state.draftCat) {
+                                    state.draftCat.group = newGroup;
+                                }
+                                return state;
+                            });
+                        }}
+                    />
                 </div>
                 <div id="cat-edit-bottom-btns">
                     <button
