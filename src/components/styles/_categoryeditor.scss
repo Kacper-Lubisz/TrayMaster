@@ -60,13 +60,19 @@
 
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
 
   #cat-edit-controls {
     flex-grow: 1;
 
-    h2 {
-      font-size: 36px;
+    #cat-edit-header {
+      width: 100%;
+      display: flex;
+
+      h2 {
+        font-size: 36px;
+        flex-grow: 1;
+      }
     }
 
     h3 {
@@ -90,12 +96,11 @@
   }
 
   #cat-edit-bottom-btns {
-    max-width: 100%;
-    width: 700px;
     display: flex;
+    align-items: center;
 
-    > :first-child {
-      flex-grow: 1;
+    #del-msg {
+      margin-left: 30px;
     }
   }
 }
