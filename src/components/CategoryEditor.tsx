@@ -318,11 +318,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         return <div id="category-editor">
             <div id="category-sidebar">
                 <div id="category-list">
-                    {this.props.categories.map(cat => <div
+                    {this.props.categories.map((cat, index) => <div
                         className={classNames("category-list-item", {
                             "cat-selected": isEqual(this.state.oldCat, cat)
                         })}
-                        key={cat.name}
+                        key={index}
                         onClick={this.selectCategory.bind(this, cat)}>
                         {cat.name}
                     </div>)}
