@@ -1,6 +1,6 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
-import {KeyboardButtonProps} from "./Keyboard";
+import {CustomButtonProps} from "./Keyboard";
 import "./styles/_toolbar.scss";
 
 /**
@@ -11,7 +11,7 @@ interface ToolBarProps {
     disabled: boolean;
 
     /** List of toolbar buttons */
-    toolbar: KeyboardButtonProps[];
+    toolbar: CustomButtonProps[];
 }
 
 /**
@@ -23,7 +23,7 @@ export class ToolBar extends React.Component<ToolBarProps> {
         return <div id="toolBar">{
             this.props.toolbar.map((tool, toolIndex) =>
                 <button
-                    className="tool"
+                    className="tool btn-style-override"
                     key={toolIndex}
                     name={tool.name}
                     onClick={tool.onClick}

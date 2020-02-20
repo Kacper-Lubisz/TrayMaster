@@ -3,6 +3,9 @@
 // Import system-wide variables: we need to know $accent-color here
 @import "../../styles/variables";
 
+.isEditShelf .column {
+  transition: flex-grow 0.5s ease;
+}
 
 #viewPort {
   background-color: #eeeeee;
@@ -47,8 +50,6 @@
       padding: 5px;
       position: relative; // needed to allow us to position shelf edit columns absolutely inside .column
 
-      transition: flex-grow 0.5s ease;
-
       // Styling
       text-align: center;
 
@@ -60,7 +61,7 @@
       .tray {
         // Layout
         width: 100%;
-        height: calc(100% / 3); // todo revise this change
+        height: calc(100% / 3);
         min-width: 0;
         margin: 5px 0 0 0;
 
@@ -106,7 +107,7 @@
 
         // When the tray is selected
         &.selected {
-          box-shadow: inset 0 0 18px -10px #000000;
+          background-color: #dddddd;
         }
 
         // The first empty space a tray can take above

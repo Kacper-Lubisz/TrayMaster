@@ -8,7 +8,7 @@ import "./styles/_keyboard.scss";
  * The properties that get passed into KeyboardButton components
  * @see KeyboardButton
  */
-export interface KeyboardButtonProps {
+export interface CustomButtonProps {
     /** Name to show on the button */
     name: string;
 
@@ -27,13 +27,13 @@ export interface KeyboardButtonProps {
 
 /**
  * KeyboardButton component: returns a button to go into a keyboard
- * @see KeyboardButtonProps
+ * @see CustomButtonProps
  */
-class KeyboardButton extends React.Component<KeyboardButtonProps> {
+class KeyboardButton extends React.Component<CustomButtonProps> {
     render(): React.ReactNode {
         return (
             <button disabled={this.props.disabled}
-                    className={classNames("key-btn", {
+                    className={classNames("key-btn btn-style-override", {
                         "key-btn-selected": this.props.selected
                     })} onClick={(e) => {
                 // if button isn't disabled, and we've been given an onClick function, run it
@@ -56,7 +56,7 @@ class KeyboardButton extends React.Component<KeyboardButtonProps> {
  */
 interface KeyboardProps {
     /** List of KeyboardButtonProps to give to child buttons */
-    buttons: KeyboardButtonProps[];
+    buttons: CustomButtonProps[];
 
     /** Number of buttons to show in each horizontal row */
     gridX: number;

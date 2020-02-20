@@ -1,6 +1,7 @@
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import React, {ReactNode} from "react";
+import "../styles/_dialog.scss";
 
 export type StoredDialog = {
     dialog: ReactNode;
@@ -19,10 +20,10 @@ export type DialogTitleProps = { title: string; iconProps?: FontAwesomeIconProps
  */
 export class DialogTitle extends React.Component<DialogTitleProps> {
     render(): React.ReactNode {
-        return <h1 className={"dialogTitle"}> {this.props.iconProps ?
+        return <h2 className={"dialogTitle"}> {this.props.iconProps ?
                                                <FontAwesomeIcon {...this.props.iconProps}/> : null}
             {this.props.title}
-        </h1>;
+        </h2>;
     }
 }
 
@@ -59,20 +60,22 @@ export function buildErrorDialog(title: string, message: string, forceReload: bo
         closeOnDocumentClick: !forceReload,
         dialog: (close: () => void) => <>
             <DialogTitle title={title} iconProps={{icon: warningIcon, color: "red"}}/>
-            <p>{message}</p>
-            <DialogButtons buttons={[
-                {
-                    name: "Reload", buttonProps: {
-                        onClick: () => window.location.reload(),
-                        style: {borderColor: "red"}
+            <div className="dialogContent">
+                <p className="errorDialogContent">{message}</p>
+                <DialogButtons buttons={[
+                    {
+                        name: "Reload", buttonProps: {
+                            onClick: () => window.location.reload(),
+                            className: "dialogBtnRed"
+                        }
                     }
-                }
-            ].concat(forceReload ? [] : {
-                name: "Ok", buttonProps: {
-                    onClick: close,
-                    style: {borderColor: "red"}
-                }
-            })}/>
+                ].concat(forceReload ? [] : {
+                    name: "Ok", buttonProps: {
+                        onClick: close,
+                        className: "dialogBtnRed"
+                    }
+                })}/>
+            </div>
         </>
     };
 }

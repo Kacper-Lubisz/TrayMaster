@@ -1,4 +1,4 @@
-import {faArrowLeft as arrowLeft, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
+import {faArrowLeft as arrowLeft, faHome as menuIcon, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -97,7 +97,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
                     </div>
                     <div id="sentenceR">
-                        <button onClick={() => this.props.history.push("/menu")}>Menu</button>
+                        <button onClick={() => this.props.history.push("/menu")}>
+                            <FontAwesomeIcon icon={menuIcon}/>
+                        </button>
                     </div>
                 </div>
                 <div id="searchResults">{this.renderSearchResults()}</div>
@@ -239,9 +241,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         } else if (!this.props.search?.results) {
             return <LoadingSpinner/>;
         } else if (this.props.search.results.length === 0) {
-            return <div>
-                Couldn't find any trays which match this search
-            </div>; //todo restyle
+            return <div id="search-no-results">
+                Couldn't find any trays which match this search!
+            </div>;
         }
 
     }

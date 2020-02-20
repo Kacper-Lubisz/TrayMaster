@@ -1,0 +1,43 @@
+#searchPanel {
+  #cat-table {
+    height: 100vh;
+    overflow-y: auto;
+
+    .categoryGroup {
+      display: flex;
+      margin: 20px 0;
+
+      .categoryGroupTitle {
+        flex-shrink: 0;
+        width: 60px;
+        font-size: 50px;
+        font-weight: bold;
+        text-align: center;
+        padding: 0 20px;
+
+
+        > span {
+          width: 100%;
+        }
+      }
+
+      .categoryGroupCategories {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: stretch;
+        align-content: center;
+
+        .searchPanelButton {
+          flex-grow: 1;
+          margin: 5px;
+          height: 50px;
+          width: 150px;
+
+          &.selected {
+            background-color: #cccccc;
+          }
+        }
+      }
+    }
+  }
+}
