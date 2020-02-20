@@ -13,31 +13,12 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
 
     render(): React.ReactNode {
-        const settings: {
+        const settingsRadioButtons: {
             get: () => boolean;
             set: (value: boolean) => void;
             label: string;
         }[] = [
             {//todo fixme add a drop down for this, or something that makes more sense.
-                get: () => this.props.user.autoAdvanceMode === "off",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "off",
-                label: "Auto Advance Off"
-            },
-            {
-                get: () => this.props.user.autoAdvanceMode === "ce",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "ce",
-                label: "Auto Advance On: Category > Expiry > Loop"
-            }, {
-                get: () => this.props.user.autoAdvanceMode === "w",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "w",
-                label: "Auto Advance On: Weight > Loop"
-            },
-            {
-                get: () => this.props.user.autoAdvanceMode === "cew",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "cew",
-                label: "Auto Advance On: Category > Expiry > Weight > Loop"
-            },
-            {
                 get: () => this.props.user.onlySingleAutoAdvance,
                 set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
                 label: "Don't Advance in Multi-select"
@@ -69,7 +50,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
         return (
             <div id="user-settings">
-                {settings.map(setting =>
+                {settingsRadioButtons.map(setting =>
                     <SettingsComponent type="radioButton" get={setting.get} set={setting.set} label={setting.label}
                                        user={this.props.user}/>
                 )}

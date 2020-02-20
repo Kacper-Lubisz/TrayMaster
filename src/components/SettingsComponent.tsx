@@ -41,7 +41,7 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
             >
 
                 <input
-                    type="checkbox"
+                    type="radio"
                     checked={propsAtRender.get()}
                     onChange={async e => {
                         propsAtRender.set(e.target.checked);
@@ -54,11 +54,11 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
         } else {
             const propsAtRender = this.props;
             const key = this.props.get;
-            //const defaultOption = this.props.options.filter(option => option.key.includes(key));
+            //const defaultOption = this.props.options.find(option => option.key === key);
             return <div className="settings-setting" key={this.props.label}>
                 <label>
                     <p>{this.props.label}</p>
-                    <select>
+                    <select value={propsAtRender.options[1].label}>
                         {this.props.options.map(option =>
                             <option
                                 key={option.label}
