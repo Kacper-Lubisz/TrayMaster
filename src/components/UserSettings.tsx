@@ -47,13 +47,31 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 label: "Show Previous Shelf Button"
             }
         ];
+        const optionsAutoAdvance = [
+            {
+                label: "Auto Advance Off",
+                key: "off"
+            },{
+                label: "Auto Advance On: Category > Expiry > Loop",
+                key: "ce"
+            },{
+                label: "Auto Advance On: Weight > Loop",
+                key: "w"
+            },{
+                label: "Auto Advance On: Category > Expiry > Weight > Loop",
+                key: "cew"
+            }
+        ]
 
         return (
             <div id="user-settings">
                 {settings.map(setting =>
-                    <SettingsComponent get={setting.get} set={setting.set} label={setting.label}
+                    <SettingsComponent type="radioButton" get={setting.get} set={setting.set} label={setting.label}
                                        user={this.props.user}/>
                 )}
+                {this.props.user.autoAdvanceMode}
+                <SettingsComponent type="dropDown" label="Auto Advance" user={this.props.user} options={optionsAutoAdvance}
+                                   get={() => this.props.user.autoAdvanceMode} set={(value: string) => this.props.user.autoAdvanceMode}/>
             </div>
         );
     }
