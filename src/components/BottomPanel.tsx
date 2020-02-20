@@ -1,15 +1,19 @@
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
+import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {getExpiryColor} from "../utils/getExpiryColor";
+import {byNullSafe} from "../utils/sortsUtils";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 
 
 export interface BottomPanelProps {
+    openDialog: (dialog: Dialog) => void;
+
     keyboardState: KeyboardName;
     categorySelected: (category: Category | null) => void;
     expirySelected: (expiry: ExpiryRange | null) => void;
@@ -146,52 +150,43 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
     /**
      * Passed into expiry buttons: generates & selects ExpiryRange from year (and quarter or month index if applicable)
-     * @param basicRange object representing a simplified expiry range attached to the button
+     * @param range object representing a simplified expiry range attached to the button
      */
-    private selectRange(basicRange: ExpiryYear | ExpiryQuarter | ExpiryMonth): void {
+    private selectRange(range: ExpiryYear | ExpiryQuarter | ExpiryMonth): void {
         // choose range start and end points
-        const [from, to]: Date[] = (() => {
-            const y = basicRange.year;
-            if ("month" in basicRange) {
-                const m = basicRange.month;
-                return [
-                    new Date(y, m),
-                    // would be just Date(y, m+1) - rest deals with the special case when the month is December
-                    //  (if month is December, the end of the range is the new year so we need to correct for that)
-                    //  floor dividing by 11 returns 0 if month before December, 1 if month is December (or later)
-                    //  modulo 12 keeps month in valid range (0~11) if it's overflowed into the next year
-                    new Date(y + Math.floor(m / 11), (m + 1) % 12)
-                ];
-            } else if ("quarter" in basicRange) {
-                const q = basicRange.quarter;
-                return [
-                    new Date(y, q * 3),
-                    // would be just Date(y, (q+1) * 3) but we need to deal with the fourth quarter as above
-                    //  same concepts as above are applied here, multiplying by 3 to get month number from quarter
-                    new Date(y + Math.floor(q / 3), (q + 1) % 4 * 3)
-                ];
-            }
-            return [
-                new Date(y, 0),
-                new Date(y + 1, 0)
-            ];
-        })();
 
-        // generate and set ExpiryRange object
-        this.props.expirySelected({
-            from: from.getTime(),
-            to: to.getTime(),
-            // "[if not year then [month or quarter name (eg Jan, Q1) plus trailing space]][year]"
-            label: `${(() => {
-                if ("month" in basicRange) {
-                    return `${this.monthsTranslator[basicRange.month]} `;
-                } else if ("quarter" in basicRange) {
-                    // need to add 1 because quarters are zero-indexed and users expect Q[1..4], not Q[0..3]
-                    return `Q${(basicRange.quarter + 1).toString()} `;
-                }
-                return "";
-            })()}${basicRange.year.toString()}`
-        });
+        if ("month" in range) {
+
+            const fromDate = new Date(range.year, range.month);
+            const toDate = new Date(fromDate);
+            toDate.setMonth(fromDate.getMonth() + 1);
+
+            this.props.expirySelected({
+                from: fromDate.getTime(), to: toDate.getTime(),
+                label: `${this.monthsTranslator[range.month]} ${range.year}`
+            });
+
+        } else if ("quarter" in range) {
+
+            // Multiply by 3 to map quarter indices to the first month in that range
+            const fromDate = new Date(range.year, range.quarter * 3);
+            const toDate = new Date(fromDate);
+
+            toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
+
+            this.props.expirySelected({
+                from: fromDate.getTime(), to: toDate.getTime(),
+                label: `Q${(range.quarter + 1).toString()} ${range.year}`
+            });
+
+        } else { // Year
+
+            this.props.expirySelected({
+                from: new Date(range.year, 0).getTime(),
+                to: new Date(range.year + 1, 0).getTime(),
+                label: `${range.year}`
+            });
+        }
     }
 
     /**
@@ -205,25 +200,73 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         if (this.props.keyboardState === "category") {
 
             const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
-            const commonCat = firstCat === undefined ? undefined
-                                                     : traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
-                                                       ? firstCat : null;
+            const commonCat = firstCat !== undefined && traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
+                              ? firstCat : null;
 
-            const buttons: CustomButtonProps[] = this.props.categories.map((cat): CustomButtonProps => {
-                return {
-                    name: cat.shortName ?? cat.name,
-                    onClick: () => this.props.categorySelected(cat),
-                    selected: cat.name === commonCat
-                };
-            }).concat([
+
+            const categoryGroups: Map<string, [Category]> = new Map();
+            this.props.categories.forEach(cat => {
+
+                if (cat.group === undefined) { // todo fixme remove this when this is propagated to the db
+                    cat.group = null;
+                }
+
+                if (cat.group !== null) {
+                    if (categoryGroups.has(cat.group)) {
+                        categoryGroups.get(cat.group)?.push(cat);
+                    } else {
+                        categoryGroups.set(cat.group, [cat]);
+                    }
+                }
+            });
+
+            const buttonsWithoutGroups = this.props.categories.filter(cat =>
+                cat.group === null
+            ).map((cat): CustomButtonProps => ({
+                name: cat.shortName ?? cat.name,
+                onClick: () => this.props.categorySelected(cat),
+                selected: cat.name === commonCat
+            }));
+
+            const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
+                name: group,
+                onClick: this.props.openDialog.bind(undefined, {
+                    dialog: (close: () => void) => {
+                        const groupButtons = categories.map((cat) => ({
+                            name: cat.shortName ?? cat.name,
+                            onClick: () => {
+                                this.props.categorySelected(cat);
+                                close();
+                            },
+                            selected: cat.name === commonCat
+                        }));
+                        return <GroupedCategoriesDialog groupTitle={group}
+                                                        categoryButtons={groupButtons}
+                                                        close={close}/>;
+                    },
+                    closeOnDocumentClick: true,
+                }),
+                selected: false
+            }));
+
+            const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
+                .concat(groupedButtons)
+                .sort(byNullSafe(button => button.name));
+
+            const specialButtons: CustomButtonProps[] = [
                 {
                     name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
                     selected: false,
                     bg: "#ffffff"
                 }
-            ]);
-            return <Keyboard id="cat-keyboard" disabled={disabled} buttons={buttons} gridX={8}/>;
+            ];
+
+            return <Keyboard id="cat-keyboard"
+                             disabled={disabled}
+                             buttons={categoryButtons.concat(specialButtons)}
+                             gridX={7}
+            />;
 
         } else if (this.props.keyboardState === "expiry") {
             // todo this might be worth making a setting for; it's the kind of thing someone might want to disable for
@@ -234,11 +277,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 {
                     name: "Indefinite",
                     onClick: () => this.props.expirySelected({
-                        from: null,
-                        to: null,
+                        from: null, to: null,
                         label: "Indefinite"
                     })
-
                 }, {
                     name: "< Clear >",
                     onClick: () => this.props.expirySelected(null),
@@ -319,5 +360,30 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         return <div id="bottom">
             {this.chooseKeyboard(!this.props.selectedTrayCells.length)}
         </div>;
+    }
+}
+
+interface GroupedCategoriesDialogProps {
+    groupTitle: string;
+    categoryButtons: CustomButtonProps[];
+    close: () => void;
+}
+
+/**
+ * This is the the content of the dialog which is shown when the comment on a tray is being edited
+ */
+class GroupedCategoriesDialog extends React.Component<GroupedCategoriesDialogProps> {
+    render(): React.ReactElement {
+        return <>
+            <DialogTitle title={this.props.groupTitle}/>
+            <div className="dialogContent" style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr"
+            }}>{
+                this.props.categoryButtons.map(cat =>
+                    <button onClick={cat.onClick}>{cat.name}</button>
+                )
+            }</div>
+        </>;
     }
 }
