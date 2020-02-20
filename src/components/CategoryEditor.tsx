@@ -322,8 +322,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         className={classNames("category-list-item", {
                             "cat-selected": isEqual(this.state.oldCat, cat)
                         })}
-                        key={cat.name}>
-                        <p onClick={this.selectCategory.bind(this, cat)}>{cat.name}</p>
+                        key={cat.name}
+                        onClick={this.selectCategory.bind(this, cat)}>
+                        {cat.name}
                     </div>)}
                 </div>
                 <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>New Category</button>

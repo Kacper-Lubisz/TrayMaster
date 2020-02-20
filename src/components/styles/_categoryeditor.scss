@@ -33,14 +33,10 @@
     .category-list-item {
       font-size: 30px;
       cursor: pointer;
+      padding: 10px;
 
       &.cat-selected {
         background-color: #dddddd;
-      }
-
-      > p {
-        margin: 0;
-        padding: 10px;
       }
     }
   }
