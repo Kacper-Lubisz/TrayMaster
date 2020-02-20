@@ -56,6 +56,7 @@ export interface Category {
     underStockThreshold: number | null;
     overStockThreshold: number | null;
     type: "default" | "custom";
+    group: string | null;
 }
 
 /**
@@ -94,13 +95,13 @@ const trayExpiries: ExpiryRange[] = [
     },
     {
         from: null,
-        to: new Date(2020, 0).getTime(),
-        label: "Before Jan 2020"
+        to: new Date(2020, 9).getTime(),
+        label: "Before Oct 2020"
     },
     {
-        from: new Date(2020, 0).getTime(),
-        to: new Date(2020, 1).getTime(),
-        label: "Jan 2020"
+        from: new Date(2020, 2).getTime(),
+        to: new Date(2020, 3).getTime(),
+        label: "Mar 2020"
     },
     {
         from: new Date(2020, 1).getTime(),
@@ -110,12 +111,12 @@ const trayExpiries: ExpiryRange[] = [
     {
         from: new Date(2020, 0).getTime(),
         to: new Date(2020, 3).getTime(),
-        label: "Jan-Mar 2020"
+        label: "Q1 2020"
     },
     {
         from: new Date(2020, 3).getTime(),
         to: new Date(2020, 6).getTime(),
-        label: "Apr-Jun 2020"
+        label: "Q2 2020"
     },
     {
         from: new Date(2020, 0).getTime(),

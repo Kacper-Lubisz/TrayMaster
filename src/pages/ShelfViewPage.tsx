@@ -694,17 +694,46 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method removes all the trays that are currently selected
      */
     private async clearTrays(): Promise<void> {
-        const newSelectedMap = new Map(this.state.selected);
 
-        const reindexColumns = new Set<Column>();
-        this.state.selected.forEach((selected, tray) => {
-            if (selected) {
-                newSelectedMap.set(tray, false);
-                if (tray instanceof Tray) {
-                    reindexColumns.add(tray.parentColumn);
-                    tray.delete(true);
-                }
+        const columnMap: Map<Column, TrayCell[]> = new Map();
+        this.getSelectedTrayCells().forEach(cell => {
+            if (columnMap.has(cell.parentColumn)) {
+                columnMap.get(cell.parentColumn)?.push(cell);
+            } else {
+                columnMap.set(cell.parentColumn, [cell]);
             }
+        });
+
+        const newSelectedMap = new Map(this.state.selected);
+        Array.from(columnMap.entries()).forEach(([column, cells]) => {
+
+            if (this.props.user.clearAboveSelection) {
+                const bottomCellIndex = cells.reduce((prev, current) => {
+                    if (prev === null) {
+                        return current;
+                    } else if (prev.index > current.index) {
+                        return current;
+                    } else {
+                        return prev;
+                    }
+                }, cells[0]).index;
+
+                for (let i = column.trays.length - 1; i >= 0; i--) {
+                    const tray = column.trays[i];
+                    if (tray.index >= bottomCellIndex) {
+                        newSelectedMap.set(tray, false);
+                        tray.delete(true);
+                    }
+                }
+            } else {
+                cells.forEach(cell => {
+                    if (cell instanceof Tray) {
+                        newSelectedMap.set(cell, false);
+                        cell.delete(true);
+                    }
+                });
+            }
+
         });
 
         this.setSelected(newSelectedMap);
@@ -784,14 +813,13 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method finds the expiry range start year which all selected trays have in common, if no year is in common
      * then undefined.
      */
-    private getCommonYear(): number | undefined {
+    private getCommonRange(): ExpiryRange | undefined {
         const traysOnly = this.splitCells(this.getSelectedTrayCells()).trays;
-        const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry?.from;
-        const firstYear = firstExp ? new Date(firstExp).getFullYear() : undefined;
+        const firstExp = traysOnly.find(i => i.expiry !== undefined)?.expiry;
 
-        return firstYear !== undefined && traysOnly.every(item =>
-            item.expiry?.from && new Date(item.expiry.from).getFullYear() === firstYear
-        ) ? firstYear : undefined;
+        return firstExp !== undefined && traysOnly.every(item =>
+            item.expiry && item.expiry === firstExp
+        ) ? firstExp : undefined;
     }
 
     /**
@@ -929,10 +957,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentKeyboard={this.state.currentKeyboard}
                 />
                 <BottomPanel
+                    openDialog={this.props.openDialog}
                     categories={this.props.warehouse.categories}
                     categorySelected={this.onCategorySelected.bind(this)}
                     expirySelected={this.onExpirySelected.bind(this)}
-                    commonYear={this.state.currentKeyboard === "expiry" ? this.getCommonYear() : undefined}
+                    commonRange={this.state.currentKeyboard === "expiry" ? this.getCommonRange() : undefined}
                     weight={this.state.weight}
                     setWeight={this.setWeight.bind(this)}
                     keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
