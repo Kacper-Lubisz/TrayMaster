@@ -38,10 +38,6 @@
       &.cat-selected {
         background-color: #dddddd;
       }
-
-      > p {
-        margin: 0;
-      }
     }
   }
 
@@ -93,6 +89,11 @@
       background-color: #eeeeee;
       border: none;
     }
+
+    input {
+      min-width: 50%;
+    }
+
   }
 
   #cat-edit-bottom-btns {

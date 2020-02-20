@@ -3,7 +3,6 @@ import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
-
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {byNullSafe} from "../utils/sortsUtils";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
@@ -361,13 +360,13 @@ interface GroupedCategoriesDialogProps {
 class GroupedCategoriesDialog extends React.Component<GroupedCategoriesDialogProps> {
     render(): React.ReactElement {
         return <>
-            <DialogTitle title={this.props.groupTitle}/>
+            <DialogTitle title={this.props.groupTitle.toUpperCase()}/>
             <div className="dialogContent" style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr 1fr"
             }}>{
-                this.props.categoryButtons.map(cat =>
-                    <button onClick={cat.onClick}>{cat.name}</button>
+                this.props.categoryButtons.map((cat, index) =>
+                    <button onClick={cat.onClick} key={index}>{cat.name}</button>
                 )
             }</div>
         </>;

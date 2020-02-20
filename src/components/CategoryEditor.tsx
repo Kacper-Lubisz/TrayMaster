@@ -5,6 +5,7 @@ import React from "react";
 import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, WarehouseModel} from "../core/WarehouseModel";
+import {SettingsTab} from "../pages/SettingsPage";
 
 import "./styles/_categoryeditor.scss";
 
@@ -13,6 +14,8 @@ interface CategoryEditorProps {
     openDialog: (dialog: Dialog) => void;
     categories: Category[];
     user: User;
+
+    setLock: (lockFunction: (tab: SettingsTab) => boolean) => void;
 
     addCategory: (category: Category) => void;
     removeCategory: (category: Category) => void;
@@ -55,6 +58,14 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             oldCat: undefined,
             draftCat: undefined
         };
+
+        this.props.setLock((_: SettingsTab) => {
+            const hasUnsavedChanges = this.hasUnsavedChanges();
+            if (hasUnsavedChanges) {
+                this.props.openDialog(this.createUnsavedDialog());
+            }
+            return hasUnsavedChanges;
+        });
     }
 
     /**
@@ -65,10 +76,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private selectCategory(cat: Category): void {
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog({
-                closeOnDocumentClick: true,
-                dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
-            });
+            this.props.openDialog(this.createUnsavedDialog());
         } else {
             this.setState((state) => ({
                 ...state,
@@ -122,7 +130,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         type="text"
                         value={this.state.draftCat.shortName ?? ""}
                         onChange={e => {
-                            const newShortName = e.target.value;
+                            const newShortName = e.target.value.length === 0 ? null : e.target.value;
                             this.setState(state => {
                                 if (state.draftCat) {
                                     state.draftCat.shortName = newShortName;
@@ -131,7 +139,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                             });
                         }}
                     />
-                    <button onClick={_ => {
+                    {/*<button onClick={_ => {
                         this.setState(state => {
                             if (state.draftCat) {
                                 state.draftCat.shortName = state.draftCat.name;
@@ -139,7 +147,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                             return state;
                         });
                     }}>Copy From Name
-                    </button>
+                    </button>*/}
                     <h3>Under-Stock Threshold</h3>
                     <input
                         type="number"
@@ -212,10 +220,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     private newCategory(): void {
 
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog({
-                closeOnDocumentClick: true,
-                dialog: (close: () => void) => <EditCategoryDialog onDiscard={close}/>
-            });
+            this.props.openDialog(this.createUnsavedDialog());
         } else {
             this.setState(state => ({
                 ...state,
@@ -235,7 +240,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     /**
      *Saves changes to categories, doesn't let user save category with empty name
      */
-    private saveCategory(): void {
+    private async saveCategory(): Promise<void> {
         if (this.state.draftCat) {
 
             const newCategory = cloneDeep(this.state.draftCat); // to avoid altering the state here
@@ -261,6 +266,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 this.props.addCategory(newCategory);
             }
             this.props.updatePage();
+            await this.props.stage(true, true);
 
         }
     }
@@ -312,12 +318,13 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         return <div id="category-editor">
             <div id="category-sidebar">
                 <div id="category-list">
-                    {this.props.categories.map(cat => <div
+                    {this.props.categories.map((cat, index) => <div
                         className={classNames("category-list-item", {
                             "cat-selected": isEqual(this.state.oldCat, cat)
                         })}
-                        key={cat.name}>
-                        <p onClick={this.selectCategory.bind(this, cat)}>{cat.name}</p>
+                        key={index}
+                        onClick={this.selectCategory.bind(this, cat)}>
+                        {cat.name}
                     </div>)}
                 </div>
                 <button id="add-cat-btn" onClick={this.newCategory.bind(this)}>New Category</button>
@@ -327,26 +334,23 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             </div>
         </div>;
     }
-}
 
-interface EditCategoryDialogProps {
-    onDiscard: () => void;
-}
-
-/**
- *Dialog to notify user of something
- */
-class EditCategoryDialog extends React.Component<EditCategoryDialogProps, any> {
-
-    render(): React.ReactElement {
-        return <>
-            <DialogTitle title="Unsaved Changes" iconProps={{icon: faInfoCircle, color: "blue"}}/>
-            <div className="dialogContent">
-                <h2>Please save or discard your current changes before proceeding</h2>
-                <DialogButtons buttons={[
-                    {name: "OK", buttonProps: {onClick: this.props.onDiscard,}}
-                ]}/>
-            </div>
-        </>;
+    /**
+     * Returns the unsaved changes dialog
+     */
+    private createUnsavedDialog(): Dialog {
+        return {
+            closeOnDocumentClick: true,
+            dialog: (close: () => void) => <>
+                <DialogTitle title="Unsaved Changes" iconProps={{icon: faInfoCircle, color: "blue"}}/>
+                <div className="dialogContent">
+                    <h2>Please save or discard your current changes before proceeding</h2>
+                    <DialogButtons buttons={[
+                        {name: "OK", buttonProps: {onClick: close}}
+                    ]}/>
+                </div>
+            </>
+        };
     }
+
 }
