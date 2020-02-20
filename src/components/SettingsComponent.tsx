@@ -1,7 +1,8 @@
 import React from "react";
+import {render} from "react-dom";
 import {User} from "../core/Firebase/Authentication";
 
-type Options = {
+type Option = {
     label: string;
     key: string;
 };
@@ -18,7 +19,7 @@ type DropDown = {
     type: "dropDown";
     label: string;
     user: User;
-    options: Options[];
+    options: Option[];
     get: () => string;
     set: (value: string) => void;
 }
@@ -53,19 +54,20 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
             </div>;
         } else {
             const propsAtRender = this.props;
-            const key = this.props.get;
-            //const defaultOption = this.props.options.find(option => option.key === key);
+            const key = this.props.get();
+            console.log(key);
+            const chosenOption = this.props.options.find(option => option.key === key)?.key;
             return <div className="settings-setting" key={this.props.label}>
                 <label>
                     <p>{this.props.label}</p>
-                    <select value={propsAtRender.options[1].label}>
+                    <select defaultValue={chosenOption}
+                            onChange={(event) =>
+                        this.setNewOption(event.target.value)
+                    }>
                         {this.props.options.map(option =>
                             <option
-                                key={option.label}
-                                onClick={() => {
-                                    propsAtRender.set(option.key);
-                                    this.forceUpdate();
-                                }}
+                                value={option.key}
+                                key={option.key}
                             >
                                 {option.label}
                             </option>
@@ -74,6 +76,10 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
                 </label>
             </div>;
         }
+    }
+
+    setNewOption(newOption: Option["key"]): void{
+        this.props.set(newOption);
     }
 
     render(): React.ReactNode {
