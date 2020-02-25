@@ -9,8 +9,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   /* Disables pull-to-refresh and overscroll glow effect.
-     Still keeps swipe navigations. */
+     Also disables back/forward swipe gestures. */
   overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 button:not(.btn-style-override), input[type="submit"] {
