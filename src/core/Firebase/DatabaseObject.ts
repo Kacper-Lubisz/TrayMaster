@@ -1,4 +1,4 @@
-import deepEqual from "deep-equal";
+import {isEqual} from "lodash";
 import firebase from "../Firebase";
 import Utils from "../WarehouseModel/Utils";
 
@@ -55,7 +55,7 @@ export abstract class DatabaseObject<TFields> {
     }
 
     protected get changed(): boolean {
-        return !deepEqual(this.fields, this.originalFields);
+        return !isEqual(this.fields, this.originalFields);
     }
 
     protected fieldsSaved(): void {
