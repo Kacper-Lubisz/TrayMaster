@@ -1,6 +1,6 @@
 import React from "react";
 import {User} from "../core/Firebase/Authentication";
-import {SettingsComponent} from "./SettingsComponent"
+import {SettingsComponent} from "./SettingsComponent";
 
 import "./styles/_usersettings.scss";
 
@@ -36,27 +36,36 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
             {
                 label: "Auto Advance Off",
                 key: "off"
-            },{
+            }, {
                 label: "Auto Advance On: Category > Expiry > Loop",
                 key: "ce"
-            },{
+            }, {
                 label: "Auto Advance On: Weight > Loop",
                 key: "w"
-            },{
+            }, {
                 label: "Auto Advance On: Category > Expiry > Weight > Loop",
                 key: "cew"
             }
-        ]
+        ];
 
         return (
             <div id="user-settings">
                 {settingsRadioButtons.map(setting =>
-                    <SettingsComponent type="radioButton" get={setting.get} set={setting.set} label={setting.label}
+                    <SettingsComponent type="radioButton" key={setting.label} get={setting.get} set={setting.set}
+                                       label={setting.label}
                                        user={this.props.user}/>
                 )}
-                {this.props.user.autoAdvanceMode}
-                <SettingsComponent type="dropDown" label="Auto Advance" user={this.props.user} options={optionsAutoAdvance}
-                                   get={() => this.props.user.autoAdvanceMode} set={(value: string) => this.props.user.autoAdvanceMode}/>
+                <SettingsComponent
+                    type="dropDown"
+                    label="Auto Advance"
+                    user={this.props.user}
+                    options={optionsAutoAdvance}
+                    get={() => this.props.user.autoAdvanceMode}
+                    set={(value: string) => {
+                        if (value === "ce" || value === "w" || value === "cew" || value === "off") {
+                            this.props.user.autoAdvanceMode = value;
+                        }
+                    }}/>
             </div>
         );
     }

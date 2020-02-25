@@ -1,6 +1,7 @@
 import React from "react";
-import {render} from "react-dom";
 import {User} from "../core/Firebase/Authentication";
+
+import "./styles/_settingscomponent.scss";
 
 type Option = {
     label: string;
@@ -22,7 +23,8 @@ type DropDown = {
     options: Option[];
     get: () => string;
     set: (value: string) => void;
-}
+};
+
 type SettingsComponentProps = RadioButton | DropDown;
 
 
@@ -33,7 +35,7 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
         if (this.props.type === "radioButton") {
             const propsAtRender = this.props;
             return <div
-                className="settings-setting"
+                className="setting-radio-button"
                 key={this.props.label}
                 onClick={((props: RadioButton) => {
                     props.set(!props.get());
@@ -53,18 +55,17 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
                 <p>{this.props.label}</p>
             </div>;
         } else {
-            const propsAtRender = this.props;
+            const propsAtRender: DropDown = this.props;
             const key = this.props.get();
-            console.log(key);
             const chosenOption = this.props.options.find(option => option.key === key)?.key;
-            return <div className="settings-setting" key={this.props.label}>
+            return <div className="setting-drop-down" key={this.props.label}>
                 <label>
                     <p>{this.props.label}</p>
                     <select defaultValue={chosenOption}
-                            onChange={(event) =>
-                        this.setNewOption(event.target.value)
-                    }>
-                        {this.props.options.map(option =>
+                            onChange={(event) => {
+                                this.setNewOption(event.target.value, propsAtRender);
+                            }}>
+                        {propsAtRender.options.map(option =>
                             <option
                                 value={option.key}
                                 key={option.key}
@@ -78,8 +79,8 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
         }
     }
 
-    setNewOption(newOption: Option["key"]): void{
-        this.props.set(newOption);
+    setNewOption(newOption: Option["key"], propsAtRender: DropDown): void {
+        propsAtRender.set(newOption);
     }
 
     render(): React.ReactNode {
