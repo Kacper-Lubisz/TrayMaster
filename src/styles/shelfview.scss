@@ -6,6 +6,16 @@
 @import "./shelfnavigator";
 // SHELF VIEW GRID LAYOUT
 
+#editCommentInput {
+  font-size: 28px;
+  padding: 10px;
+
+  background-color: #dddddd;
+  border: none;
+
+  width: calc(100% - 20px);
+}
+
 #shelfView {
   // fill whole screen, centre text
   text-align: center;
@@ -24,6 +34,11 @@
   grid-template-rows: 10fr 6fr;
 
   // these values specify what sectors of the grid each component takes up
+
+  > div {
+    min-height: 0;
+    min-width: 0;
+  }
 
   #toolBar {
     grid-column-start: 2;

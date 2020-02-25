@@ -1,4 +1,4 @@
-import deepEqual from "deep-equal";
+import {isEqual} from "lodash";
 import firebase from "../Firebase";
 import Utils from "../WarehouseModel/Utils";
 
@@ -60,7 +60,7 @@ export class DatabaseCollection<TFields> extends Map<string, TFields> {
             return "";
         }
         for (const [id, currentItem] of Array.from(this)) {
-            if (deepEqual(item, currentItem)) {
+            if (isEqual(item, currentItem)) {
                 return id;
             }
         }

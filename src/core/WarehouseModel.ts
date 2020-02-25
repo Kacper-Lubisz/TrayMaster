@@ -53,6 +53,10 @@ export interface Category {
     index: number;
     name: string;
     shortName: string | null;
+    underStockThreshold: number | null;
+    overStockThreshold: number | null;
+    type: "default" | "custom";
+    group: string | null;
 }
 
 /**
@@ -78,7 +82,7 @@ const endZones = [
 /**
  * Mock warehouse tray expiries
  */
-const trayExpires: ExpiryRange[] = [
+const trayExpiries: ExpiryRange[] = [
     {
         from: null,
         to: null,
@@ -91,13 +95,13 @@ const trayExpires: ExpiryRange[] = [
     },
     {
         from: null,
-        to: new Date(2020, 0).getTime(),
-        label: "Before Jan 2020"
+        to: new Date(2020, 9).getTime(),
+        label: "Before Oct 2020"
     },
     {
-        from: new Date(2020, 0).getTime(),
-        to: new Date(2020, 1).getTime(),
-        label: "Jan 2020"
+        from: new Date(2020, 2).getTime(),
+        to: new Date(2020, 3).getTime(),
+        label: "Mar 2020"
     },
     {
         from: new Date(2020, 1).getTime(),
@@ -107,12 +111,12 @@ const trayExpires: ExpiryRange[] = [
     {
         from: new Date(2020, 0).getTime(),
         to: new Date(2020, 3).getTime(),
-        label: "Jan-Mar 2020"
+        label: "Q1 2020"
     },
     {
         from: new Date(2020, 3).getTime(),
         to: new Date(2020, 6).getTime(),
-        label: "Apr-Jun 2020"
+        label: "Q2 2020"
     },
     {
         from: new Date(2020, 0).getTime(),
@@ -183,7 +187,7 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
 
     function makeRandomTray(parentColumn: Column): void {
         const category = Math.random() < 0.25 ? undefined : Utils.randItem(warehouse.categories);
-        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpires);
+        const expiry = Math.random() < 0.25 ? undefined : Utils.randItem(trayExpiries);
         const weight = Math.random() < 0.25 ? undefined :
                        Number((15 * Math.random()).toFixed(2));
 

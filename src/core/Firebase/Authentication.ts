@@ -17,15 +17,26 @@ interface UserWarehouseSettings {
     testUserWarehouseSetting: string;
 }
 
+/**
+ * The various auto-advance modes
+ * off  - off
+ * ce   - category -> expiry
+ * w    - weight
+ * cew  - category -> expiry -> weight
+ */
+type AutoAdvanceModes = "off" | "ce" | "w" | "cew";
+
 interface UserFields {
     isAdmin: boolean;
     name: string;
     lastWarehouseID: string;
 
-    enableAutoAdvance: boolean;
+    autoAdvanceMode: AutoAdvanceModes;
     onlySingleAutoAdvance: boolean;
 
     showPreviousShelfButton: boolean;
+
+    clearAboveSelection: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
@@ -36,9 +47,10 @@ export class User extends DatabaseObject<UserFields> {
             isAdmin: false,
             name: "",
             lastWarehouseID: "",
-            enableAutoAdvance: false,
+            autoAdvanceMode: "off",
             onlySingleAutoAdvance: false,
             showPreviousShelfButton: false,
+            clearAboveSelection: true
         });
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
@@ -93,12 +105,12 @@ export class User extends DatabaseObject<UserFields> {
         this.fields.name = name;
     }
 
-    public get enableAutoAdvance(): boolean {
-        return this.fields.enableAutoAdvance;
+    public get autoAdvanceMode(): AutoAdvanceModes {
+        return this.fields.autoAdvanceMode;
     }
 
-    public set enableAutoAdvance(enableAutoAdvance: boolean) {
-        this.fields.enableAutoAdvance = enableAutoAdvance;
+    public set autoAdvanceMode(autoAdvanceMode: AutoAdvanceModes) {
+        this.fields.autoAdvanceMode = autoAdvanceMode;
     }
 
     public get onlySingleAutoAdvance(): boolean {
@@ -116,6 +128,15 @@ export class User extends DatabaseObject<UserFields> {
     public set showPreviousShelfButton(showPreviousShelfButton: boolean) {
         this.fields.showPreviousShelfButton = showPreviousShelfButton;
     }
+
+    public get clearAboveSelection(): boolean {
+        return this.fields.clearAboveSelection;
+    }
+
+    public set clearAboveSelection(clearAboveSelection: boolean) {
+        this.fields.clearAboveSelection = clearAboveSelection;
+    }
+
 
 }
 
@@ -152,9 +173,10 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "MOCK_WAREHOUSE_0",
                     isAdmin: true,
-                    enableAutoAdvance: false,
+                    autoAdvanceMode: "off",
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
+                    clearAboveSelection: true
                 }).load();
             onSignIn?.call(this, this.currentUser);
         }
@@ -178,9 +200,10 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "",
                     isAdmin: true,
-                    enableAutoAdvance: false,
+                    autoAdvanceMode: "off",
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
+                    clearAboveSelection: true
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
@@ -198,9 +221,10 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "",
                     isAdmin: true,
-                    enableAutoAdvance: false,
+                    autoAdvanceMode: "off",
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
+                    clearAboveSelection: true
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
