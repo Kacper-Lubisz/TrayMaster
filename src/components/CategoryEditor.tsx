@@ -279,7 +279,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         }));
     }
 
-
     /**
      * Deletes category, makes sure indices inside object matches actual
      * indices after removing one category

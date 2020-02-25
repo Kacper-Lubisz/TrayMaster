@@ -593,11 +593,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     private addColumn(shelf: Shelf): void {
-        Column.create(
-            this.props.warehouse.defaultTraySize,
-            3,
-            shelf
-        );
+        Column.create(3, shelf);
         this.forceUpdate();
     }
 

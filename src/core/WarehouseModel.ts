@@ -38,15 +38,6 @@ export interface TraySpace {
 }
 
 /**
- * Represents a single tray size option
- */
-export interface TraySize {
-    index: number;
-    label: string;
-    sizeRatio: number;
-}
-
-/**
  * Represents a single tray category
  */
 export interface Category {
@@ -155,7 +146,7 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
                 const shelf = Shelf.create(`${k + 1}`, k === 1, bay);
 
                 for (let l = 0; l < 4; l++) {
-                    const column = Column.create(warehouse.defaultTraySize, 3, shelf);
+                    const column = Column.create(3, shelf);
 
                     for (let m = 0; m < 3; m++) {
                         makeRandomTray(column);
@@ -175,7 +166,7 @@ async function generateRandomWarehouse(id: string, name: string): Promise<Wareho
                 const shelf = Shelf.create(`${k + 1}`, false, bay);
 
                 for (let l = 0; l < 4; l++) {
-                    const column = Column.create(warehouse.defaultTraySize, 3, shelf);
+                    const column = Column.create(3, shelf);
 
                     for (let m = 0; m < 3; m++) {
                         makeRandomTray(column);

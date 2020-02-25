@@ -2,7 +2,7 @@ import {SearchQuery, SortBy} from "../../../pages/SearchPage";
 import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
-import {Bay, Category, Column, Shelf, Tray, TraySize, WarehouseModel, Zone} from "../../WarehouseModel";
+import {Bay, Category, Column, Shelf, Tray, WarehouseModel, Zone} from "../../WarehouseModel";
 import {LayerFields} from "../LayerStructure/Layer";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import Utils from "../Utils";
@@ -51,13 +51,6 @@ const defaultCategories: { name: string; group?: string }[] = [
     {name: "Mixed"}
 ];
 
-const defaultTraySizes: TraySize[] = [
-    {index: 0, label: "narrow", sizeRatio: 1.5},
-    {index: 1, label: "standard", sizeRatio: 2.5},
-    {index: 2, label: "wide", sizeRatio: 3.5}
-];
-
-
 interface WarehouseFields extends LayerFields {
     name: string;
     defaultTraySizeID: string;
@@ -70,12 +63,10 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     public readonly childCollectionName = "zones";
 
     private readonly categoryCollection: DatabaseCollection<Category>;
-    private readonly traySizeCollection: DatabaseCollection<TraySize>;
 
     private constructor(id: string, fields: WarehouseFields) {
         super(id, fields);
         this.categoryCollection = new DatabaseCollection<Category>(Utils.joinPaths(this.path, "categories"), true);
-        this.traySizeCollection = new DatabaseCollection<TraySize>(Utils.joinPaths(this.path, "traySizes"), true);
     }
 
     /**
@@ -122,7 +113,6 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     private async loadCollections(forceLoad: boolean): Promise<void> {
         await this.categoryCollection.load(forceLoad, "index");
-        await this.traySizeCollection.load(forceLoad, "index");
 
         if (this.categoryCollection.size === 0) {
             for (let i = 0; i < defaultCategories.length; i++) {
@@ -136,12 +126,6 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     group: null,
                     ...defaultCategories[i],
                 });
-            }
-        }
-
-        if (this.traySizeCollection.size === 0) {
-            for (const defaultTraySize of defaultTraySizes) {
-                this.traySizeCollection.add(Object.assign({}, defaultTraySize));
             }
         }
     }
@@ -177,32 +161,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //#endregion
 
-    //#region Tray Sizes
-    public get traySizes(): TraySize[] {
-        return this.traySizeCollection.itemList;
-    }
-
-    public getTraySizeId(traySize?: TraySize): string {
-        return this.traySizeCollection.getItemId(traySize);
-    }
-
-    public getTraySizeByID(id: string): TraySize | undefined {
-        return this.traySizeCollection.get(id);
-    }
-
-    public addTraySize(traySize: TraySize): void {
-        this.traySizeCollection.add(traySize);
-    }
-
-    public removeTraySize(traySize: TraySize): void {
-        this.traySizeCollection.remove(traySize);
-    }
-
-    //#endregion
-
     protected async stageLayer(forceStage = false): Promise<void> {
         await this.categoryCollection.stage(forceStage);
-        await this.traySizeCollection.stage(forceStage);
 
         if (this.changed || forceStage) {
             firebase.database.set(this.topLevelPath, this.fields);
@@ -217,14 +177,6 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     public set name(name: string) {
         this.fields.name = name;
-    }
-
-    public get defaultTraySize(): TraySize {
-        return this.traySizeCollection.get(this.fields.defaultTraySizeID) ?? this.traySizes[1];
-    }
-
-    public set defaultTraySize(traySize: TraySize) {
-        this.fields.defaultTraySizeID = this.traySizeCollection.getItemId(traySize);
     }
 
     public get expiryColorMode(): "computed" | "hybrid" | "warehouse" {

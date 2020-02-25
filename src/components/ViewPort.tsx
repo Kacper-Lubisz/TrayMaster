@@ -9,6 +9,7 @@ import classNames from "classnames/bind";
 import "pepjs";
 import React from "react";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import {traySizes} from "../core/WarehouseModel/Layers/Column";
 import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
@@ -313,12 +314,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const change = changeType === "inc" ? 1
                                             : -1;
 
-        const traySizes = column.parentWarehouse.traySizes;
-        const medianIndex = Math.floor(traySizes.length / 2);
-
-        const currentIndex = traySizes.indexOf(column.traySize ?? traySizes[medianIndex]);
-
-        const newIndex = Math.min(Math.max(change + currentIndex, 0), traySizes.length - 1);
+        const newIndex = Math.min(Math.max(change + traySizes.indexOf(column.traySize), 0), traySizes.length - 1);
         column.traySize = traySizes[newIndex];
 
         this.forceUpdate();
@@ -330,14 +326,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
     private static getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
-        const traySizes = column.parentWarehouse.traySizes;
-
-        if (column.traySize) {
-            const currentIndex = traySizes.indexOf(column.traySize);
-            return {inc: currentIndex !== traySizes.length - 1, dec: currentIndex !== 0};
-        } else {
-            return {inc: true, dec: true};
-        }
+        const currentIndex = traySizes.indexOf(column.traySize);
+        return {inc: currentIndex < traySizes.length - 1, dec: currentIndex > 0};
     }
 
     /**
@@ -356,7 +346,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         return <div
             style={{
                 order: order,
-                flexGrow: column.traySize?.sizeRatio ?? 1
+                flexGrow: column.traySize.sizeRatio
             }}
             className="column"
             key={order}
@@ -442,7 +432,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                 <div className="colWidth">
                     <div className="colControlHeader">Tray Width:&nbsp;
-                        <span className="colWidthValue">{stringToTitleCase(column.traySize?.label ?? "?")}</span>
+                        <span className="colWidthValue">{stringToTitleCase(column.traySize.label)}</span>
                     </div>
                     <div className="colWidthControls">
                         <button
