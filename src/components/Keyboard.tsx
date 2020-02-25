@@ -43,7 +43,7 @@ class KeyboardButton extends React.Component<CustomButtonProps> {
                     style={this.props.bg && !this.props.disabled ? {
                         background: this.props.bg,
                         color: getTextColorForBackground(this.props.bg)
-                    } : {}}
+                    } : undefined}
                     onClick={(e) => {
                         // if button isn't disabled, and we've been given an onClick function, run it
                         if (!this.props.disabled && this.props.onClick) {
