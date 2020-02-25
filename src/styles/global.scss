@@ -7,6 +7,10 @@ body {
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Disables pull-to-refresh and overscroll glow effect.
+     Still keeps swipe navigations. */
+  overscroll-behavior-y: none;
 }
 
 button:not(.btn-style-override), input[type="submit"] {
