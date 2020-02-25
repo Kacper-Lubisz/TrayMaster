@@ -17,8 +17,11 @@ interface SettingsPageProps {
     user: User;
 }
 
+export type SettingsTab = "personal" | "wh-edit" | "cat-edit" | "handle-users";
+
 interface SettingsPageState {
-    currentTab: "personal" | "wh-edit" | "cat-edit" | "handle-users";
+    currentTab: SettingsTab;
+    tabChangeLock: (tab: SettingsTab) => boolean;
 }
 
 /**
@@ -31,12 +34,13 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
         super(props);
 
         this.state = {
-            currentTab: "personal"
+            currentTab: "personal",
+            tabChangeLock: () => false
         };
     }
 
 
-    showCurrentSetting(): React.ReactNode {
+    renderTab(): React.ReactNode {
 
         if (this.state.currentTab === "personal") {
             return <UserSettings
@@ -44,6 +48,9 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor
+
+                setLock={this.setLock.bind(this)}
+
                 openDialog={this.props.openDialog}
                 categories={this.props.warehouse.categories}
                 user={this.props.user}
@@ -57,7 +64,30 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 updatePage={() => this.forceUpdate()}
             />;
         } else if (this.state.currentTab === "wh-edit") {
-            //return warehouse editor
+            return <div>TODO Warehouse Editor</div>;
+        } else { // "handle-users"
+            return <div>TODO User Manager</div>;
+        }
+    }
+
+    private setLock(lockFunction: (tab: SettingsTab) => boolean): void {
+        this.setState(state => ({
+            ...state,
+            tabChangeLock: lockFunction
+        }));
+    }
+
+    /**
+     * Changes the tab if the tab lock state function returns false
+     * @param tab
+     */
+    private changeTab(tab: SettingsTab): void {
+        if (
+            this.state.currentTab !== tab &&
+            this.state.tabChangeLock !== undefined &&
+            !this.state.tabChangeLock(tab)
+        ) {
+            this.setState(state => ({...state, currentTab: tab}));
         }
     }
 
@@ -72,45 +102,47 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 <div id="settings-tabs">
                     <div>
                         <h2>User</h2>
-                        <div className={classNames("tab", {
-                            "tab-selected": this.state.currentTab === "personal"
-                        })}
-                             onClick={() => this.setState(state => ({...state, currentTab: "personal"}))}
+                        <div
+                            className={classNames("tab", {
+                                "tab-selected": this.state.currentTab === "personal"
+                            })}
+                            onClick={this.changeTab.bind(this, "personal")}
                         >
                             Personal Settings
                         </div>
                     </div>
-                    {this.props.user.isAdmin ?
-                     <>
-                         <div>
-                             <h2>Warehouse</h2>
-                             <div className={classNames("tab", {
-                                 "tab-selected": this.state.currentTab === "cat-edit"
-                             })}
-                                  onClick={() => this.setState(state => ({...state, currentTab: "cat-edit"}))}
-                             >
-                                 Category Editor
-                             </div>
-                             <div className={classNames("tab", {
-                                 "tab-selected": this.state.currentTab === "wh-edit"
-                             })}
-                                  onClick={() => this.setState(state => ({...state, currentTab: "wh-edit"}))}
-                             >
-                                 Warehouse Editor
-                             </div>
-                         </div>
-                         <div>
-                             <h2>Admin</h2>
-                             <div className={classNames("tab", {
-                                 "tab-selected": this.state.currentTab === "handle-users"
-                             })}
-                                  onClick={() => this.setState(state => ({...state, currentTab: "handle-users"}))}
-                             >
-                                 Handle Users
-                             </div>
-                         </div>
-                     </>
-                                             : undefined}
+                    {this.props.user.isAdmin ? <>
+                        <div>
+                            <h2>Warehouse</h2>
+                            <div
+                                className={classNames("tab", {
+                                    "tab-selected": this.state.currentTab === "cat-edit"
+                                })}
+                                onClick={this.changeTab.bind(this, "cat-edit")}
+                            >
+                                Category Editor
+                            </div>
+                            <div
+                                className={classNames("tab", {
+                                    "tab-selected": this.state.currentTab === "wh-edit"
+                                })}
+                                onClick={this.changeTab.bind(this, "wh-edit")}
+                            >
+                                Warehouse Editor
+                            </div>
+                        </div>
+                        <div>
+                            <h2>Admin</h2>
+                            <div
+                                className={classNames("tab", {
+                                    "tab-selected": this.state.currentTab === "handle-users"
+                                })}
+                                onClick={this.changeTab.bind(this, "handle-users")}
+                            >
+                                Handle Users
+                            </div>
+                        </div>
+                    </> : undefined}
                 </div>
 
                 <div id="settings-btns">
@@ -122,7 +154,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
             </div>
 
             <div id="settings-content">
-                {this.showCurrentSetting()}
+                {this.renderTab()}
             </div>
         </div>;
     }
