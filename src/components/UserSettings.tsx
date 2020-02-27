@@ -1,5 +1,6 @@
 import React from "react";
 import {User} from "../core/Firebase/Authentication";
+import {Setting, SettingsComponent} from "./SettingsComponent";
 
 import "./styles/_usersettings.scss";
 
@@ -12,68 +13,53 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
 
     render(): React.ReactNode {
-        const settings: {
-            get: () => boolean;
-            set: (value: boolean) => void;
-            label: string;
-        }[] = [
-            {//todo fixme add a drop down for this, or something that makes more sense.
-                get: () => this.props.user.autoAdvanceMode === "off",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "off",
-                label: "Auto Advance Off"
-            },
+        const settingsList: Setting[] = [
             {
-                get: () => this.props.user.autoAdvanceMode === "ce",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "ce",
-                label: "Auto Advance On: Category > Expiry > Loop"
-            }, {
-                get: () => this.props.user.autoAdvanceMode === "w",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "w",
-                label: "Auto Advance On: Weight > Loop"
-            },
-            {
-                get: () => this.props.user.autoAdvanceMode === "cew",
-                set: (_: boolean) => this.props.user.autoAdvanceMode = "cew",
-                label: "Auto Advance On: Category > Expiry > Weight > Loop"
-            },
-            {
+                type: "checkBox",
                 get: () => this.props.user.onlySingleAutoAdvance,
                 set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
                 label: "Don't Advance in Multi-select"
             }, {
+                type: "checkBox",
                 get: () => this.props.user.showPreviousShelfButton,
                 set: (value: boolean) => this.props.user.showPreviousShelfButton = value,
                 label: "Show Previous Shelf Button"
             }, {
+                type: "checkBox",
                 get: () => this.props.user.clearAboveSelection,
                 set: (value: boolean) => this.props.user.clearAboveSelection = value,
                 label: "Clear all trays above when clearing"
-            }
+            }, {
+                type: "dropDown",
+                get: () => this.props.user.autoAdvanceMode,
+                set: (value: string) => {
+                    if (value === "ce" || value === "w" || value === "cew" || value === "off") {
+                        this.props.user.autoAdvanceMode = value;
+                    }
+                },
+                options: [
+                    {label: "Off", key: "off"},
+                    {label: "Category > Expiry > Next Tray", key: "ce"},
+                    {label: "Weight > Next Tray", key: "w"},
+                    {label: "Category > Expiry > Weight > Next Tray", key: "cew"}
+                ],
+                label: "Auto Advance",
+            },
         ];
-
-        return (
-            <div id="user-settings">
-                {
-                    settings.map(setting =>
-                        <label key={setting.label} onClick={() => {
-                            setting.set(!setting.get());
-                            this.forceUpdate();
-                        }}>
-                            <input
-                                type="checkbox"
-                                name={setting.label}
-                                checked={setting.get()}
-                                onChange={async e => {
-                                    setting.set(e.target.checked);
-                                    await this.props.user.stage(true, true);
-                                    this.forceUpdate();
-                                }}
-                            />
-                            {setting.label}
-                        </label>
-                    )}
-            </div>
-        );
+        return <div id="user-settings">
+            <h3>Personal Settings</h3>
+            <h4>Shelf View</h4>
+            <table>
+                {settingsList.map((setting, index) =>
+                    <SettingsComponent
+                        key={index}
+                        user={this.props.user}
+                        {...setting}
+                    />
+                )}
+            </table>
+        </div>;
     }
 
 }
+

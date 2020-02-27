@@ -1,6 +1,10 @@
 import dayjs, {Dayjs} from "dayjs";
 import {ExpiryRange} from "../core/WarehouseModel";
 
+
+/**
+ *  interface specifying an ExpiryRange with non-null from and to
+ */
 interface SafeExpiryRange {
     from: number;
     to: number;
@@ -20,7 +24,7 @@ const YEAR_PERIOD = 8;
  * @param rgb - one of the three r, g, b, values constituting a color
  */
 function rgbToHex(rgb: number): string {
-    let hex = Number(rgb).toString(16);
+    let hex = Math.round(Number(rgb)).toString(16);
     if (hex.length < 2) {
         hex = `0${hex}`;
     }
@@ -164,6 +168,7 @@ function computeHybridColorFromRange(range: SafeExpiryRange): string {
  * @return string - the 7-digit hex value to use for that expiry range
  */
 function getWarehouseColor(range: SafeExpiryRange): string {
+    // todo consider making this a setting
     const yearCycle = [
         "#fff44d",
         "#0ea5ff",
@@ -192,4 +197,24 @@ export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" |
     } else {
         return getWarehouseColor(range as SafeExpiryRange);
     }
+}
+
+/**
+ * Interpolates between the given colour and the given grey colour by the given ratio
+ * @param color - the colour to retain the hue of
+ * @param grey - the grey to move towards
+ * @param ratio - the ratio towards the grey to move
+ */
+export function interpolateTowardsGrey(color: string, grey: string, ratio: number): string {
+    let r: number = parseInt(color.substring(1, 3), 16);
+    let g: number = parseInt(color.substring(3, 5), 16);
+    let b: number = parseInt(color.substring(5, 7), 16);
+
+    const greyIndex: number = parseInt(grey.substring(1, 3), 16);
+
+    r += (greyIndex - r) * ratio;
+    g += (greyIndex - g) * ratio;
+    b += (greyIndex - b) * ratio;
+
+    return `#${rgbToHex(r)}${rgbToHex(g)}${rgbToHex(b)}`;
 }

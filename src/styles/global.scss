@@ -7,6 +7,11 @@ body {
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Disables pull-to-refresh and overscroll glow effect.
+     Also disables back/forward swipe gestures. */
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 button:not(.btn-style-override), input[type="submit"] {
@@ -23,12 +28,6 @@ button:not(.btn-style-override), input[type="submit"] {
 
   > * {
     margin: 0;
-  }
-
-  svg {
-    // make icons the same size as text
-    width: 20px;
-    height: 20px;
   }
 
   &:enabled {
