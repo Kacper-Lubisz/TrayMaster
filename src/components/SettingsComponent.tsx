@@ -35,17 +35,17 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
 
     render(): React.ReactNode {
         if (this.props.type === "checkBox") {
-            const propsAtRender = this.props;
-            return <div
-                className="setting-checkbox"
+            const propsAtRender: SettingsComponentProps = this.props;
+            return <tr
+                className="settings-component setting-checkbox"
                 key={this.props.label}
                 onClick={((props: Checkbox) => {
                     props.set(!props.get());
                     this.forceUpdate();
                 }).bind(this, this.props)}
             >
-
-                <input
+                <td><label>{this.props.label}</label></td>
+                <td><input
                     type="checkbox"
                     checked={propsAtRender.get()}
                     onChange={async e => {
@@ -53,29 +53,26 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
                         await propsAtRender.user.stage(true, true);
                         this.forceUpdate();
                     }}
-                />
-                <p>{this.props.label}</p>
-            </div>;
+                /></td>
+            </tr>;
         } else {
-            const propsAtRender: DropDown = this.props;
-            return <div className="setting-drop-down" key={this.props.label}>
-                <label>
-                    <p>{this.props.label}</p>
-                    <select defaultValue={this.props.get()}
+            const propsAtRender: SettingsComponentProps = this.props;
+            return <tr className="settings-component setting-drop-down" key={this.props.label}>
+                <td><label>{this.props.label}</label></td>
+                <td><select defaultValue={this.props.get()}
                             onChange={(event) => {
                                 propsAtRender.set(event.target.value);
                             }}>
-                        {propsAtRender.options.map(option =>
-                            <option
-                                value={option.key}
-                                key={option.key}
-                            >
-                                {option.label}
-                            </option>
-                        )}
-                    </select>
-                </label>
-            </div>;
+                    {propsAtRender.options.map(option =>
+                        <option
+                            value={option.key}
+                            key={option.key}
+                        >
+                            {option.label}
+                        </option>
+                    )}
+                </select></td>
+            </tr>;
         }
     }
 

@@ -1,9 +1,6 @@
 #user-settings {
-  label {
-    display: block;
-
-    &:not(:last-child) {
-      margin-bottom: 20px;
-    }
+  h3 {
+    font-size: 30px;
+    margin-top: 0;
   }
 }

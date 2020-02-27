@@ -13,7 +13,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
 
     render(): React.ReactNode {
-        const settingsRadioButtons: Setting[] = [
+        const settingsList: Setting[] = [
             {
                 type: "checkBox",
                 get: () => this.props.user.onlySingleAutoAdvance,
@@ -38,25 +38,26 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     }
                 },
                 options: [
-                    {label: "Auto Advance Off", key: "off"},
-                    {label: "Auto Advance On: Category > Expiry > Loop", key: "ce"},
-                    {label: "Auto Advance On: Weight > Loop", key: "w"},
-                    {label: "Auto Advance On: Category > Expiry > Weight > Loop", key: "cew"}
+                    {label: "Off", key: "off"},
+                    {label: "Category > Expiry > Next Tray", key: "ce"},
+                    {label: "Weight > Next Tray", key: "w"},
+                    {label: "Category > Expiry > Weight > Next Tray", key: "cew"}
                 ],
                 label: "Auto Advance",
             },
         ];
-        return (
-            <div id="user-settings">
-                {settingsRadioButtons.map((setting, index) =>
+        return <div id="user-settings">
+            <h3>Personal Settings</h3>
+            <table id="user-settings-table">
+                {settingsList.map((setting, index) =>
                     <SettingsComponent
                         key={index}
                         user={this.props.user}
                         {...setting}
                     />
                 )}
-            </div>
-        );
+            </table>
+        </div>;
     }
 
 }
