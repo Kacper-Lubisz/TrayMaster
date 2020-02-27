@@ -1,3 +1,6 @@
+import {faSquare as tickEmpty} from "@fortawesome/free-regular-svg-icons";
+import {faCheckSquare as tickFull} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {User} from "../core/Firebase/Authentication";
 
@@ -45,15 +48,19 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
                 }).bind(this, this.props)}
             >
                 <td><label>{this.props.label}</label></td>
-                <td><input
-                    type="checkbox"
-                    checked={propsAtRender.get()}
-                    onChange={async e => {
-                        propsAtRender.set(e.target.checked);
-                        await propsAtRender.user.stage(true, true);
-                        this.forceUpdate();
-                    }}
-                /></td>
+                <td>
+                    {/* tickbox is invisible & replaced visually by the FontAwesomeIcon */}
+                    <input
+                        type="checkbox"
+                        checked={propsAtRender.get()}
+                        onChange={async e => {
+                            propsAtRender.set(e.target.checked);
+                            await propsAtRender.user.stage(true, true);
+                            this.forceUpdate();
+                        }}
+                    />
+                    <FontAwesomeIcon icon={propsAtRender.get() ? tickFull : tickEmpty}/>
+                </td>
             </tr>;
         } else {
             const propsAtRender: SettingsComponentProps = this.props;
