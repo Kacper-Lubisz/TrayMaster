@@ -9,7 +9,7 @@ type Option = {
 };
 
 type RadioButton = {
-    type: "radioButton";
+    type: "checkBox";
     label: string;
     user: User;
     get: () => boolean;
@@ -32,10 +32,10 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
 
 
     renderSetting(): React.ReactNode {
-        if (this.props.type === "radioButton") {
+        if (this.props.type === "checkBox") {
             const propsAtRender = this.props;
             return <div
-                className="setting-radio-button"
+                className="setting-checkbox"
                 key={this.props.label}
                 onClick={((props: RadioButton) => {
                     props.set(!props.get());
@@ -44,7 +44,7 @@ export class SettingsComponent extends React.Component<SettingsComponentProps> {
             >
 
                 <input
-                    type="radio"
+                    type="checkbox"
                     checked={propsAtRender.get()}
                     onChange={async e => {
                         propsAtRender.set(e.target.checked);

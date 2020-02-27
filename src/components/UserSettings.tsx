@@ -51,7 +51,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
         return (
             <div id="user-settings">
                 {settingsRadioButtons.map(setting =>
-                    <SettingsComponent type="radioButton" key={setting.label} get={setting.get} set={setting.set}
+                    <SettingsComponent type="checkBox" key={setting.label} get={setting.get} set={setting.set}
                                        label={setting.label}
                                        user={this.props.user}/>
                 )}
