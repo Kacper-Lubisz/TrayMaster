@@ -149,9 +149,9 @@ export class Authentication {
 
     public constructor() {
         this.auth = fb.auth();
-        if (!ONLINE) {
-            this.auth.setPersistence(fb.auth.Auth.Persistence.NONE).catch(error => console.log(error));
-        }
+        // if (!ONLINE) {
+        //     this.auth.setPersistence(fb.auth.Auth.Persistence.NONE).catch(error => console.log(error));
+        // }
     }
 
     public async registerListeners(onSignIn?: (user: User) => void, onSignOut?: () => void): Promise<void> {

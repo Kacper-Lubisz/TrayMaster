@@ -1,9 +1,30 @@
-import {Bay, Shelf, Tray, TrayCell, TraySize, TraySpace, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {Bay, Shelf, Tray, TrayCell, TraySpace, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
+export const traySizes: TraySize[] = [
+    {label: "narrow", sizeRatio: 1.5},
+    {label: "standard", sizeRatio: 2.5},
+    {label: "wide", sizeRatio: 3.5}
+];
+
+/**
+ * Represents a single tray size option
+ */
+export interface TraySize {
+    label: string;
+    sizeRatio: number;
+}
+
+export enum TraySizes {
+    none = -1,
+    narrow,
+    standard,
+    wide
+}
+
 interface ColumnFields {
-    traySizeId: string;
+    traySize: TraySizes;
     maxHeight: number;
 }
 
@@ -19,13 +40,12 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     private static traySpaces: Map<Column, TraySpace[]> = new Map<Column, TraySpace[]>();
 
     /**
-     * @param traySize - The size of the tray
      * @param maxHeight - The maximum number of trays that can be placed in this column
      * @param parent - The parent shelf
      */
-    public static create(traySize: TraySize, maxHeight: number, parent: Shelf): Column {
+    public static create(maxHeight: number, parent: Shelf): Column {
         return new Column(Utils.generateRandomId(), {
-            traySizeId: parent.parentWarehouse.getTraySizeId(traySize),
+            traySize: TraySizes.standard,
             maxHeight
         }, parent);
     }
@@ -41,16 +61,16 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
     public createChild = Tray.createFromFields;
 
     public toString(): string {
-        return `Column(${this.parentShelf.toString()}, ${this.index}, ${this.traySize?.label}, ${this.maxHeight})`;
+        return `Column(${this.parentShelf.toString()}, ${this.index}, ${this.traySize.label}, ${this.maxHeight})`;
     }
 
     //#region Field Getters and Setters
-    public get traySize(): TraySize | undefined {
-        return this.parentWarehouse.getTraySizeByID(this.fields.traySizeId);
+    public get traySize(): TraySize {
+        return traySizes[this.fields.traySize > -1 ? this.fields.traySize : 1];
     }
 
-    public set traySize(traySize: TraySize | undefined) {
-        this.fields.traySizeId = this.parentWarehouse.getTraySizeId(traySize);
+    public set traySize(traySize: TraySize) {
+        this.fields.traySize = traySizes.indexOf(traySize);
     }
 
     public get maxHeight(): number {
