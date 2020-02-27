@@ -1,6 +1,6 @@
 import React from "react";
 import {User} from "../core/Firebase/Authentication";
-import {SettingsComponent} from "./SettingsComponent";
+import {Setting, SettingsComponent} from "./SettingsComponent";
 
 import "./styles/_usersettings.scss";
 
@@ -13,59 +13,48 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
 
     render(): React.ReactNode {
-        const settingsRadioButtons: {
-            get: () => boolean;
-            set: (value: boolean) => void;
-            label: string;
-        }[] = [
-            {//todo fixme add a drop down for this, or something that makes more sense.
+        const settingsRadioButtons: Setting[] = [
+            {
+                type: "checkBox",
                 get: () => this.props.user.onlySingleAutoAdvance,
                 set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
                 label: "Don't Advance in Multi-select"
             }, {
+                type: "checkBox",
                 get: () => this.props.user.showPreviousShelfButton,
                 set: (value: boolean) => this.props.user.showPreviousShelfButton = value,
                 label: "Show Previous Shelf Button"
             }, {
+                type: "checkBox",
                 get: () => this.props.user.clearAboveSelection,
                 set: (value: boolean) => this.props.user.clearAboveSelection = value,
                 label: "Clear all trays above when clearing"
-            }
+            }, {
+                type: "dropDown",
+                get: () => this.props.user.autoAdvanceMode,
+                set: (value: string) => {
+                    if (value === "ce" || value === "w" || value === "cew" || value === "off") {
+                        this.props.user.autoAdvanceMode = value;
+                    }
+                },
+                options: [
+                    {label: "Auto Advance Off", key: "off"},
+                    {label: "Auto Advance On: Category > Expiry > Loop", key: "ce"},
+                    {label: "Auto Advance On: Weight > Loop", key: "w"},
+                    {label: "Auto Advance On: Category > Expiry > Weight > Loop", key: "cew"}
+                ],
+                label: "Auto Advance",
+            },
         ];
-        const optionsAutoAdvance = [
-            {
-                label: "Auto Advance Off",
-                key: "off"
-            }, {
-                label: "Auto Advance On: Category > Expiry > Loop",
-                key: "ce"
-            }, {
-                label: "Auto Advance On: Weight > Loop",
-                key: "w"
-            }, {
-                label: "Auto Advance On: Category > Expiry > Weight > Loop",
-                key: "cew"
-            }
-        ];
-
         return (
             <div id="user-settings">
-                {settingsRadioButtons.map(setting =>
-                    <SettingsComponent type="checkBox" key={setting.label} get={setting.get} set={setting.set}
-                                       label={setting.label}
-                                       user={this.props.user}/>
+                {settingsRadioButtons.map((setting, index) =>
+                    <SettingsComponent
+                        key={index}
+                        user={this.props.user}
+                        {...setting}
+                    />
                 )}
-                <SettingsComponent
-                    type="dropDown"
-                    label="Auto Advance"
-                    user={this.props.user}
-                    options={optionsAutoAdvance}
-                    get={() => this.props.user.autoAdvanceMode}
-                    set={(value: string) => {
-                        if (value === "ce" || value === "w" || value === "cew" || value === "off") {
-                            this.props.user.autoAdvanceMode = value;
-                        }
-                    }}/>
             </div>
         );
     }
