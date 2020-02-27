@@ -1,16 +1,18 @@
 .settings-component {
-  font-size: 24px;
-  height: 50px;
 
-  &:not(:last-child) {
-    border-bottom: 1px solid #eeeeee;
+  &:last-child td {
+    border-bottom: 1px solid #dddddd;
   }
 
   td {
     vertical-align: middle;
+    border-top: 1px solid #dddddd;
+    padding: 10px 0;
 
     label {
       padding-right: 30px;
+      line-height: 40px;
+      font-size: 24px;
     }
 
     input {
@@ -25,7 +27,8 @@
 
     select {
       font-size: 18px;
-      padding: 10px;
+      line-height: 18px;
+      padding: 5px;
       border: 1px solid #000000;
     }
   }

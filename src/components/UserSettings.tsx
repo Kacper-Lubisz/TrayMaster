@@ -48,7 +48,8 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
         ];
         return <div id="user-settings">
             <h3>Personal Settings</h3>
-            <table id="user-settings-table">
+            <h4>Shelf View</h4>
+            <table>
                 {settingsList.map((setting, index) =>
                     <SettingsComponent
                         key={index}
