@@ -22,7 +22,7 @@ const YEAR_PERIOD = 8;
  * @param rgb - one of the three r, g, b, values constituting a color
  */
 function rgbToHex(rgb: number): string {
-    let hex = Number(rgb).toString(16);
+    let hex = Math.round(Number(rgb)).toString(16);
     if (hex.length < 2) {
         hex = `0${hex}`;
     }
@@ -195,4 +195,24 @@ export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" |
     } else {
         return getWarehouseColor(range as SafeExpiryRange);
     }
+}
+
+/**
+ * Interpolates between the given colour and the given grey colour by the given percentage
+ * @param color - the colour to retain the hue of
+ * @param grey - the grey to move towards
+ * @param percentage - the percentage towards the grey to move
+ */
+export function turnGrey(color: string, grey: string, percentage: number): string {
+    let r: number = parseInt(color.substring(1, 3), 16);
+    let g: number = parseInt(color.substring(3, 5), 16);
+    let b: number = parseInt(color.substring(5, 7), 16);
+
+    const greyIndex: number = parseInt(grey.substring(1, 3), 16);
+
+    r += (greyIndex - r) * (percentage / 100);
+    g += (greyIndex - g) * (percentage / 100);
+    b += (greyIndex - b) * (percentage / 100);
+
+    return `#${rgbToHex(r)}${rgbToHex(g)}${rgbToHex(b)}`;
 }

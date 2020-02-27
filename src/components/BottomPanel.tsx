@@ -4,7 +4,7 @@ import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 import {KeyboardName} from "../pages/ShelfViewPage";
-import {getExpiryColor} from "../utils/getExpiryColor";
+import {getExpiryColor, turnGrey} from "../utils/getExpiryColor";
 import {byNullSafe} from "../utils/sortsUtils";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
@@ -64,6 +64,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     constructor(props: BottomPanelProps) {
         super(props);
 
+        const expiryGreyPercentage = 80;
+        const expiryGrey = "#ffffff";
+
         // Expiry keyboard structures
         this.years = [];
         // TODO: consider applying database settings to this
@@ -71,11 +74,15 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         const yearColors: any = {};
 
         for (let i = thisYear; i < thisYear + 8; i++) {
-            yearColors[i] = getExpiryColor({
-                from: new Date(i, 0).getTime(),
-                to: new Date(i + 1, 0).getTime(),
-                label: i.toString()
-            }, "warehouse");
+            const exp = getExpiryColor(
+                {
+                    from: new Date(i, 0).getTime(),
+                    to: new Date(i + 1, 0).getTime(),
+                    label: i.toString()
+                },
+                "warehouse"
+            );
+            yearColors[i] = turnGrey(exp, expiryGrey, expiryGreyPercentage);
             this.years.push({
                 name: i.toString(), onClick: () => {
                     this.selectRange({year: i});
