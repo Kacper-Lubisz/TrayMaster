@@ -2,7 +2,9 @@ import dayjs, {Dayjs} from "dayjs";
 import {ExpiryRange} from "../core/WarehouseModel";
 
 
-// interface specifying an ExpiryRange with non-null from and to
+/**
+ *  interface specifying an ExpiryRange with non-null from and to
+ */
 interface SafeExpiryRange {
     from: number;
     to: number;
@@ -198,21 +200,21 @@ export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" |
 }
 
 /**
- * Interpolates between the given colour and the given grey colour by the given percentage
+ * Interpolates between the given colour and the given grey colour by the given ratio
  * @param color - the colour to retain the hue of
  * @param grey - the grey to move towards
- * @param percentage - the percentage towards the grey to move
+ * @param ratio - the ratio towards the grey to move
  */
-export function turnGrey(color: string, grey: string, percentage: number): string {
+export function interpolateTowardsGrey(color: string, grey: string, ratio: number): string {
     let r: number = parseInt(color.substring(1, 3), 16);
     let g: number = parseInt(color.substring(3, 5), 16);
     let b: number = parseInt(color.substring(5, 7), 16);
 
     const greyIndex: number = parseInt(grey.substring(1, 3), 16);
 
-    r += (greyIndex - r) * (percentage / 100);
-    g += (greyIndex - g) * (percentage / 100);
-    b += (greyIndex - b) * (percentage / 100);
+    r += (greyIndex - r) * ratio;
+    g += (greyIndex - g) * ratio;
+    b += (greyIndex - b) * ratio;
 
     return `#${rgbToHex(r)}${rgbToHex(g)}${rgbToHex(b)}`;
 }
