@@ -11,6 +11,7 @@ import "pepjs";
 import React from "react";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
+import {KeyboardName} from "../pages/ShelfViewPage";
 import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
@@ -33,6 +34,7 @@ interface ViewPortProps {
 
     draftWeight: string | undefined;
 
+    currentKeyboard: KeyboardName;
 }
 
 /**
@@ -406,7 +408,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
                         {tray.expiry ? <div className="trayExpiry" style={expiryStyle}>{tray.expiry.label}</div> : null}
 
-                        <div className="trayWeight">
+                        <div className={classNames("trayWeight", {
+                            "trayWeightEditing": isSelected && this.props.currentKeyboard === "weight"
+                        })}>
                             {weight}
                         </div>
                         {tray.comment ? <div className="trayComment">

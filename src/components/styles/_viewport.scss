@@ -193,6 +193,11 @@
           right: 0;
           font-size: 20px;
           margin: 2px 5px;
+
+          &.trayWeightEditing {
+            color: $accent-color;
+            text-decoration: underline;
+          }
         }
 
         // Comment: top middle

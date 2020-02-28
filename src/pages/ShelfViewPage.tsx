@@ -857,6 +857,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     isShelfEdit={this.state.isEditShelf}
 
                     draftWeight={this.state.weight}
+
+                    currentKeyboard={this.state.currentKeyboard}
                 />
                 <ToolBar
                     disabled={this.state.isEditShelf}
