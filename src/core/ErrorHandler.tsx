@@ -60,6 +60,7 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
                         <div id="error-content">
                             <h2>{this.state.error.name}</h2>
                             <table>
+                                <tbody>
                                 <tr>
                                     <td className="error-title">
                                         Thrown at:
@@ -76,6 +77,7 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
                                         {this.state.error.message}
                                     </td>
                                 </tr>
+                                </tbody>
                             </table>
                         </div>
                         <button id="error-exit" onClick={ErrorHandler.exitError.bind(this)}>Refresh</button>
