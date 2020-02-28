@@ -77,17 +77,7 @@ const trayExpiries: ExpiryRange[] = [
     {
         from: null,
         to: null,
-        label: "Indefinite"
-    },
-    {
-        from: new Date(2020, 0).getTime(),
-        to: null,
-        label: "After Jan 2020"
-    },
-    {
-        from: null,
-        to: new Date(2020, 9).getTime(),
-        label: "Before Oct 2020"
+        label: "Never"
     },
     {
         from: new Date(2020, 2).getTime(),

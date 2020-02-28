@@ -281,10 +281,10 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             const specialButtons = [
                 {
-                    name: "Indefinite",
+                    name: "Never",
                     onClick: () => this.props.expirySelected({
                         from: null, to: null,
-                        label: "Indefinite"
+                        label: "Never"
                     })
                 }, {
                     name: "< Clear >",
