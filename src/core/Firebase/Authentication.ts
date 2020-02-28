@@ -37,6 +37,8 @@ interface UserFields {
     showPreviousShelfButton: boolean;
 
     clearAboveSelection: boolean;
+
+    useUnifiedKeyboard: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
@@ -50,7 +52,8 @@ export class User extends DatabaseObject<UserFields> {
             autoAdvanceMode: "off",
             onlySingleAutoAdvance: false,
             showPreviousShelfButton: false,
-            clearAboveSelection: true
+            clearAboveSelection: true,
+            useUnifiedKeyboard: false
         });
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
@@ -137,6 +140,14 @@ export class User extends DatabaseObject<UserFields> {
         this.fields.clearAboveSelection = clearAboveSelection;
     }
 
+    public get useUnifiedKeyboard(): boolean {
+        return this.fields.useUnifiedKeyboard;
+    }
+
+    public set useUnifiedKeyboard(useUnifiedKeyboard: boolean) {
+        this.fields.useUnifiedKeyboard = useUnifiedKeyboard;
+    }
+
 
 }
 
@@ -176,7 +187,8 @@ export class Authentication {
                     autoAdvanceMode: "off",
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
-                    clearAboveSelection: true
+                    clearAboveSelection: true,
+                    useUnifiedKeyboard: true,
                 }).load();
             onSignIn?.call(this, this.currentUser);
         }
@@ -203,7 +215,8 @@ export class Authentication {
                     autoAdvanceMode: "off",
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
-                    clearAboveSelection: true
+                    clearAboveSelection: true,
+                    useUnifiedKeyboard: false,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
@@ -224,7 +237,8 @@ export class Authentication {
                     autoAdvanceMode: "off",
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
-                    clearAboveSelection: true
+                    clearAboveSelection: true,
+                    useUnifiedKeyboard: false,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }

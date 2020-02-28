@@ -47,7 +47,7 @@ import {SearchQuery, SortBy} from "./SearchPage";
 /**
  * Defines possible keyboard names
  */
-export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
+export type KeyboardName = "category" | "expiry" | "weight" | "unified" | "edit-shelf";
 
 /**
  * The directions in which you can navigate
@@ -90,7 +90,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         this.state = {
             selected: new Map(),
-            currentKeyboard: "category",
+            currentKeyboard: this.props.user.useUnifiedKeyboard ? "unified" : "category",
             currentView: (() => {
                 if (this.props.warehouse.zones.length === 0) {
                     return this.props.warehouse;
@@ -943,11 +943,16 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             halfWidth: this.props.user.showPreviousShelfButton
                         }
                     ]}
-                    keyboards={[
-                        {name: "category", icon: categoryIcon},
-                        {name: "expiry", icon: expiryIcon},
-                        {name: "weight", icon: weightIcon}
-                    ]}
+                    keyboards={
+                        this.props.user.useUnifiedKeyboard ? [
+                            {name: "unified", icon: categoryIcon},
+                            {name: "weight", icon: weightIcon}
+                        ] : [
+                            {name: "category", icon: categoryIcon},
+                            {name: "expiry", icon: expiryIcon},
+                            {name: "weight", icon: weightIcon}
+                        ]
+                    }
                     keyboardSwitcher={this.switchKeyboard.bind(this)}
                     showKeyboardSwitcher={!this.state.isEditShelf}
                     currentKeyboard={this.state.currentKeyboard}

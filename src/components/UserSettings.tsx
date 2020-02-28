@@ -44,6 +44,11 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     {label: "Category > Expiry > Weight > Next Tray", key: "cew"}
                 ],
                 label: "Auto Advance",
+            }, {
+                type: "checkBox",
+                get: () => this.props.user.useUnifiedKeyboard,
+                set: (value: boolean) => this.props.user.useUnifiedKeyboard = value,
+                label: "Secret feature"
             },
         ];
         return <div id="user-settings">

@@ -46,6 +46,9 @@ type ExpiryKeyboardButtonProps = CustomButtonProps & {
 
 type WeightKeyboardButton = "Next Tray" | "< Clear >" | "Backspace" | number | ".";
 
+const expiryGreyRatio = 0.8;
+const expiryGrey = "#ffffff";
+
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
  * @see BottomPanelPage
@@ -64,16 +67,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     constructor(props: BottomPanelProps) {
         super(props);
 
-        const expiryGreyRatio = 0.8;
-        const expiryGrey = "#ffffff";
-
         // Expiry keyboard structures
         this.years = [];
         // TODO: consider applying database settings to this
         const thisYear = new Date().getFullYear();
         const yearColors: any = {};
 
-        for (let i = thisYear; i < thisYear + 8; i++) {
+        for (let i = thisYear; i < thisYear + 4; i++) {
             const exp = getExpiryColor(
                 {
                     from: new Date(i, 0).getTime(),
@@ -84,7 +84,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             );
             yearColors[i] = interpolateTowardsGrey(exp, expiryGrey, expiryGreyRatio);
             this.years.push({
-                name: i.toString(), onClick: () => {
+                name: i.toString(),
+                onClick: () => {
                     this.selectRange({year: i});
                 },
                 expiryFrom: new Date(i, 0).getTime(),
@@ -98,7 +99,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const year = thisYear + Math.floor(i / 12);
             const month = i % 12;
             this.months.push({
-                name: `${this.monthsTranslator[month]} ${year.toString()}`, onClick: () => {
+                name: `${this.monthsTranslator[month]}`, onClick: () => {
                     this.selectRange({year: year, month: month});
                 },
                 expiryFrom: new Date(year, month).getTime(),
@@ -108,11 +109,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         this.quarters = [];
         const thisQuarter = Math.floor(thisMonth / 3);
-        for (let i = thisQuarter; i < thisQuarter + 8; i++) {
+        for (let i = thisQuarter; i < thisQuarter + 4; i++) {
             const year = thisYear + Math.floor(i / 4);
             const quarter = i % 4;
             this.quarters.push({
-                name: `Q${(quarter + 1).toString()} ${year.toString()}`, onClick: () => {
+                name: `Q${(quarter + 1).toString()}`, onClick: () => {
                     this.selectRange({year: year, quarter: quarter});
                 },
                 expiryFrom: new Date(year, quarter * 3).getTime(),
@@ -203,75 +204,79 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
         const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
 
+        const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
+        const commonCat = firstCat !== undefined && traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
+                          ? firstCat : null;
+
+
+        const categoryGroups: Map<string, [Category]> = new Map();
+        this.props.categories.forEach(cat => {
+
+            if (cat.group === undefined) { // todo fixme remove this when this is propagated to the db
+                cat.group = null;
+            }
+
+            if (cat.group !== null) {
+                if (categoryGroups.has(cat.group)) {
+                    categoryGroups.get(cat.group)?.push(cat);
+                } else {
+                    categoryGroups.set(cat.group, [cat]);
+                }
+            }
+        });
+
+        const buttonsWithoutGroups = this.props.categories.filter(cat =>
+            cat.group === null
+        ).map((cat): CustomButtonProps => ({
+            name: cat.shortName ?? cat.name,
+            onClick: () => this.props.categorySelected(cat),
+            selected: cat.name === commonCat
+        }));
+
+        const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
+            name: group,
+            onClick: this.props.openDialog.bind(undefined, {
+                dialog: (close: () => void) => {
+                    const groupButtons = categories.map((cat) => ({
+                        name: cat.shortName ?? cat.name,
+                        onClick: () => {
+                            this.props.categorySelected(cat);
+                            close();
+                        },
+                        selected: cat.name === commonCat
+                    }));
+                    return <GroupedCategoriesDialog
+                        groupTitle={group}
+                        categoryButtons={groupButtons}
+                        close={close}/>;
+                },
+                closeOnDocumentClick: true,
+            }),
+            selected: false
+        }));
+
+        const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
+            .concat(groupedButtons)
+            .sort(byNullSafe(button => button.name));
+
+        const specialButtons: CustomButtonProps[] = [
+            {
+                name: "< Clear >",
+                onClick: () => this.props.categorySelected(null),
+                selected: false,
+                bg: "#ffffff"
+            }
+        ];
+
+        const allCategoryButtons = categoryButtons.concat(specialButtons);
+
         if (this.props.keyboardState === "category") {
 
-            const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
-            const commonCat = firstCat !== undefined && traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
-                              ? firstCat : null;
-
-
-            const categoryGroups: Map<string, [Category]> = new Map();
-            this.props.categories.forEach(cat => {
-
-                if (cat.group === undefined) { // todo fixme remove this when this is propagated to the db
-                    cat.group = null;
-                }
-
-                if (cat.group !== null) {
-                    if (categoryGroups.has(cat.group)) {
-                        categoryGroups.get(cat.group)?.push(cat);
-                    } else {
-                        categoryGroups.set(cat.group, [cat]);
-                    }
-                }
-            });
-
-            const buttonsWithoutGroups = this.props.categories.filter(cat =>
-                cat.group === null
-            ).map((cat): CustomButtonProps => ({
-                name: cat.shortName ?? cat.name,
-                onClick: () => this.props.categorySelected(cat),
-                selected: cat.name === commonCat
-            }));
-
-            const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
-                name: group,
-                onClick: this.props.openDialog.bind(undefined, {
-                    dialog: (close: () => void) => {
-                        const groupButtons = categories.map((cat) => ({
-                            name: cat.shortName ?? cat.name,
-                            onClick: () => {
-                                this.props.categorySelected(cat);
-                                close();
-                            },
-                            selected: cat.name === commonCat
-                        }));
-                        return <GroupedCategoriesDialog groupTitle={group}
-                                                        categoryButtons={groupButtons}
-                                                        close={close}/>;
-                    },
-                    closeOnDocumentClick: true,
-                }),
-                selected: false
-            }));
-
-            const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
-                .concat(groupedButtons)
-                .sort(byNullSafe(button => button.name));
-
-            const specialButtons: CustomButtonProps[] = [
-                {
-                    name: "< Clear >",
-                    onClick: () => this.props.categorySelected(null),
-                    selected: false,
-                    bg: "#ffffff"
-                }
-            ];
-
-            return <Keyboard id="cat-keyboard"
-                             disabled={disabled}
-                             buttons={categoryButtons.concat(specialButtons)}
-                             gridX={7}
+            return <Keyboard
+                id="cat-keyboard"
+                disabled={disabled}
+                buttons={allCategoryButtons}
+                gridX={7}
             />;
 
         } else if (this.props.keyboardState === "expiry") {
@@ -330,6 +335,67 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 </div>
             </div>;
 
+        } else if (this.props.keyboardState === "unified") {
+            return <div
+                style={{
+                    display: "grid",
+                    height: "100%"
+                }}
+            >
+                {this.years.map((year, index) => {
+                    return <button
+                        onClick={year.onClick}
+                        style={{
+                            margin: 0,
+                            gridRow: index + 1,
+                            gridColumn: 8,
+                            backgroundColor: year.bg
+                        }}
+                    >{year.name}</button>;
+                })}
+                {this.quarters.map((quarter, index) => {
+                    return <button
+                        onClick={quarter.onClick}
+                        style={{
+                            margin: 0,
+                            gridRow: (5 + Math.floor(index / 2)),
+                            gridColumn: (7 + index % 2),
+                            backgroundColor: quarter.bg
+                        }}
+                    >{quarter.name}</button>;
+                })}
+
+                <div
+                    style={{
+                        display: "grid",
+                        gridRow: 8,
+                        gridColumnStart: 1,
+                        gridColumnEnd: 9,
+                    }}
+                >{this.months.map((month, index) => {
+                    return <button
+                        onClick={month.onClick}
+                        style={{
+                            margin: 0,
+                            gridRow: 1,
+                            gridColumn: index,
+                            backgroundColor: month.bg
+                        }}
+                    >{month.name}</button>;
+                })}</div>
+
+
+                {allCategoryButtons.map((cat, index) => {
+                    return <button
+                        onClick={cat.onClick}
+                        style={{
+                            margin: 0,
+                            backgroundColor: cat.bg
+                        }}
+                    >{cat.name}</button>;
+                })}
+
+            </div>;
         } else { // edit shelf
             return <div>
                 Unimplemented Panel
