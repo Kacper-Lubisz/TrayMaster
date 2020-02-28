@@ -1,5 +1,6 @@
 import * as fb from "firebase/app";
 import "firebase/auth";
+import {KeyboardName} from "../../pages/ShelfViewPage";
 import {ONLINE} from "../Firebase";
 import {WarehouseManager} from "../WarehouseModel";
 import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
@@ -19,12 +20,10 @@ interface UserWarehouseSettings {
 
 /**
  * The various auto-advance modes
- * off  - off
- * ce   - category -> expiry
- * w    - weight
- * cew  - category -> expiry -> weight
+ * off is off
+ * a list defines a cycle
  */
-type AutoAdvanceModes = "off" | "ce" | "w" | "cew";
+export type AutoAdvanceModes = null | (KeyboardName[]);
 
 interface UserFields {
     isAdmin: boolean;
@@ -49,7 +48,7 @@ export class User extends DatabaseObject<UserFields> {
             isAdmin: false,
             name: "",
             lastWarehouseID: "",
-            autoAdvanceMode: "off",
+            autoAdvanceMode: null,
             onlySingleAutoAdvance: false,
             showPreviousShelfButton: false,
             clearAboveSelection: true,
@@ -184,7 +183,7 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "MOCK_WAREHOUSE_0",
                     isAdmin: true,
-                    autoAdvanceMode: "off",
+                    autoAdvanceMode: null,
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
                     clearAboveSelection: true,
@@ -212,7 +211,7 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "",
                     isAdmin: true,
-                    autoAdvanceMode: "off",
+                    autoAdvanceMode: null,
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
                     clearAboveSelection: true,
@@ -234,7 +233,7 @@ export class Authentication {
                     name: "Mock User",
                     lastWarehouseID: "",
                     isAdmin: true,
-                    autoAdvanceMode: "off",
+                    autoAdvanceMode: null,
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
                     clearAboveSelection: true,

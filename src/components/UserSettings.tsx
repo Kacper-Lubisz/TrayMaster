@@ -1,5 +1,5 @@
 import React from "react";
-import {User} from "../core/Firebase/Authentication";
+import {AutoAdvanceModes, User} from "../core/Firebase/Authentication";
 import {Setting, SettingsComponent} from "./SettingsComponent";
 
 import "./styles/_usersettings.scss";
@@ -13,6 +13,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
 
     render(): React.ReactNode {
+
         const settingsList: Setting[] = [
             {
                 type: "checkBox",
@@ -32,16 +33,12 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
             }, {
                 type: "dropDown",
                 get: () => this.props.user.autoAdvanceMode,
-                set: (value: string) => {
-                    if (value === "ce" || value === "w" || value === "cew" || value === "off") {
-                        this.props.user.autoAdvanceMode = value;
-                    }
-                },
+                set: (value: AutoAdvanceModes) => this.props.user.autoAdvanceMode = value,
                 options: [
-                    {label: "Off", key: "off"},
-                    {label: "Category > Expiry > Next Tray", key: "ce"},
-                    {label: "Weight > Next Tray", key: "w"},
-                    {label: "Category > Expiry > Weight > Next Tray", key: "cew"}
+                    {label: "Off", key: null},
+                    {label: "Category > Expiry > Next Tray", key: ["category", "expiry"]},
+                    {label: "Weight > Next Tray", key: ["weight"]},
+                    {label: "Category > Expiry > Weight > Next Tray", key: ["category", "expiry", "weight"]}
                 ],
                 label: "Auto Advance",
             }, {
@@ -55,6 +52,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
             <h3>Personal Settings</h3>
             <h4>Shelf View</h4>
             <table>
+                <tbody>
                 {settingsList.map((setting, index) =>
                     <SettingsComponent
                         key={index}
@@ -62,6 +60,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                         {...setting}
                     />
                 )}
+                </tbody>
             </table>
         </div>;
     }
