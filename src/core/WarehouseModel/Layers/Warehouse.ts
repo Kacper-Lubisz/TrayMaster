@@ -6,10 +6,10 @@ import {Bay, Category, Column, Shelf, Tray, WarehouseModel, Zone} from "../../Wa
 import {TopLayer} from "../LayerStructure/TopLayer";
 import Utils from "../Utils";
 
-const defaultCategories: { name: string; group?: string }[] = [
-    {name: "Baby Care", group: "Baby..."},
+const defaultCategories: { name: string; group?: string; neverExpires?: boolean }[] = [
+    {name: "Baby Care", group: "Baby...", neverExpires: true},
     {name: "Baby Food", group: "Baby..."},
-    {name: "Nappies", group: "Baby..."},
+    {name: "Nappies", group: "Baby...", neverExpires: true},
     {name: "Beans"},
     {name: "Biscuits"},
     {name: "Cereal"},
@@ -17,7 +17,7 @@ const defaultCategories: { name: string; group?: string }[] = [
     {name: "Coffee"},
     {name: "Cleaning"},
     {name: "Custard"},
-    {name: "Feminine Hygiene", group: "Toiletries..."},
+    {name: "Feminine Hygiene", group: "Toiletries...", neverExpires: true},
     {name: "Fish"},
     {name: "Fruit"},
     {name: "Fruit Juice"},
@@ -25,10 +25,10 @@ const defaultCategories: { name: string; group?: string }[] = [
     {name: "Instant Meals"},
     {name: "Jam"},
     {name: "Meat"},
-    {name: "Men's Toiletries", group: "Toiletries..."},
+    {name: "Men's Toiletries", group: "Toiletries...", neverExpires: true},
     {name: "Milk"},
     {name: "Misc."},
-    {name: "Misc. Toiletries", group: "Toiletries..."},
+    {name: "Misc. Toiletries", group: "Toiletries...", neverExpires: true},
     {name: "Pasta"},
     {name: "Pasta Sauce"},
     {name: "Pet Food"},
@@ -36,14 +36,14 @@ const defaultCategories: { name: string; group?: string }[] = [
     {name: "Rice"},
     {name: "Rice Pudding"},
     {name: "Savoury Treats"},
-    {name: "Shampoo", group: "Toiletries..."},
+    {name: "Shampoo", group: "Toiletries...", neverExpires: true},
     {name: "Soup"},
-    {name: "Soap & Shower Gel", group: "Toiletries..."},
+    {name: "Soap & Shower Gel", group: "Toiletries...", neverExpires: true},
     {name: "Spaghetti"},
     {name: "Sponge Pudding"},
-    {name: "Sugar"},
+    {name: "Sugar", neverExpires: true},
     {name: "Tea Bags"},
-    {name: "Toilet Rolls", group: "Toiletries..."},
+    {name: "Toilet Rolls", group: "Toiletries...", neverExpires: true},
     {name: "Tomatoes"},
     {name: "Vegetables"},
     {name: "Christmas"},
@@ -126,6 +126,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     overStockThreshold: null,
                     type: "default",
                     group: null,
+                    neverExpires: false,
                     ...defaultCategories[i],
                 });
             }

@@ -48,6 +48,7 @@ export interface Category {
     overStockThreshold: number | null;
     type: "default" | "custom";
     group: string | null;
+    neverExpires: boolean;
 }
 
 /**

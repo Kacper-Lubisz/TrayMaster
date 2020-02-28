@@ -358,10 +358,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * repaint to follow after the triggering handler is finished.
      * @param fillSpaces If spaces are to be filled
      * @param ignoreAirSpaces If air trays are to be ignored
+     * @param callback This callback is invoked after the new selection is set
      */
     private getSelectedTrays(
         fillSpaces: boolean,
         ignoreAirSpaces: boolean,
+        callback?: () => void
     ): Tray[] {
 
         const selectedCells = this.state.currentView.columns
@@ -389,12 +391,28 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
             }).filter(tray => tray) as Tray[];
 
-            this.setSelected(this.advanceSelection(newSelection));
+            this.setSelected(newSelection, callback);
             return trays.concat(newTrays);
         } else {
             return trays;
         }
     }
+
+    private applyAndAdvance(
+        fillSpaces: boolean,
+        ignoreAirSpaces: boolean,
+        modify: (tray: Tray) => void,
+    ): void {
+
+        const trays = this.getSelectedTrays(fillSpaces, ignoreAirSpaces, () => {
+
+            trays.forEach(tray => modify(tray));
+            this.setSelected(this.advanceSelection(this.state.selected));
+
+        });
+
+    }
+
 
     /**
      * This splits a list of TrayCells into a list of trays and spaces
@@ -427,8 +445,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             byNullSafe<TrayCell>(cell => cell.index, false, false)
         ]);
 
-        const selected = Array.from(selection.entries())
-                              .filter(([_, selected]) => selected);
+        const selected: TrayCell[] = Array.from(selection.entries())
+                                          .filter(([_, selected]) => selected)
+                                          .map(([cell, _]) => cell);
 
         if (selected.length !== 1 && this.props.user.onlySingleAutoAdvance) {
             return selection;
@@ -442,21 +461,39 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             return selection;
         }
 
-        const nextIndex = (keyboardIndex + 1) % this.props.user.autoAdvanceMode.length;
+        const possibleKeyboards: KeyboardName[] = (() => {
+
+            const first = selected[0];
+            if (first instanceof Tray) {
+                const possible: (KeyboardName | null)[] = [
+                    first.category ? null : "category",
+                    first.expiry ? null : "expiry",
+                    first.weight ? null : "weight"
+                ];
+                return possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null);
+
+            } else {
+                return ["category", "expiry", "weight"] as KeyboardName[];
+            }
+
+        })();
+
+        const nextIndex = Math.max(this.props.user.autoAdvanceMode.findIndex(
+            (kb, index) => index > keyboardIndex && possibleKeyboards.includes(kb)
+        ), 0);
         this.switchKeyboard(this.props.user.autoAdvanceMode[nextIndex]);
 
         if (nextIndex > keyboardIndex) { // else, only move the selection if the cycle repeats
             return selection;
         }
 
-        const maxSelected = selected.map(([cell, _]) => cell)
-                                    .reduce((max, cur) => {
-                                        if (max && comparison(max, cur) !== 1) {
-                                            return max;
-                                        } else {
-                                            return cur;
-                                        }
-                                    }, undefined as (TrayCell | undefined));
+        const maxSelected = selected.reduce((max, cur) => {
+            if (max && comparison(max, cur) !== 1) {
+                return max;
+            } else {
+                return cur;
+            }
+        }, undefined as (TrayCell | undefined));
 
         if (maxSelected) {
 
@@ -517,19 +554,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private async onCategorySelected(category: Category | null): Promise<void> {
 
-        this.getSelectedTrays(
+        this.applyAndAdvance(
             true,
             true,
-        ).forEach((tray) => {
-            tray.category = category ?? undefined;
-            tray.expiry = undefined;
-            tray.weight = undefined;
-            tray.comment = undefined;
-        });
-        this.setState(state => ({
-            ...state,
-            weight: undefined
-        }));
+            tray => {
+                tray.category = category ?? undefined;
+                tray.expiry = category?.neverExpires ? {
+                    from: null, to: null, label: "Never"
+                } : undefined;
+                tray.weight = undefined;
+                tray.comment = undefined;
+            }
+        );
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
 
@@ -542,13 +578,13 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private async onExpirySelected(expiry: ExpiryRange | null): Promise<void> {
 
-        this.getSelectedTrays(
+        this.applyAndAdvance(
             true,
             true,
-        ).forEach((tray) => {
-            tray.expiry = expiry ?? undefined;
-        });
-        this.forceUpdate();
+            (tray) => {
+                tray.expiry = expiry ?? undefined;
+            }
+        );
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
 
@@ -561,12 +597,31 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private async setWeight(newWeight: string | undefined, couldAdvance = false): Promise<void> {
 
-        this.getSelectedTrays(
+        if (couldAdvance) {
+            this.applyAndAdvance(
+                true,
+                true,
+                (tray) => {
+                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
+                }
+            );
+        } else {
+            this.getSelectedTrays(
+                true,
+                true
+            ).forEach((tray) => {
+                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
+                }
+            );
+        }
+
+        this.applyAndAdvance(
             true,
             true,
-        ).forEach((tray) => {
-            tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-        });
+            (tray) => {
+                tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
+            }
+        );
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
         if (!couldAdvance) {
@@ -612,7 +667,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method is called when a column is to be removed
      * @param column The column to remove
      */
-    async removeColumn(column: Column): Promise<void> {
+    private async removeColumn(column: Column): Promise<void> {
         await column.delete(true);
         this.forceUpdate();
     }
