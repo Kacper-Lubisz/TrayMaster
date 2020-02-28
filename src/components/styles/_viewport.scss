@@ -67,7 +67,7 @@
 
         // Styling
         background-color: #ffffff;
-        border: 1px solid #cccccc;
+        border: 1px solid #888888;
         cursor: pointer;
 
         // Round the corners
@@ -81,27 +81,11 @@
 
 
         &.traySpace {
-          font-size: 24px;
-          color: #666666;
+          background-color: #eeeeee;
+          border-color: #cccccc;
 
-          text-align: center;
-          position: relative;
-
-          > p {
-            margin: 0;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-          }
-        }
-
-        // When we're in multiple select mode
-        &.multipleSelect {
-
-          > svg.tray-tickbox {
-            // Show the tickboxes
-            visibility: visible;
+          &.firstTraySpace {
+            border-color: #888888;
           }
         }
 
@@ -110,20 +94,15 @@
           background-color: #dddddd;
         }
 
-        // The first empty space a tray can take above
-        &.traySpace.firstTraySpace {
-          background-color: #00000011;
-          border-color: #888;
-        }
-
-        &.traySpace {
-          background-color: #00000011;
-          border-color: #8880;
-        }
-
         // only give trays with items above them the top margin
         &:last-child {
-          margin: 0;
+          margin-top: 0;
+        }
+
+        // When we're in multiple select mode
+        &.multipleSelect > svg.tray-tickbox {
+          // Show the tickboxes
+          visibility: visible;
         }
 
         // Everything inside a tray
@@ -142,18 +121,17 @@
           top: 0;
           left: 0;
 
-          // Grey unselected by default
-          // Needed because now just using tickSolid (better not to switch icons to avoid flickering)
+          // Grey (deselected) by default
           color: #cacaca;
 
-          // Hide by default; all tickboxes will be shown when in multiple-select mode, and tick-selected are always shown
+          // Hide by default
           visibility: hidden;
 
+          // when selected, use accent colour and be visible
           &.tick-selected {
             color: $accent-color;
             visibility: visible;
           }
-
         }
 
         // Tray category: bottom left
