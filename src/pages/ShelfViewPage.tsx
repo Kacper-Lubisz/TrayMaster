@@ -12,7 +12,6 @@ import {
     faTimes as cross
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import reduce from "lodash/reduce";
 import React from "react";
 
@@ -22,6 +21,7 @@ import {BottomPanel} from "../components/BottomPanel";
 import {SideBar} from "../components/SideBar";
 import {ToolBar} from "../components/ToolBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
+import {ZoneDisplayComponent} from "../components/ZoneDisplayComponent";
 import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {
@@ -167,11 +167,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             } else if (this.state.currentView instanceof Shelf) {
                 this.changeView("nextShelf");
             } else {
-                throw Error("Can't change view in direction 'next' when looking at a warehouse");
+                return;
             }
 
         } else if (this.state.currentView instanceof Warehouse) {
-            throw Error("Trying to navigate an empty warehouse");
+            return;
             // this can't be navigated and ought not to happen
 
         } else if (this.state.currentView instanceof Zone && (
@@ -179,7 +179,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             direction === "up" || direction === "down" ||
             direction === "nextShelf" || direction === "previousShelf"
         )) {
-            throw Error("These move directions are not possible when the current view is a Zone");
+            return;
 
         } else if (this.state.currentView instanceof Zone) { // if we're moving from a zone
             const increment = direction === "nextZone" ? 1 : -1; // only nextZone or previousZone possible
@@ -1056,31 +1056,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 </div>
 
                 {/* Grid of shelves in zone */}
-                <div id="nav-zone">{
-                    zone.bays.length ? (() => {
-                        const textColor = getTextColorForBackground(zone.color);
-                        return zone.bays.flatMap((bay, bayIndex) =>
-                            <div className="nav-bay" key={bayIndex}>
-                                {bay.shelves.map((shelf, shelfIndex) =>
-                                    <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
-                                         className={classNames("nav-shelf", {
-                                             "currentShelf": this.state.currentView === shelf
-                                         })} style={{
-                                        backgroundColor: zone.color,
-                                        color: textColor,
-                                        border: `1px solid ${textColor}`
-                                    }}
-                                         onClick={this.changeView.bind(this, shelf)}
-                                    >
-                                        <p className="shelfLabel">{bay.name}{shelf.name}</p>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })() : <h3>This zone has no bays</h3>
-                }</div>
+                <ZoneDisplayComponent
+                    zone={zone}
+                    selected={this.state.currentView instanceof Shelf ? this.state.currentView : null}
+                    onSelected={(shelf: Shelf) => this.changeView(shelf)}
+                />
 
-                {/* Arrow grid */}
                 <div id="nav-arrow-area">
                     {this.state.currentView instanceof Shelf ?
                      <p

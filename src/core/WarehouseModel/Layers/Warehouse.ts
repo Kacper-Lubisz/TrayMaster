@@ -127,6 +127,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     type: "default",
                     group: null,
                     neverExpires: false,
+                    buttonColor: null,
                     ...defaultCategories[i],
                 });
             }

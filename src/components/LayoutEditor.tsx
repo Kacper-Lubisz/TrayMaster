@@ -1,6 +1,6 @@
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
-import {cloneDeep} from "lodash";
+import {cloneDeep, isEqual} from "lodash";
 import React from "react";
 import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
@@ -9,6 +9,7 @@ import {SettingsTab} from "../pages/SettingsPage";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
 
 import "./styles/_layouteditor.scss";
+import {ZoneDisplayComponent} from "./ZoneDisplayComponent";
 
 
 interface LayoutEditorProps {
@@ -76,11 +77,40 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         if (this.state.editedZone) {
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
 
-            const zoneSettings: ControlledInputComponentProps[] = [];
+            const zoneSettings: ControlledInputComponentProps[] = [
+                {
+                    inputType: "textField",
+                    type: "text",
+                    placeholder: "Unnamed",
+                    get: () => this.state.editedZone?.name ?? "",
+                    set: (value: string) => {
+                        this.setState(state => {
+                            if (state.editedZone) {
+                                state.editedZone.name = value;
+                            }
+                            return state;
+                        });
+                    },
+                    label: "Name"
+                }, {
+                    inputType: "color",
+                    get: () => this.state.editedZone?.color ?? "#ffffff00",
+                    set: (value: string | null) => {
+                        this.setState(state => {
+                            if (state.editedZone) {
+                                state.editedZone.color = value ?? "#ffffff00";
+                            }
+                            return state;
+                        });
+                    },
+                    onClear: null,
+                    label: "Color"
+                }
+            ];
 
             return <>
-                <div id="cat-edit-controls">
-                    <div id="cat-edit-header">
+                <div id="zone-edit-controls">
+                    <div id="zone-edit-header">
                         <h2>{this.state.selectedZone ? `Edit '${this.state.selectedZone.name}'${unsavedLabel}`
                                                      : "New Zone"}</h2>
                     </div>
@@ -91,11 +121,12 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                         )}
                         </tbody>
                     </table>
+                    <ZoneDisplayComponent zone={this.state.editedZone} selected={null} onSelected={null}/>
                 </div>
                 <div id="bottom-btns">
                     <button
                         disabled={!this.hasUnsavedChanges()}
-                        onClick={this.hasUnsavedChanges() ? this.saveCategory.bind(this) : undefined}
+                        onClick={this.hasUnsavedChanges() ? this.saveChanges.bind(this) : undefined}
                     >Save Changes
                     </button>
                     <button
@@ -115,33 +146,32 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     /**
      * Is called if user clicks button to add a new category
      */
-    private newCategory(): void {
+    private newZone(): void {
 
-        // if (this.hasUnsavedChanges()) {
-        //     this.props.openDialog(this.createUnsavedDialog());
-        // } else {
-        //     this.setState(state => ({
-        //         ...state,
-        //         oldCat: undefined,
-        //         draftCat: cloneDeep(CategoryEditor.BLANK_CATEGORY)
-        //     }));
-        // }
+        if (this.hasUnsavedChanges()) {
+            this.props.openDialog(this.createUnsavedDialog());
+        } else {
+            const newZone = Zone.create("New Zone", "#00ff00", this.props.warehouse);
+            this.setState(state => ({
+                ...state,
+                selectedZone: newZone,
+                editedZone: newZone
+            }));
+        }
     }
 
     /**
      * Checks if any of the fields in the currently displayed category has changed
      */
     private hasUnsavedChanges(): boolean {
-        return false;
 
-        // return !isEqual(this.state.draftCat, CategoryEditor.BLANK_CATEGORY) && !isEqual(this.state.oldCat,
-        // this.state.draftCat);
+        return !isEqual(this.state.editedZone, this.state.selectedZone);
     }
 
     /**
      *Saves changes to categories, doesn't let user save category with empty name
      */
-    private async saveCategory(): Promise<void> {
+    private async saveChanges(): Promise<void> {
         // if (this.state.draftCat) {
         //
         //     const newCategory = cloneDeep(this.state.draftCat); // to avoid altering the state here
@@ -173,18 +203,18 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     }
 
     private discardChanges(): void {
-        // this.setState(state => ({
-        //     ...state,
-        //     oldCat: undefined,
-        //     draftCat: undefined
-        // }));
+        this.setState(state => ({
+            ...state,
+            selectedZone: null,
+            editedZone: null
+        }));
     }
 
     /**
      * Deletes category, makes sure indices inside object matches actual
      * indices after removing one category
      */
-    private deleteCategory(): void {
+    private deleteZone(): void {
 
         // // todo fixme Not sure who wrote this - this needs checking for correctness. Does it definitely re-sync all
         // // indices changes to DB? Surely the adjustments happen in the then, which occurs afterwards?
@@ -229,8 +259,8 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                         {zone.name}
                     </div>)}
                 </div>
-                <button id="top-btn" onClick={this.newCategory.bind(this)}>New Zone</button>
-                <button onClick={this.newCategory.bind(this)}>Remove Zone</button>
+                <button id="top-btn" onClick={this.newZone.bind(this)}>New Zone</button>
+                <button onClick={this.deleteZone.bind(this)}>Remove Zone</button>
             </div>
             <div id="zone-edit-main">
                 {this.renderEditPanel()}

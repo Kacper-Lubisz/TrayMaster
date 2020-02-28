@@ -50,7 +50,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         overStockThreshold: null,
         type: "custom",
         group: null,
-        neverExpires: false
+        neverExpires: false,
+        buttonColor: null
     };
 
     constructor(props: CategoryEditorProps) {
@@ -178,7 +179,22 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 },
                 placeholder: "No Group",
                 label: "Group Title"
+            }, {
+                inputType: "color",
+                get: () => this.state.draftCat?.buttonColor ?? "#ffffff00",
+                set: (value: string | null) => {
+                    console.log(value);
+                    this.setState(state => {
+                        if (state.draftCat) {
+                            state.draftCat.buttonColor = value;
+                        }
+                        return state;
+                    });
+                },
+                onClear: null,
+                label: "Button Background Color"
             }
+
         ];
 
 

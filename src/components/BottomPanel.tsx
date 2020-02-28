@@ -231,7 +231,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             ).map((cat): CustomButtonProps => ({
                 name: cat.shortName ?? cat.name,
                 onClick: () => this.props.categorySelected(cat),
-                selected: cat.name === commonCat
+                selected: cat.name === commonCat,
+                bg: cat.buttonColor ?? undefined
             }));
 
             const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({

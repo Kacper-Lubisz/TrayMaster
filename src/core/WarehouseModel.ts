@@ -49,6 +49,7 @@ export interface Category {
     type: "default" | "custom";
     group: string | null;
     neverExpires: boolean;
+    buttonColor: string | null;
 }
 
 /**

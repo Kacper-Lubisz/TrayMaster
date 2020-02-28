@@ -3,7 +3,8 @@ import {faCheckSquare as tickFull} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {isEqual} from "lodash";
 
-import React from "react";
+import React, {ReactNode} from "react";
+import {SketchPicker} from "react-color";
 
 import "./styles/_controleldinputcomponent.scss";
 
@@ -40,9 +41,16 @@ export type NumberInput = {
     set: (value: number | null) => void;
 };
 
-export type ControlledInputComponentProps = (Checkbox | DropDown<any> | TextField | NumberInput) & {
-    label: string;
+export type ColorInput = {
+    inputType: "color";
+    get: () => string;
+    set: (value: string | null) => void;
+    onClear: string | null;
 };
+
+export type ControlledInputComponentProps =
+    (Checkbox | DropDown<any> | TextField | NumberInput | ColorInput)
+    & { label: string };
 
 
 export class ControlledInputComponent extends React.Component<ControlledInputComponentProps> {
@@ -105,7 +113,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
                     />
                 </td>
             </tr>;
-        } else { //propsAtRender.inputType === "number"
+        } else if (propsAtRender.inputType === "number") { //
 
             const value = propsAtRender.get();
             return <tr className="settings-component setting-number" key={propsAtRender.label}>
@@ -123,8 +131,83 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
                 </td>
             </tr>;
 
+        } else { //propsAtRender.inputType === "color"
+
+            return <tr className="settings-component setting-color" key={propsAtRender.label}>
+                <td><label>{propsAtRender.label}</label></td>
+                <td>
+                    <SketchPopup
+                        color={propsAtRender.get()}
+                        onChange={color => propsAtRender.set(color)}/>
+                    <button
+                        onClick={_ => propsAtRender.set(propsAtRender.onClear)}
+                    >Clear
+                    </button>
+                </td>
+            </tr>;
+
         }
 
     }
 
+}
+
+interface SketchPopupState {
+    displayColorPicker: boolean;
+}
+
+interface SketchPopupProps {
+    onChange: (color: string) => void;
+    color: string;
+}
+
+class SketchPopup extends React.Component<SketchPopupProps, SketchPopupState> {
+    state = {
+        displayColorPicker: false
+    };
+
+    private toggleOpen(): void {
+        this.setState(state => ({...state, displayColorPicker: !this.state.displayColorPicker}));
+    }
+
+    private close(): void {
+        this.setState(state => ({...state, displayColorPicker: false}));
+    }
+
+    render(): ReactNode {
+        return <div>
+            <div style={{
+                padding: "5px",
+                background: "#ffffff",
+                borderRadius: "1px",
+                boxShadow: "0 0 0 1px rgba(0,0,0,.1)",
+                display: "inline-block",
+                cursor: "pointer",
+            }} onClick={this.toggleOpen.bind(this)}>
+                <div style={{
+                    width: "36px",
+                    height: "14px",
+                    borderRadius: "2px",
+                    background: this.props.color,
+                }}/>
+            </div>
+            {this.state.displayColorPicker ? <div style={{
+                position: "absolute",
+                zIndex: 2,
+            }}>
+                <div style={{
+                    position: "fixed",
+                    top: "0px",
+                    right: "0px",
+                    bottom: "0px",
+                    left: "0px",
+                }} onClick={this.close.bind(this)}/>
+                <SketchPicker
+                    color={this.props.color}
+                    onChange={color => this.props.onChange(color.hex)}
+                />
+            </div> : null}
+
+        </div>;
+    }
 }
