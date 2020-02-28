@@ -358,12 +358,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * repaint to follow after the triggering handler is finished.
      * @param fillSpaces If spaces are to be filled
      * @param ignoreAirSpaces If air trays are to be ignored
-     * @param advanceSelection If the selection should be advanced after this call
      */
     private getSelectedTrays(
         fillSpaces: boolean,
         ignoreAirSpaces: boolean,
-        advanceSelection: "cell" | "tray" | null = null
     ): Tray[] {
 
         const selectedCells = this.state.currentView.columns
@@ -391,11 +389,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
             }).filter(tray => tray) as Tray[];
 
-            if (advanceSelection === null) {
-                this.setSelected(newSelection);
-            } else {
-                this.setSelected(this.advanceSelection(newSelection));
-            }
+            this.setSelected(this.advanceSelection(newSelection));
             return trays.concat(newTrays);
         } else {
             return trays;
@@ -526,7 +520,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.autoAdvanceMode ? "cell" : null
         ).forEach((tray) => {
             tray.category = category ?? undefined;
             tray.expiry = undefined;
@@ -552,7 +545,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.autoAdvanceMode ? "tray" : null
         ).forEach((tray) => {
             tray.expiry = expiry ?? undefined;
         });
@@ -572,7 +564,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            couldAdvance && this.props.user.autoAdvanceMode ? "tray" : null
         ).forEach((tray) => {
             tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
         });
