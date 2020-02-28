@@ -8,7 +8,7 @@ import {User} from "../core/Firebase/Authentication";
 
 import "./styles/_settingscomponent.scss";
 
-export  type Checkbox = {
+export type Checkbox = {
     type: "checkBox";
     get: () => boolean;
     set: (value: boolean) => void;
