@@ -359,12 +359,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * repaint to follow after the triggering handler is finished.
      * @param fillSpaces If spaces are to be filled
      * @param ignoreAirSpaces If air trays are to be ignored
-     * @param advanceSelection If the selection should be advanced after this call
      */
     private getSelectedTrays(
         fillSpaces: boolean,
         ignoreAirSpaces: boolean,
-        advanceSelection: "cell" | "tray" | null = null
     ): Tray[] {
 
         const selectedCells = this.state.currentView.columns
@@ -392,11 +390,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
             }).filter(tray => tray) as Tray[];
 
-            if (advanceSelection === null) {
-                this.setSelected(newSelection);
-            } else {
-                this.setSelected(this.advanceSelection(advanceSelection === "cell", newSelection));
-            }
+            this.setSelected(this.advanceSelection(newSelection));
             return trays.concat(newTrays);
         } else {
             return trays;
@@ -420,13 +414,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     /**
      * This method selects the next cell or tray after the current selection
-     * @param canGoToCell If tray cells will be considered or skipped
      * @param selection The selection to be mutated
      * @return The mutated selection
      */
-    private advanceSelection(canGoToCell: boolean, selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
+    private advanceSelection(selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
 
-        if (this.props.user.autoAdvanceMode === "off") {
+        if (this.props.user.autoAdvanceMode === null) {
             return selection;
         }
 
@@ -438,86 +431,79 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         const selected = Array.from(selection.entries())
                               .filter(([_, selected]) => selected);
 
-        if (selected.length === 1 || !this.props.user.onlySingleAutoAdvance) {
+        if (selected.length !== 1 && this.props.user.onlySingleAutoAdvance) {
+            return selection;
+        }
 
-            if ((this.props.user.autoAdvanceMode === "ce" || this.props.user.autoAdvanceMode === "cew")
-                && this.state.currentKeyboard === "category") { // go to expiry keyboard
+        const keyboardIndex = this.props.user.autoAdvanceMode.findIndex(keyboard =>
+            keyboard === this.state.currentKeyboard
+        );
 
-                this.switchKeyboard("expiry");
-                return selection;
+        if (keyboardIndex === undefined) { // not in the cycle, do nothing
+            return selection;
+        }
 
-            } else if (this.props.user.autoAdvanceMode === "cew" && this.state.currentKeyboard === "expiry") {// go to weight keyboard
+        const nextIndex = (keyboardIndex + 1) % this.props.user.autoAdvanceMode.length;
+        this.switchKeyboard(this.props.user.autoAdvanceMode[nextIndex]);
 
-                this.switchKeyboard("weight");
-                return selection;
+        if (nextIndex > keyboardIndex) { // else, only move the selection if the cycle repeats
+            return selection;
+        }
 
-            } else if ((this.props.user.autoAdvanceMode === "cew" && this.state.currentKeyboard === "weight") ||
-                (this.props.user.autoAdvanceMode === "ce" && this.state.currentKeyboard === "expiry")) {// go to category keyboard
+        const maxSelected = selected.map(([cell, _]) => cell)
+                                    .reduce((max, cur) => {
+                                        if (max && comparison(max, cur) !== 1) {
+                                            return max;
+                                        } else {
+                                            return cur;
+                                        }
+                                    }, undefined as (TrayCell | undefined));
 
-                this.switchKeyboard("category");
+        if (maxSelected) {
 
-            }
-            // no return => move on
+            const columnIndex = maxSelected.parentColumn.index;
 
-            const maxSelected = selected.map(([cell, _]) => cell)
-                                        .reduce((max, cur) => {
-                                            if (max && comparison(max, cur) !== 1) {
-                                                return max;
-                                            } else {
-                                                return cur;
-                                            }
-                                        }, undefined as (TrayCell | undefined));
+            const trayIndex = maxSelected.index;
 
-            if (maxSelected) {
+            const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
+                                                      : maxSelected.parentColumn.parentShelf;
 
-                const columnIndex = maxSelected.parentColumn.index;
+            const currentCellsLength = shelf.columns[columnIndex].getPaddedTrays().length;
 
-                const trayIndex = maxSelected.index;
+            if (currentCellsLength !== trayIndex + 1) {
+                return new Map<TrayCell, boolean>([
+                    [shelf.columns[columnIndex].getPaddedTrays()[trayIndex + 1], true]
+                ]);
 
-                const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
-                                                          : maxSelected.parentColumn.parentShelf;
+            } else if (shelf.columns.length !== columnIndex + 1) {
+                const nextColumn = reduce(shelf.columns, (acc, cur) => {
 
-                const currentCellsLength = canGoToCell ? shelf.columns[columnIndex].getPaddedTrays().length
-                                                       : shelf.columns[columnIndex].trays.length;
+                    const cellLength = cur.getPaddedTrays().length;
 
-                if (currentCellsLength !== trayIndex + 1) {
-                    return new Map<TrayCell, boolean>([
-                        [shelf.columns[columnIndex].getPaddedTrays()[trayIndex + 1], true]
-                    ]);
-
-                } else if (shelf.columns.length !== columnIndex + 1) {
-                    const nextColumn = reduce(shelf.columns, (acc, cur) => {
-
-                        const cellLength = canGoToCell ? cur.getPaddedTrays().length
-                                                       : cur.trays.length;
-
-                        if (!acc && cellLength !== 0 && cur.index > columnIndex) {
-                            return cur;
-                        } else {
-                            return acc;
-                        }
-                    }, null as (null | Column));
-
-                    if (nextColumn) {
-                        return new Map<TrayCell, boolean>([
-                            [nextColumn.getPaddedTrays()[0], true]
-                        ]);
-                    } else { // this is an erroneous state
-                        return selection;
-                    }
-                } else {
-                    const cells = shelf.cells;
-                    if (cells.length === 0) {
-                        return selection;
+                    if (!acc && cellLength !== 0 && cur.index > columnIndex) {
+                        return cur;
                     } else {
-                        return new Map<TrayCell, boolean>([
-                            [cells[0], true]
-                        ]);
+                        return acc;
                     }
+                }, null as (null | Column));
 
+                if (nextColumn) {
+                    return new Map<TrayCell, boolean>([
+                        [nextColumn.getPaddedTrays()[0], true]
+                    ]);
+                } else { // this is an erroneous state
+                    return selection;
                 }
             } else {
-                return selection;
+                const cells = shelf.cells;
+                if (cells.length === 0) {
+                    return selection;
+                } else {
+                    return new Map<TrayCell, boolean>([
+                        [cells[0], true]
+                    ]);
+                }
+
             }
         } else {
             return selection;
@@ -535,7 +521,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.autoAdvanceMode === "off" ? null : "cell"
         ).forEach((tray) => {
             tray.category = category ?? undefined;
             tray.expiry = undefined;
@@ -561,7 +546,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            this.props.user.autoAdvanceMode === "off" ? null : "tray"
         ).forEach((tray) => {
             tray.expiry = expiry ?? undefined;
         });
@@ -581,7 +565,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.getSelectedTrays(
             true,
             true,
-            couldAdvance && this.props.user.autoAdvanceMode !== "off" ? "tray" : null
         ).forEach((tray) => {
             tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
         });
