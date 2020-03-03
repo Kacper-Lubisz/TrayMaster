@@ -1,0 +1,35 @@
+.settings-component {
+
+  &:last-child td {
+    border-bottom: 1px solid #dddddd;
+  }
+
+  td {
+    vertical-align: middle;
+    border-top: 1px solid #dddddd;
+    padding: 10px 0;
+
+    label {
+      padding-right: 30px;
+      line-height: 40px;
+      font-size: 24px;
+    }
+
+    input {
+      margin: 0;
+      float: none;
+      display: none;
+    }
+
+    svg {
+      font-size: 30px;
+    }
+
+    select {
+      font-size: 18px;
+      line-height: 18px;
+      padding: 5px;
+      border: 1px solid #000000;
+    }
+  }
+}
