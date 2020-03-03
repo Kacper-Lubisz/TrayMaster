@@ -5,6 +5,7 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {CategoryEditor} from "../components/CategoryEditor";
 import {CustomKeyboardEditor} from "../components/CustomKeyboardPage";
+import {LayoutEditor} from "../components/LayoutEditor";
 import {UserSettings} from "../components/UserSettings";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
@@ -18,7 +19,13 @@ interface SettingsPageProps {
     user: User;
 }
 
-export type SettingsTab = "personal" | "wh-edit" | "cat-edit" | "handle-users" | "keyboard-editor";
+export type SettingsTab =
+    "personal"
+    | "layout-edit"
+    | "cat-edit"
+    | "handle-users"
+    | "keyboard-editor"
+    | "handle-warehouses";
 
 interface SettingsPageState {
     currentTab: SettingsTab;
@@ -66,14 +73,24 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
 
                 repaintSettings={this.forceUpdate.bind(this)}
             />;
-        } else if (this.state.currentTab === "wh-edit") {
-            return <div>TODO Warehouse Editor</div>;
+        } else if (this.state.currentTab === "layout-edit") {
+            return <LayoutEditor
+                setLock={this.setLock.bind(this)}
+
+                openDialog={this.props.openDialog}
+                user={this.props.user}
+                warehouse={this.props.warehouse}
+
+                updatePage={() => this.forceUpdate()}
+            />;
+
+        } else if (this.state.currentTab === "handle-warehouses") {
+            return <div>Make new warehouses here </div>;
         } else if (this.state.currentTab === "keyboard-editor") {
             return <CustomKeyboardEditor user={this.props.user} warehouse={this.props.warehouse}/>;
         } else { // "handle-users"
             return <div>TODO User Manager</div>;
         }
-
 
     }
 
@@ -139,11 +156,11 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                             </div>
                             <div
                                 className={classNames("tab", {
-                                    "tab-selected": this.state.currentTab === "wh-edit"
+                                    "tab-selected": this.state.currentTab === "layout-edit"
                                 })}
-                                onClick={this.changeTab.bind(this, "wh-edit")}
+                                onClick={this.changeTab.bind(this, "layout-edit")}
                             >
-                                Warehouse Editor
+                                Layout Editor
                             </div>
                         </div>
                         <div>
@@ -154,7 +171,15 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                                 })}
                                 onClick={this.changeTab.bind(this, "handle-users")}
                             >
-                                Handle Users
+                                Users
+                            </div>
+                            <div
+                                className={classNames("tab", {
+                                    "tab-selected": this.state.currentTab === "handle-warehouses"
+                                })}
+                                onClick={this.changeTab.bind(this, "handle-warehouses")}
+                            >
+                                Warehouses
                             </div>
                         </div>
                     </> : undefined}

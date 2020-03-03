@@ -1,8 +1,8 @@
 import React from "react";
 import {AutoAdvanceModes, User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
 import {buildDefaultUnifiedKeyboard} from "./CustomKeyboardPage";
-import {Setting, SettingsComponent} from "./SettingsComponent";
 
 import "./styles/_usersettings.scss";
 
@@ -18,26 +18,38 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
     render(): React.ReactNode {
 
-        const settingsList: Setting[] = [
+        const settingsList: ControlledInputComponentProps[] = [
             {
-                type: "checkBox",
+                inputType: "checkBox",
                 get: () => this.props.user.onlySingleAutoAdvance,
-                set: (value: boolean) => this.props.user.onlySingleAutoAdvance = value,
+                set: async (value: boolean) => {
+                    this.props.user.onlySingleAutoAdvance = value;
+                    await this.props.user.stage(true, true);
+                },
                 label: "Don't Advance in Multi-select"
             }, {
-                type: "checkBox",
+                inputType: "checkBox",
                 get: () => this.props.user.showPreviousShelfButton,
-                set: (value: boolean) => this.props.user.showPreviousShelfButton = value,
+                set: async (value: boolean) => {
+                    this.props.user.showPreviousShelfButton = value;
+                    await this.props.user.stage(true, true);
+                },
                 label: "Show Previous Shelf Button"
             }, {
-                type: "checkBox",
+                inputType: "checkBox",
                 get: () => this.props.user.clearAboveSelection,
-                set: (value: boolean) => this.props.user.clearAboveSelection = value,
+                set: async (value: boolean) => {
+                    this.props.user.clearAboveSelection = value;
+                    await this.props.user.stage(true, true);
+                },
                 label: "Clear all trays above when clearing"
             }, {
-                type: "dropDown",
+                inputType: "dropDown",
                 get: () => this.props.user.autoAdvanceMode,
-                set: (value: AutoAdvanceModes) => this.props.user.autoAdvanceMode = value,
+                set: async (value: AutoAdvanceModes) => {
+                    this.props.user.autoAdvanceMode = value;
+                    await this.props.user.stage(true, true);
+                },
                 options: [
                     {label: "Off", key: null},
                     {label: "Category > Expiry > Next Tray", key: ["category", "expiry"]},
@@ -46,15 +58,16 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 ],
                 label: "Auto Advance",
             }, {
-                type: "checkBox",
+                inputType: "checkBox",
                 get: () => this.props.user.unifiedKeyboard !== null,
-                set: (value: boolean) => {
+                set: async (value: boolean) => {
                     this.props.repaintSettings();
                     this.props.user.unifiedKeyboard = value ? buildDefaultUnifiedKeyboard(this.props.warehouse)
                                                             : null;
+                    await this.props.user.stage(true, true);
                 },
                 label: "Secret feature"
-            },
+            }
         ];
         return <div id="user-settings">
             <h3>Personal Settings</h3>
@@ -62,11 +75,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
             <table>
                 <tbody>
                 {settingsList.map((setting, index) =>
-                    <SettingsComponent
-                        key={index}
-                        user={this.props.user}
-                        {...setting}
-                    />
+                    <ControlledInputComponent key={index} {...setting} />
                 )}
                 </tbody>
             </table>

@@ -3,13 +3,13 @@ import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
+import {NEVER_EXPIRY} from "../core/WarehouseModel/Layers/Warehouse";
 import {KeyboardName, SimpleExpiryRange} from "../pages/ShelfViewPage";
 import {getExpiryColor, interpolateTowardsGrey} from "../utils/getExpiryColor";
 import {MONTHS_TRANSLATOR} from "../utils/monthsTranslator";
 import {byNullSafe} from "../utils/sortsUtils";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
-
 
 export interface BottomPanelProps {
     openDialog: (dialog: Dialog) => void;
@@ -187,7 +187,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         ).map((cat): CustomButtonProps => ({
             name: cat.shortName ?? cat.name,
             onClick: this.props.updateTrayProperties.bind(undefined, cat, undefined, undefined, false),
-            selected: cat.name === commonCat
+            selected: cat.name === commonCat,
         }));
 
         const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
@@ -248,11 +248,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             const specialButtons = [
                 {
-                    name: "Indefinite",
-                    onClick: this.props.updateTrayProperties.bind(undefined, undefined, {
-                        from: null, to: null,
-                        label: "Indefinite"
-                    }, undefined, false)
+                    name: "Never",
+                    onClick: this.props.updateTrayProperties.bind(undefined, undefined, NEVER_EXPIRY, undefined, false)
                 }, {
                     name: "< Clear >",
                     onClick: this.props.updateTrayProperties.bind(undefined,
@@ -304,7 +301,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else if (this.props.keyboardState === "unified") {
 
-
             return <div style={{
                 display: "grid",
             }}>{
@@ -313,7 +309,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     The keyboard has no buttons
                 </div> : this.props.user.unifiedKeyboard.buttons.map(button => <button
                     style={{
-                        fontSize: 10,
+                        fontSize: 14,
+                        margin: 2,
                         gridColumnStart: button.columnStart ?? undefined,
                         gridColumnEnd: button.columnEnd ?? undefined,
                         gridRowStart: button.rowStart ?? undefined,

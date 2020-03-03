@@ -2,14 +2,19 @@ import {SearchQuery, SortBy} from "../../../pages/SearchPage";
 import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
-import {Bay, Category, Column, Shelf, Tray, WarehouseModel, Zone} from "../../WarehouseModel";
+import {Bay, Category, Column, ExpiryRange, Shelf, Tray, WarehouseModel, Zone} from "../../WarehouseModel";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import Utils from "../Utils";
 
-const defaultCategories: { name: string; group?: string }[] = [
-    {name: "Baby Care", group: "Baby..."},
+export const NEVER_EXPIRY = {
+    from: null, to: null,
+    label: "Never"
+};
+
+const defaultCategories: { name: string; group?: string; defaultExpiry?: ExpiryRange }[] = [
+    {name: "Baby Care", group: "Baby...", defaultExpiry: NEVER_EXPIRY},
     {name: "Baby Food", group: "Baby..."},
-    {name: "Nappies", group: "Baby..."},
+    {name: "Nappies", group: "Baby...", defaultExpiry: NEVER_EXPIRY},
     {name: "Beans"},
     {name: "Biscuits"},
     {name: "Cereal"},
@@ -17,7 +22,7 @@ const defaultCategories: { name: string; group?: string }[] = [
     {name: "Coffee"},
     {name: "Cleaning"},
     {name: "Custard"},
-    {name: "Feminine Hygiene", group: "Toiletries..."},
+    {name: "Feminine Hygiene", group: "Toiletries...", defaultExpiry: NEVER_EXPIRY},
     {name: "Fish"},
     {name: "Fruit"},
     {name: "Fruit Juice"},
@@ -25,10 +30,10 @@ const defaultCategories: { name: string; group?: string }[] = [
     {name: "Instant Meals"},
     {name: "Jam"},
     {name: "Meat"},
-    {name: "Men's Toiletries", group: "Toiletries..."},
+    {name: "Men's Toiletries", group: "Toiletries...", defaultExpiry: NEVER_EXPIRY},
     {name: "Milk"},
     {name: "Misc."},
-    {name: "Misc. Toiletries", group: "Toiletries..."},
+    {name: "Misc. Toiletries", group: "Toiletries...", defaultExpiry: NEVER_EXPIRY},
     {name: "Pasta"},
     {name: "Pasta Sauce"},
     {name: "Pet Food"},
@@ -36,14 +41,14 @@ const defaultCategories: { name: string; group?: string }[] = [
     {name: "Rice"},
     {name: "Rice Pudding"},
     {name: "Savoury Treats"},
-    {name: "Shampoo", group: "Toiletries..."},
+    {name: "Shampoo", group: "Toiletries...", defaultExpiry: NEVER_EXPIRY},
     {name: "Soup"},
-    {name: "Soap & Shower Gel", group: "Toiletries..."},
+    {name: "Soap & Shower Gel", group: "Toiletries...", defaultExpiry: NEVER_EXPIRY},
     {name: "Spaghetti"},
     {name: "Sponge Pudding"},
-    {name: "Sugar"},
+    {name: "Sugar", defaultExpiry: NEVER_EXPIRY},
     {name: "Tea Bags"},
-    {name: "Toilet Rolls", group: "Toiletries..."},
+    {name: "Toilet Rolls", group: "Toiletries...", defaultExpiry: NEVER_EXPIRY},
     {name: "Tomatoes"},
     {name: "Vegetables"},
     {name: "Christmas"},
@@ -126,6 +131,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     overStockThreshold: null,
                     type: "default",
                     group: null,
+                    defaultExpiry: null,
                     ...defaultCategories[i],
                 });
             }

@@ -249,14 +249,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         if (this.props.current instanceof Warehouse) {
             return <div id="viewPort">
                 <div>{/* container needed to centre text inside viewport properly */}
-                    <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
-                    <p>todo add a button to go to settings or wherever this can be changed</p>
+                    <h1>Current warehouse '{this.props.current.toString()}' has no zones!</h1>
+                    <p>Go to <b>Settings > Layout Editor</b> to add zones & shelves to this zone</p>
                 </div>
             </div>;
         } else if (this.props.current instanceof Zone) {
             return <div id="viewPort">
-                <h1>Current zone {this.props.current.toString()} has no bays</h1>
-                <p>todo add a button to go to settings or wherever this can be changed</p>
+                <div>
+                    <h1>Current zone '{this.props.current.toString()}' has no bays!</h1>
+                    <p>Go to <b>Settings > Layout Editor</b> to add shelves to this zone</p>
+                </div>
             </div>;
         } else {
             const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
