@@ -625,7 +625,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         shelf.columns.forEach(column => { // remove trays over max height
             if (column.maxHeight) {
                 const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
-                column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed => {
+                column.trays.slice(column.trays.length - 1 - traysToPop, column.trays.length - 1).forEach(removed => {
                     this.state.selected.delete(removed);
                     removed.delete(true);
                 });
