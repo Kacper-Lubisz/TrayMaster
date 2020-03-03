@@ -39,6 +39,8 @@ export type NumberInput = {
     placeholder: string | undefined;
     get: () => number | null;
     set: (value: number | null) => void;
+    min: number | undefined;
+    max: number | undefined;
 };
 
 export type ColorInput = {
@@ -120,13 +122,15 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
                 <td><label>{propsAtRender.label}</label></td>
                 <td>
                     <input
-                        type="text"
-                        pattern="[0-9]*"
+                        type="number"
+                        // pattern="[0-9]*"
                         value={value ? value : ""}
                         placeholder={propsAtRender.placeholder}
                         onChange={e =>
                             propsAtRender.set(e.target.value.length === 0 ? null : Number(e.target.value))
                         }
+                        min={propsAtRender.min}
+                        max={propsAtRender.max}
                     />
                 </td>
             </tr>;

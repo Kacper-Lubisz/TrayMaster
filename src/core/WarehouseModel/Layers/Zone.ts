@@ -3,7 +3,7 @@ import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 
-interface ZoneFields {
+export interface ZoneFields {
     name: string;
     color: string;
 }

@@ -137,6 +137,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         return state;
                     });
                 },
+                min: 0,
+                max: undefined,
                 placeholder: "No threshold",
                 label: "Under-Stock Threshold (trays)"
             }, {
@@ -150,6 +152,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         return state;
                     });
                 },
+                min: 0,
+                max: undefined,
                 placeholder: "No threshold",
                 label: "Over-Stock Threshold (trays)"
             }, {
