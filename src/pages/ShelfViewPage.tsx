@@ -886,7 +886,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         },
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {
-                            name: "Save",
+                            name: "Done",
                             onClick: this.finaliseEditShelf.bind(this, this.state.currentView),
                             halfWidth: false
                         },
