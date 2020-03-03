@@ -138,7 +138,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     });
                 },
                 placeholder: "No threshold",
-                label: "Under-Stock Threshold / trays"
+                label: "Under-Stock Threshold (trays)"
             }, {
                 inputType: "number",
                 get: () => this.state.draftCat?.overStockThreshold ?? 0,
@@ -151,7 +151,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     });
                 },
                 placeholder: "No threshold",
-                label: "Over-Stock Threshold / trays"
+                label: "Over-Stock Threshold (trays)"
             }, {
                 inputType: "checkBox",
                 get: () => this.state.draftCat?.neverExpires ?? false,
