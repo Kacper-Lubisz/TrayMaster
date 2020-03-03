@@ -181,6 +181,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
 
     protected stageLayer(forceStage = false): void {
         if (this.changed || forceStage) {
+            this.updateBlame();
             firebase.database.set(this.topLevelPath, {
                 ...this.fields,
                 layerIdentifiers: this.layerIdentifiers,

@@ -52,6 +52,15 @@ export abstract class Layer<TFields extends LayerFields> extends DatabaseObject<
 
     protected constructor(id: string, fields: TFields) {
         super(id, fields);
+        if (!this.fields.lastModified) {
+            this.fields.lastModified = Date.now();
+        }
+        if (!this.fields.blame) {
+            this.fields.blame = firebase.auth.currentUser?.id ?? "";
+        }
+    }
+
+    protected updateBlame(): void {
         this.fields.lastModified = Date.now();
         this.fields.blame = firebase.auth.currentUser?.id ?? "";
     }
