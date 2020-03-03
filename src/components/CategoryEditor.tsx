@@ -123,7 +123,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 {
                     inputType: "textField",
                     type: "text",
-                    get: () => categoryToEdit.name ?? "",
+                    get: () => categoryToEdit.name,
                     set: (value: string) => {
                         this.setState(state => {
                             categoryToEdit.name = value;
