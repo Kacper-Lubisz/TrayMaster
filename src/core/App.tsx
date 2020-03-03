@@ -4,7 +4,7 @@ import Popup from "reactjs-popup";
 import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
-import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
+import SearchPage, {FindQuery, FindResults} from "../pages/FindPage";
 import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
@@ -18,7 +18,7 @@ import {Warehouse, WarehouseManager} from "./WarehouseModel";
 
 
 interface AppState {
-    search?: SearchResults;
+    find?: FindResults;
     loading: boolean;
     user?: User | null;
     warehouse?: Warehouse | null;
@@ -134,7 +134,7 @@ class App extends React.Component<unknown, AppState> {
                 <Switch>
                     <Route path="/" exact>
                         {this.state.user && this.state.warehouse ? <ShelfViewPage
-                            setSearch={this.setSearch.bind(this)}
+                            setSearch={this.setFindQuery.bind(this)}
                             openDialog={this.openDialog.bind(this)}
 
                             warehouse={this.state.warehouse}
@@ -160,7 +160,7 @@ class App extends React.Component<unknown, AppState> {
                                     }));
                                 }}
                                 user={this.state.user}
-                                setSearch={this.setSearch.bind(this)}
+                                setSearch={this.setFindQuery.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
                                 expiryAmount={5}//todo fixme
                             />;
@@ -201,10 +201,10 @@ class App extends React.Component<unknown, AppState> {
                     })()}</Route>
                     <Route path="/search">{
                         this.state.user && this.state.warehouse ?
-                        this.state.search ? <SearchPage
+                        this.state.find ? <SearchPage
                             warehouse={this.state.warehouse}
-                            search={this.state.search}
-                            setQuery={this.setSearch.bind(this)}
+                            find={this.state.find}
+                            setQuery={this.setFindQuery.bind(this)}
                         /> : <Redirect to="/"/> : <Redirect to="/menu"/>
                     }</Route>
                     <Route component={PageNotFoundPage}/>
@@ -245,26 +245,25 @@ class App extends React.Component<unknown, AppState> {
 
 
     /**
-     * This method allows for setting the search query
+     * This method allows for setting the find query
      * @param query
      */
-    private async setSearch(query: SearchQuery): Promise<void> {
+    private async setFindQuery(query: FindQuery): Promise<void> {
         if (this.state.warehouse) {
             const warehouse = this.state.warehouse;
 
             this.setState(state => ({
                 ...state,
-                search: {
+                find: {
                     query: query,
                     results: null
                 }
             }));
 
-            const results = await warehouse.traySearch(query);
-            console.log(results);
+            const results = await warehouse.trayFind(query);
             this.setState(state => ({
                     ...state,
-                    search: {
+                    find: {
                         query: query,
                         results: results
                     }

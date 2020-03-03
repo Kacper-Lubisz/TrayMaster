@@ -2,14 +2,14 @@ import Enzyme from "enzyme";
 import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
 import ReactDOM from "react-dom";
-import SearchPage, {SortBy} from "../pages/SearchPage";
+import SearchPage, {SortBy} from "../pages/FindPage";
 import {mockWarehouse, routeProps} from "./sharedTestValues";
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
 Enzyme.configure({adapter: new React16Adapter()});
 
-const mockSearch = {
+const mockFind = {
     query: {
         categories: "set",
         weight: "set",
@@ -25,7 +25,7 @@ describe("Crash tests: ", () => {
         const mockSetQuery = jest.fn();
         const props = {
             warehouse: mockWarehouse,
-            search: mockSearch,
+            search: mockFind,
             setQuery: mockSetQuery
         };
         const div = document.createElement("div");
@@ -41,7 +41,7 @@ describe("Results rendering tests:", () => {
     const props = {
         warehouse: mockWarehouse,
         search: {
-            ...mockSearch,
+            ...mockFind,
             results: []
         },
         setQuery: mockSetQuery
@@ -60,7 +60,7 @@ describe("Results rendering tests:", () => {
 
     const fullProps = {
         warehouse: mockWarehouse,
-        search: mockSearch,
+        search: mockFind,
         setQuery: mockSetQuery
     };
 

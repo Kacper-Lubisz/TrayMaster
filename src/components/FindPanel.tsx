@@ -1,25 +1,25 @@
 import classNames from "classnames";
 import React from "react";
 import {Category, Warehouse} from "../core/WarehouseModel";
-import {SearchQuery, SearchResults} from "../pages/SearchPage";
+import {FindQuery, FindResults} from "../pages/FindPage";
 import "./styles/_searchpanel.scss";
 
 export type PanelState = "category" | "weight" | "expiry";
 
-interface SearchPanelProps {
+interface FindPanelProps {
     warehouse?: Warehouse;
     panelState: PanelState;
     setPanelState: (state: PanelState) => void;
-    setQuery: (query: SearchQuery) => void;
-    search: SearchResults;
+    setQuery: (query: FindQuery) => void;
+    find: FindResults;
 }
 
-export class SearchPanel extends React.Component<SearchPanelProps> {
+export class FindPanel extends React.Component<FindPanelProps> {
 
     private toggleCategory(cat: Category): void {
         let newCategories;
-        if (this.props.search.query.categories instanceof Set) {
-            newCategories = this.props.search.query.categories;
+        if (this.props.find.query.categories instanceof Set) {
+            newCategories = this.props.find.query.categories;
         } else {
             newCategories = new Set<Category>();
         }
@@ -30,7 +30,7 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
             newCategories.add(cat);
         }
         this.props.setQuery({
-            ...this.props.search.query,
+            ...this.props.find.query,
             categories: newCategories.size ? newCategories : null
         });
 
@@ -42,8 +42,8 @@ export class SearchPanel extends React.Component<SearchPanelProps> {
             a.name < b.name ? -1 : 1
         );
 
-        const searchCategories = this.props.search.query.categories instanceof Set ? this.props.search.query.categories
-                                                                                   : new Set<Category>();
+        const searchCategories = this.props.find.query.categories instanceof Set ? this.props.find.query.categories
+                                                                                 : new Set<Category>();
 
         if (allCategories) {
 

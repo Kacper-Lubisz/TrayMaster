@@ -43,7 +43,7 @@ import "../styles/shelfview.scss";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
-import {SearchQuery, SortBy} from "./SearchPage";
+import {FindQuery, SortBy} from "./FindPage";
 
 
 /**
@@ -66,7 +66,7 @@ interface ShelfViewProps {
      * @param dialog A dialog builder function which takes the function that closes the dialog.
      */
     openDialog: (dialog: Dialog) => void;
-    setSearch: (query: SearchQuery) => void;
+    setSearch: (query: FindQuery) => void;
     warehouse: Warehouse;
     user: User;
 }

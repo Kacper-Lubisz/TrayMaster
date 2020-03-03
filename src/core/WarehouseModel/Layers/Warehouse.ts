@@ -1,4 +1,4 @@
-import {SearchQuery, SortBy} from "../../../pages/SearchPage";
+import {FindQuery, SortBy} from "../../../pages/FindPage";
 import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
@@ -77,8 +77,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             for (let i = 0; i < defaultCategories.length; i++) {
                 this.categoryCollection.add({
                     ...defaultCategories[i],
-                    index: i,
-                    name: defaultCategories[i].name.toUpperCase(),
+                    index: i
                 });
             }
         }
@@ -166,8 +165,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //#endregion
 
-    //region search
-    public async traySearch(query: SearchQuery): Promise<TrayFields[]> {
+    //region find
+    public async trayFind(query: FindQuery): Promise<TrayFields[]> {
         const orderByFields = new Map<SortBy, string | undefined>([
             [SortBy.expiry, "expiry.from"],
             [SortBy.location, "locationName"],
@@ -190,8 +189,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         const filteredTrays = trays.filter(tray =>
             query.categories === null ||
             (query.categories === "set" && tray.categoryId) ||
-            (query.categories === "unset" && !tray.categoryId) //||
-            //(query.categories instanceof Set && tray.categoryId && query.categories.has(tray.categoryId))
+            (query.categories === "unset" && !tray.categoryId) ||
+            (query.categories instanceof Set && tray.categoryId && query.categories.has(this.getCategoryByID(tray.categoryId) ?? defaultCategories[0]))
         ).filter(tray => {
             if (query.weight === null) {
                 return true;
@@ -244,7 +243,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             }
         })();
 
-        return trays;//filteredTrays.sort(sort);
+        return filteredTrays;//filteredTrays.sort(sort);
     }
 
     //endregion

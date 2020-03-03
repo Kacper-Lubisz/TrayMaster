@@ -9,7 +9,7 @@ import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Warehouse} from "../core/WarehouseModel";
 import "../styles/mainmenu.scss";
-import {SearchQuery, SortBy} from "./SearchPage";
+import {FindQuery, SortBy} from "./FindPage";
 
 /**
  * expiryAmount is the number of items expiring soon
@@ -25,7 +25,7 @@ interface MainMenuProps {
     user: User;
     expiryAmount: number;
 
-    setSearch: (query: SearchQuery) => void;
+    setSearch: (query: FindQuery) => void;
 }
 
 
