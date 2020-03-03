@@ -559,9 +559,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             true,
             tray => {
                 tray.category = category ?? undefined;
-                tray.expiry = category?.neverExpires ? {
-                    from: null, to: null, label: "Never"
-                } : undefined;
+                tray.expiry = category?.defaultExpiry ?? undefined;
                 tray.weight = undefined;
                 tray.comment = undefined;
             }

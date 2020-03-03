@@ -5,6 +5,7 @@ import React from "react";
 import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, WarehouseModel} from "../core/WarehouseModel";
+import {NEVER_EXPIRY} from "../core/WarehouseModel/Layers/Warehouse";
 import {SettingsTab} from "../pages/SettingsPage";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
 
@@ -50,8 +51,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         overStockThreshold: null,
         type: "custom",
         group: null,
-        neverExpires: false,
-        buttonColor: null
+        defaultExpiry: null
     };
 
     constructor(props: CategoryEditorProps) {
@@ -154,11 +154,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 label: "Over-Stock Threshold (trays)"
             }, {
                 inputType: "checkBox",
-                get: () => this.state.draftCat?.neverExpires ?? false,
+                get: () => this.state.draftCat?.defaultExpiry !== null,
                 set: (value: boolean) => {
                     this.setState(state => {
                         if (state.draftCat) {
-                            state.draftCat.neverExpires = value;
+                            state.draftCat.defaultExpiry = value ? NEVER_EXPIRY : null;
                         }
                         return state;
                     });
@@ -179,22 +179,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 },
                 placeholder: "No Group",
                 label: "Group Title"
-            }, {
-                inputType: "color",
-                get: () => this.state.draftCat?.buttonColor ?? "#ffffff00",
-                set: (value: string | null) => {
-                    console.log(value);
-                    this.setState(state => {
-                        if (state.draftCat) {
-                            state.draftCat.buttonColor = value;
-                        }
-                        return state;
-                    });
-                },
-                onClear: null,
-                label: "Button Background Color"
             }
-
         ];
 
 
@@ -207,6 +192,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     <div id="cat-edit-header">
                         <h2>{this.state.oldCat ? `Edit '${this.state.oldCat.name}'${defaultLabel}${unsavedLabel}`
                                                : "New Category"}</h2>
+                        <button
+                            disabled={this.state.oldCat?.type === "default"}
+                            onClick={this.deleteCategory.bind(this)}
+                        >Delete Category
+                        </button>
                         <div>
                             {this.state.oldCat?.type === "default" ? <div id="del-msg">You cannot delete a default
                                 category!</div> : null}
@@ -355,11 +345,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     </div>)}
                 </div>
                 <button id="top-btn" onClick={this.newCategory.bind(this)}>New Category</button>
-                <button
-                    disabled={this.state.oldCat?.type === "default"}
-                    onClick={this.deleteCategory.bind(this)}
-                >Delete Category
-                </button>
             </div>
             <div id="cat-edit-main">
                 {this.renderEditPanel()}

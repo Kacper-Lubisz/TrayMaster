@@ -113,6 +113,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                     <div id="zone-edit-header">
                         <h2>{this.state.selectedZone ? `Edit '${this.state.selectedZone.name}'${unsavedLabel}`
                                                      : "New Zone"}</h2>
+                        <button onClick={this.deleteZone.bind(this)}>Remove Zone</button>
                     </div>
                     <table key={undefined}>
                         <tbody>
@@ -260,7 +261,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                     </div>)}
                 </div>
                 <button id="top-btn" onClick={this.newZone.bind(this)}>New Zone</button>
-                <button onClick={this.deleteZone.bind(this)}>Remove Zone</button>
+
             </div>
             <div id="zone-edit-main">
                 {this.renderEditPanel()}
