@@ -9,12 +9,12 @@ import {
     faEraser,
     faExclamationTriangle,
     faHome as menuIcon,
-    faStickyNote,
+    faInfo,
     faTimes as cross
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import reduce from "lodash/reduce";
+import {reduce} from "lodash";
 import React from "react";
 
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -844,8 +844,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             )
                         },
                         {
-                            name: "Edit Comment",
-                            icon: faStickyNote,
+                            name: "Information",
+                            icon: faInfo,
                             onClick: this.trayInfo.bind(this),
                             disabled: this.getSelectedTrays(false, false).length === 0
                         },
@@ -1068,7 +1068,7 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
 
         if (this.props.blame) {
             firebase.database.db.doc(Utils.joinPaths("users", this.props.blame))
-                .get().then(doc =>
+                    .get().then(doc =>
                 this.setState(state => ({
                     ...state,
                     blameName: (doc.data()?.name ?? "") as string
@@ -1081,6 +1081,7 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
             <DialogTitle title="Information"/>
             <div className="dialogContent">
                 <div className="editCommentForm">
+                    <div>Comment:</div>
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         this.props.onSubmit(this.state.draft);
@@ -1110,20 +1111,20 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
                         }
                     }
                 ]}/>
-
-                <div className="infoBottom">
-                    {
-                        this.state.blameName && this.props.lastModified ? <div>This tray was last modified
-                                                                            by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString()}
-                                                                        </div>
-                                                                        : <>
-                            <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
-                            Multiple trays selected!<br/>
-                            Adding a comment will overwrite any existing comments. Select a single tray to view Last
-                            Modified data.</>
-                    }
-                </div>
             </div>
+            <div className="infoBottom">
+                {
+                    this.state.blameName && this.props.lastModified ? <div>This tray was last modified
+                                                                        by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString()}
+                                                                    </div>
+                                                                    : <>
+                        <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
+                        Multiple trays selected!<br/>
+                        Adding a comment will overwrite any existing comments. Select a single tray to view Last
+                        Modified data.</>
+                }
+            </div>
+
         </>;
     }
 }
