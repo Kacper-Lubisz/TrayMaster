@@ -67,13 +67,13 @@
 
         // Styling
         background-color: #ffffff;
-        border: 1px solid #888888;
+        border: 1px solid #999999;
         cursor: pointer;
 
         // Round the corners
         border-radius: 10px;
 
-        // Hide overflow: stops content escaping trays when they have rounded corners or in cases of extreme length 😎
+        // Hide overflow: stops content escaping trays at rounded corners or in cases of extreme length 😎
         overflow: hidden;
 
         // Relative positioning: required to allow us to give children position: absolute;
@@ -82,7 +82,11 @@
 
         &.traySpace {
           background-color: #eeeeee;
-          border-color: #cccccc;
+          border-color: #bbbbbb;
+
+          &.selected {
+            background-color: #e4e4e4;
+          }
         }
 
         // When the tray is selected
@@ -133,14 +137,22 @@
         // Tray category: bottom left
         > div.trayCategory {
           // Layout
-          bottom: 0;
-          left: 5px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
           font-size: 30px;
-          text-align: left;
+          line-height: 34px;
+          text-align: center;
+
+          // this method is commonly supported but not the best
+          //  https://caniuse.com/#search=webkit-line-clamp
+          //  todo evaluate other methods
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
 
           // Truncate long categories
-          width: 60%;
-          white-space: nowrap;
+          max-width: 60%;
           overflow: hidden;
           text-overflow: ellipsis;
           text-transform: uppercase;
@@ -151,12 +163,8 @@
           bottom: 0;
           right: 0;
           font-size: 22px;
-          padding: 0 5px;
-
-          // Break lines when it gets too wide
-          width: 30%;
-          text-align: center;
-          word-wrap: break-word;
+          min-width: 25%;
+          padding: 0 10px;
 
           background-color: #aaa; // this is the default color when there is no expiry specified
         }
@@ -176,13 +184,13 @@
 
         // Comment: top middle
         > div.trayComment {
-          top: 0;
-          left: 50%;
-          transform: translate(-50%, 0);
+          bottom: 0;
+          left: 0;
+          margin: 12px;
+          font-size: 30px;
+          line-height: 30px;
         }
-
       }
-
     }
   }
 }
