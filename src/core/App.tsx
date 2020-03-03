@@ -261,6 +261,7 @@ class App extends React.Component<unknown, AppState> {
             }));
 
             const results = await warehouse.traySearch(query);
+            console.log(results);
             this.setState(state => ({
                     ...state,
                     search: {

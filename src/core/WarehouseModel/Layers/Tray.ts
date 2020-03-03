@@ -3,7 +3,8 @@ import {BottomLayer} from "../LayerStructure/BottomLayer";
 import {LayerFields} from "../LayerStructure/Layer";
 import Utils from "../Utils";
 
-interface TrayFields extends LayerFields {
+export interface TrayFields extends LayerFields {
+    locationName: string;
     categoryId: string;
     expiry: ExpiryRange | null;
     weight: number | null;
@@ -27,6 +28,7 @@ export class Tray extends BottomLayer<Column, TrayFields> {
         return new Tray(Utils.generateRandomId(), {
             lastModified: Date.now(),
             blame: "",
+            locationName: parent.parentShelf.toString(),
             categoryId: parent.parentWarehouse.getCategoryID(category),
             expiry: expiry ?? null,
             weight: weight ?? null,
@@ -44,6 +46,11 @@ export class Tray extends BottomLayer<Column, TrayFields> {
 
     public toString(): string {
         return `Tray(${this.index}, ${this.category?.name}, ${this.expiry?.label}, ${this.weight} kg, "${this.comment}")`;
+    }
+
+    protected stageLayer(forceStage = false): void {
+        this.fields.locationName = this.parentShelf.toString();
+        super.stageLayer(forceStage);
     }
 
     //#region Field Getters and Setters

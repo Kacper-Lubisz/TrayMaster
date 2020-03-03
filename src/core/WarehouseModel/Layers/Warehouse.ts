@@ -6,6 +6,9 @@ import {Bay, Category, Column, Shelf, Tray, WarehouseModel, Zone} from "../../Wa
 import {LayerFields} from "../LayerStructure/Layer";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import Utils, {defaultCategories} from "../Utils";
+import {TrayFields} from "./Tray";
+import * as fb from "firebase/app";
+import "firebase/firestore";
 
 interface WarehouseFields extends LayerFields {
     name: string;
@@ -164,72 +167,84 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     //#endregion
 
     //region search
-    public async traySearch(query: SearchQuery): Promise<Tray[]> {
+    public async traySearch(query: SearchQuery): Promise<TrayFields[]> {
+        const orderByFields = new Map<SortBy, string | undefined>([
+            [SortBy.expiry, "expiry.from"],
+            [SortBy.location, "locationName"],
+            [SortBy.weight, "weight"]
+        ]);
 
-        return await new Promise((resolve, _) => {
-            //todo make this feature full, it's actually a complete mess right now, needs a redoing
+        //todo make this feature full, it's actually a complete mess right now, needs a redoing
 
-            const filteredTrays = this.trays.filter(tray =>
-                query.categories === null ||
-                (query.categories === "set" && tray.category) ||
-                (query.categories === "unset" && !tray.category) ||
-                (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
-            ).filter(tray => {
-                if (query.weight === null) {
-                    return true;
-                } else if (query.weight === "set") {
-                    return tray.weight;
-                } else if (query.weight === "unset") {
-                    return !tray.weight;
-                } else {
-                    return tray.weight && query.weight.from <= tray.weight && tray.weight <= query.weight.to;
-                }
-            }).filter(tray => {
-                if (!query.commentSubstring || tray.comment) {
-                    return true;
-                } else {
-                    return query.commentSubstring.includes(query.commentSubstring);
-                }
-            }).filter(tray => {
-                return !query.excludePickingArea || !tray.parentShelf.isPickingArea;
-            });
+        const orderByField = orderByFields.get(query.sort.type);
 
-            const defaultSort = composeSorts<Tray>([
-                partitionBy<Tray>((a) => !!(a.expiry)), // draw a diagram to understand this
-                partitionBy<Tray>((a) => !(!a.expiry?.from && a.expiry?.to)),
-                partitionBy<Tray>((a) => (!a.expiry?.from && !a.expiry?.to)),
+        let firebaseQuery: fb.firestore.Query = firebase.database.db.collection(Utils.joinPaths("warehouses", this.id, "trays")) as fb.firestore.Query;
+        if (orderByField) {
+            firebaseQuery = firebaseQuery.orderBy(orderByField);
+        }
+        if (query.categories instanceof Set) {
+            firebaseQuery = firebaseQuery.where("categoryId", "in", Array.from(query.categories).map(category => this.getCategoryID(category)).slice(0, 10));
+        }
+        const trays: TrayFields[] = (await firebase.database.loadQuery<TrayFields>(firebaseQuery)).map(trayDoc => trayDoc.fields);
 
-                byNullSafe<Tray>((a) => a.expiry?.from, true),
-                byNullSafe<Tray>((a) => a.expiry?.to, false, false),
-                byNullSafe<Tray>((a) => a.category?.name, false, true),
-                byNullSafe<Tray>((a) => a.weight, false, true),
-            ]);
+        const filteredTrays = trays.filter(tray =>
+            query.categories === null ||
+            (query.categories === "set" && tray.categoryId) ||
+            (query.categories === "unset" && !tray.categoryId) //||
+            //(query.categories instanceof Set && tray.categoryId && query.categories.has(tray.categoryId))
+        ).filter(tray => {
+            if (query.weight === null) {
+                return true;
+            } else if (query.weight === "set") {
+                return tray.weight;
+            } else if (query.weight === "unset") {
+                return !tray.weight;
+            } else {
+                return tray.weight && query.weight.from <= tray.weight && tray.weight <= query.weight.to;
+            }
+        }).filter(tray => {
+            if (!query.commentSubstring || tray.comment) {
+                return true;
+            } else {
+                return query.commentSubstring.includes(query.commentSubstring);
+            }
+        });//.filter(tray => {
+        //     return !query.excludePickingArea || !tray.parentShelf.isPickingArea;
+        // });
 
-            const sort = (() => {
-                if (query.sort.type === SortBy.category) {
-                    return composeSort(
-                        byNullSafe<Tray>((a) => a.category?.name, false, true),
-                        defaultSort
-                    );
-                } else if (query.sort.type === SortBy.location) {
-                    return composeSort(
-                        byNullSafe<Tray>((a) => a.locationString, false, true),
-                        defaultSort
-                    );
-                } else if (query.sort.type === SortBy.weight) {
-                    return composeSort(
-                        byNullSafe<Tray>((a) => a.weight, false, true),
-                        defaultSort
-                    );
-                } else { // none or SortBy.expiry
-                    return defaultSort;
-                }
-            })();
+        const defaultSort = composeSorts<TrayFields>([
+            partitionBy<TrayFields>((a) => !!(a.expiry)), // draw a diagram to understand this
+            partitionBy<TrayFields>((a) => !(!a.expiry?.from && a.expiry?.to)),
+            partitionBy<TrayFields>((a) => (!a.expiry?.from && !a.expiry?.to)),
 
-            resolve(filteredTrays.sort(sort));
+            byNullSafe<TrayFields>((a) => a.expiry?.from, true),
+            byNullSafe<TrayFields>((a) => a.expiry?.to, false, false),
+            byNullSafe<TrayFields>((a) => this.getCategoryByID(a.categoryId)?.name, false, true),
+            byNullSafe<TrayFields>((a) => a.weight, false, true),
+        ]);
 
-        });
+        const sort = (() => {
+            if (query.sort.type === SortBy.category) {
+                return composeSort(
+                    byNullSafe<TrayFields>((a) => this.getCategoryByID(a.categoryId)?.name, false, true),
+                    defaultSort
+                );
+                // } else if (query.sort.type === SortBy.location) {
+                //     return composeSort(
+                //         byNullSafe<TrayFields>((a) => a.locationString, false, true),
+                //         defaultSort
+                //     );
+            } else if (query.sort.type === SortBy.weight) {
+                return composeSort(
+                    byNullSafe<TrayFields>((a) => a.weight, false, true),
+                    defaultSort
+                );
+            } else { // none or SortBy.expiry
+                return defaultSort;
+            }
+        })();
 
+        return trays;//filteredTrays.sort(sort);
     }
 
     //endregion

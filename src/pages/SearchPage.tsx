@@ -4,8 +4,9 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
-import {Category, Tray, Warehouse} from "../core/WarehouseModel";
+import {Category, Warehouse} from "../core/WarehouseModel";
 import "../styles/search.scss";
+import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 
@@ -48,7 +49,7 @@ export interface SearchQuery {
 
 export interface SearchResults {
     query: SearchQuery;
-    results: null | Tray[];
+    results: null | TrayFields[];
 }
 
 interface SearchPageProps {
@@ -212,7 +213,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     })();
 
                     const zoneStyle = (() => {
-                        const background = tray.parentZone.color;
+                        const background = "#ffffff"; //todo fixme tray.parentZone.color;
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)
@@ -226,10 +227,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         return "?";
                     })();
 
-                    const locationString = `${tray.parentZone.name} ${tray.parentBay.name}${tray.parentShelf.name}`;
-
+                    const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
-                        <td>{tray.category?.name ?? "?"}</td>
+                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? "?"}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
                         <td className="weightCell">{weightString}</td>
                         <td style={zoneStyle}>{locationString}</td>
