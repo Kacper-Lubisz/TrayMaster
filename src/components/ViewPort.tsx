@@ -2,6 +2,7 @@ import {
     faCheckCircle as tickSolid,
     faMinus as minus,
     faPlus as plus,
+    faStickyNote,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -10,6 +11,7 @@ import "pepjs";
 import React from "react";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
+import {KeyboardName} from "../pages/ShelfViewPage";
 import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
@@ -32,6 +34,7 @@ interface ViewPortProps {
 
     draftWeight: string | undefined;
 
+    currentKeyboard: KeyboardName;
 }
 
 /**
@@ -367,6 +370,23 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 })();
 
                 const isSelected = this.props.isTraySelected(tray);
+
+                const weight: string | null = (() => {
+                    if (!(tray instanceof Tray)) {
+                        return null;
+                    }
+
+                    let weightVal: string | undefined;
+                    if (this.props.draftWeight && isSelected) {
+                        weightVal = this.props.draftWeight;
+                    } else if (tray.weight) {
+                        weightVal = tray.weight.toString();
+                    } else {
+                        return null;
+                    }
+                    return `${weightVal}kg`;
+                })();
+
                 return <div
                     className={classNames("tray", {
                         "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
@@ -386,21 +406,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
-                        <div className="trayCategory">{tray.category?.name ?? "?"}</div>
+                        <div className="trayCategory">{tray.category?.name ?? "Unsorted"}</div>
 
-                        <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
+                        {tray.expiry ? <div className="trayExpiry" style={expiryStyle}>{tray.expiry.label}</div> : null}
 
                         <div className={classNames("trayWeight", {
-                            // "trayWeightEdit": this.props.draftWeight && isSelected
+                            "trayWeightEditing": isSelected && this.props.currentKeyboard === "weight"
                         })}>
-                            {this.props.draftWeight && isSelected ? this.props.draftWeight
-                                                                  : tray.weight ?? "?"}kg
+                            {weight}
                         </div>
-                        <div className="trayComment">{tray.comment ?? ""}</div>
+                        {tray.comment ? <div className="trayComment">
+                            <FontAwesomeIcon icon={faStickyNote}/>
+                        </div> : null}
                     </> : null}
-                    {tray instanceof Tray ? null : <>
-                        <p>EMPTY SPACE</p>
-                    </>}
                 </div>;
             })}
             {this.props.isShelfEdit ? <div className="editShelfColumn">

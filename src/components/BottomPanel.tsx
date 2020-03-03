@@ -39,8 +39,8 @@ type ExpiryKeyboardButtonProps = CustomButtonProps & {
 
 type WeightKeyboardButton = "Next Tray" | "< Clear >" | "Backspace" | number | ".";
 
-const expiryGreyRatio = 0.8;
-const expiryGrey = "#ffffff";
+export const EXPIRY_GREY_RATIO = 0.8;
+export const EXPIRY_GREY = "#ffffff";
 
 /**
  * This class represents the enter bottom panel component.  This component manages the various BottomPanelPages.
@@ -69,7 +69,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 },
                 "warehouse"
             );
-            yearColors[i] = interpolateTowardsGrey(exp, expiryGrey, expiryGreyRatio);
+            yearColors[i] = interpolateTowardsGrey(exp, EXPIRY_GREY, EXPIRY_GREY_RATIO);
             this.years.push({
                 name: i.toString(),
                 onClick: this.props.updateTrayProperties.bind(undefined,
@@ -214,7 +214,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 },
                 closeOnDocumentClick: true,
             }),
-            selected: false
+            selected: commonCat ? categories.some(cat => cat.name === commonCat) : false
         }));
 
         const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
@@ -301,13 +301,16 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else if (this.props.keyboardState === "unified") {
 
+            console.log(this.props.user.unifiedKeyboard?.buttons);
+
             return <div style={{
                 display: "grid",
             }}>{
 
                 (!this.props.user.unifiedKeyboard) || this.props.user.unifiedKeyboard.buttons.length === 0 ? <div>
                     The keyboard has no buttons
-                </div> : this.props.user.unifiedKeyboard.buttons.map(button => <button
+                </div> : this.props.user.unifiedKeyboard.buttons.map((button, index) => <button
+                    key={index}
                     style={{
                         fontSize: 14,
                         margin: 2,
@@ -315,6 +318,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                         gridColumnEnd: button.columnEnd ?? undefined,
                         gridRowStart: button.rowStart ?? undefined,
                         gridRowEnd: button.rowEnd ?? undefined,
+                        background: button.background ?? undefined
                     }}
                     onClick={this.props.updateTrayProperties.bind(undefined,
                         button.category,

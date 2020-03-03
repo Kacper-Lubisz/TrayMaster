@@ -1,3 +1,4 @@
+import {faCheckCircle as tickEmpty} from "@fortawesome/free-regular-svg-icons";
 import {
     faArrowLeft as leftArrow,
     faArrowRight as rightArrow,
@@ -550,67 +551,21 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     }
 
-    /**
-     * This method is called when a category is selected on the category keyboard, null category signifies that the
-     * category ought to be cleared
-     * @param category The category that is selected or null to clear
-     */
-    private async onCategorySelected(category: Category | null): Promise<void> {
-
-        this.applyAndAdvance(
-            true,
-            true,
-            tray => {
-                tray.category = category ?? undefined;
-                tray.expiry = category?.defaultExpiry ?? undefined;
-                tray.weight = undefined;
-                tray.comment = undefined;
-            }
-        );
-
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
-
-    }
-
-    /**
-     * This method is called when an expiry is selected on the expiry keyboard, null expiry signifies that the expiry
-     * ought to be cleared
-     * @param expiry The expiry that is selected or null to clear
-     */
-    private async selectExpiry(expiry: ExpiryRange | null): Promise<void> {
-
-        this.applyAndAdvance(
-            true,
-            true,
-            (tray) => {
-                tray.expiry = expiry ?? undefined;
-            }
-        );
-
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
-
-    }
-
-
-    /**
-     * Passed into expiry buttons: generates & selects ExpiryRange from year (and quarter or month index if applicable)
-     * @param range object representing a simplified expiry range attached to the button
-     */
-    private async onExpirySelected(range: SimpleExpiryRange | ExpiryRange | null): Promise<void> {
+    private static toExpiryRange(range: SimpleExpiryRange | ExpiryRange | null): ExpiryRange | null {
         // choose range start and end points
 
         if (range === null || !("year" in range)) {
-            return this.selectExpiry(range);
+            return range;
         } else if ("month" in range) {
 
             const fromDate = new Date(range.year, range.month);
             const toDate = new Date(fromDate);
             toDate.setMonth(fromDate.getMonth() + 1);
 
-            return this.selectExpiry({
+            return {
                 from: fromDate.getTime(), to: toDate.getTime(),
                 label: `${MONTHS_TRANSLATOR[range.month]} ${range.year}`
-            });
+            };
 
         } else if ("quarter" in range) {
 
@@ -620,18 +575,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
             toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
 
-            return this.selectExpiry({
+            return {
                 from: fromDate.getTime(), to: toDate.getTime(),
                 label: `Q${(range.quarter + 1).toString()} ${range.year}`
-            });
+            };
 
         } else { // Year
 
-            return this.selectExpiry({
+            return {
                 from: new Date(range.year, 0).getTime(),
                 to: new Date(range.year + 1, 0).getTime(),
                 label: `${range.year}`
-            });
+            };
         }
 
     }
@@ -661,14 +616,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
             );
         }
-
-        this.applyAndAdvance(
-            true,
-            true,
-            (tray) => {
-                tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-            }
-        );
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
         if (!couldAdvance) {
@@ -913,12 +860,50 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.forceUpdate();
     }
 
-    private updateTrayProperties(
+    private async updateTrayProperties(
         category: Category | null | undefined,
         expiry: SimpleExpiryRange | ExpiryRange | null | undefined,
         weight: string | null | undefined,
         couldAdvance: boolean,
-    ): void {
+    ): Promise<void> {
+
+        const newWeight = weight === undefined ? undefined
+                                               : isNaN(Number(weight)) ? undefined : Number(weight);
+        const newExpiry = expiry === undefined ? undefined
+                                               : ShelfViewPage.toExpiryRange(expiry) ?? undefined;
+
+        const modify = (tray: Tray): void => {
+            if (category !== undefined) {
+                tray.category = category ?? undefined;
+            }
+            if (expiry !== undefined) {
+                tray.expiry = newExpiry;
+            }
+            if (weight !== undefined) {
+                tray.weight = newWeight ?? undefined;
+            }
+        };
+
+        if (couldAdvance) {
+            this.applyAndAdvance(
+                true,
+                true,
+                modify);
+        } else {
+            this.getSelectedTrays(
+                true,
+                true
+            ).forEach(modify);
+        }
+
+        await this.state.currentView.stage(false, true, WarehouseModel.tray);
+
+        if (!couldAdvance && weight !== undefined) {
+            this.setState(state => ({
+                ...state,
+                weight: weight ?? undefined
+            }));
+        }
 
     }
 
@@ -937,6 +922,84 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         const locationString = this.state.currentView.toString();
 
+        const toolBarButtons = [
+            {
+                name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
+                icon: this.getSelectedTrayCells().length === 0 ? tickSolid : tickEmpty,
+                onClick: this.selectAll.bind(
+                    this,
+                    this.getSelectedTrayCells().length === 0 ? "all" : "none"
+                )
+            },
+            {
+                name: "Edit Comment",
+                icon: faStickyNote,
+                onClick: this.editTrayComment.bind(this),
+                disabled: this.getSelectedTrays(false, false).length === 0
+            },
+            {
+                name: "Clear Trays",
+                icon: faEraser,
+                onClick: this.clearTrays.bind(this),
+                disabled: this.getSelectedTrayCells().length === 0
+            }
+        ];
+
+        const sideBarButtons = this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
+            {
+                name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
+                                                           : "Mark as Picking Area",
+                onClick: this.togglePickingArea.bind(this, this.state.currentView),
+                halfWidth: false
+            },
+            {
+                name: "Add Column",
+                onClick: this.addColumn.bind(this, this.state.currentView),
+                halfWidth: false
+            },
+            // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
+            {
+                name: "Save",
+                onClick: this.finaliseEditShelf.bind(this, this.state.currentView),
+                halfWidth: false
+            },
+        ] : [ // Generate sidebar buttons
+            {
+                name: "Main Menu",
+                icon: menuIcon,
+                onClick: () => this.props.history.push("/menu"),
+                halfWidth: true
+            },
+            {
+                name: "Settings",
+                icon: settingsIcon,
+                onClick: () => this.props.history.push("/settings"),
+                halfWidth: true
+            },
+            {
+                name: "Search",
+                onClick: this.makeSearch.bind(this),
+                halfWidth: false
+            },
+            {
+                name: "Edit Shelf",
+                onClick: this.enterEditShelf.bind(this),
+                halfWidth: false
+            },
+            this.props.user.showPreviousShelfButton ? {
+                name: "Previous Shelf",
+                onClick: this.changeView.bind(this, "previousShelf"),
+                disabled: !possibleMoveDirections.get("previousShelf"),
+                halfWidth: true
+            } : null,
+            {
+                name: "Next Shelf",
+                onClick: this.changeView.bind(this, "nextShelf"),
+                disabled: !possibleMoveDirections.get("nextShelf"),
+                halfWidth: this.props.user.showPreviousShelfButton
+            }
+        ];
+
         return <>
             <div id="shelfView" className={this.state.isEditShelf ? "isEditShelf" : ""}>
                 <ViewPort
@@ -951,31 +1014,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     isShelfEdit={this.state.isEditShelf}
 
                     draftWeight={this.state.weight}
+
+                    currentKeyboard={this.state.currentKeyboard}
                 />
                 <ToolBar
                     disabled={this.state.isEditShelf}
-                    toolbar={[
-                        {
-                            name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
-                            icon: tickSolid,
-                            onClick: this.selectAll.bind(
-                                this,
-                                this.getSelectedTrayCells().length === 0 ? "all" : "none"
-                            )
-                        },
-                        {
-                            name: "Edit Comment",
-                            icon: faStickyNote,
-                            onClick: this.editTrayComment.bind(this),
-                            disabled: this.getSelectedTrays(false, false).length === 0
-                        },
-                        {
-                            name: "Clear Trays",
-                            icon: faEraser,
-                            onClick: this.clearTrays.bind(this),
-                            disabled: this.getSelectedTrayCells().length === 0
-                        }
-                    ]}/>
+                    toolbar={toolBarButtons}/>
                 <SideBar
                     zoneColor={zoneColor}
                     locationString={locationString}
@@ -983,70 +1027,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     openNavigator={this.openNavigator.bind(this)}
                     openNavigatorDisabled={this.state.isEditShelf}
 
-                    buttons={this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
-                        {
-                            name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
-                                                                       : "Mark as Picking Area",
-                            onClick: this.togglePickingArea.bind(this, this.state.currentView),
-                            halfWidth: false
-                        },
-                        {
-                            name: "Add Column",
-                            onClick: this.addColumn.bind(this, this.state.currentView),
-                            halfWidth: false
-                        },
-                        // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
-                        {
-                            name: "Save",
-                            onClick: this.finaliseEditShelf.bind(this, this.state.currentView),
-                            halfWidth: false
-                        },
-                    ] : [ // Generate sidebar buttons
-                        {
-                            name: "Main Menu",
-                            icon: menuIcon,
-                            onClick: () => this.props.history.push("/menu"),
-                            halfWidth: true
-                        },
-                        {
-                            name: "Settings",
-                            icon: settingsIcon,
-                            onClick: () => this.props.history.push("/settings"),
-                            halfWidth: true
-                        },
-                        {
-                            name: "Search",
-                            onClick: this.makeSearch.bind(this),
-                            halfWidth: false
-                        },
-                        {
-                            name: "Edit Shelf",
-                            onClick: this.enterEditShelf.bind(this),
-                            halfWidth: false
-                        },
-                        this.props.user.showPreviousShelfButton ? {
-                            name: "Previous Shelf",
-                            onClick: this.changeView.bind(this, "previousShelf"),
-                            disabled: !possibleMoveDirections.get("previousShelf"),
-                            halfWidth: true
-                        } : null,
-                        {
-                            name: "Next Shelf",
-                            onClick: this.changeView.bind(this, "nextShelf"),
-                            disabled: !possibleMoveDirections.get("nextShelf"),
-                            halfWidth: this.props.user.showPreviousShelfButton
-                        }
+                    buttons={sideBarButtons}
+                    keyboards={this.props.user.unifiedKeyboard ? [
+                        {name: "unified", icon: categoryIcon},
+                        {name: "weight", icon: weightIcon}
+                    ] : [
+                        {name: "category", icon: categoryIcon},
+                        {name: "expiry", icon: expiryIcon},
+                        {name: "weight", icon: weightIcon}
                     ]}
-                    keyboards={
-                        this.props.user.unifiedKeyboard ? [
-                            {name: "unified", icon: categoryIcon},
-                            {name: "weight", icon: weightIcon}
-                        ] : [
-                            {name: "category", icon: categoryIcon},
-                            {name: "expiry", icon: expiryIcon},
-                            {name: "weight", icon: weightIcon}
-                        ]
-                    }
                     keyboardSwitcher={this.switchKeyboard.bind(this)}
                     showKeyboardSwitcher={!this.state.isEditShelf}
                     currentKeyboard={this.state.currentKeyboard}
