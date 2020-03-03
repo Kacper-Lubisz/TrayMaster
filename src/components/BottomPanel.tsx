@@ -3,8 +3,9 @@ import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
-import {KeyboardName} from "../pages/ShelfViewPage";
+import {KeyboardName, SimpleExpiryRange} from "../pages/ShelfViewPage";
 import {getExpiryColor, interpolateTowardsGrey} from "../utils/getExpiryColor";
+import {MONTHS_TRANSLATOR} from "../utils/monthsTranslator";
 import {byNullSafe} from "../utils/sortsUtils";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
@@ -14,8 +15,13 @@ export interface BottomPanelProps {
     openDialog: (dialog: Dialog) => void;
 
     keyboardState: KeyboardName;
-    categorySelected: (category: Category | null) => void;
-    expirySelected: (expiry: ExpiryRange | null) => void;
+    updateTrayProperties: (
+        category: Category | null | undefined,
+        expiry: SimpleExpiryRange | ExpiryRange | null | undefined,
+        weight: string | null | undefined,
+        couldAdvance: boolean,
+    ) => void;
+    removeSelection: () => void;
 
     categories: Category[];
 
@@ -23,21 +29,8 @@ export interface BottomPanelProps {
     commonRange?: ExpiryRange;
 
     weight?: string;
-    setWeight: (weight: string | undefined, couldAdvance: boolean) => void;
 
     user: User;
-}
-
-interface ExpiryYear {
-    year: number;
-}
-
-interface ExpiryQuarter extends ExpiryYear {
-    quarter: number;
-}
-
-interface ExpiryMonth extends ExpiryYear {
-    month: number;
 }
 
 type ExpiryKeyboardButtonProps = CustomButtonProps & {
@@ -54,15 +47,9 @@ const expiryGrey = "#ffffff";
  * @see BottomPanelPage
  */
 export class BottomPanel extends React.Component<BottomPanelProps> {
-    private readonly years: ExpiryKeyboardButtonProps[];
+    private readonly years: ExpiryKeyboardButtonProps[]; //todo fixme state shouldn't be stored as a field
     private readonly quarters: ExpiryKeyboardButtonProps[];
     private readonly months: ExpiryKeyboardButtonProps[];
-    private readonly monthsTranslator: string[] = [
-        "Jan", "Feb", "Mar",
-        "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep",
-        "Oct", "Nov", "Dec"
-    ];
 
     constructor(props: BottomPanelProps) {
         super(props);
@@ -85,9 +72,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             yearColors[i] = interpolateTowardsGrey(exp, expiryGrey, expiryGreyRatio);
             this.years.push({
                 name: i.toString(),
-                onClick: () => {
-                    this.selectRange({year: i});
-                },
+                onClick: this.props.updateTrayProperties.bind(undefined,
+                    undefined,
+                    {year: i},
+                    undefined,
+                    true
+                ),
                 expiryFrom: new Date(i, 0).getTime(),
                 bg: yearColors[i]
             });
@@ -99,9 +89,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const year = thisYear + Math.floor(i / 12);
             const month = i % 12;
             this.months.push({
-                name: `${this.monthsTranslator[month]}`, onClick: () => {
-                    this.selectRange({year: year, month: month});
-                },
+                name: `${MONTHS_TRANSLATOR[month]}`,
+                onClick: this.props.updateTrayProperties.bind(undefined,
+                    undefined, {year: year, month: month},
+                    undefined,
+                    true
+                ),
                 expiryFrom: new Date(year, month).getTime(),
                 bg: yearColors[year]
             });
@@ -113,9 +106,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const year = thisYear + Math.floor(i / 4);
             const quarter = i % 4;
             this.quarters.push({
-                name: `Q${(quarter + 1).toString()}`, onClick: () => {
-                    this.selectRange({year: year, quarter: quarter});
-                },
+                name: `Q${(quarter + 1).toString()}`,
+                onClick: this.props.updateTrayProperties.bind(undefined,
+                    undefined,
+                    {year: year, quarter: quarter},
+                    undefined,
+                    true
+                ),
                 expiryFrom: new Date(year, quarter * 3).getTime(),
                 bg: yearColors[year]
             });
@@ -129,9 +126,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     private weightKeyHandler(key: WeightKeyboardButton): void {
 
         if (key === "Next Tray") {
-            this.props.setWeight(this.props.weight, true);
+            this.props.updateTrayProperties(undefined, undefined, this.props.weight, true);
         } else if (key === "< Clear >") {
-            this.props.setWeight(undefined, false);
+            this.props.updateTrayProperties(undefined, undefined, null, false);
         } else {
             // Must be a number or decimal point, just append
             // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals
@@ -148,53 +145,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             })();
 
             if (newDraftWeight === "") {
-                this.props.setWeight(undefined, false);
+                this.props.updateTrayProperties(undefined, undefined, null, false);
             } else if (!isNaN(Number(newDraftWeight)) && newDraftWeight.length <= 6) {
-                this.props.setWeight(newDraftWeight, false);
+                this.props.updateTrayProperties(undefined, undefined, newDraftWeight, false);
             }
         }
     }
 
-    /**
-     * Passed into expiry buttons: generates & selects ExpiryRange from year (and quarter or month index if applicable)
-     * @param range object representing a simplified expiry range attached to the button
-     */
-    private selectRange(range: ExpiryYear | ExpiryQuarter | ExpiryMonth): void {
-        // choose range start and end points
-
-        if ("month" in range) {
-
-            const fromDate = new Date(range.year, range.month);
-            const toDate = new Date(fromDate);
-            toDate.setMonth(fromDate.getMonth() + 1);
-
-            this.props.expirySelected({
-                from: fromDate.getTime(), to: toDate.getTime(),
-                label: `${this.monthsTranslator[range.month]} ${range.year}`
-            });
-
-        } else if ("quarter" in range) {
-
-            // Multiply by 3 to map quarter indices to the first month in that range
-            const fromDate = new Date(range.year, range.quarter * 3);
-            const toDate = new Date(fromDate);
-
-            toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
-
-            this.props.expirySelected({
-                from: fromDate.getTime(), to: toDate.getTime(),
-                label: `Q${(range.quarter + 1).toString()} ${range.year}`
-            });
-
-        } else { // Year
-
-            this.props.expirySelected({
-                from: new Date(range.year, 0).getTime(),
-                to: new Date(range.year + 1, 0).getTime(),
-                label: `${range.year}`
-            });
-        }
-    }
 
     /**
      * Return different keyboards depending on keyboardState
@@ -229,7 +186,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             cat.group === null
         ).map((cat): CustomButtonProps => ({
             name: cat.shortName ?? cat.name,
-            onClick: () => this.props.categorySelected(cat),
+            onClick: this.props.updateTrayProperties.bind(undefined, cat, undefined, undefined, false),
             selected: cat.name === commonCat
         }));
 
@@ -240,7 +197,12 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     const groupButtons = categories.map((cat) => ({
                         name: cat.shortName ?? cat.name,
                         onClick: () => {
-                            this.props.categorySelected(cat);
+                            this.props.updateTrayProperties.bind(undefined,
+                                cat,
+                                undefined,
+                                undefined,
+                                false
+                            );
                             close();
                         },
                         selected: cat.name === commonCat
@@ -262,7 +224,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         const specialButtons: CustomButtonProps[] = [
             {
                 name: "< Clear >",
-                onClick: () => this.props.categorySelected(null),
+                onClick: this.props.removeSelection,
                 selected: false,
                 bg: "#ffffff"
             }
@@ -287,13 +249,18 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const specialButtons = [
                 {
                     name: "Indefinite",
-                    onClick: () => this.props.expirySelected({
+                    onClick: this.props.updateTrayProperties.bind(undefined, undefined, {
                         from: null, to: null,
                         label: "Indefinite"
-                    })
+                    }, undefined, false)
                 }, {
                     name: "< Clear >",
-                    onClick: () => this.props.expirySelected(null),
+                    onClick: this.props.updateTrayProperties.bind(undefined,
+                        undefined,
+                        null,
+                        undefined,
+                        false
+                    ),
                     bg: "#ffffff"
                 }
             ];
@@ -336,66 +303,34 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             </div>;
 
         } else if (this.props.keyboardState === "unified") {
-            return <div
-                style={{
-                    display: "grid",
-                    height: "100%"
-                }}
-            >
-                {this.years.map((year, index) => {
-                    return <button
-                        onClick={year.onClick}
-                        style={{
-                            margin: 0,
-                            gridRow: index + 1,
-                            gridColumn: 8,
-                            backgroundColor: year.bg
-                        }}
-                    >{year.name}</button>;
-                })}
-                {this.quarters.map((quarter, index) => {
-                    return <button
-                        onClick={quarter.onClick}
-                        style={{
-                            margin: 0,
-                            gridRow: (5 + Math.floor(index / 2)),
-                            gridColumn: (7 + index % 2),
-                            backgroundColor: quarter.bg
-                        }}
-                    >{quarter.name}</button>;
-                })}
 
-                <div
+
+            return <div style={{
+                display: "grid",
+            }}>{
+
+                (!this.props.user.unifiedKeyboard) || this.props.user.unifiedKeyboard.buttons.length === 0 ? <div>
+                    The keyboard has no buttons
+                </div> : this.props.user.unifiedKeyboard.buttons.map(button => <button
                     style={{
-                        display: "grid",
-                        gridRow: 8,
-                        gridColumnStart: 1,
-                        gridColumnEnd: 9,
+                        fontSize: 10,
+                        gridColumnStart: button.columnStart ?? undefined,
+                        gridColumnEnd: button.columnEnd ?? undefined,
+                        gridRowStart: button.rowStart ?? undefined,
+                        gridRowEnd: button.rowEnd ?? undefined,
                     }}
-                >{this.months.map((month, index) => {
-                    return <button
-                        onClick={month.onClick}
-                        style={{
-                            margin: 0,
-                            gridRow: 1,
-                            gridColumn: index,
-                            backgroundColor: month.bg
-                        }}
-                    >{month.name}</button>;
-                })}</div>
+                    onClick={this.props.updateTrayProperties.bind(undefined,
+                        button.category,
+                        button.expiry,
+                        undefined,
+                        true
+                    )}
+                >
+                    {button.label}
+                </button>)
 
+            }</div>;
 
-                {allCategoryButtons.map((cat, index) => {
-                    return <button
-                        onClick={cat.onClick}
-                        style={{
-                            margin: 0,
-                            backgroundColor: cat.bg
-                        }}
-                    >{cat.name}</button>;
-                })}
-
-            </div>;
         } else { // edit shelf
             return <div>
                 Unimplemented Panel

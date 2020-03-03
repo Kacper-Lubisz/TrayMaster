@@ -39,6 +39,7 @@ import {
 } from "../core/WarehouseModel";
 import "../styles/shelfview.scss";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {MONTHS_TRANSLATOR} from "../utils/monthsTranslator";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
 import {SearchQuery, SortBy} from "./SearchPage";
@@ -62,6 +63,8 @@ type ShelfMoveDirection =
     | "previousShelf"
     | "nextZone"
     | "previousZone";
+
+export type SimpleExpiryRange = { year: number } & ({ quarter: number } | { month: number } | {});
 
 interface ShelfViewProps {
     /**
@@ -90,7 +93,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         this.state = {
             selected: new Map(),
-            currentKeyboard: this.props.user.useUnifiedKeyboard ? "unified" : "category",
+            currentKeyboard: this.props.user.unifiedKeyboard ? "unified" : "category",
             currentView: (() => {
                 if (this.props.warehouse.zones.length === 0) {
                     return this.props.warehouse;
@@ -540,7 +543,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * ought to be cleared
      * @param expiry The expiry that is selected or null to clear
      */
-    private async onExpirySelected(expiry: ExpiryRange | null): Promise<void> {
+    private async selectExpiry(expiry: ExpiryRange | null): Promise<void> {
 
         this.getSelectedTrays(
             true,
@@ -553,6 +556,52 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
 
     }
+
+
+    /**
+     * Passed into expiry buttons: generates & selects ExpiryRange from year (and quarter or month index if applicable)
+     * @param range object representing a simplified expiry range attached to the button
+     */
+    private async onExpirySelected(range: SimpleExpiryRange | ExpiryRange | null): Promise<void> {
+        // choose range start and end points
+
+        if (range === null || !("year" in range)) {
+            return this.selectExpiry(range);
+        } else if ("month" in range) {
+
+            const fromDate = new Date(range.year, range.month);
+            const toDate = new Date(fromDate);
+            toDate.setMonth(fromDate.getMonth() + 1);
+
+            return this.selectExpiry({
+                from: fromDate.getTime(), to: toDate.getTime(),
+                label: `${MONTHS_TRANSLATOR[range.month]} ${range.year}`
+            });
+
+        } else if ("quarter" in range) {
+
+            // Multiply by 3 to map quarter indices to the first month in that range
+            const fromDate = new Date(range.year, range.quarter * 3);
+            const toDate = new Date(fromDate);
+
+            toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
+
+            return this.selectExpiry({
+                from: fromDate.getTime(), to: toDate.getTime(),
+                label: `Q${(range.quarter + 1).toString()} ${range.year}`
+            });
+
+        } else { // Year
+
+            return this.selectExpiry({
+                from: new Date(range.year, 0).getTime(),
+                to: new Date(range.year + 1, 0).getTime(),
+                label: `${range.year}`
+            });
+        }
+
+    }
+
 
     /**
      * Updates state's draftWeight. Called by typing on the weight keyboard
@@ -811,6 +860,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.forceUpdate();
     }
 
+    private updateTrayProperties(
+        category: Category | null | undefined,
+        expiry: SimpleExpiryRange | ExpiryRange | null | undefined,
+        weight: string | null | undefined,
+        couldAdvance: boolean,
+    ): void {
+
+    }
+
     render(): React.ReactNode {
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
@@ -927,7 +985,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         }
                     ]}
                     keyboards={
-                        this.props.user.useUnifiedKeyboard ? [
+                        this.props.user.unifiedKeyboard ? [
                             {name: "unified", icon: categoryIcon},
                             {name: "weight", icon: weightIcon}
                         ] : [
@@ -943,11 +1001,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 <BottomPanel
                     openDialog={this.props.openDialog}
                     categories={this.props.warehouse.categories}
-                    categorySelected={this.onCategorySelected.bind(this)}
-                    expirySelected={this.onExpirySelected.bind(this)}
+
+                    updateTrayProperties={this.updateTrayProperties.bind(this)}
+                    removeSelection={this.clearTrays.bind(this)}
+
                     commonRange={this.state.currentKeyboard === "expiry" ? this.getCommonRange() : undefined}
                     weight={this.state.weight}
-                    setWeight={this.setWeight.bind(this)}
                     keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
                     selectedTrayCells={this.getSelectedTrayCells()}
                     user={this.props.user}
@@ -1115,6 +1174,5 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
         </>;
     }
 }
-
 
 export default withRouter(ShelfViewPage);

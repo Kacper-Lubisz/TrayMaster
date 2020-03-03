@@ -23,7 +23,7 @@ interface CategoryEditorProps {
     getCategoryID: (category?: Category) => string;
     stage: (forceStage?: boolean, commit?: boolean, minLayer?: WarehouseModel) => Promise<void>;
 
-    updatePage: () => void;
+    repaintSettings: () => void;
 }
 
 
@@ -265,7 +265,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 }));
                 this.props.addCategory(newCategory);
             }
-            this.props.updatePage();
+            this.props.repaintSettings();
             await this.props.stage(true, true);
 
         }
@@ -292,7 +292,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             this.props.removeCategory(this.state.oldCat);
             this.props.stage(true, true).then(() => {
                     if (this.state.oldCat && this.state.oldCat.index !== this.props.categories.length - 1) {
-                        this.props.updatePage();
+                        this.props.repaintSettings();
                         for (let j = this.state.oldCat.index; j < this.props.categories.length - 1; j++) {
                             const category = this.props.categories[j];
                             const id = this.props.getCategoryID(category);
@@ -300,12 +300,12 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                             this.props.editCategory(id, category);
                         }
                     }
-                    this.setState(state => ({
-                        ...state,
-                        oldCat: undefined,
-                        draftCat: undefined
-                    }));
-                    this.props.updatePage();
+                this.setState(state => ({
+                    ...state,
+                    oldCat: undefined,
+                    draftCat: undefined
+                }));
+                this.props.repaintSettings();
                 }
             );
         }

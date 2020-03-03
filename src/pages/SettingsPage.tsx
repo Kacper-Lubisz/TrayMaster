@@ -4,6 +4,7 @@ import classNames from "classnames";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {CategoryEditor} from "../components/CategoryEditor";
+import {CustomKeyboardEditor} from "../components/CustomKeyboardPage";
 import {UserSettings} from "../components/UserSettings";
 import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
@@ -17,7 +18,7 @@ interface SettingsPageProps {
     user: User;
 }
 
-export type SettingsTab = "personal" | "wh-edit" | "cat-edit" | "handle-users";
+export type SettingsTab = "personal" | "wh-edit" | "cat-edit" | "handle-users" | "keyboard-editor";
 
 interface SettingsPageState {
     currentTab: SettingsTab;
@@ -45,6 +46,8 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
         if (this.state.currentTab === "personal") {
             return <UserSettings
                 user={this.props.user}
+                warehouse={this.props.warehouse}
+                repaintSettings={this.forceUpdate.bind(this)}
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor
@@ -61,13 +64,17 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 getCategoryID={this.props.warehouse.getCategoryID.bind(this.props.warehouse)}
                 stage={this.props.warehouse.stage.bind(this.props.warehouse)}
 
-                updatePage={() => this.forceUpdate()}
+                repaintSettings={this.forceUpdate.bind(this)}
             />;
         } else if (this.state.currentTab === "wh-edit") {
             return <div>TODO Warehouse Editor</div>;
+        } else if (this.state.currentTab === "keyboard-editor") {
+            return <CustomKeyboardEditor user={this.props.user} warehouse={this.props.warehouse}/>;
         } else { // "handle-users"
             return <div>TODO User Manager</div>;
         }
+
+
     }
 
     private setLock(lockFunction: (tab: SettingsTab) => boolean): void {
@@ -110,6 +117,14 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                         >
                             Personal Settings
                         </div>
+                        {this.props.user.unifiedKeyboard ? <div
+                            className={classNames("tab", {
+                                "tab-selected": this.state.currentTab === "keyboard-editor"
+                            })}
+                            onClick={this.changeTab.bind(this, "keyboard-editor")}
+                        >
+                            Custom Keyboard
+                        </div> : null}
                     </div>
                     {this.props.user.isAdmin ? <>
                         <div>
