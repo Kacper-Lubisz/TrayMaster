@@ -29,10 +29,24 @@ interface CategoryEditorProps {
 }
 
 
-interface CategoryEditorState {
-    oldCat?: Category;
-    draftCat?: Category;
-}
+// interface CategoryEditorState {
+//     oldCat?: Category;
+//     draftCat?: Category;
+// }
+
+type EditingState = {
+    state: "editing";
+    selectedCategory: Category;
+    editedCategory: Category;
+};
+type NewState = {
+    state: "new";
+    newCategory: Category;
+};
+type NothingSelectedState = {
+    state: "nothingSelected";
+};
+type CategoryEditorState = NothingSelectedState | EditingState | NewState;
 
 /**
  * This class displays all categories in the warehouse, lets the user
@@ -58,8 +72,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         super(props);
 
         this.state = {
-            oldCat: undefined,
-            draftCat: undefined
+            state: "nothingSelected"
         };
 
         this.props.setLock((_: SettingsTab) => {
@@ -81,11 +94,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
         } else {
-            this.setState((state) => ({
-                ...state,
-                oldCat: cat,
-                draftCat: cloneDeep(cat)
-            }));
+            this.setState({
+                state: "editing",
+                selectedCategory: cat,
+                editedCategory: cloneDeep(cat)
+            });
         }
     }
 
@@ -95,118 +108,118 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private renderEditPanel(): React.ReactNode {
 
-        const categorySettings: ControlledInputComponentProps[] = [
-            {
-                inputType: "textField",
-                type: "text",
-                get: () => this.state.draftCat?.name ?? "",
-                set: (value: string) => {
-                    this.setState(state => {
-                        if (state.draftCat) {
-                            state.draftCat.name = value;
-                        }
-                        return state;
-                    });
+        const stateAtRender = this.state;
 
-                },
-                placeholder: CategoryEditor.DEFAULT_NAME,
-                label: "Name"
-            }, {
-                inputType: "textField",
-                type: "text",
-                get: () => this.state.draftCat?.shortName ?? "",
-                set: (value: string) => {
-                    this.setState(state => {
-                        if (state.draftCat) {
-                            state.draftCat.shortName = value.length === 0 ? null : value;
-                        }
-                        return state;
-                    });
-                },
-                placeholder: undefined,
-                label: "Short Name"
-            }, {
-                inputType: "number",
-                get: () => this.state.draftCat?.underStockThreshold ?? null,
-                set: (value: number | null) => {
+        if (stateAtRender.state === "nothingSelected") {
+            return <div id="empty-message-container">
+                <p id="empty-message">Select or add a category to start editing</p>
+            </div>;
+        } else {
 
-                    this.setState(state => {
-                        if (state.draftCat) {
-                            state.draftCat.underStockThreshold = value;
-                        }
-                        return state;
-                    });
-                },
-                min: 0,
-                max: undefined,
-                placeholder: "No threshold",
-                label: "Under-Stock Threshold (trays)"
-            }, {
-                inputType: "number",
-                get: () => this.state.draftCat?.overStockThreshold ?? 0,
-                set: (value: number | null) => {
-                    this.setState(state => {
-                        if (state.draftCat) {
-                            state.draftCat.overStockThreshold = value;
-                        }
-                        return state;
-                    });
-                },
-                min: 0,
-                max: undefined,
-                placeholder: "No threshold",
-                label: "Over-Stock Threshold (trays)"
-            }, {
-                inputType: "checkBox",
-                get: () => this.state.draftCat?.defaultExpiry !== null,
-                set: (value: boolean) => {
-                    this.setState(state => {
-                        if (state.draftCat) {
-                            state.draftCat.defaultExpiry = value ? NEVER_EXPIRY : null;
-                        }
-                        return state;
-                    });
+            const categoryToEdit = stateAtRender.state === "new" ? stateAtRender.newCategory
+                                                                 : stateAtRender.editedCategory;
 
-                },
-                label: "Never Expires"
-            }, {
-                inputType: "textField",
-                type: "text",
-                get: () => this.state.draftCat?.group ?? "",
-                set: (value: string) => {
-                    this.setState(state => {
-                        if (state.draftCat) {
-                            state.draftCat.group = value.length === 0 ? null : value;
-                        }
-                        return state;
-                    });
-                },
-                placeholder: "No Group",
-                label: "Group Title"
-            }
-        ];
+            const categorySettings: ControlledInputComponentProps[] = [
+                {
+                    inputType: "textField",
+                    type: "text",
+                    get: () => categoryToEdit.name ?? "",
+                    set: (value: string) => {
+                        this.setState(state => {
+                            categoryToEdit.name = value;
+                            return state;
+                        });
+
+                    },
+                    placeholder: CategoryEditor.DEFAULT_NAME,
+                    label: "Name"
+                }, {
+                    inputType: "textField",
+                    type: "text",
+                    get: () => categoryToEdit.shortName ?? "",
+                    set: (value: string) => {
+                        this.setState(state => {
+                            categoryToEdit.shortName = value.length === 0 ? null : value;
+                            return state;
+                        });
+                    },
+                    placeholder: undefined,
+                    label: "Short Name"
+                }, {
+                    inputType: "number",
+                    get: () => categoryToEdit.underStockThreshold ?? null,
+                    set: (value: number | null) => {
+
+                        this.setState(state => {
+                            categoryToEdit.underStockThreshold = value;
+                            return state;
+                        });
+                    },
+                    min: 0,
+                    max: undefined,
+                    placeholder: "No threshold",
+                    label: "Under-Stock Threshold (trays)"
+                }, {
+                    inputType: "number",
+                    get: () => categoryToEdit.overStockThreshold ?? 0,
+                    set: (value: number | null) => {
+                        this.setState(state => {
+                            categoryToEdit.overStockThreshold = value;
+                            return state;
+                        });
+                    },
+                    min: 0,
+                    max: undefined,
+                    placeholder: "No threshold",
+                    label: "Over-Stock Threshold (trays)"
+                }, {
+                    inputType: "checkBox",
+                    get: () => categoryToEdit?.defaultExpiry !== null,
+                    set: (value: boolean) => {
+                        this.setState(state => {
+                            categoryToEdit.defaultExpiry = value ? NEVER_EXPIRY : null;
+                            return state;
+                        });
+
+                    },
+                    label: "Never Expires"
+                }, {
+                    inputType: "textField",
+                    type: "text",
+                    get: () => categoryToEdit?.group ?? "",
+                    set: (value: string) => {
+                        this.setState(state => {
+                            categoryToEdit.group = value.length === 0 ? null : value;
+                            return state;
+                        });
+                    },
+                    placeholder: "No Group",
+                    label: "Group Title"
+                }
+            ];
 
 
-        if (this.state.draftCat) {
-            const defaultLabel = this.state.oldCat?.type === "default" ? " (default)"
-                                                                       : "";
+            const defaultLabel = categoryToEdit.type === "default" ? " (default)"
+                                                                   : "";
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
             return <>
                 <div id="cat-edit-controls">
                     <div id="cat-edit-header">
-                        <h2>{this.state.oldCat ? `Edit '${this.state.oldCat.name}'${defaultLabel}${unsavedLabel}`
-                                               : "New Category"}</h2>
-                        <button
-                            disabled={this.state.oldCat?.type === "default"}
-                            onClick={this.deleteCategory.bind(this)}
-                        >Delete Category
-                        </button>
-                        <div>
-                            {this.state.oldCat?.type === "default" ? <div id="del-msg">You cannot delete a default
-                                category!</div> : null}
-                        </div>
+                        <h2>{
+                            stateAtRender.state === "editing"
+                            ? `Edit '${categoryToEdit.name}'${defaultLabel}${unsavedLabel}`
+                            : `New Category '${categoryToEdit.name}'`
+                        }</h2>
+                        {
+                            stateAtRender.state === "editing" ? <button
+                                disabled={categoryToEdit.type === "default"}
+                                onClick={this.deleteCategory.bind(this)}
+                            >Delete Category </button> : null
+                        }
+                        {categoryToEdit.type === "default" ? <div id="del-msg">You cannot delete a default
+                            category!</div> : null}
                     </div>
-                    <table key={undefined}>
+                    <table>
                         <tbody>
                         {categorySettings.map((setting, index) =>
                             <ControlledInputComponent key={index} {...setting} />
@@ -214,22 +227,31 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         </tbody>
                     </table>
                 </div>
-                <div id="cat-edit-bottom-btns">
-                    <button
-                        disabled={!this.hasUnsavedChanges()}
-                        onClick={this.hasUnsavedChanges() ? this.saveCategory.bind(this) : undefined}
-                    >Save Changes
-                    </button>
+
+                <div id="bottom-btns">
+                    {stateAtRender.state === "editing" ? <>
+                        <button
+                            disabled={!this.hasUnsavedChanges()}
+                            onClick={this.hasUnsavedChanges() ? this.updateCategory.bind(this, stateAtRender)
+                                                              : undefined}
+                        >Save Changes
+                        </button>
+                    </> : <>
+                         <button
+                             disabled={!this.hasUnsavedChanges()}
+                             onClick={this.hasUnsavedChanges() ? this.createCategory.bind(this, stateAtRender)
+                                                               : undefined}
+                         >Create Category
+                         </button>
+                     </>}
                     <button
                         onClick={this.discardChanges.bind(this)}
-                    >Discard Changes
+                    >Discard {stateAtRender.state === "editing" ? "Changes" : ""}
                     </button>
                 </div>
+
             </>;
-        } else {
-            return <div id="empty-message-container">
-                <p id="empty-message">Select or add a category to start editing</p>
-            </div>;
+
         }
 
     }
@@ -242,11 +264,10 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
         } else {
-            this.setState(state => ({
-                ...state,
-                oldCat: undefined,
-                draftCat: cloneDeep(CategoryEditor.BLANK_CATEGORY)
-            }));
+            this.setState({
+                state: "new",
+                newCategory: cloneDeep(CategoryEditor.BLANK_CATEGORY),
+            });
         }
     }
 
@@ -254,49 +275,58 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Checks if any of the fields in the currently displayed category has changed
      */
     private hasUnsavedChanges(): boolean {
-        return !isEqual(this.state.draftCat, CategoryEditor.BLANK_CATEGORY) && !isEqual(this.state.oldCat, this.state.draftCat);
+        return this.state.state === "new" || (
+            this.state.state === "editing" &&
+            !isEqual(this.state.editedCategory, CategoryEditor.BLANK_CATEGORY) &&
+            !isEqual(this.state.selectedCategory, this.state.editedCategory)
+        );
+    }
+
+    private async createCategory(state: NewState): Promise<void> {
+
+        if (state.newCategory.name.length === 0) {
+            state.newCategory.name = CategoryEditor.DEFAULT_NAME;
+        }
+        state.newCategory.index = this.props.categories.length;
+
+        this.props.addCategory(state.newCategory);
+        await this.props.stage(true, true);
+
+        this.props.updatePage();
+        this.setState({
+            state: "editing",
+            selectedCategory: state.newCategory,
+            editedCategory: state.newCategory
+        });
+
     }
 
     /**
      *Saves changes to categories, doesn't let user save category with empty name
      */
-    private async saveCategory(): Promise<void> {
-        if (this.state.draftCat) {
+    private async updateCategory(state: EditingState): Promise<void> {
 
-            const newCategory = cloneDeep(this.state.draftCat); // to avoid altering the state here
-            if (newCategory.name.length === 0) {
-                newCategory.name = CategoryEditor.DEFAULT_NAME;
-            }
-
-            if (this.state.oldCat) {
-                this.props.editCategory(this.props.getCategoryID(this.state.oldCat), newCategory);
-
-                this.setState(state => ({
-                    ...state,
-                    oldCat: newCategory,
-                    draftCat: cloneDeep(newCategory)
-                }));
-            } else {
-                newCategory.index = this.props.categories.length;
-                this.setState(state => ({
-                    ...state,
-                    oldCat: newCategory,
-                    draftCat: cloneDeep(newCategory)
-                }));
-                this.props.addCategory(newCategory);
-            }
-            this.props.updatePage();
-            await this.props.stage(true, true);
-
+        if (state.editedCategory.name.length === 0) {
+            state.editedCategory.name = CategoryEditor.DEFAULT_NAME;
         }
+
+        this.props.editCategory(this.props.getCategoryID(state.selectedCategory), state.editedCategory);
+        await this.props.stage(true, true);
+
+        this.setState({
+            state: "editing",
+            selectedCategory: state.editedCategory,
+            editedCategory: cloneDeep(state.editedCategory)
+        });
+        this.props.updatePage();
+
+
     }
 
     private discardChanges(): void {
-        this.setState(state => ({
-            ...state,
-            oldCat: undefined,
-            draftCat: undefined
-        }));
+        this.setState({
+            state: "nothingSelected"
+        });
     }
 
     /**
@@ -308,39 +338,40 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         // todo fixme Not sure who wrote this - this needs checking for correctness. Does it definitely re-sync all
         // indices changes to DB? Surely the adjustments happen in the then, which occurs afterwards?
 
-        if (this.state.oldCat && this.state.draftCat?.type !== "default") {
-            this.props.removeCategory(this.state.oldCat);
-            this.props.stage(true, true).then(() => {
-                    if (this.state.oldCat && this.state.oldCat.index !== this.props.categories.length - 1) {
-                        this.props.updatePage();
-                        for (let j = this.state.oldCat.index; j < this.props.categories.length - 1; j++) {
-                            const category = this.props.categories[j];
-                            const id = this.props.getCategoryID(category);
-                            category.index = j;
-                            this.props.editCategory(id, category);
-                        }
-                    }
-                    this.setState(state => ({
-                        ...state,
-                        oldCat: undefined,
-                        draftCat: undefined
-                    }));
-                    this.props.updatePage();
-                }
-            );
-        }
+        // if (this.state.oldCat && this.state.draftCat?.type !== "default") {
+        //     this.props.removeCategory(this.state.oldCat);
+        //     this.props.stage(true, true).then(() => {
+        //             if (this.state.oldCat && this.state.oldCat.index !== this.props.categories.length - 1) {
+        //                 this.props.updatePage();
+        //                 for (let j = this.state.oldCat.index; j < this.props.categories.length - 1; j++) {
+        //                     const category = this.props.categories[j];
+        //                     const id = this.props.getCategoryID(category);
+        //                     category.index = j;
+        //                     this.props.editCategory(id, category);
+        //                 }
+        //             }
+        //             this.setState(state => ({
+        //                 ...state,
+        //                 oldCat: undefined,
+        //                 draftCat: undefined
+        //             }));
+        //             this.props.updatePage();
+        //         }
+        //     );
+        // }
     }
 
 
     render(): React.ReactNode {
 
+        const selected = this.state.state === "editing" ? this.state.selectedCategory : null;
         return <div id="category-editor">
             <div id="category-sidebar">
                 <div id="title">Categories</div>
                 <div id="category-list">
                     {this.props.categories.map((cat, index) => <div
                         className={classNames("category-list-item", {
-                            "cat-selected": isEqual(this.state.oldCat, cat)
+                            "cat-selected": isEqual(selected, cat)
                         })}
                         key={index}
                         onClick={this.selectCategory.bind(this, cat)}
