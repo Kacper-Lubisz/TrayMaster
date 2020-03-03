@@ -213,7 +213,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         {
                             stateAtRender.state === "editing" ? <button
                                 disabled={categoryToEdit.type === "default"}
-                                onClick={this.deleteCategory.bind(this)}
+                                onClick={this.deleteCategory.bind(this, stateAtRender)}
                             >Delete Category </button> : null
                         }
                         {categoryToEdit.type === "default" ? <div id="del-msg">You cannot delete a default
@@ -287,7 +287,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (state.newCategory.name.length === 0) {
             state.newCategory.name = CategoryEditor.DEFAULT_NAME;
         }
-        state.newCategory.index = this.props.categories.length;
+        state.newCategory.index = this.props.categories[this.props.categories.length - 1].index + 1;
 
         this.props.addCategory(state.newCategory);
         await this.props.stage(true, true);
@@ -333,32 +333,16 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Deletes category, makes sure indices inside object matches actual
      * indices after removing one category
      */
-    private deleteCategory(): void {
+    private async deleteCategory(state: EditingState): Promise<void> {
 
-        // todo fixme Not sure who wrote this - this needs checking for correctness. Does it definitely re-sync all
-        // indices changes to DB? Surely the adjustments happen in the then, which occurs afterwards?
+        this.props.removeCategory(state.selectedCategory);
+        await this.props.stage(true, true);
 
-        // if (this.state.oldCat && this.state.draftCat?.type !== "default") {
-        //     this.props.removeCategory(this.state.oldCat);
-        //     this.props.stage(true, true).then(() => {
-        //             if (this.state.oldCat && this.state.oldCat.index !== this.props.categories.length - 1) {
-        //                 this.props.updatePage();
-        //                 for (let j = this.state.oldCat.index; j < this.props.categories.length - 1; j++) {
-        //                     const category = this.props.categories[j];
-        //                     const id = this.props.getCategoryID(category);
-        //                     category.index = j;
-        //                     this.props.editCategory(id, category);
-        //                 }
-        //             }
-        //             this.setState(state => ({
-        //                 ...state,
-        //                 oldCat: undefined,
-        //                 draftCat: undefined
-        //             }));
-        //             this.props.updatePage();
-        //         }
-        //     );
-        // }
+        this.setState({
+            state: "nothingSelected",
+        });
+        this.props.updatePage();
+
     }
 
 
