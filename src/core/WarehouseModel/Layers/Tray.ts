@@ -50,6 +50,7 @@ export class Tray extends BottomLayer<Column, TrayFields> {
 
     protected stageLayer(forceStage = false): void {
         this.fields.locationName = this.parentShelf.toString();
+        console.log(this.fields.lastModified);
         super.stageLayer(forceStage);
     }
 

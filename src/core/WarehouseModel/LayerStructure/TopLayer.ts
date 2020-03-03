@@ -176,6 +176,7 @@ export abstract class TopLayer<TFields extends LayerFields, TChildren extends Lo
 
     protected stageLayer(forceStage = false): void {
         if (this.changed || forceStage) {
+            this.updateBlame();
             firebase.database.set(this.topLevelPath, {
                 ...this.fields,
                 layerIdentifiers: this.layerIdentifiers
