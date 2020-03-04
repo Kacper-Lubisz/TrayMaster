@@ -256,6 +256,7 @@ class App extends React.Component<unknown, AppState> {
                 ...state,
                 find: {
                     query: query,
+                    outcome: true,
                     results: null
                 }
             }));
@@ -265,7 +266,8 @@ class App extends React.Component<unknown, AppState> {
                     ...state,
                     find: {
                         query: query,
-                        results: results
+                        outcome: results[0],
+                        results: results[1]
                     }
                 })
             );

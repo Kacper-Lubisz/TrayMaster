@@ -166,7 +166,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     //#endregion
 
     //region find
-    public async trayFind(query: FindQuery): Promise<TrayFields[]> {
+    public async trayFind(query: FindQuery): Promise<[boolean, TrayFields[]]> {
         const orderByFields = new Map<SortBy, string | undefined>([
             [SortBy.expiry, "expiry.from"],
             [SortBy.location, "locationName"],
@@ -182,16 +182,12 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             firebaseQuery = firebaseQuery.orderBy(orderByField);
         }
         if (query.categories instanceof Set) {
-            firebaseQuery = firebaseQuery.where("categoryId", "in", Array.from(query.categories).map(category => this.getCategoryID(category)).slice(0, 10));
+            if (query.categories.size > 10) return [false, []];
+            firebaseQuery = firebaseQuery.where("categoryId", "in", Array.from(query.categories).map(category => this.getCategoryID(category)));
         }
         const trays: TrayFields[] = (await firebase.database.loadQuery<TrayFields>(firebaseQuery)).map(trayDoc => trayDoc.fields);
 
-        const filteredTrays = trays.filter(tray =>
-            query.categories === null ||
-            (query.categories === "set" && tray.categoryId) ||
-            (query.categories === "unset" && !tray.categoryId) ||
-            (query.categories instanceof Set && tray.categoryId && query.categories.has(this.getCategoryByID(tray.categoryId) ?? defaultCategories[0]))
-        ).filter(tray => {
+        const filteredTrays = trays.filter(tray => {
             if (query.weight === null) {
                 return true;
             } else if (query.weight === "set") {
@@ -207,9 +203,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             } else {
                 return query.commentSubstring.includes(query.commentSubstring);
             }
-        });//.filter(tray => {
-        //     return !query.excludePickingArea || !tray.parentShelf.isPickingArea;
-        // });
+        });
 
         const defaultSort = composeSorts<TrayFields>([
             partitionBy<TrayFields>((a) => !!(a.expiry)), // draw a diagram to understand this
@@ -243,7 +237,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             }
         })();
 
-        return filteredTrays;//filteredTrays.sort(sort);
+        return [true, filteredTrays.sort(sort)];
     }
 
     //endregion

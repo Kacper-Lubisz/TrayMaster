@@ -17,6 +17,7 @@ const mockFind = {
         excludePickingArea: false,
         sort: SortBy["expiry"]
     },
+    outcome: true,
     results: mockWarehouse.trays
 };
 
@@ -54,7 +55,7 @@ describe("Results rendering tests:", () => {
     });
 
     it("displays a message to tell the user that there are no results", () => {
-        expect(page.find("div#findResults > div").text()).toEqual("Couldn't find any trays which match this find query!");
+        expect(page.find("div#findResults > div").text()).toEqual("Couldn't find any trays that match this query.");
         page.unmount();
     });
 

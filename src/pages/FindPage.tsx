@@ -49,6 +49,7 @@ export interface FindQuery {
 
 export interface FindResults {
     query: FindQuery;
+    outcome: boolean;
     results: null | TrayFields[];
 }
 
@@ -240,9 +241,13 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
             </table>;
         } else if (!this.props.find?.results) {
             return <LoadingSpinner/>;
+        } else if (!this.props.find.outcome) {
+            return <div id="find-no-results">
+                Cannot find more than 10 categories at a time.
+            </div>;
         } else if (this.props.find.results.length === 0) {
             return <div id="find-no-results">
-                Couldn't find any trays which match this find query!
+                Couldn't find any trays that match this query.
             </div>;
         }
 
