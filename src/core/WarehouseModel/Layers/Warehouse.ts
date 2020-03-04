@@ -1,5 +1,5 @@
 import {FindQuery, SortBy} from "../../../pages/FindPage";
-import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
+import {byNullSafe, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 import {Bay, Category, Column, Shelf, Tray, WarehouseModel, Zone} from "../../WarehouseModel";
@@ -173,8 +173,6 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             [SortBy.weight, "weight"]
         ]);
 
-        //todo make this feature full, it's actually a complete mess right now, needs a redoing
-
         const orderByField = orderByFields.get(query.sort.type);
 
         let firebaseQuery: fb.firestore.Query = firebase.database.db.collection(Utils.joinPaths("warehouses", this.id, "trays")) as fb.firestore.Query;
@@ -205,7 +203,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             }
         });
 
-        const defaultSort = composeSorts<TrayFields>([
+        const sort = composeSorts<TrayFields>([
+            byNullSafe<TrayFields>((a) => this.getCategoryByID(a.categoryId)?.name, false, true),
             partitionBy<TrayFields>((a) => !!(a.expiry)), // draw a diagram to understand this
             partitionBy<TrayFields>((a) => !(!a.expiry?.from && a.expiry?.to)),
             partitionBy<TrayFields>((a) => (!a.expiry?.from && !a.expiry?.to)),
@@ -215,27 +214,6 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             byNullSafe<TrayFields>((a) => this.getCategoryByID(a.categoryId)?.name, false, true),
             byNullSafe<TrayFields>((a) => a.weight, false, true),
         ]);
-
-        const sort = (() => {
-            if (query.sort.type === SortBy.category) {
-                return composeSort(
-                    byNullSafe<TrayFields>((a) => this.getCategoryByID(a.categoryId)?.name, false, true),
-                    defaultSort
-                );
-                // } else if (query.sort.type === SortBy.location) {
-                //     return composeSort(
-                //         byNullSafe<TrayFields>((a) => a.locationString, false, true),
-                //         defaultSort
-                //     );
-            } else if (query.sort.type === SortBy.weight) {
-                return composeSort(
-                    byNullSafe<TrayFields>((a) => a.weight, false, true),
-                    defaultSort
-                );
-            } else { // none or SortBy.expiry
-                return defaultSort;
-            }
-        })();
 
         return [true, filteredTrays.sort(sort)];
     }
