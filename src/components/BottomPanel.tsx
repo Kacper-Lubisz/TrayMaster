@@ -186,7 +186,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             cat.group === null
         ).map((cat): CustomButtonProps => ({
             name: cat.shortName ?? cat.name,
-            onClick: this.props.updateTrayProperties.bind(undefined, cat, undefined, undefined, false),
+            onClick: this.props.updateTrayProperties.bind(undefined, cat, null, null, true),
             selected: cat.name === commonCat,
         }));
 
@@ -199,9 +199,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                         onClick: () => {
                             this.props.updateTrayProperties.bind(undefined,
                                 cat,
-                                undefined,
-                                undefined,
-                                false
+                                null,
+                                null,
+                                true
                             );
                             close();
                         },
@@ -249,14 +249,19 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const specialButtons = [
                 {
                     name: "Never",
-                    onClick: this.props.updateTrayProperties.bind(undefined, undefined, NEVER_EXPIRY, undefined, false)
+                    onClick: this.props.updateTrayProperties.bind(undefined,
+                        undefined,
+                        NEVER_EXPIRY,
+                        undefined,
+                        true
+                    )
                 }, {
                     name: "< Clear >",
                     onClick: this.props.updateTrayProperties.bind(undefined,
                         undefined,
                         null,
                         undefined,
-                        false
+                        true
                     ),
                     bg: "#ffffff"
                 }
@@ -301,8 +306,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else if (this.props.keyboardState === "unified") {
 
-            console.log(this.props.user.unifiedKeyboard?.buttons);
-
             return <div style={{
                 display: "grid",
             }}>{
@@ -323,7 +326,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     onClick={this.props.updateTrayProperties.bind(undefined,
                         button.category,
                         button.expiry,
-                        undefined,
+                        null,
                         true
                     )}
                 >

@@ -1,7 +1,6 @@
 import * as fb from "firebase/app";
 import "firebase/auth";
 import {UnifiedKeyboard} from "../../components/CustomKeyboardPage";
-import {KeyboardName} from "../../pages/ShelfViewPage";
 import {ONLINE} from "../Firebase";
 import {WarehouseManager} from "../WarehouseModel";
 import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
@@ -24,7 +23,11 @@ interface UserWarehouseSettings {
  * off is off
  * a list defines a cycle
  */
-export type AutoAdvanceModes = null | (KeyboardName[]);
+export type AutoAdvanceModes = null | {
+    category: boolean;
+    expiry: boolean;
+    weight: boolean;
+};
 
 interface UserFields {
     isAdmin: boolean;

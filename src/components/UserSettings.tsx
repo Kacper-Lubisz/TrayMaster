@@ -52,9 +52,9 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 },
                 options: [
                     {label: "Off", key: null},
-                    {label: "Category > Expiry > Next Tray", key: ["category", "expiry"]},
-                    {label: "Weight > Next Tray", key: ["weight"]},
-                    {label: "Category > Expiry > Weight > Next Tray", key: ["category", "expiry", "weight"]}
+                    {label: "Category > Expiry > Next Tray", key: {weight: true}},
+                    {label: "Weight > Next Tray", key: {weight: true}},
+                    {label: "Category > Expiry > Weight > Next Tray", key: {category: true, expiry: true, weight: true}}
                 ],
                 label: "Auto Advance",
             }, {

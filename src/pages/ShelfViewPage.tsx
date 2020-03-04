@@ -440,7 +440,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private advanceSelection(selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
 
-        if (this.props.user.autoAdvanceMode === null) {
+        const mode = this.props.user.autoAdvanceMode;
+
+        if (mode === null) {
             return selection;
         }
 
@@ -457,41 +459,45 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             return selection;
         }
 
-        const keyboardIndex = this.props.user.autoAdvanceMode.findIndex(keyboard =>
-            keyboard === this.state.currentKeyboard
-        );
-
-        if (keyboardIndex === undefined) { // not in the cycle, do nothing
-            return selection;
-        }
-
-        const possibleKeyboards: KeyboardName[] = (() => {
+        const keyboardsNeeded: KeyboardName[] = (() => {
 
             const first = selected[0];
             if (first instanceof Tray) {
-                const possible: (KeyboardName | null)[] = [
-                    first.category ? null : "category",
-                    first.expiry ? null : "expiry",
-                    first.weight ? null : "weight"
+
+                const possible: (KeyboardName | null)[] = this.props.user.unifiedKeyboard === null ? [
+                    (mode.category && first.category === undefined) ? "category" : null,
+                    (mode.expiry && first.expiry === undefined) ? "expiry" : null,
+                    (mode.weight && first.weight === undefined) ? "weight" : null
+                ] : [
+                    ((mode.category && first.category === undefined)
+                        || (mode.expiry && first.expiry === undefined)) ? "unified" : null,
+                    (mode.weight && first.weight === undefined) ? "weight" : null
                 ];
                 return possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null);
 
             } else {
-                return ["category", "expiry", "weight"] as KeyboardName[];
+                return (this.props.user.unifiedKeyboard === null ? [
+                    "category", "expiry", "weight"
+                ] : [
+                    "unified", "weight"
+                ]) as KeyboardName[];
             }
-
         })();
 
-        const nextIndex = Math.max(this.props.user.autoAdvanceMode.findIndex(
-            (kb, index) => index > keyboardIndex && possibleKeyboards.includes(kb)
-        ), 0);
-        this.switchKeyboard(this.props.user.autoAdvanceMode[nextIndex]);
+        if (keyboardsNeeded.length === 0) {
+            const keyboardsPossible: KeyboardName[] = this.props.user.unifiedKeyboard === null ? [
+                "category", "expiry", "weight"
+            ] : [
+                "unified", "weight"
+            ];
 
-        if (nextIndex > keyboardIndex) { // else, only move the selection if the cycle repeats
+            this.switchKeyboard(keyboardsPossible[0]);
+        } else {
+            this.switchKeyboard(keyboardsNeeded[0]);
             return selection;
         }
 
-        const maxSelected = selected.reduce((max, cur) => {
+        const furthestSelected = selected.reduce((max, cur) => {
             if (max && comparison(max, cur) !== 1) {
                 return max;
             } else {
@@ -499,14 +505,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             }
         }, undefined as (TrayCell | undefined));
 
-        if (maxSelected) {
+        if (furthestSelected) {
 
-            const columnIndex = maxSelected.parentColumn.index;
+            const columnIndex = furthestSelected.parentColumn.index;
 
-            const trayIndex = maxSelected.index;
+            const trayIndex = furthestSelected.index;
 
-            const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
-                                                      : maxSelected.parentColumn.parentShelf;
+            const shelf = furthestSelected instanceof Tray ? furthestSelected.parentShelf
+                                                           : furthestSelected.parentColumn.parentShelf;
 
             const currentCellsLength = shelf.columns[columnIndex].getPaddedTrays().length;
 
@@ -545,6 +551,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
 
             }
+
         } else {
             return selection;
         }
@@ -589,41 +596,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             };
         }
 
-    }
-
-
-    /**
-     * Updates state's draftWeight. Called by typing on the weight keyboard
-     * @param newWeight
-     * @param couldAdvance If this weight set
-     */
-    private async setWeight(newWeight: string | undefined, couldAdvance = false): Promise<void> {
-
-        if (couldAdvance) {
-            this.applyAndAdvance(
-                true,
-                true,
-                (tray) => {
-                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-                }
-            );
-        } else {
-            this.getSelectedTrays(
-                true,
-                true
-            ).forEach((tray) => {
-                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-                }
-            );
-        }
-
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
-        if (!couldAdvance) {
-            this.setState(state => ({
-                ...state,
-                weight: newWeight
-            }));
-        }
     }
 
     /**
@@ -867,17 +839,17 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         couldAdvance: boolean,
     ): Promise<void> {
 
-        const newWeight = weight === undefined ? undefined
-                                               : isNaN(Number(weight)) ? undefined : Number(weight);
+        const newWeight = weight !== undefined && weight !== null ? isNaN(Number(weight)) ? undefined : Number(weight)
+                                                                  : weight;
         const newExpiry = expiry === undefined ? undefined
-                                               : ShelfViewPage.toExpiryRange(expiry) ?? undefined;
+                                               : ShelfViewPage.toExpiryRange(expiry);
 
         const modify = (tray: Tray): void => {
             if (category !== undefined) {
                 tray.category = category ?? undefined;
             }
             if (expiry !== undefined) {
-                tray.expiry = newExpiry;
+                tray.expiry = newExpiry ?? undefined;
             }
             if (weight !== undefined) {
                 tray.weight = newWeight ?? undefined;
