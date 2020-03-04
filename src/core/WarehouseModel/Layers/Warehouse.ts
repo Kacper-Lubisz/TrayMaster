@@ -52,7 +52,6 @@ const defaultCategories: { name: string; group?: string; defaultExpiry?: ExpiryR
     {name: "Tomatoes"},
     {name: "Vegetables"},
     {name: "Christmas"},
-    {name: "Mixed"}
 ];
 
 interface WarehouseFields {
@@ -60,6 +59,17 @@ interface WarehouseFields {
     defaultTraySizeID: string;
     expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
+
+export const MIXED_CATEGORY: Category = {
+    index: defaultCategories.length,
+    name: "Mixed",
+    shortName: null,
+    underStockThreshold: null,
+    overStockThreshold: null,
+    type: "default",
+    group: null,
+    defaultExpiry: null,
+};
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     public readonly layerID: WarehouseModel = WarehouseModel.warehouse;
@@ -135,6 +145,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     ...defaultCategories[i],
                 });
             }
+            this.categoryCollection.add(MIXED_CATEGORY);
         }
     }
 

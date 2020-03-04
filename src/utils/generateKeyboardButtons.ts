@@ -1,6 +1,6 @@
 import {EXPIRY_GREY, EXPIRY_GREY_RATIO} from "../components/BottomPanel";
 import {Category, ExpiryRange} from "../core/WarehouseModel";
-import {NEVER_EXPIRY, Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {MIXED_CATEGORY, NEVER_EXPIRY, Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 import {getExpiryColor, interpolateTowardsGrey, toExpiryRange} from "./getExpiryColor";
 import {MONTHS_TRANSLATOR} from "./monthsTranslator";
 import {byNullSafe} from "./sortsUtils";
@@ -10,15 +10,21 @@ export type ButtonProperties = {
     background: string | null;
 };
 
-export type TrayAlteringButton = ({
-    type: "erase";
-} | {
+
+type SingularAlteration = {
     type: "singular";
     alteration: Alteration;
-} | {
+};
+type GroupedAlteration = {
     type: "grouped";
     alterations: (Alteration & ButtonProperties)[];
-}) & ButtonProperties;
+};
+type ErasingButton = {
+    type: "erase";
+};
+
+
+export type TrayAlteringButton = (ErasingButton | SingularAlteration | GroupedAlteration) & ButtonProperties;
 
 export type Alteration = {
     category: Category | null | undefined;
@@ -43,6 +49,7 @@ export function buildKeyboardButtons(
     quartersAhead: number,
     categories: Category[]
 ): {
+    mixedYears: TrayAlteringButton[];
     categories: TrayAlteringButton[];
     specialCategoryButtons: { removeTray: TrayAlteringButton };
     specialExpiryButtons: { never: TrayAlteringButton; clearExpiry: TrayAlteringButton };
@@ -84,11 +91,26 @@ export function buildKeyboardButtons(
         }
     };
 
+    const yearButtons: (SingularAlteration & ButtonProperties)[] = buildYearButtons(yearsAhead);
+
+    const mixedYears: TrayAlteringButton[] = yearButtons.map(year => ({
+        label: `${MIXED_CATEGORY.shortName ?? MIXED_CATEGORY.name} ${year.label}`,
+        type: "singular",
+        alteration: {
+            category: MIXED_CATEGORY,
+            expiry: year.alteration.expiry,
+            weight: null,
+            comment: null
+        },
+        background: null
+    }));
+
     return {
+        mixedYears: mixedYears,
         categories: buildCategoryButtons(categories),
         specialCategoryButtons: specialCategoryButtons,
         specialExpiryButtons: specialExpiryButtons,
-        years: buildYearButtons(yearsAhead),
+        years: yearButtons,
         quarters: buildQuarterButtons(quartersAhead),
         months: buildMonthButtons(),
     };
@@ -143,7 +165,7 @@ function buildCategoryButtons(categories: Category[]): TrayAlteringButton[] {
         .sort(byNullSafe(button => button.label));
 }
 
-function buildYearButtons(yearsAhead: number): TrayAlteringButton[] {
+function buildYearButtons(yearsAhead: number): (SingularAlteration & ButtonProperties)[] {
     const now = new Date();
     return Array(yearsAhead).fill(0).map((_, index) => {
         const year = now.getFullYear() + index;
@@ -236,7 +258,8 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         categories,
         years,
         quarters,
-        months
+        months,
+        mixedYears
     } = buildKeyboardButtons(4, 4, warehouse.categories);
 
     const yearButtons: CustomKeyboardButton[] = years.map((button, index) => ({
@@ -245,7 +268,6 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         columnEnd: 25,
         rowStart: index + 1,
         rowEnd: index + 2,
-
     }));
 
     const quarterButtons: CustomKeyboardButton[] = quarters.map((button, index) => ({
@@ -291,8 +313,16 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         column: number;
     }).buttons;
 
+    const mixedButtons = mixedYears.map((button, index) => ({
+        ...button,
+        columnStart: 19,
+        columnEnd: 22,
+        rowStart: index + 1,
+        rowEnd: index + 2,
+    }));
+
     return {
-        buttons: yearButtons.concat(quarterButtons, monthButtons, categoryButtons)
+        buttons: yearButtons.concat(quarterButtons, monthButtons, categoryButtons, mixedButtons)
     };
 }
 

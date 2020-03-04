@@ -206,6 +206,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                             gridRowEnd: button.rowEnd ?? undefined,
                             background: button.background ?? undefined
                         }}
+                        disabled={this.props.selectedTrayCells.length === 0}
                         onClick={bound.onClick}
                     > {button.label} </button>;
                 })

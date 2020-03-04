@@ -20,14 +20,6 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
         const settingsList: ControlledInputComponentProps[] = [
             {
                 inputType: "checkBox",
-                get: () => this.props.user.onlySingleAutoAdvance,
-                set: async (value: boolean) => {
-                    this.props.user.onlySingleAutoAdvance = value;
-                    await this.props.user.stage(true, true);
-                },
-                label: "Don't Advance in Multi-select"
-            }, {
-                inputType: "checkBox",
                 get: () => this.props.user.showPreviousShelfButton,
                 set: async (value: boolean) => {
                     this.props.user.showPreviousShelfButton = value;
@@ -56,6 +48,14 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     {label: "Category > Expiry > Weight > Next Tray", key: {category: true, expiry: true, weight: true}}
                 ],
                 label: "Auto Advance",
+            }, {
+                inputType: "checkBox",
+                get: () => this.props.user.onlySingleAutoAdvance,
+                set: async (value: boolean) => {
+                    this.props.user.onlySingleAutoAdvance = value;
+                    await this.props.user.stage(true, true);
+                },
+                label: "Don't Advance in Multi-select"
             }, {
                 inputType: "checkBox",
                 get: () => this.props.user.customKeyboard !== null,
