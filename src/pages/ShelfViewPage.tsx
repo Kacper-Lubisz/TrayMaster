@@ -485,13 +485,17 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         })();
 
         if (keyboardsNeeded.length === 0) {
-            const keyboardsPossible: KeyboardName[] = this.props.user.unifiedKeyboard === null ? [
-                "category", "expiry", "weight"
+
+            const possible: (KeyboardName | null)[] = this.props.user.unifiedKeyboard === null ? [
+                mode.category ? "category" : null,
+                mode.expiry ? "expiry" : null,
+                mode.weight ? "weight" : null
             ] : [
-                "unified", "weight"
+                (mode.category || mode.expiry) ? "unified" : null,
+                mode.weight ? "weight" : null
             ];
 
-            this.switchKeyboard(keyboardsPossible[0]);
+            this.switchKeyboard(possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null)[0]);
         } else {
             this.switchKeyboard(keyboardsNeeded[0]);
             return selection;
