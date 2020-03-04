@@ -3,10 +3,8 @@ import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
-import {NEVER_EXPIRY} from "../core/WarehouseModel/Layers/Warehouse";
 import {KeyboardName, SimpleExpiryRange} from "../pages/ShelfViewPage";
-import {getExpiryColor, interpolateTowardsGrey} from "../utils/getExpiryColor";
-import {MONTHS_TRANSLATOR} from "../utils/monthsTranslator";
+import {buildKeyboardButtons, buildYearButtons} from "../utils/generateKeyboardButtons";
 import {byNullSafe} from "../utils/sortsUtils";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
@@ -33,10 +31,6 @@ export interface BottomPanelProps {
     user: User;
 }
 
-type ExpiryKeyboardButtonProps = CustomButtonProps & {
-    expiryFrom: number;
-};
-
 type WeightKeyboardButton = "Next Tray" | "< Clear >" | "Backspace" | number | ".";
 
 export const EXPIRY_GREY_RATIO = 0.8;
@@ -47,77 +41,6 @@ export const EXPIRY_GREY = "#ffffff";
  * @see BottomPanelPage
  */
 export class BottomPanel extends React.Component<BottomPanelProps> {
-    private readonly years: ExpiryKeyboardButtonProps[]; //todo fixme state shouldn't be stored as a field
-    private readonly quarters: ExpiryKeyboardButtonProps[];
-    private readonly months: ExpiryKeyboardButtonProps[];
-
-    constructor(props: BottomPanelProps) {
-        super(props);
-
-        // Expiry keyboard structures
-        this.years = [];
-        // TODO: consider applying database settings to this
-        const thisYear = new Date().getFullYear();
-        const yearColors: any = {};
-
-        for (let i = thisYear; i < thisYear + 4; i++) {
-            const exp = getExpiryColor(
-                {
-                    from: new Date(i, 0).getTime(),
-                    to: new Date(i + 1, 0).getTime(),
-                    label: i.toString()
-                },
-                "warehouse"
-            );
-            yearColors[i] = interpolateTowardsGrey(exp, EXPIRY_GREY, EXPIRY_GREY_RATIO);
-            this.years.push({
-                name: i.toString(),
-                onClick: this.props.updateTrayProperties.bind(undefined,
-                    undefined,
-                    {year: i},
-                    undefined,
-                    true
-                ),
-                expiryFrom: new Date(i, 0).getTime(),
-                bg: yearColors[i]
-            });
-        }
-
-        this.months = [];
-        const thisMonth = new Date().getMonth();
-        for (let i = thisMonth; i < thisMonth + 12; i++) {
-            const year = thisYear + Math.floor(i / 12);
-            const month = i % 12;
-            this.months.push({
-                name: `${MONTHS_TRANSLATOR[month]}`,
-                onClick: this.props.updateTrayProperties.bind(undefined,
-                    undefined, {year: year, month: month},
-                    undefined,
-                    true
-                ),
-                expiryFrom: new Date(year, month).getTime(),
-                bg: yearColors[year]
-            });
-        }
-
-        this.quarters = [];
-        const thisQuarter = Math.floor(thisMonth / 3);
-        for (let i = thisQuarter; i < thisQuarter + 4; i++) {
-            const year = thisYear + Math.floor(i / 4);
-            const quarter = i % 4;
-            this.quarters.push({
-                name: `Q${(quarter + 1).toString()}`,
-                onClick: this.props.updateTrayProperties.bind(undefined,
-                    undefined,
-                    {year: year, quarter: quarter},
-                    undefined,
-                    true
-                ),
-                expiryFrom: new Date(year, quarter * 3).getTime(),
-                bg: yearColors[year]
-            });
-        }
-    }
 
     /**
      * Handles key presses clicked in the weight keyboard, by updating draftWeight in ShelfView
@@ -158,6 +81,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * @param disabled whether the keyboard is disabled (ie no trays are selected)
      */
     private chooseKeyboard(disabled: boolean): React.ReactNode {
+
         // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
         const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
 
@@ -166,13 +90,17 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                           ? firstCat : null;
 
 
+        // TODO: consider applying database settings to this
+
+        const {
+            categories,
+            years,
+            quarters,
+            months
+        } = buildKeyboardButtons(4, 4, this.props.categories);
+
         const categoryGroups: Map<string, [Category]> = new Map();
         this.props.categories.forEach(cat => {
-
-            if (cat.group === undefined) { // todo fixme remove this when this is propagated to the db
-                cat.group = null;
-            }
-
             if (cat.group !== null) {
                 if (categoryGroups.has(cat.group)) {
                     categoryGroups.get(cat.group)?.push(cat);
@@ -244,34 +172,15 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         } else if (this.props.keyboardState === "expiry") {
             // todo this might be worth making a setting for; it's the kind of thing someone might want to disable for
             //  performance on low-end devices
-            this.highlightExpiryKey();
+            // this.highlightExpiryKey();
 
-            const specialButtons = [
-                {
-                    name: "Never",
-                    onClick: this.props.updateTrayProperties.bind(undefined,
-                        undefined,
-                        NEVER_EXPIRY,
-                        undefined,
-                        true
-                    )
-                }, {
-                    name: "< Clear >",
-                    onClick: this.props.updateTrayProperties.bind(undefined,
-                        undefined,
-                        null,
-                        undefined,
-                        true
-                    ),
-                    bg: "#ffffff"
-                }
-            ];
+
 
             return <div className="keyboard-container expiry-container">
                 <Keyboard id="exp-special" disabled={disabled} buttons={specialButtons} gridX={1}/>
-                <Keyboard id="exp-years" disabled={disabled} buttons={this.years} gridX={2}/>
-                <Keyboard id="exp-quarters" disabled={disabled} buttons={this.quarters} gridX={2}/>
-                <Keyboard id="exp-months" disabled={disabled} buttons={this.months} gridX={3}/>
+                <Keyboard id="exp-years" disabled={disabled} buttons={years} gridX={2}/>
+                <Keyboard id="exp-quarters" disabled={disabled} buttons={months} gridX={2}/>
+                <Keyboard id="exp-months" disabled={disabled} buttons={quarters} gridX={3}/>
             </div>;
 
         } else if (this.props.keyboardState === "weight") {
@@ -304,15 +213,14 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 </div>
             </div>;
 
-        } else if (this.props.keyboardState === "unified") {
+        } else if (this.props.keyboardState === "custom") {
 
             return <div style={{
                 display: "grid",
             }}>{
-
-                (!this.props.user.unifiedKeyboard) || this.props.user.unifiedKeyboard.buttons.length === 0 ? <div>
+                (!this.props.user.customKeyboard) || this.props.user.customKeyboard.buttons.length === 0 ? <div>
                     The keyboard has no buttons
-                </div> : this.props.user.unifiedKeyboard.buttons.map((button, index) => <button
+                </div> : this.props.user.customKeyboard.buttons.map((button, index) => <button
                     key={index}
                     style={{
                         fontSize: 14,
@@ -324,8 +232,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                         background: button.background ?? undefined
                     }}
                     onClick={this.props.updateTrayProperties.bind(undefined,
-                        button.category,
-                        button.expiry,
+                        button.setting.category,
+                        button.setting.expiry,
                         null,
                         true
                     )}
@@ -343,25 +251,26 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
     }
 
-    /**
-     * Highlight the key corresponding to the current selection
-     */
-    private highlightExpiryKey(): void {
-        // this isn't the best way to do this but it's more performant than other options
-        const isYear = this.props.commonRange?.label.length === 4;
-        const isMonth = this.props.commonRange?.label.length === 8;
-        const isQuarter = !isYear && !isMonth;
 
-        for (const year of this.years) {
-            year.selected = isYear && year.expiryFrom === this.props.commonRange?.from;
-        }
-        for (const month of this.months) {
-            month.selected = isMonth && month.expiryFrom === this.props.commonRange?.from;
-        }
-        for (const quarter of this.quarters) {
-            quarter.selected = isQuarter && quarter.expiryFrom === this.props.commonRange?.from;
-        }
-    }
+// /** todo fixme reintroduce this within the new system
+    //  * Highlight the key corresponding to the current selection
+    //  */
+    // private highlightExpiryKey(): void {
+    //     // this isn't the best way to do this but it's more performant than other options
+    //     const isYear = this.props.commonRange?.label.length === 4;
+    //     const isMonth = this.props.commonRange?.label.length === 8;
+    //     const isQuarter = !isYear && !isMonth;
+    //
+    //     for (const year of this.years) {
+    //         year.selected = isYear && year.expiryFrom === this.props.commonRange?.from;
+    //     }
+    //     for (const month of this.months) {
+    //         month.selected = isMonth && month.expiryFrom === this.props.commonRange?.from;
+    //     }
+    //     for (const quarter of this.quarters) {
+    //         quarter.selected = isQuarter && quarter.expiryFrom === this.props.commonRange?.from;
+    //     }
+    // }
 
     /**
      * @inheritDoc

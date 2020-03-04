@@ -39,8 +39,8 @@ import {
     Zone
 } from "../core/WarehouseModel";
 import "../styles/shelfview.scss";
+import {toExpiryRange} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-import {MONTHS_TRANSLATOR} from "../utils/monthsTranslator";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
 import {SearchQuery, SortBy} from "./SearchPage";
@@ -49,7 +49,7 @@ import {SearchQuery, SortBy} from "./SearchPage";
 /**
  * Defines possible keyboard names
  */
-export type KeyboardName = "category" | "expiry" | "weight" | "unified" | "edit-shelf";
+export type KeyboardName = "category" | "expiry" | "weight" | "custom" | "edit-shelf";
 
 /**
  * The directions in which you can navigate
@@ -94,7 +94,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         this.state = {
             selected: new Map(),
-            currentKeyboard: this.props.user.unifiedKeyboard ? "unified" : "category",
+            currentKeyboard: this.props.user.customKeyboard ? "custom" : "category",
             currentView: (() => {
                 if (this.props.warehouse.zones.length === 0) {
                     return this.props.warehouse;
@@ -464,37 +464,36 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             const first = selected[0];
             if (first instanceof Tray) {
 
-                const possible: (KeyboardName | null)[] = this.props.user.unifiedKeyboard === null ? [
+                const possible: (KeyboardName | null)[] = this.props.user.customKeyboard === null ? [
                     (mode.category && first.category === undefined) ? "category" : null,
                     (mode.expiry && first.expiry === undefined) ? "expiry" : null,
                     (mode.weight && first.weight === undefined) ? "weight" : null
                 ] : [
                     ((mode.category && first.category === undefined)
-                        || (mode.expiry && first.expiry === undefined)) ? "unified" : null,
+                        || (mode.expiry && first.expiry === undefined)) ? "custom" : null,
                     (mode.weight && first.weight === undefined) ? "weight" : null
                 ];
                 return possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null);
 
             } else {
-                return (this.props.user.unifiedKeyboard === null ? [
+                return (this.props.user.customKeyboard === null ? [
                     "category", "expiry", "weight"
                 ] : [
-                    "unified", "weight"
+                    "custom", "weight"
                 ]) as KeyboardName[];
             }
         })();
 
         if (keyboardsNeeded.length === 0) {
 
-            const possible: (KeyboardName | null)[] = this.props.user.unifiedKeyboard === null ? [
+            const possible: (KeyboardName | null)[] = this.props.user.customKeyboard === null ? [
                 mode.category ? "category" : null,
                 mode.expiry ? "expiry" : null,
                 mode.weight ? "weight" : null
             ] : [
-                (mode.category || mode.expiry) ? "unified" : null,
+                (mode.category || mode.expiry) ? "custom" : null,
                 mode.weight ? "weight" : null
             ];
-
             this.switchKeyboard(possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null)[0]);
         } else {
             this.switchKeyboard(keyboardsNeeded[0]);
@@ -558,46 +557,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         } else {
             return selection;
-        }
-
-    }
-
-    private static toExpiryRange(range: SimpleExpiryRange | ExpiryRange | null): ExpiryRange | null {
-        // choose range start and end points
-
-        if (range === null || !("year" in range)) {
-            return range;
-        } else if ("month" in range) {
-
-            const fromDate = new Date(range.year, range.month);
-            const toDate = new Date(fromDate);
-            toDate.setMonth(fromDate.getMonth() + 1);
-
-            return {
-                from: fromDate.getTime(), to: toDate.getTime(),
-                label: `${MONTHS_TRANSLATOR[range.month]} ${range.year}`
-            };
-
-        } else if ("quarter" in range) {
-
-            // Multiply by 3 to map quarter indices to the first month in that range
-            const fromDate = new Date(range.year, range.quarter * 3);
-            const toDate = new Date(fromDate);
-
-            toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
-
-            return {
-                from: fromDate.getTime(), to: toDate.getTime(),
-                label: `Q${(range.quarter + 1).toString()} ${range.year}`
-            };
-
-        } else { // Year
-
-            return {
-                from: new Date(range.year, 0).getTime(),
-                to: new Date(range.year + 1, 0).getTime(),
-                label: `${range.year}`
-            };
         }
 
     }
@@ -843,10 +802,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         couldAdvance: boolean,
     ): Promise<void> {
 
-        const newWeight = weight !== undefined && weight !== null ? isNaN(Number(weight)) ? undefined : Number(weight)
-                                                                  : weight;
-        const newExpiry = expiry === undefined ? undefined
-                                               : ShelfViewPage.toExpiryRange(expiry);
+        const convertedWeight = isNaN(Number(weight)) ? undefined : Number(weight);
+        const newWeight = (weight === undefined || weight === null) ? weight : convertedWeight;
+        const newExpiry = (expiry === undefined || expiry === null) ? expiry : toExpiryRange(expiry);
 
         const modify = (tray: Tray): void => {
             if (category !== undefined) {
@@ -1004,8 +962,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     openNavigatorDisabled={this.state.isEditShelf}
 
                     buttons={sideBarButtons}
-                    keyboards={this.props.user.unifiedKeyboard ? [
-                        {name: "unified", icon: categoryIcon},
+                    keyboards={this.props.user.customKeyboard ? [
+                        {name: "custom", icon: categoryIcon},
                         {name: "weight", icon: weightIcon}
                     ] : [
                         {name: "category", icon: categoryIcon},

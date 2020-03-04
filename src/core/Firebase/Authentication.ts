@@ -1,6 +1,6 @@
 import * as fb from "firebase/app";
 import "firebase/auth";
-import {UnifiedKeyboard} from "../../components/CustomKeyboardPage";
+import {CustomKeyboard} from "../../utils/generateKeyboardButtons";
 import {ONLINE} from "../Firebase";
 import {WarehouseManager} from "../WarehouseModel";
 import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
@@ -41,7 +41,7 @@ interface UserFields {
 
     clearAboveSelection: boolean;
 
-    unifiedKeyboard: null | UnifiedKeyboard;
+    customKeyboard: null | CustomKeyboard;
 }
 
 export class User extends DatabaseObject<UserFields> {
@@ -56,7 +56,7 @@ export class User extends DatabaseObject<UserFields> {
             onlySingleAutoAdvance: false,
             showPreviousShelfButton: false,
             clearAboveSelection: true,
-            unifiedKeyboard: null
+            customKeyboard: null
         });
         this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
     }
@@ -143,12 +143,12 @@ export class User extends DatabaseObject<UserFields> {
         this.fields.clearAboveSelection = clearAboveSelection;
     }
 
-    public get unifiedKeyboard(): null | UnifiedKeyboard {
-        return this.fields.unifiedKeyboard;
+    public get customKeyboard(): null | CustomKeyboard {
+        return this.fields.customKeyboard;
     }
 
-    public set unifiedKeyboard(unifiedKeyboard: null | UnifiedKeyboard) {
-        this.fields.unifiedKeyboard = unifiedKeyboard;
+    public set customKeyboard(unifiedKeyboard: null | CustomKeyboard) {
+        this.fields.customKeyboard = unifiedKeyboard;
     }
 
 
@@ -191,7 +191,7 @@ export class Authentication {
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
                     clearAboveSelection: true,
-                    unifiedKeyboard: null,
+                    customKeyboard: null,
                 }).load();
             onSignIn?.call(this, this.currentUser);
         }
@@ -219,7 +219,7 @@ export class Authentication {
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
                     clearAboveSelection: true,
-                    unifiedKeyboard: null,
+                    customKeyboard: null,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }
@@ -241,7 +241,7 @@ export class Authentication {
                     onlySingleAutoAdvance: false,
                     showPreviousShelfButton: false,
                     clearAboveSelection: true,
-                    unifiedKeyboard: null,
+                    customKeyboard: null,
                 }).load();
             this.onSignIn?.call(this, this.currentUser);
         }

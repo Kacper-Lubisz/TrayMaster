@@ -134,7 +134,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                         >
                             Personal Settings
                         </div>
-                        {this.props.user.unifiedKeyboard ? <div
+                        {this.props.user.customKeyboard ? <div
                             className={classNames("tab", {
                                 "tab-selected": this.state.currentTab === "keyboard-editor"
                             })}

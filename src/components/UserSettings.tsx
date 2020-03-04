@@ -1,8 +1,8 @@
 import React from "react";
 import {AutoAdvanceModes, User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {buildDefaultUnifiedKeyboard} from "../utils/generateKeyboardButtons";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
-import {buildDefaultUnifiedKeyboard} from "./CustomKeyboardPage";
 
 import "./styles/_usersettings.scss";
 
@@ -59,14 +59,14 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 label: "Auto Advance",
             }, {
                 inputType: "checkBox",
-                get: () => this.props.user.unifiedKeyboard !== null,
+                get: () => this.props.user.customKeyboard !== null,
                 set: async (value: boolean) => {
                     this.props.repaintSettings();
-                    this.props.user.unifiedKeyboard = value ? buildDefaultUnifiedKeyboard(this.props.warehouse)
-                                                            : null;
+                    this.props.user.customKeyboard = value ? buildDefaultUnifiedKeyboard(this.props.warehouse)
+                                                           : null;
                     await this.props.user.stage(true, true);
                 },
-                label: "Secret feature"
+                label: "Use Unified Keyboard"
             }
         ];
         return <div id="user-settings">
