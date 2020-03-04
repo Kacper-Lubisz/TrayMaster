@@ -3,6 +3,7 @@ import React, {ReactNode} from "react";
 import {Shelf} from "../core/WarehouseModel/Layers/Shelf";
 import {Zone} from "../core/WarehouseModel/Layers/Zone";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import "./styles/_zonedisplay.scss";
 
 interface ZoneDisplayComponentProps {
     zone: Zone;
