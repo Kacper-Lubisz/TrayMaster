@@ -52,6 +52,7 @@ interface LongPress {
  */
 interface ViewPortState {
     longPress?: LongPress | null;
+    condensed: boolean[];
 }
 
 /**
@@ -64,10 +65,24 @@ const LONG_PRESS_TIMEOUT = 300;
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
+    private readonly colRefs: React.RefObject<HTMLDivElement>[];
+
+    private readonly lastCondensed: boolean[];
+
     constructor(props: ViewPortProps) {
         super(props);
+
+        this.colRefs = [];
+        this.lastCondensed = [];
+
+        if (this.props.current instanceof Shelf) {
+            this.colRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
+            this.lastCondensed = this.props.current.columns.map(_ => false);
+        }
+
         this.state = {
             longPress: null,
+            condensed: this.lastCondensed
         };
     }
 
@@ -205,7 +220,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             if (this.state.longPress.isHappening) {
                 this.onDragSelectEnd(); // end of drag
             } else {
-                window.clearTimeout(this.state.longPress?.timeout);
+                window.clearTimeout(this.state.longPress.timeout);
                 this.setState(state => ({
                     ...state,
                     longPress: null
@@ -348,7 +363,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 order: order,
                 flexGrow: column.traySize.sizeRatio
             }}
-            className="column"
+            className={classNames("column", {
+                "column-condensed": this.state.condensed[order]
+            })}
             key={order}
         >{
             column.getPaddedTrays().map((tray, index) => {
@@ -397,6 +414,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     onPointerLeave={this.onTrayPointerLeave.bind(this)}
                     onPointerUp={this.onTrayPointerUp.bind(this, tray)}
                     key={index}
+                    ref={index === 0 ? this.colRefs[order] : undefined}
                 >
                     <FontAwesomeIcon
                         className={classNames("tray-tickbox", {
@@ -479,7 +497,22 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         }
     }
 
+    componentDidMount(): void {
+        const condenseMaxHeight = 100;
 
+        const newCondensed = this.colRefs.map(trayRef => {
+            return !!(trayRef.current?.clientHeight && trayRef.current.clientHeight < condenseMaxHeight);
+        });
+
+        if (newCondensed !== this.lastCondensed) {
+            this.setState(state => {
+                return {
+                    ...state,
+                    condensed: newCondensed
+                };
+            });
+        }
+    }
 }
 
 function stringToTitleCase(string: string): string {
