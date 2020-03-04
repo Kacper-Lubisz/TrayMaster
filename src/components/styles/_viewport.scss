@@ -152,7 +152,8 @@
           -webkit-box-orient: vertical;
 
           // Truncate long categories
-          max-width: 60%;
+          max-width: 90%;
+          word-wrap: break-word;
           overflow: hidden;
           text-overflow: ellipsis;
           text-transform: uppercase;
