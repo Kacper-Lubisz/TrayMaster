@@ -3,22 +3,29 @@ import {Category, ExpiryRange} from "../core/WarehouseModel";
 import {NEVER_EXPIRY, Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 import {getExpiryColor, interpolateTowardsGrey, toExpiryRange} from "./getExpiryColor";
 import {MONTHS_TRANSLATOR} from "./monthsTranslator";
+import {byNullSafe} from "./sortsUtils";
 
-type ButtonProperties = {
+export type ButtonProperties = {
     label: string;
     background: string | null;
 };
 
-export type TrayAlteringButton = {
-    alteration: null | Alteration | AlterationGroup;
-} & ButtonProperties;
+export type TrayAlteringButton = ({
+    type: "erase";
+} | {
+    type: "singular";
+    alteration: Alteration;
+} | {
+    type: "grouped";
+    alterations: (Alteration & ButtonProperties)[];
+}) & ButtonProperties;
 
-type Alteration = {
+export type Alteration = {
     category: Category | null | undefined;
     expiry: ExpiryRange | null | undefined;
+    weight: string | null | undefined;
+    comment: string | null | undefined;
 };
-
-type  AlterationGroup = (Alteration & ButtonProperties)[] ;
 
 export type CustomKeyboardButton = TrayAlteringButton & {
     columnStart: number | null;
@@ -31,39 +38,51 @@ export interface CustomKeyboard {
     buttons: CustomKeyboardButton[];
 }
 
-export function buildKeyboardButtons(yearsAhead: number, quartersAhead: number, categories: Category[]) {
+export function buildKeyboardButtons(
+    yearsAhead: number,
+    quartersAhead: number,
+    categories: Category[]
+): {
+    categories: TrayAlteringButton[];
+    specialCategoryButtons: { removeTray: TrayAlteringButton };
+    specialExpiryButtons: { never: TrayAlteringButton; clearExpiry: TrayAlteringButton };
+    years: TrayAlteringButton[];
+    quarters: TrayAlteringButton[];
+    months: TrayAlteringButton[];
+} {
 
-    const specialExpiryButtons: { never: TrayAlteringButton, clear: TrayAlteringButton } = {
+    const specialExpiryButtons: { never: TrayAlteringButton; clearExpiry: TrayAlteringButton } = {
         never: {
+            type: "singular",
             label: "Never",
-            onClick: this.props.updateTrayProperties.bind(undefined,
-                undefined,
-                NEVER_EXPIRY,
-                undefined,
-                true
-            ),
+            alteration: {
+                category: undefined,
+                expiry: NEVER_EXPIRY,
+                weight: undefined,
+                comment: undefined,
+            },
             background: null
         },
         clearExpiry: {
-            label: "< Clear >",
-            onClick: this.props.updateTrayProperties.bind(undefined,
-                undefined,
-                null,
-                undefined,
-                true
-            ),
+            type: "singular",
+            label: "Clear Expiry",
+            alteration: {
+                category: undefined,
+                expiry: null,
+                weight: undefined,
+                comment: undefined,
+            },
             background: "#ffffff"
         }
     };
 
     const specialCategoryButtons: { removeTray: TrayAlteringButton } = {
         removeTray: {
+            type: "erase",
             label: "< Clear >",
-            alteration: null,
             background: "#ffffff"
         }
     };
-
 
     return {
         categories: buildCategoryButtons(categories),
@@ -76,8 +95,52 @@ export function buildKeyboardButtons(yearsAhead: number, quartersAhead: number, 
 }
 
 
+const GROUP_BUTTON_BACKGROUND = "#e3c9ba";
+
 function buildCategoryButtons(categories: Category[]): TrayAlteringButton[] {
-    return [];
+
+    const categoryGroups: Map<string, [Category]> = new Map();
+    categories.forEach(cat => {
+        if (cat.group !== null) {
+            if (categoryGroups.has(cat.group)) {
+                categoryGroups.get(cat.group)?.push(cat);
+            } else {
+                categoryGroups.set(cat.group, [cat]);
+            }
+        }
+    });
+
+    const buttonsWithoutGroups: TrayAlteringButton[] = categories.filter(cat =>
+        cat.group === null
+    ).map((cat): TrayAlteringButton => ({
+        type: "singular",
+        label: cat.shortName ?? cat.name,
+        alteration: {
+            category: cat,
+            expiry: null,
+            weight: null,
+            comment: null,
+        },
+        background: null
+    }));
+
+    const groupedButtons: TrayAlteringButton[] = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
+        label: group,
+        type: "grouped",
+        alterations: categories.map(category => ({
+            label: category.shortName ?? category.name,
+            background: null,
+            category: category,
+            expiry: null,
+            weight: null,
+            comment: null,
+        })),
+        background: GROUP_BUTTON_BACKGROUND
+    }));
+
+    return buttonsWithoutGroups
+        .concat(groupedButtons)
+        .sort(byNullSafe(button => button.label));
 }
 
 function buildYearButtons(yearsAhead: number): TrayAlteringButton[] {
@@ -95,9 +158,12 @@ function buildYearButtons(yearsAhead: number): TrayAlteringButton[] {
 
         return {
             label: year.toString(),
+            type: "singular",
             alteration: {
                 category: undefined,
-                expiry: properExpiry
+                expiry: properExpiry,
+                weight: undefined,
+                comment: undefined,
             },
             expiryFrom: new Date(year, 0).getTime(),
             background: color
@@ -121,9 +187,12 @@ export function buildMonthButtons(): TrayAlteringButton[] {
 
         return {
             label: `${MONTHS_TRANSLATOR[index]}`,
+            type: "singular",
             alteration: {
                 category: undefined,
-                expiry: properExpiry
+                expiry: properExpiry,
+                weight: undefined,
+                comment: undefined,
             },
             expiryFrom: new Date(year, index).getTime(),
             background: color
@@ -136,10 +205,9 @@ export function buildQuarterButtons(quartersAhead: number): TrayAlteringButton[]
     const thisQuarter = Math.floor(now.getMonth() / 3);
     return Array(quartersAhead).fill(0).map((_, index) => {
 
-        const quarter = index + 1;
-        const year = now.getFullYear() + (thisQuarter < index ? 0 : 1);
+        const year = now.getFullYear() + (thisQuarter <= index ? 0 : 1);
 
-        const expiry = {year: year, quarter: quarter};
+        const expiry = {year: year, quarter: index};
         const properExpiry = toExpiryRange(expiry);
 
         const color = interpolateTowardsGrey(
@@ -148,12 +216,15 @@ export function buildQuarterButtons(quartersAhead: number): TrayAlteringButton[]
             EXPIRY_GREY_RATIO
         );
         return {
-            label: `Q${quarter}`,
+            type: "singular",
+            label: `Q${index + 1}`,
             alteration: {
                 category: undefined,
-                expiry: properExpiry
+                expiry: properExpiry,
+                weight: undefined,
+                comment: undefined,
             },
-            expiryFrom: new Date(year, quarter * 3).getTime(),
+            expiryFrom: new Date(year, index * 3).getTime(),
             background: color
         };
     });
@@ -168,157 +239,43 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         months
     } = buildKeyboardButtons(4, 4, warehouse.categories);
 
-    const now = new Date();
-    const yearButtons: CustomKeyboardButton[] = Array(4).fill(0).map((_, index) =>
-        index + now.getFullYear()
-    ).map((year, index) => {
-        const expiry = {
-            from: new Date(year, 1).getTime(),
-            to: new Date(year + 1, 1).getTime(),
-            label: year.toString(),
-        };
-        const bg = interpolateTowardsGrey(getExpiryColor(expiry, "warehouse"), EXPIRY_GREY, EXPIRY_GREY_RATIO);
-        return {
-            label: year.toString(),
-            columnStart: 22,
-            columnEnd: 25,
-            rowStart: index + 1,
-            rowEnd: index + 2,
-            alteration: {
-                category: undefined,
-                expiry: expiry,
-            },
-            background: bg,
-        };
-    });
+    const yearButtons: CustomKeyboardButton[] = years.map((button, index) => ({
+        ...button,
+        columnStart: 22,
+        columnEnd: 25,
+        rowStart: index + 1,
+        rowEnd: index + 2,
 
-    const quarterButtons: CustomKeyboardButton[] = Array(4).fill(0).map((_, index) => {
-        const expiry = {
-            from: null, //todo fixme
-            to: null,
-            label: `Q${index + 1} ${now.getFullYear()}`,
-        };
-        const bg = interpolateTowardsGrey(getExpiryColor(expiry, "warehouse"), EXPIRY_GREY, EXPIRY_GREY_RATIO);
-        return {
-            label: `Q${index + 1}`,
-            columnStart: 19 + 3 * (index % 2),
-            columnEnd: 22 + 3 * (index % 2),
-            rowStart: Math.floor(index / 2) + 5,
-            rowEnd: Math.floor(index / 2) + 6,
-            alteration: {
-                category: undefined,
-                expiry: expiry,
-            },
-            background: bg,
-        };
-    });
+    }));
 
-    const monthButtons = Array(12).fill(0).map((_, index) =>
-        index + 1
-    ).map((month, index) => {
-        const currentMonth = new Date(now.getFullYear() + ((month <= now.getMonth()) ? 1 : 0), month);
-        const expiry = {
-            from: new Date(currentMonth.getFullYear(), currentMonth.getMonth()).getTime(),
-            to: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1).getTime(),
-            label: `${MONTHS_TRANSLATOR[month - 1]} ${currentMonth.getFullYear()}`,
-        };
-        const bg = interpolateTowardsGrey(getExpiryColor(expiry, "warehouse"), EXPIRY_GREY, EXPIRY_GREY_RATIO);
-        return {
-            label: MONTHS_TRANSLATOR[month - 1],
-            columnStart: index * 2 + 1,
-            columnEnd: (index + 1) * 2 + 1,
-            rowStart: 9,
-            rowEnd: 10,
-            background: bg,
-            alteration: {
-                category: undefined,
-                expiry: expiry,
-            },
-        };
-    });
+    const quarterButtons: CustomKeyboardButton[] = quarters.map((button, index) => ({
+        ...button,
+        columnStart: 19 + 3 * (index % 2),
+        columnEnd: 22 + 3 * (index % 2),
+        rowStart: Math.floor(index / 2) + 5,
+        rowEnd: Math.floor(index / 2) + 6,
+    }));
 
+    const monthButtons = months.map((button, index) => ({
+        ...button,
+        columnStart: index * 2 + 1,
+        columnEnd: (index + 1) * 2 + 1,
+        rowStart: 7,
+        rowEnd: 8,
+    }));
 
-    const categoryGroups: Map<string, [Category]> = new Map();
-    warehouse.categories.forEach(cat => {
-        if (cat.group !== null) {
-            if (categoryGroups.has(cat.group)) {
-                categoryGroups.get(cat.group)?.push(cat);
-            } else {
-                categoryGroups.set(cat.group, [cat]);
-            }
-        }
-    });
-
-    // const buttonsWithoutGroups = this.props.categories.filter(cat =>
-    //     cat.group === null
-    // ).map((cat): CustomButtonProps => ({
-    //     name: cat.shortName ?? cat.name,
-    //     onClick: this.props.updateTrayProperties.bind(undefined, cat, null, null, true),
-    //     selected: cat.name === commonCat,
-    // }));
-    //
-    // const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
-    //     name: group,
-    //     onClick: this.props.openDialog.bind(undefined, {
-    //         dialog: (close: () => void) => {
-    //             const groupButtons = categories.map((cat) => ({
-    //                 name: cat.shortName ?? cat.name,
-    //                 onClick: () => {
-    //                     this.props.updateTrayProperties.bind(undefined,
-    //                         cat,
-    //                         null,
-    //                         null,
-    //                         true
-    //                     );
-    //                     close();
-    //                 },
-    //                 selected: cat.name === commonCat
-    //             }));
-    //             return <GroupedCategoriesDialog
-    //                 groupTitle={group}
-    //                 categoryButtons={groupButtons}
-    //                 close={close}/>;
-    //         },
-    //         closeOnDocumentClick: true,
-    //     }),
-    //     selected: commonCat ? categories.some(cat => cat.name === commonCat) : false
-    // }));
-
-    // const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
-    //     .concat(groupedButtons)
-    //     .sort(byNullSafe(button => button.name));
-    //
-    // const specialButtons: CustomButtonProps[] = [
-    //     {
-    //         name: "< Clear >",
-    //         onClick: this.props.removeSelection,
-    //         selected: false,
-    //         bg: "#ffffff"
-    //     }
-    // ];
-
-    const categoryButtons: CustomKeyboardButton[] = warehouse.categories.reduce((acc, cur) => {
-        if (cur.group !== null) {
-            return acc;
-        }
-
-
+    const categoryButtons = categories.reduce((acc, button) => {
         const currentButton: CustomKeyboardButton = ({
-            label: cur.shortName ?? cur.name,
+            ...button,
             columnStart: acc.column,
             columnEnd: acc.column + 3,
             rowStart: acc.row,
             rowEnd: acc.row,
-            alteration: {
-                category: cur,
-                expiry: null,
-            },
-            background: null,
         });
         acc.buttons.push(currentButton);
 
         acc.column += 3;
-        if (acc.column === 22 || (acc.row === 5 && acc.column === 19)) {
+        if (acc.column === 19) {
             acc.column = 1;
             acc.row += 1;
         }

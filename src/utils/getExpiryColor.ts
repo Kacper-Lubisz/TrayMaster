@@ -175,7 +175,6 @@ function getWarehouseColor(range: SafeExpiryRange): string {
         "#fff44d",
         "#0ea5ff",
         "#ff97cc",
-        "#d597ff",
         "#49ff55"
     ];
 

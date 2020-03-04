@@ -4,8 +4,7 @@ import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 import {KeyboardName, SimpleExpiryRange} from "../pages/ShelfViewPage";
-import {buildKeyboardButtons, buildYearButtons} from "../utils/generateKeyboardButtons";
-import {byNullSafe} from "../utils/sortsUtils";
+import {Alteration, buildKeyboardButtons, ButtonProperties, TrayAlteringButton} from "../utils/generateKeyboardButtons";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 
@@ -17,6 +16,7 @@ export interface BottomPanelProps {
         category: Category | null | undefined,
         expiry: SimpleExpiryRange | ExpiryRange | null | undefined,
         weight: string | null | undefined,
+        comment: string | null | undefined,
         couldAdvance: boolean,
     ) => void;
     removeSelection: () => void;
@@ -31,7 +31,7 @@ export interface BottomPanelProps {
     user: User;
 }
 
-type WeightKeyboardButton = "Next Tray" | "< Clear >" | "Backspace" | number | ".";
+type WeightKeyboardButton = "Next Tray" | "Clear Weight" | "Backspace" | number | ".";
 
 export const EXPIRY_GREY_RATIO = 0.8;
 export const EXPIRY_GREY = "#ffffff";
@@ -49,9 +49,21 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     private weightKeyHandler(key: WeightKeyboardButton): void {
 
         if (key === "Next Tray") {
-            this.props.updateTrayProperties(undefined, undefined, this.props.weight, true);
-        } else if (key === "< Clear >") {
-            this.props.updateTrayProperties(undefined, undefined, null, false);
+            this.props.updateTrayProperties(
+                undefined,
+                undefined,
+                this.props.weight,
+                undefined,
+                true
+            );
+        } else if (key === "Clear Weight") {
+            this.props.updateTrayProperties(
+                undefined,
+                undefined,
+                null,
+                undefined,
+                false
+            );
         } else {
             // Must be a number or decimal point, just append
             // Unless it's only a zero, in which case we don't want a leading zero so just replace it. This deals
@@ -68,9 +80,21 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             })();
 
             if (newDraftWeight === "") {
-                this.props.updateTrayProperties(undefined, undefined, null, false);
+                this.props.updateTrayProperties(
+                    undefined,
+                    undefined,
+                    null,
+                    undefined,
+                    false
+                );
             } else if (!isNaN(Number(newDraftWeight)) && newDraftWeight.length <= 6) {
-                this.props.updateTrayProperties(undefined, undefined, newDraftWeight, false);
+                this.props.updateTrayProperties(
+                    undefined,
+                    undefined,
+                    newDraftWeight,
+                    undefined,
+                    false
+                );
             }
         }
     }
@@ -94,78 +118,19 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         const {
             categories,
+            specialCategoryButtons,
+            specialExpiryButtons,
             years,
             quarters,
-            months
+            months,
         } = buildKeyboardButtons(4, 4, this.props.categories);
-
-        const categoryGroups: Map<string, [Category]> = new Map();
-        this.props.categories.forEach(cat => {
-            if (cat.group !== null) {
-                if (categoryGroups.has(cat.group)) {
-                    categoryGroups.get(cat.group)?.push(cat);
-                } else {
-                    categoryGroups.set(cat.group, [cat]);
-                }
-            }
-        });
-
-        const buttonsWithoutGroups = this.props.categories.filter(cat =>
-            cat.group === null
-        ).map((cat): CustomButtonProps => ({
-            name: cat.shortName ?? cat.name,
-            onClick: this.props.updateTrayProperties.bind(undefined, cat, null, null, true),
-            selected: cat.name === commonCat,
-        }));
-
-        const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
-            name: group,
-            onClick: this.props.openDialog.bind(undefined, {
-                dialog: (close: () => void) => {
-                    const groupButtons = categories.map((cat) => ({
-                        name: cat.shortName ?? cat.name,
-                        onClick: () => {
-                            this.props.updateTrayProperties.bind(undefined,
-                                cat,
-                                null,
-                                null,
-                                true
-                            );
-                            close();
-                        },
-                        selected: cat.name === commonCat
-                    }));
-                    return <GroupedCategoriesDialog
-                        groupTitle={group}
-                        categoryButtons={groupButtons}
-                        close={close}/>;
-                },
-                closeOnDocumentClick: true,
-            }),
-            selected: commonCat ? categories.some(cat => cat.name === commonCat) : false
-        }));
-
-        const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
-            .concat(groupedButtons)
-            .sort(byNullSafe(button => button.name));
-
-        const specialButtons: CustomButtonProps[] = [
-            {
-                name: "< Clear >",
-                onClick: this.props.removeSelection,
-                selected: false,
-                bg: "#ffffff"
-            }
-        ];
-
-        const allCategoryButtons = categoryButtons.concat(specialButtons);
 
         if (this.props.keyboardState === "category") {
 
             return <Keyboard
                 id="cat-keyboard"
                 disabled={disabled}
-                buttons={allCategoryButtons}
+                buttons={this.bindButtons(categories.concat([specialCategoryButtons.removeTray]))}
                 gridX={7}
             />;
 
@@ -175,12 +140,18 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             // this.highlightExpiryKey();
 
 
-
             return <div className="keyboard-container expiry-container">
-                <Keyboard id="exp-special" disabled={disabled} buttons={specialButtons} gridX={1}/>
-                <Keyboard id="exp-years" disabled={disabled} buttons={years} gridX={2}/>
-                <Keyboard id="exp-quarters" disabled={disabled} buttons={months} gridX={2}/>
-                <Keyboard id="exp-months" disabled={disabled} buttons={quarters} gridX={3}/>
+                <Keyboard
+                    id="exp-special"
+                    disabled={disabled}
+                    buttons={this.bindButtons([
+                        specialExpiryButtons.never,
+                        specialExpiryButtons.clearExpiry
+                    ])} gridX={1}
+                />
+                <Keyboard id="exp-years" disabled={disabled} buttons={this.bindButtons(years)} gridX={2}/>
+                <Keyboard id="exp-quarters" disabled={disabled} buttons={this.bindButtons(quarters)} gridX={1}/>
+                <Keyboard id="exp-months" disabled={disabled} buttons={this.bindButtons(months)} gridX={3}/>
             </div>;
 
         } else if (this.props.keyboardState === "weight") {
@@ -196,14 +167,14 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             // Create numpadSide for the side buttons
             const numpadSide: CustomButtonProps[] = ([
-                "Backspace", "< Clear >"
+                "Backspace", "Clear Weight"
             ].concat(this.props.user.autoAdvanceMode ? ["Next Tray"] : []) as WeightKeyboardButton[])
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
                     disabled: this.props.selectedTrayCells.length === 0,
                     onClick: () => this.weightKeyHandler(a),
-                    bg: a === "< Clear >" ? "#ffffff" : undefined
+                    background: a === "Clear Weight" ? "#ffffff" : undefined
                 }));
 
             return <div className="keyboard-container weight-container">
@@ -217,29 +188,27 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             return <div style={{
                 display: "grid",
+                height: "100%",
+                width: "100%",
             }}>{
                 (!this.props.user.customKeyboard) || this.props.user.customKeyboard.buttons.length === 0 ? <div>
                     The keyboard has no buttons
-                </div> : this.props.user.customKeyboard.buttons.map((button, index) => <button
-                    key={index}
-                    style={{
-                        fontSize: 14,
-                        margin: 2,
-                        gridColumnStart: button.columnStart ?? undefined,
-                        gridColumnEnd: button.columnEnd ?? undefined,
-                        gridRowStart: button.rowStart ?? undefined,
-                        gridRowEnd: button.rowEnd ?? undefined,
-                        background: button.background ?? undefined
-                    }}
-                    onClick={this.props.updateTrayProperties.bind(undefined,
-                        button.setting.category,
-                        button.setting.expiry,
-                        null,
-                        true
-                    )}
-                >
-                    {button.label}
-                </button>)
+                </div> : this.props.user.customKeyboard.buttons.map((button, index) => {
+                    const bound = this.bindButtons([button])[0];
+                    return <button
+                        key={index}
+                        style={{
+                            fontSize: 14,
+                            margin: 2,
+                            gridColumnStart: button.columnStart ?? undefined,
+                            gridColumnEnd: button.columnEnd ?? undefined,
+                            gridRowStart: button.rowStart ?? undefined,
+                            gridRowEnd: button.rowEnd ?? undefined,
+                            background: button.background ?? undefined
+                        }}
+                        onClick={bound.onClick}
+                    > {button.label} </button>;
+                })
 
             }</div>;
 
@@ -281,11 +250,55 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             {this.chooseKeyboard(!this.props.selectedTrayCells.length)}
         </div>;
     }
+
+    private bindButtons(buttons: TrayAlteringButton[]): CustomButtonProps[] {
+        return buttons.map(button => ({
+            name: button.label,
+
+            onClick: (_: React.MouseEvent) => {
+                if (button.type === "erase") {
+                    this.props.removeSelection();
+                } else if (button.type === "singular") {
+                    this.props.updateTrayProperties(
+                        button.alteration.category,
+                        button.alteration.expiry,
+                        button.alteration.weight,
+                        button.alteration.comment,
+                        true,
+                    );
+                } else {
+                    const alteration = button;
+                    this.props.openDialog({
+                        dialog: (close: () => void) => <GroupedCategoriesDialog
+                            groupTitle={button.label}
+                            alterationGroup={alteration.alterations}
+                            close={close}
+                            onSelected={(selected => {
+                                this.props.updateTrayProperties(
+                                    selected.category,
+                                    selected.expiry,
+                                    selected.weight,
+                                    selected.comment,
+                                    true
+                                );
+                                close();
+                            })}
+                        />,
+                        closeOnDocumentClick: true,
+                    });
+                }
+            },
+            // selected ? : boolean;
+            // disabled ? : boolean;
+            background: button.background ?? undefined,
+        }));
+    }
 }
 
 interface GroupedCategoriesDialogProps {
     groupTitle: string;
-    categoryButtons: CustomButtonProps[];
+    alterationGroup: (Alteration & ButtonProperties)[];
+    onSelected: (alteration: Alteration) => void;
     close: () => void;
 }
 
@@ -300,8 +313,11 @@ class GroupedCategoriesDialog extends React.Component<GroupedCategoriesDialogPro
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr 1fr"
             }}>{
-                this.props.categoryButtons.map((cat, index) =>
-                    <button onClick={cat.onClick} key={index}>{cat.name}</button>
+                this.props.alterationGroup.map((alteration, index) =>
+                    <button
+                        onClick={this.props.onSelected.bind(undefined, alteration)}
+                        key={index}
+                    >{alteration.label}</button>
                 )
             }</div>
         </>;

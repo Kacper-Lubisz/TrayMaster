@@ -15,7 +15,6 @@ interface UserSettingsProps {
 
 export class UserSettings extends React.Component<UserSettingsProps, any> {
 
-
     render(): React.ReactNode {
 
         const settingsList: ControlledInputComponentProps[] = [
@@ -52,8 +51,8 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 },
                 options: [
                     {label: "Off", key: null},
-                    {label: "Category > Expiry > Next Tray", key: {weight: true}},
-                    {label: "Weight > Next Tray", key: {weight: true}},
+                    {label: "Category > Expiry > Next Tray", key: {category: true, expiry: true, weight: false}},
+                    {label: "Weight > Next Tray", key: {category: false, expiry: false, weight: true}},
                     {label: "Category > Expiry > Weight > Next Tray", key: {category: true, expiry: true, weight: true}}
                 ],
                 label: "Auto Advance",

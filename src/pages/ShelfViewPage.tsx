@@ -465,13 +465,17 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             if (first instanceof Tray) {
 
                 const possible: (KeyboardName | null)[] = this.props.user.customKeyboard === null ? [
-                    (mode.category && first.category === undefined) ? "category" : null,
-                    (mode.expiry && first.expiry === undefined) ? "expiry" : null,
-                    (mode.weight && first.weight === undefined) ? "weight" : null
+                    (mode.category && first.category === undefined && this.state.currentKeyboard !== "category")
+                    ? "category" : null,
+                    (mode.expiry && first.expiry === undefined && this.state.currentKeyboard !== "expiry")
+                    ? "expiry" : null,
+                    (mode.weight && first.weight === undefined && this.state.currentKeyboard !== "weight")
+                    ? "weight" : null
                 ] : [
-                    ((mode.category && first.category === undefined)
-                        || (mode.expiry && first.expiry === undefined)) ? "custom" : null,
-                    (mode.weight && first.weight === undefined) ? "weight" : null
+                    (((mode.category && first.category === undefined) || (mode.expiry && first.expiry === undefined)))
+                    ? "custom" : null,
+                    (mode.weight && first.weight === undefined && this.state.currentKeyboard !== "weight") ? "weight"
+                                                                                                           : null
                 ];
                 return possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null);
 
@@ -483,7 +487,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 ]) as KeyboardName[];
             }
         })();
-
+        console.log(keyboardsNeeded);
         if (keyboardsNeeded.length === 0) {
 
             const possible: (KeyboardName | null)[] = this.props.user.customKeyboard === null ? [
@@ -799,6 +803,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         category: Category | null | undefined,
         expiry: SimpleExpiryRange | ExpiryRange | null | undefined,
         weight: string | null | undefined,
+        comment: string | null | undefined,
         couldAdvance: boolean,
     ): Promise<void> {
 
@@ -815,6 +820,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             }
             if (weight !== undefined) {
                 tray.weight = newWeight ?? undefined;
+            }
+            if (comment !== undefined) {
+                tray.comment = comment ?? undefined;
             }
         };
 
