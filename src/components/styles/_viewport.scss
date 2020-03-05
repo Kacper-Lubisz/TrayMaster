@@ -211,15 +211,16 @@
         }
 
         > div.trayCategory {
-          left: 0;
-          padding-left: 38px;
+          left: 38px;
           text-align: left;
-          width: 50%;
+          width: calc(50% - 38px);
           transform: translate(0, -50%);
 
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
+          display: unset;
+
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         > div.trayExpiry {
