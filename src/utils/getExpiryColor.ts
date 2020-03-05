@@ -154,14 +154,13 @@ function computeHybridColorFromRange(range: SafeExpiryRange): string {
         60,
         180,
         320,
-        290,
         120
     ];
 
     const djsDate: Dayjs = dayjs(range.from);
 
     const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
-    return hslToHex(yearHueCycle[djsDate.year() % 5], saturation, 1);
+    return hslToHex(yearHueCycle[djsDate.year() % 4], saturation, 1);
 }
 
 /**

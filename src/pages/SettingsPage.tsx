@@ -134,14 +134,14 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                         >
                             Personal Settings
                         </div>
-                        {this.props.user.customKeyboard ? <div
-                            className={classNames("tab", {
-                                "tab-selected": this.state.currentTab === "keyboard-editor"
-                            })}
-                            onClick={this.changeTab.bind(this, "keyboard-editor")}
-                        >
-                            Custom Keyboard
-                        </div> : null}
+                        {/*{this.props.user.customKeyboard ? <div*/}
+                        {/*    className={classNames("tab", {*/}
+                        {/*        "tab-selected": this.state.currentTab === "keyboard-editor"*/}
+                        {/*    })}*/}
+                        {/*    onClick={this.changeTab.bind(this, "keyboard-editor")}*/}
+                        {/*>*/}
+                        {/*    Custom Keyboard*/}
+                        {/*</div> : null}*/}
                     </div>
                     {this.props.user.isAdmin ? <>
                         <div>

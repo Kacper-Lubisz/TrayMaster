@@ -60,7 +60,7 @@ interface WarehouseFields {
     expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
 
-export const MIXED_CATEGORY: Category = {
+const MIXED_CATEGORY: Category = {
     index: defaultCategories.length,
     name: "Mixed",
     shortName: null,

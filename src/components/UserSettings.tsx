@@ -55,18 +55,16 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     await this.props.user.stage(true, true);
                 },
                 label: "Don't Advance in Multi-select"
-            },
-            // {
-            //     inputType: "checkBox",
-            //     get: () => this.props.user.customKeyboard !== null,
-            //     set: async (value: boolean) => {
-            //         this.props.repaintSettings();
-            //         this.props.user.customKeyboard = value ? buildDefaultUnifiedKeyboard(this.props.warehouse)
-            //                                                : null;
-            //         await this.props.user.stage(true, true);
-            //     },
-            //     label: "Use Experimental Keyboard"
-            // }
+            }, {
+                inputType: "checkBox",
+                get: () => this.props.user.useCustomKeyboard,
+                set: async (value: boolean) => {
+                    this.props.repaintSettings();
+                    this.props.user.useCustomKeyboard = value;
+                    await this.props.user.stage(true, true);
+                },
+                label: "Use Experimental Keyboard"
+            }
         ];
         return <div id="user-settings">
             <h3>Personal Settings</h3>

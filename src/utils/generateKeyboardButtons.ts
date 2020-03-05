@@ -1,6 +1,6 @@
 import {EXPIRY_GREY, EXPIRY_GREY_RATIO} from "../components/BottomPanel";
 import {Category, ExpiryRange} from "../core/WarehouseModel";
-import {MIXED_CATEGORY, NEVER_EXPIRY, Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {NEVER_EXPIRY, Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 import {getExpiryColor, interpolateTowardsGrey, toExpiryRange} from "./getExpiryColor";
 import {MONTHS_TRANSLATOR} from "./monthsTranslator";
 import {byNullSafe} from "./sortsUtils";
@@ -29,7 +29,7 @@ export type TrayEditingButton = (ErasingButton | SingleEdit | GroupedEdit) & But
 const NOTHING: { type: "nothing" } = {type: "nothing"};
 const CLEAR: { type: "clear" } = {type: "clear"};
 
-export type CategoryAlteration = { type: "set"; category: Category } | { type: "clear" } | { type: "nothing" };
+export type CategoryAlteration = { type: "set"; categoryID: string } | { type: "clear" } | { type: "nothing" };
 export type ExpiryAlteration = { type: "set"; expiry: ExpiryRange } | { type: "clear" } | { type: "nothing" };
 export type WeightAlteration = { type: "set"; weight: string } | { type: "clear" } | { type: "nothing" };
 export type CommentAlteration = { type: "set"; comment: string } | { type: "clear" } | { type: "nothing" };
@@ -56,7 +56,7 @@ export function buildKeyboardButtons(
     quartersAhead: number,
     addYearToQuarters: boolean,
     addYearToMonths: boolean,
-    categories: Category[]
+    warehouse: Warehouse
 ): {
     mixedYears: TrayEditingButton[];
     categories: TrayEditingButton[];
@@ -101,21 +101,26 @@ export function buildKeyboardButtons(
     };
 
     const yearButtons: (SingleEdit & ButtonProperties)[] = buildYearButtons(yearsAhead);
-    const mixedYears: TrayEditingButton[] = yearButtons.map(year => ({
-        label: `${MIXED_CATEGORY.shortName ?? MIXED_CATEGORY.name} ${year.label}`,
+
+    // this code is terrible todo fixme
+    // though, if a keyboard editor goes in, this won't be an issue
+    const mixed = warehouse.categories.find(cat => cat.name === "Mixed");
+
+    const mixedYears: TrayEditingButton[] = mixed ? yearButtons.map(year => ({
+        label: `${mixed.shortName ?? mixed.name} ${year.label}`,
         type: "singular",
         alteration: {
-            category: {type: "set", category: MIXED_CATEGORY},
+            category: {type: "set", categoryID: warehouse.getCategoryID(mixed)},
             expiry: year.alteration.expiry,
             weight: CLEAR,
             comment: CLEAR
         },
-        background: null
-    }));
+        background: year.background
+    })) : [];
 
     return {
         mixedYears: mixedYears,
-        categories: buildCategoryButtons(categories),
+        categories: buildCategoryButtons(warehouse),
         specialCategoryButtons: specialCategoryButtons,
         specialExpiryButtons: specialExpiryButtons,
         years: yearButtons,
@@ -127,10 +132,10 @@ export function buildKeyboardButtons(
 
 const GROUP_BUTTON_BACKGROUND = "#e3c9ba";
 
-function buildCategoryButtons(categories: Category[]): TrayEditingButton[] {
+function buildCategoryButtons(warehouse: Warehouse): TrayEditingButton[] {
 
     const categoryGroups: Map<string, [Category]> = new Map();
-    categories.forEach(cat => {
+    warehouse.categories.forEach(cat => {
         if (cat.group !== null) {
             if (categoryGroups.has(cat.group)) {
                 categoryGroups.get(cat.group)?.push(cat);
@@ -140,13 +145,13 @@ function buildCategoryButtons(categories: Category[]): TrayEditingButton[] {
         }
     });
 
-    const buttonsWithoutGroups: TrayEditingButton[] = categories.filter(cat =>
+    const buttonsWithoutGroups: TrayEditingButton[] = warehouse.categories.filter(cat =>
         cat.group === null
     ).map((cat): TrayEditingButton => ({
         type: "singular",
         label: cat.shortName ?? cat.name,
         alteration: {
-            category: {type: "set", category: cat},
+            category: {type: "set", categoryID: warehouse.getCategoryID(cat)},
             expiry: CLEAR,
             weight: CLEAR,
             comment: CLEAR,
@@ -160,7 +165,7 @@ function buildCategoryButtons(categories: Category[]): TrayEditingButton[] {
         alterations: categories.map(category => ({
             label: category.shortName ?? category.name,
             background: null,
-            category: {type: "set", category: category},
+            category: {type: "set", categoryID: warehouse.getCategoryID(category)},
             expiry: CLEAR,
             weight: CLEAR,
             comment: CLEAR,
@@ -180,7 +185,7 @@ function buildYearButtons(yearsAhead: number): (SingleEdit & ButtonProperties)[]
         const expiry = {year: year};
 
         const properExpiry = toExpiryRange(expiry);
-        console.log(expiry, properExpiry);
+
         const expiryColor = getExpiryColor(properExpiry, "warehouse");
         const color = interpolateTowardsGrey(
             expiryColor,
@@ -270,7 +275,7 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         quarters,
         months,
         mixedYears
-    } = buildKeyboardButtons(4, 4, false, false, warehouse.categories);
+    } = buildKeyboardButtons(4, 4, false, false, warehouse);
 
     const yearButtons: CustomKeyboardButton[] = years.map((button, index) => ({
         ...button,
@@ -296,7 +301,22 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         rowEnd: 8,
     }));
 
+    const mixedButtons = mixedYears.map((button, index) => ({
+        ...button,
+        columnStart: 19,
+        columnEnd: 22,
+        rowStart: index + 1,
+        rowEnd: index + 2,
+    }));
+
+
     const categoryButtons = categories.reduce((acc, button) => {
+        if (button.label === "Mixed") {
+            // absolutely awful code, this needs to be replaced with a category editor
+            return acc;
+        }
+
+
         const currentButton: CustomKeyboardButton = ({
             ...button,
             columnStart: acc.column,
@@ -322,14 +342,7 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         row: number;
         column: number;
     }).buttons;
-
-    const mixedButtons = mixedYears.map((button, index) => ({
-        ...button,
-        columnStart: 19,
-        columnEnd: 22,
-        rowStart: index + 1,
-        rowEnd: index + 2,
-    }));
+    // take the first 36 because that's all there's space for
 
     return {
         buttons: yearButtons.concat(quarterButtons, monthButtons, categoryButtons, mixedButtons)

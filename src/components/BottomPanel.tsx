@@ -2,9 +2,10 @@ import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
-import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
+import {ExpiryRange, Tray, TrayCell, Warehouse} from "../core/WarehouseModel";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {
+    buildDefaultUnifiedKeyboard,
     buildKeyboardButtons,
     ButtonProperties,
     CategoryAlteration,
@@ -30,7 +31,7 @@ export interface BottomPanelProps {
     ) => void;
     removeSelection: () => void;
 
-    categories: Category[];
+    warehouse: Warehouse;
 
     selectedTrayCells: TrayCell[];
     commonRange?: ExpiryRange;
@@ -59,18 +60,18 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         if (key === "Next Tray") {
             this.props.updateTrayProperties(
-                {type: "clear"},
-                {type: "clear"},
+                {type: "nothing"},
+                {type: "nothing"},
                 this.props.weight ? {type: "set", weight: this.props.weight} : {type: "clear"},
-                {type: "clear"},
+                {type: "nothing"},
                 true
             );
         } else if (key === "Clear Weight") {
             this.props.updateTrayProperties(
-                {type: "clear"},
-                {type: "clear"},
+                {type: "nothing"},
+                {type: "nothing"},
                 {type: "set", weight: "0"},
-                {type: "clear"},
+                {type: "nothing"},
                 false
             );
         } else {
@@ -90,18 +91,18 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             if (newDraftWeight === "") {
                 this.props.updateTrayProperties(
-                    {type: "clear"},
-                    {type: "clear"},
+                    {type: "nothing"},
+                    {type: "nothing"},
                     {type: "set", weight: "0"},
-                    {type: "clear"},
+                    {type: "nothing"},
                     false
                 );
             } else if (!isNaN(Number(newDraftWeight)) && newDraftWeight.length <= 6) {
                 this.props.updateTrayProperties(
-                    {type: "clear"},
-                    {type: "clear"},
+                    {type: "nothing"},
+                    {type: "nothing"},
                     {type: "set", weight: newDraftWeight},
-                    {type: "clear"},
+                    {type: "nothing"},
                     false
                 );
             }
@@ -132,7 +133,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             years,
             quarters,
             months,
-        } = buildKeyboardButtons(8, 8, true, true, this.props.categories);
+        } = buildKeyboardButtons(8, 8, true, true, this.props.warehouse);
 
         if (this.props.keyboardState === "category") {
 
@@ -195,14 +196,14 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         } else if (this.props.keyboardState === "custom") {
 
+            const unifiedKeyboard = buildDefaultUnifiedKeyboard(this.props.warehouse);
+
             return <div style={{
                 display: "grid",
                 height: "100%",
                 width: "100%",
             }}>{
-                (!this.props.user.customKeyboard) || this.props.user.customKeyboard.buttons.length === 0 ? <div>
-                    The keyboard has no buttons
-                </div> : this.props.user.customKeyboard.buttons.map((button, index) => {
+                unifiedKeyboard.buttons.map((button, index) => {
                     const bound = this.bindButtons([button])[0];
                     return <button
                         key={index}
@@ -219,7 +220,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                         onClick={bound.onClick}
                     > {button.label} </button>;
                 })
-
             }</div>;
 
         } else { // edit shelf

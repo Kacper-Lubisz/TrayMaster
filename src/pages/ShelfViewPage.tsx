@@ -100,7 +100,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         this.state = {
             selected: new Map(),
-            currentKeyboard: this.props.user.customKeyboard ? "custom" : "category",
+            currentKeyboard: this.props.user.useCustomKeyboard ? "custom" : "category",
             currentView: (() => {
                 if (this.props.warehouse.zones.length === 0) {
                     return this.props.warehouse;
@@ -470,23 +470,23 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             const first = selected[0];
             if (first instanceof Tray) {
 
-                const possible: (KeyboardName | null)[] = this.props.user.customKeyboard === null ? [
+                const possible: (KeyboardName | null)[] = this.props.user.useCustomKeyboard ? [
+                    (((mode.category && first.category === undefined) || (mode.expiry && first.expiry === undefined)))
+                    ? "custom" : null,
+                    (mode.weight && first.weight === undefined && this.state.currentKeyboard !== "weight") ? "weight"
+                                                                                                           : null
+                ] : [
                     (mode.category && first.category === undefined && this.state.currentKeyboard !== "category")
                     ? "category" : null,
                     (mode.expiry && first.expiry === undefined && this.state.currentKeyboard !== "expiry")
                     ? "expiry" : null,
                     (mode.weight && first.weight === undefined && this.state.currentKeyboard !== "weight")
                     ? "weight" : null
-                ] : [
-                    (((mode.category && first.category === undefined) || (mode.expiry && first.expiry === undefined)))
-                    ? "custom" : null,
-                    (mode.weight && first.weight === undefined && this.state.currentKeyboard !== "weight") ? "weight"
-                                                                                                           : null
                 ];
                 return possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null);
 
             } else {
-                return (this.props.user.customKeyboard === null ? [
+                return (this.props.user.useCustomKeyboard ? [
                     "category", "expiry", "weight"
                 ] : [
                     "custom", "weight"
@@ -496,12 +496,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         if (keyboardsNeeded.length === 0) {
 
-            const possible: (KeyboardName | null)[] = this.props.user.customKeyboard === null ? [
-                mode.category ? "category" : null,
-                mode.expiry ? "expiry" : null,
+            const possible: (KeyboardName | null)[] = this.props.user.useCustomKeyboard ? [
+                (mode.category || mode.expiry) ? "custom" : null,
                 mode.weight ? "weight" : null
             ] : [
-                (mode.category || mode.expiry) ? "custom" : null,
+                mode.category ? "category" : null,
+                mode.expiry ? "expiry" : null,
                 mode.weight ? "weight" : null
             ];
             this.switchKeyboard(possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null)[0]);
@@ -815,7 +815,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         const modify = (tray: Tray): void => {
             if (category.type !== "nothing") {
-                tray.category = category.type === "set" ? category.category : undefined;
+                tray.category = category.type === "set"
+                                ? this.props.warehouse.getCategoryByID(category.categoryID) ?? undefined
+                                : undefined;
             }
             if (expiry.type !== "nothing") {
                 tray.expiry = expiry.type === "set" ? toExpiryRange(expiry.expiry) : undefined;
@@ -976,7 +978,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     openNavigatorDisabled={this.state.isEditShelf}
 
                     buttons={sideBarButtons}
-                    keyboards={this.props.user.customKeyboard ? [
+                    keyboards={this.props.user.useCustomKeyboard ? [
                         {name: "custom", icon: categoryIcon},
                         {name: "weight", icon: weightIcon}
                     ] : [
@@ -990,7 +992,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 />
                 <BottomPanel
                     openDialog={this.props.openDialog}
-                    categories={this.props.warehouse.categories}
+                    warehouse={this.props.warehouse}
 
                     updateTrayProperties={this.updateTrayProperties.bind(this)}
                     removeSelection={this.clearTrays.bind(this)}
