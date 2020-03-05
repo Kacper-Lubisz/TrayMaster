@@ -81,6 +81,7 @@ interface ShelfViewState {
     weight?: string;
     isEditShelf: boolean;
     isNavModalOpen: boolean;
+    maxShelfWidth: number;
 }
 
 class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
@@ -102,7 +103,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             })(),
             weight: undefined,
             isEditShelf: false,
-            isNavModalOpen: false // change this to true when editing NavModal
+            isNavModalOpen: false, // change this to true when editing NavModal
+            maxShelfWidth: 8,
         };
     }
 
@@ -604,8 +606,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     private addColumn(shelf: Shelf): void {
-        Column.create(3, shelf);
-        this.forceUpdate();
+        if(shelf.columns.length<this.state.maxShelfWidth) {
+            Column.create(3, shelf);
+            this.forceUpdate();
+        }
     }
 
     /**
@@ -882,7 +886,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         {
                             name: "Add Column",
                             onClick: this.addColumn.bind(this, this.state.currentView),
-                            halfWidth: false
+                            halfWidth: false,
+                            disabled: this.state.currentView.columns.length>= this.state.maxShelfWidth
                         },
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {
