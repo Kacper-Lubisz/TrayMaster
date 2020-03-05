@@ -38,7 +38,7 @@ import {
     WarehouseModel,
     Zone
 } from "../core/WarehouseModel";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
 import {SearchQuery, SortBy} from "./SearchPage";

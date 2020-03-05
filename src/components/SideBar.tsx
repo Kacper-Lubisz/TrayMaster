@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 import {KeyboardName} from "../pages/ShelfViewPage";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getTextColorForBackground, interpolateTowardsGrey} from "../utils/colorUtils";
 import {CustomButtonProps} from "./Keyboard";
 import "./styles/_sidebar.scss";
 
@@ -56,13 +56,15 @@ interface KeyboardSwitch {
 export class SideBar extends React.Component<SideBarProps> {
 
     render(): React.ReactNode {
+        const textColor = getTextColorForBackground(this.props.zoneColor);
         return <div id="sideBar">
             <button
                 id="shelfName"
-                className={this.props.openNavigatorDisabled ? "disabled" : undefined}
-                style={this.props.openNavigatorDisabled ? undefined : {
+                disabled={this.props.openNavigatorDisabled}
+                style={{
                     backgroundColor: this.props.zoneColor,
-                    color: getTextColorForBackground(this.props.zoneColor)
+                    color: this.props.openNavigatorDisabled ? interpolateTowardsGrey(textColor, "#888888", 0.8)
+                                                            : textColor
                 }}
                 onClick={this.props.openNavigatorDisabled ? undefined : this.props.openNavigator}
             >

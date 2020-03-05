@@ -5,8 +5,8 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
 import {Category, Tray, Warehouse} from "../core/WarehouseModel";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import {getExpiryColor} from "../utils/getExpiryColor";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import "./styles/search.scss";
 
 

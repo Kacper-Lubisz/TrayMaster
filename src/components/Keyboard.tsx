@@ -2,7 +2,7 @@ import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import "./styles/_keyboard.scss";
 
 /**

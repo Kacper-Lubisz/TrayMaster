@@ -1,5 +1,6 @@
 import dayjs, {Dayjs} from "dayjs";
 import {ExpiryRange} from "../core/WarehouseModel";
+import {hslToHex} from "./colorUtils";
 
 
 /**
@@ -17,78 +18,6 @@ interface SafeExpiryRange {
  * Using 8 currently because that's the number on the expiry keyboard (and what common food lasts longer than 8 years??)
  */
 const YEAR_PERIOD = 8;
-
-// SOURCE: https://campushippo.com/lessons/how-to-convert-rgb-colors-to-hexadecimal-with-javascript-78219fdb
-/**
- * Converts a single member of an rgb(x, x, x) color value into two hex digits
- * @param rgb - one of the three r, g, b, values constituting a color
- */
-function rgbToHex(rgb: number): string {
-    let hex = Math.round(Number(rgb)).toString(16);
-    if (hex.length < 2) {
-        hex = `0${hex}`;
-    }
-    return hex;
-}
-
-// SOURCE: https://gist.github.com/mjackson/5311256#gistcomment-2789005
-/**
- * Converts an HSL color value to HSL. Conversion formula
- * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
- *
- * @param   h       The hue, in [0-360]
- * @param   s       The saturation, in [0-1]
- * @param   l       The lightness, in [0-1]
- * @return  string  The hex code corresponding to the given HSL value
- */
-function hslToHex(h: number, s: number, l: number): string {
-    const hprime = h / 60;
-    const c = l * s;
-    const x = c * (1 - Math.abs(hprime % 2 - 1));
-    const m = l - c;
-    let r, g, b;
-    if (!hprime) {
-        r = 0;
-        g = 0;
-        b = 0;
-    }
-    if (hprime >= 0 && hprime < 1) {
-        r = c;
-        g = x;
-        b = 0;
-    }
-    if (hprime >= 1 && hprime < 2) {
-        r = x;
-        g = c;
-        b = 0;
-    }
-    if (hprime >= 2 && hprime < 3) {
-        r = 0;
-        g = c;
-        b = x;
-    }
-    if (hprime >= 3 && hprime < 4) {
-        r = 0;
-        g = x;
-        b = c;
-    }
-    if (hprime >= 4 && hprime < 5) {
-        r = x;
-        g = 0;
-        b = c;
-    }
-    if (hprime >= 5 && hprime < 6) {
-        r = c;
-        g = 0;
-        b = x;
-    }
-
-    r = Math.round(((r ? r : 0) + m) * 255);
-    g = Math.round(((g ? g : 0) + m) * 255);
-    b = Math.round(((b ? b : 0) + m) * 255);
-
-    return `#${[r, g, b].map(rgbToHex).join("")}`;
-}
 
 /**
  * Takes in the length of an expiry range in days (1-366 inclusive) and returns a saturation value to use
@@ -197,24 +126,4 @@ export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" |
     } else {
         return getWarehouseColor(range as SafeExpiryRange);
     }
-}
-
-/**
- * Interpolates between the given colour and the given grey colour by the given ratio
- * @param color - the colour to retain the hue of
- * @param grey - the grey to move towards
- * @param ratio - the ratio towards the grey to move
- */
-export function interpolateTowardsGrey(color: string, grey: string, ratio: number): string {
-    let r: number = parseInt(color.substring(1, 3), 16);
-    let g: number = parseInt(color.substring(3, 5), 16);
-    let b: number = parseInt(color.substring(5, 7), 16);
-
-    const greyIndex: number = parseInt(grey.substring(1, 3), 16);
-
-    r += (greyIndex - r) * ratio;
-    g += (greyIndex - g) * ratio;
-    b += (greyIndex - b) * ratio;
-
-    return `#${rgbToHex(r)}${rgbToHex(g)}${rgbToHex(b)}`;
 }
