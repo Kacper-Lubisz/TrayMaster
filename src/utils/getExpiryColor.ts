@@ -178,7 +178,7 @@ function getWarehouseColor(range: SafeExpiryRange): string {
         "#49ff55"
     ];
 
-    return yearCycle[dayjs(range.from).year() % 5];
+    return yearCycle[dayjs(range.from).year() % 4];
 }
 
 

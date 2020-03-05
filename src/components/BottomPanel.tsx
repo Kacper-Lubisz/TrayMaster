@@ -3,8 +3,17 @@ import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
-import {KeyboardName, SimpleExpiryRange} from "../pages/ShelfViewPage";
-import {Alteration, buildKeyboardButtons, ButtonProperties, TrayAlteringButton} from "../utils/generateKeyboardButtons";
+import {KeyboardName} from "../pages/ShelfViewPage";
+import {
+    buildKeyboardButtons,
+    ButtonProperties,
+    CategoryAlteration,
+    CommentAlteration,
+    Edit,
+    ExpiryAlteration,
+    TrayEditingButton,
+    WeightAlteration
+} from "../utils/generateKeyboardButtons";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 
@@ -13,10 +22,10 @@ export interface BottomPanelProps {
 
     keyboardState: KeyboardName;
     updateTrayProperties: (
-        category: Category | null | undefined,
-        expiry: SimpleExpiryRange | ExpiryRange | null | undefined,
-        weight: string | null | undefined,
-        comment: string | null | undefined,
+        category: CategoryAlteration,
+        expiry: ExpiryAlteration,
+        weight: WeightAlteration,
+        comment: CommentAlteration,
         couldAdvance: boolean,
     ) => void;
     removeSelection: () => void;
@@ -50,18 +59,18 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
         if (key === "Next Tray") {
             this.props.updateTrayProperties(
-                undefined,
-                undefined,
-                this.props.weight,
-                undefined,
+                {type: "clear"},
+                {type: "clear"},
+                this.props.weight ? {type: "set", weight: this.props.weight} : {type: "clear"},
+                {type: "clear"},
                 true
             );
         } else if (key === "Clear Weight") {
             this.props.updateTrayProperties(
-                undefined,
-                undefined,
-                null,
-                undefined,
+                {type: "clear"},
+                {type: "clear"},
+                {type: "set", weight: "0"},
+                {type: "clear"},
                 false
             );
         } else {
@@ -81,18 +90,18 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             if (newDraftWeight === "") {
                 this.props.updateTrayProperties(
-                    undefined,
-                    undefined,
-                    null,
-                    undefined,
+                    {type: "clear"},
+                    {type: "clear"},
+                    {type: "set", weight: "0"},
+                    {type: "clear"},
                     false
                 );
             } else if (!isNaN(Number(newDraftWeight)) && newDraftWeight.length <= 6) {
                 this.props.updateTrayProperties(
-                    undefined,
-                    undefined,
-                    newDraftWeight,
-                    undefined,
+                    {type: "clear"},
+                    {type: "clear"},
+                    {type: "set", weight: newDraftWeight},
+                    {type: "clear"},
                     false
                 );
             }
@@ -123,7 +132,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             years,
             quarters,
             months,
-        } = buildKeyboardButtons(4, 4, this.props.categories);
+        } = buildKeyboardButtons(8, 8, true, true, this.props.categories);
 
         if (this.props.keyboardState === "category") {
 
@@ -149,9 +158,9 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                         specialExpiryButtons.clearExpiry
                     ])} gridX={1}
                 />
-                <Keyboard id="exp-years" disabled={disabled} buttons={this.bindButtons(years)} gridX={2}/>
-                <Keyboard id="exp-quarters" disabled={disabled} buttons={this.bindButtons(quarters)} gridX={1}/>
                 <Keyboard id="exp-months" disabled={disabled} buttons={this.bindButtons(months)} gridX={3}/>
+                <Keyboard id="exp-quarters" disabled={disabled} buttons={this.bindButtons(quarters)} gridX={2}/>
+                <Keyboard id="exp-years" disabled={disabled} buttons={this.bindButtons(years)} gridX={2}/>
             </div>;
 
         } else if (this.props.keyboardState === "weight") {
@@ -252,7 +261,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         </div>;
     }
 
-    private bindButtons(buttons: TrayAlteringButton[]): CustomButtonProps[] {
+    private bindButtons(buttons: TrayEditingButton[]): CustomButtonProps[] {
         return buttons.map(button => ({
             name: button.label,
 
@@ -298,8 +307,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
 interface GroupedCategoriesDialogProps {
     groupTitle: string;
-    alterationGroup: (Alteration & ButtonProperties)[];
-    onSelected: (alteration: Alteration) => void;
+    alterationGroup: (Edit & ButtonProperties)[];
+    onSelected: (alteration: Edit) => void;
     close: () => void;
 }
 

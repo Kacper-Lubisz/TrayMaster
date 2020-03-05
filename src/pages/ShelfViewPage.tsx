@@ -39,6 +39,12 @@ import {
     Zone
 } from "../core/WarehouseModel";
 import "../styles/shelfview.scss";
+import {
+    CategoryAlteration,
+    CommentAlteration,
+    ExpiryAlteration,
+    WeightAlteration
+} from "../utils/generateKeyboardButtons";
 import {toExpiryRange} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {properMod} from "../utils/properMod";
@@ -800,29 +806,29 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     private async updateTrayProperties(
-        category: Category | null | undefined,
-        expiry: SimpleExpiryRange | ExpiryRange | null | undefined,
-        weight: string | null | undefined,
-        comment: string | null | undefined,
+        category: CategoryAlteration,
+        expiry: ExpiryAlteration,
+        weight: WeightAlteration,
+        comment: CommentAlteration,
         couldAdvance: boolean,
     ): Promise<void> {
 
-        const convertedWeight = isNaN(Number(weight)) ? undefined : Number(weight);
-        const newWeight = (weight === undefined || weight === null) ? weight : convertedWeight;
-        const newExpiry = (expiry === undefined || expiry === null) ? expiry : toExpiryRange(expiry);
-
         const modify = (tray: Tray): void => {
-            if (category !== undefined) {
-                tray.category = category ?? undefined;
+            if (category.type !== "nothing") {
+                tray.category = category.type === "set" ? category.category : undefined;
             }
-            if (expiry !== undefined) {
-                tray.expiry = newExpiry ?? undefined;
+            if (expiry.type !== "nothing") {
+                tray.expiry = expiry.type === "set" ? toExpiryRange(expiry.expiry) : undefined;
             }
-            if (weight !== undefined) {
-                tray.weight = newWeight ?? undefined;
+            if (weight.type !== "nothing") {
+                if (weight.type === "clear") {
+                    tray.weight = undefined;
+                } else {
+                    tray.weight = isNaN(Number(weight.weight)) ? tray.weight : Number(weight.weight);
+                }
             }
-            if (comment !== undefined) {
-                tray.comment = comment ?? undefined;
+            if (comment.type !== "nothing") {
+                tray.comment = comment.type === "set" ? comment.comment : undefined;
             }
         };
 
@@ -840,10 +846,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
 
-        if (!couldAdvance && weight !== undefined) {
+        if (!couldAdvance && weight !== undefined && weight.type === "set") {
             this.setState(state => ({
                 ...state,
-                weight: weight ?? undefined
+                weight: weight.weight
             }));
         }
 

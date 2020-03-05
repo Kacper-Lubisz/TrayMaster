@@ -11,29 +11,36 @@ export type ButtonProperties = {
 };
 
 
-type SingularAlteration = {
+type SingleEdit = {
     type: "singular";
-    alteration: Alteration;
+    alteration: Edit;
 };
-type GroupedAlteration = {
+type GroupedEdit = {
     type: "grouped";
-    alterations: (Alteration & ButtonProperties)[];
+    alterations: (Edit & ButtonProperties)[];
 };
 type ErasingButton = {
     type: "erase";
 };
 
 
-export type TrayAlteringButton = (ErasingButton | SingularAlteration | GroupedAlteration) & ButtonProperties;
+export type TrayEditingButton = (ErasingButton | SingleEdit | GroupedEdit) & ButtonProperties;
 
-export type Alteration = {
-    category: Category | null | undefined;
-    expiry: ExpiryRange | null | undefined;
-    weight: string | null | undefined;
-    comment: string | null | undefined;
+const NOTHING: { type: "nothing" } = {type: "nothing"};
+const CLEAR: { type: "clear" } = {type: "clear"};
+
+export type CategoryAlteration = { type: "set"; category: Category } | { type: "clear" } | { type: "nothing" };
+export type ExpiryAlteration = { type: "set"; expiry: ExpiryRange } | { type: "clear" } | { type: "nothing" };
+export type WeightAlteration = { type: "set"; weight: string } | { type: "clear" } | { type: "nothing" };
+export type CommentAlteration = { type: "set"; comment: string } | { type: "clear" } | { type: "nothing" };
+export type Edit = {
+    category: CategoryAlteration;
+    expiry: ExpiryAlteration;
+    weight: WeightAlteration;
+    comment: CommentAlteration;
 };
 
-export type CustomKeyboardButton = TrayAlteringButton & {
+export type CustomKeyboardButton = TrayEditingButton & {
     columnStart: number | null;
     columnEnd: number | null;
     rowStart: number | null;
@@ -47,26 +54,28 @@ export interface CustomKeyboard {
 export function buildKeyboardButtons(
     yearsAhead: number,
     quartersAhead: number,
+    addYearToQuarters: boolean,
+    addYearToMonths: boolean,
     categories: Category[]
 ): {
-    mixedYears: TrayAlteringButton[];
-    categories: TrayAlteringButton[];
-    specialCategoryButtons: { removeTray: TrayAlteringButton };
-    specialExpiryButtons: { never: TrayAlteringButton; clearExpiry: TrayAlteringButton };
-    years: TrayAlteringButton[];
-    quarters: TrayAlteringButton[];
-    months: TrayAlteringButton[];
+    mixedYears: TrayEditingButton[];
+    categories: TrayEditingButton[];
+    specialCategoryButtons: { removeTray: TrayEditingButton };
+    specialExpiryButtons: { never: TrayEditingButton; clearExpiry: TrayEditingButton };
+    years: TrayEditingButton[];
+    quarters: TrayEditingButton[];
+    months: TrayEditingButton[];
 } {
 
-    const specialExpiryButtons: { never: TrayAlteringButton; clearExpiry: TrayAlteringButton } = {
+    const specialExpiryButtons: { never: TrayEditingButton; clearExpiry: TrayEditingButton } = {
         never: {
             type: "singular",
             label: "Never",
             alteration: {
-                category: undefined,
-                expiry: NEVER_EXPIRY,
-                weight: undefined,
-                comment: undefined,
+                category: NOTHING,
+                expiry: {type: "set", expiry: NEVER_EXPIRY},
+                weight: NOTHING,
+                comment: NOTHING,
             },
             background: null
         },
@@ -74,16 +83,16 @@ export function buildKeyboardButtons(
             type: "singular",
             label: "Clear Expiry",
             alteration: {
-                category: undefined,
-                expiry: null,
-                weight: undefined,
-                comment: undefined,
+                category: NOTHING,
+                expiry: CLEAR,
+                weight: NOTHING,
+                comment: NOTHING,
             },
             background: "#ffffff"
         }
     };
 
-    const specialCategoryButtons: { removeTray: TrayAlteringButton } = {
+    const specialCategoryButtons: { removeTray: TrayEditingButton } = {
         removeTray: {
             type: "erase",
             label: "< Clear >",
@@ -91,16 +100,15 @@ export function buildKeyboardButtons(
         }
     };
 
-    const yearButtons: (SingularAlteration & ButtonProperties)[] = buildYearButtons(yearsAhead);
-
-    const mixedYears: TrayAlteringButton[] = yearButtons.map(year => ({
+    const yearButtons: (SingleEdit & ButtonProperties)[] = buildYearButtons(yearsAhead);
+    const mixedYears: TrayEditingButton[] = yearButtons.map(year => ({
         label: `${MIXED_CATEGORY.shortName ?? MIXED_CATEGORY.name} ${year.label}`,
         type: "singular",
         alteration: {
-            category: MIXED_CATEGORY,
+            category: {type: "set", category: MIXED_CATEGORY},
             expiry: year.alteration.expiry,
-            weight: null,
-            comment: null
+            weight: CLEAR,
+            comment: CLEAR
         },
         background: null
     }));
@@ -111,15 +119,15 @@ export function buildKeyboardButtons(
         specialCategoryButtons: specialCategoryButtons,
         specialExpiryButtons: specialExpiryButtons,
         years: yearButtons,
-        quarters: buildQuarterButtons(quartersAhead),
-        months: buildMonthButtons(),
+        quarters: buildQuarterButtons(quartersAhead, addYearToQuarters),
+        months: buildMonthButtons(addYearToMonths),
     };
 }
 
 
 const GROUP_BUTTON_BACKGROUND = "#e3c9ba";
 
-function buildCategoryButtons(categories: Category[]): TrayAlteringButton[] {
+function buildCategoryButtons(categories: Category[]): TrayEditingButton[] {
 
     const categoryGroups: Map<string, [Category]> = new Map();
     categories.forEach(cat => {
@@ -132,30 +140,30 @@ function buildCategoryButtons(categories: Category[]): TrayAlteringButton[] {
         }
     });
 
-    const buttonsWithoutGroups: TrayAlteringButton[] = categories.filter(cat =>
+    const buttonsWithoutGroups: TrayEditingButton[] = categories.filter(cat =>
         cat.group === null
-    ).map((cat): TrayAlteringButton => ({
+    ).map((cat): TrayEditingButton => ({
         type: "singular",
         label: cat.shortName ?? cat.name,
         alteration: {
-            category: cat,
-            expiry: null,
-            weight: null,
-            comment: null,
+            category: {type: "set", category: cat},
+            expiry: CLEAR,
+            weight: CLEAR,
+            comment: CLEAR,
         },
         background: null
     }));
 
-    const groupedButtons: TrayAlteringButton[] = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
+    const groupedButtons: TrayEditingButton[] = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
         label: group,
         type: "grouped",
         alterations: categories.map(category => ({
             label: category.shortName ?? category.name,
             background: null,
-            category: category,
-            expiry: null,
-            weight: null,
-            comment: null,
+            category: {type: "set", category: category},
+            expiry: CLEAR,
+            weight: CLEAR,
+            comment: CLEAR,
         })),
         background: GROUP_BUTTON_BACKGROUND
     }));
@@ -165,15 +173,17 @@ function buildCategoryButtons(categories: Category[]): TrayAlteringButton[] {
         .sort(byNullSafe(button => button.label));
 }
 
-function buildYearButtons(yearsAhead: number): (SingularAlteration & ButtonProperties)[] {
+function buildYearButtons(yearsAhead: number): (SingleEdit & ButtonProperties)[] {
     const now = new Date();
     return Array(yearsAhead).fill(0).map((_, index) => {
         const year = now.getFullYear() + index;
         const expiry = {year: year};
 
         const properExpiry = toExpiryRange(expiry);
+        console.log(expiry, properExpiry);
+        const expiryColor = getExpiryColor(properExpiry, "warehouse");
         const color = interpolateTowardsGrey(
-            getExpiryColor(properExpiry, "warehouse"),
+            expiryColor,
             EXPIRY_GREY,
             EXPIRY_GREY_RATIO
         );
@@ -182,10 +192,10 @@ function buildYearButtons(yearsAhead: number): (SingularAlteration & ButtonPrope
             label: year.toString(),
             type: "singular",
             alteration: {
-                category: undefined,
-                expiry: properExpiry,
-                weight: undefined,
-                comment: undefined,
+                category: NOTHING,
+                expiry: {type: "set", expiry: properExpiry},
+                weight: NOTHING,
+                comment: NOTHING,
             },
             expiryFrom: new Date(year, 0).getTime(),
             background: color
@@ -194,12 +204,12 @@ function buildYearButtons(yearsAhead: number): (SingularAlteration & ButtonPrope
     });
 }
 
-export function buildMonthButtons(): TrayAlteringButton[] {
+export function buildMonthButtons(addYearToMonths: boolean): TrayEditingButton[] {
     const now = new Date();
     return Array(12).fill(0).map((_, index) => {
-        const year = now.getFullYear() + (now.getMonth() <= index ? 0 : 1);
+        const year = now.getFullYear() + (now.getMonth() + index >= 12 ? 1 : 0);
 
-        const expiry = {year: year, month: index};
+        const expiry = {year: year, month: (now.getMonth() + index) % 12};
         const properExpiry = toExpiryRange(expiry);
         const color = interpolateTowardsGrey(
             getExpiryColor(properExpiry, "warehouse"),
@@ -208,13 +218,13 @@ export function buildMonthButtons(): TrayAlteringButton[] {
         );
 
         return {
-            label: `${MONTHS_TRANSLATOR[index]}`,
+            label: `${MONTHS_TRANSLATOR[(index + now.getMonth()) % 12]}${addYearToMonths ? ` ${year}` : ""}`,
             type: "singular",
             alteration: {
-                category: undefined,
-                expiry: properExpiry,
-                weight: undefined,
-                comment: undefined,
+                category: NOTHING,
+                expiry: {type: "set", expiry: properExpiry},
+                weight: NOTHING,
+                comment: NOTHING,
             },
             expiryFrom: new Date(year, index).getTime(),
             background: color
@@ -222,14 +232,14 @@ export function buildMonthButtons(): TrayAlteringButton[] {
     });
 }
 
-export function buildQuarterButtons(quartersAhead: number): TrayAlteringButton[] {
+export function buildQuarterButtons(quartersAhead: number, addYearToQuarters: boolean): TrayEditingButton[] {
     const now = new Date();
     const thisQuarter = Math.floor(now.getMonth() / 3);
     return Array(quartersAhead).fill(0).map((_, index) => {
 
-        const year = now.getFullYear() + (thisQuarter <= index ? 0 : 1);
+        const year = now.getFullYear() + (thisQuarter + index >= 4 ? 1 : 0);
 
-        const expiry = {year: year, quarter: index};
+        const expiry = {year: year, quarter: (index + thisQuarter) % 4};
         const properExpiry = toExpiryRange(expiry);
 
         const color = interpolateTowardsGrey(
@@ -239,12 +249,12 @@ export function buildQuarterButtons(quartersAhead: number): TrayAlteringButton[]
         );
         return {
             type: "singular",
-            label: `Q${index + 1}`,
+            label: `Q${(index + thisQuarter) % 4 + 1}${addYearToQuarters ? ` ${year}` : ""}`,
             alteration: {
-                category: undefined,
-                expiry: properExpiry,
-                weight: undefined,
-                comment: undefined,
+                category: NOTHING,
+                expiry: {type: "set", expiry: properExpiry},
+                weight: NOTHING,
+                comment: NOTHING,
             },
             expiryFrom: new Date(year, index * 3).getTime(),
             background: color
@@ -260,7 +270,7 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         quarters,
         months,
         mixedYears
-    } = buildKeyboardButtons(4, 4, warehouse.categories);
+    } = buildKeyboardButtons(4, 4, false, false, warehouse.categories);
 
     const yearButtons: CustomKeyboardButton[] = years.map((button, index) => ({
         ...button,
