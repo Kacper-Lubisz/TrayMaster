@@ -7,6 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames/bind";
+import {isEqual} from "lodash";
 import "pepjs";
 import React from "react";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
@@ -67,7 +68,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     private readonly colRefs: React.RefObject<HTMLDivElement>[];
 
-    private readonly lastCondensed: boolean[];
+    private lastCondensed: boolean[];
 
     constructor(props: ViewPortProps) {
         super(props);
@@ -424,7 +425,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     {tray instanceof Tray ? <>
                         <div className="trayCategory">{tray.category?.name ?? "Unsorted"}</div>
 
-                        {tray.expiry ? <div className="trayExpiry" style={expiryStyle}>{tray.expiry.label}</div> : null}
+                        {tray.expiry ? <div className="trayExpiry" style={expiryStyle}>
+                            <div>{tray.expiry.label}</div>
+                        </div> : null}
 
                         <div className={classNames("trayWeight", {
                             "trayWeightEditing": isSelected && this.props.currentKeyboard === "weight"
@@ -486,6 +489,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         </div>;
     }
 
+    componentDidMount(): void {
+        this.updateCondensed();
+    }
 
     /**
      * This method clears the tray spaces if the shelf that is being displayed is changed.
@@ -495,16 +501,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
         }
+
+        this.updateCondensed();
     }
 
-    componentDidMount(): void {
-        const condenseMaxHeight = 100;
+    updateCondensed(): void {
+        const condenseMaxHeight = 65;
 
         const newCondensed = this.colRefs.map(trayRef => {
             return !!(trayRef.current?.clientHeight && trayRef.current.clientHeight < condenseMaxHeight);
         });
 
-        if (newCondensed !== this.lastCondensed) {
+        if (!isEqual(newCondensed, this.lastCondensed)) {
+            this.lastCondensed = newCondensed;
             this.setState(state => {
                 return {
                     ...state,
