@@ -53,6 +53,11 @@ interface LongPress {
  */
 interface ViewPortState {
     longPress?: LongPress | null;
+
+    /**
+     * Which columns are condensed
+     * Eg [false, true, true, false] for 4 columns with the two middle ones being condensed
+     */
     condensed: boolean[];
 }
 
@@ -66,24 +71,23 @@ const LONG_PRESS_TIMEOUT = 300;
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
-    private readonly colRefs: React.RefObject<HTMLDivElement>[];
-
-    private lastCondensed: boolean[];
+    /**
+     * One tray from each column: used to check the height of the trays in each column
+     */
+    private readonly trayRefs: React.RefObject<HTMLDivElement>[];
 
     constructor(props: ViewPortProps) {
         super(props);
 
-        this.colRefs = [];
-        this.lastCondensed = [];
+        this.trayRefs = [];
 
         if (this.props.current instanceof Shelf) {
-            this.colRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
-            this.lastCondensed = this.props.current.columns.map(_ => false);
+            this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
         }
 
         this.state = {
             longPress: null,
-            condensed: this.lastCondensed
+            condensed: this.props.current.columns.map(_ => false)
         };
     }
 
@@ -415,7 +419,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     onPointerLeave={this.onTrayPointerLeave.bind(this)}
                     onPointerUp={this.onTrayPointerUp.bind(this, tray)}
                     key={index}
-                    ref={index === 0 ? this.colRefs[order] : undefined}
+                    ref={index === 0 ? this.trayRefs[order] : undefined}
                 >
                     <FontAwesomeIcon
                         className={classNames("tray-tickbox", {
@@ -505,21 +509,27 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         this.updateCondensed();
     }
 
+    /**
+     * Update this.state.condensed when necessary
+     * Called after every render() call to ensure that columns become condensed when they get too full
+     */
     updateCondensed(): void {
+
+        // constant: decides the breakpoint in tray height at which to condense its parent column
         const condenseMaxHeight = 65;
 
-        const newCondensed = this.colRefs.map(trayRef => {
+        // check a tray from each column; generate a list indicating which columns should be condensed
+        const newCondensed: boolean[] = this.trayRefs.map(trayRef => {
             return !!(trayRef.current?.clientHeight && trayRef.current.clientHeight < condenseMaxHeight);
         });
 
-        if (!isEqual(newCondensed, this.lastCondensed)) {
-            this.lastCondensed = newCondensed;
-            this.setState(state => {
-                return {
-                    ...state,
-                    condensed: newCondensed
-                };
-            });
+        // VERY IMPORTANT: avoids render loops
+        // only update state if it's changed
+        if (!isEqual(newCondensed, this.state.condensed)) {
+            this.setState(state => ({
+                ...state,
+                condensed: newCondensed
+            }));
         }
     }
 }
