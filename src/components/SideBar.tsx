@@ -79,7 +79,7 @@ export class SideBar extends React.Component<SideBarProps> {
                             e.currentTarget.blur();
                         }}
                         className={button.halfWidth ? "halfWidth" : ""}
-                        disabled={button.disabled ? true : false}
+                        disabled={button.disabled}
                     >{
                         button.icon ? <FontAwesomeIcon icon={button.icon} title={button.name}/>
                                     : button.name

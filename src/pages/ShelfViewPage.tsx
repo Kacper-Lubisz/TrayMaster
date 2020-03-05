@@ -606,7 +606,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     private addColumn(shelf: Shelf): void {
-        if(shelf.columns.length<this.state.maxShelfWidth) {
+        if (shelf.columns.length < this.state.maxShelfWidth) {
             Column.create(3, shelf);
             this.forceUpdate();
         }
@@ -887,7 +887,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             name: "Add Column",
                             onClick: this.addColumn.bind(this, this.state.currentView),
                             halfWidth: false,
-                            disabled: this.state.currentView.columns.length>= this.state.maxShelfWidth
+                            disabled: this.state.currentView.columns.length >= this.state.maxShelfWidth
                         },
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {

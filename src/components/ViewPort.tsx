@@ -298,7 +298,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
     private getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
-        // todo decide if there ought to be max max height
         if (column.maxHeight) {
             return {inc: column.maxHeight !== this.state.maxHeight, dec: column.maxHeight !== 1};
         } else {
@@ -327,7 +326,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column in question
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
-    private static getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
+    private getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
         const currentIndex = traySizes.indexOf(column.traySize);
         return {inc: currentIndex < traySizes.length - 1, dec: currentIndex > 0};
     }
@@ -339,7 +338,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param order The index of the column
      */
     private renderColumn(shelf: Shelf, column: Column, order: number): React.ReactNode {
-        const possibleColumnChanges = ViewPort.getPossibleSizeChanges(column);
+        const possibleColumnChanges = this.getPossibleSizeChanges(column);
         const possibleHeightChange = this.getPossibleHeightChanges(column);
 
         const expiryColorMode = shelf.parentWarehouse.expiryColorMode;
