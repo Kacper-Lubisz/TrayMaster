@@ -1,7 +1,7 @@
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
-import {TrayMasterLogo} from "../components/TrayMasterLogo";
-import "../styles/errorhandler.scss";
+import "./styles/_errorhandler.scss";
+import {TrayMasterLogo} from "./TrayMasterLogo";
 
 
 interface ErrorHandlerState {

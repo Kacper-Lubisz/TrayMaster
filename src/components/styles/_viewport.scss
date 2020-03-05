@@ -1,7 +1,7 @@
 // VIEWPORT STYLING
 
 // Import system-wide variables: we need to know $accent-color here
-@import "../../styles/variables";
+@import "../../pages/styles/variables";
 
 .isEditShelf .column {
   transition: flex-grow 0.5s ease;

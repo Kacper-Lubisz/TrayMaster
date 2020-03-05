@@ -4,12 +4,12 @@ import classNames from "classnames";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {CategoryEditor} from "../components/CategoryEditor";
+import {Dialog} from "../components/Dialog";
 import {UserSettings} from "../components/UserSettings";
-import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 
-import "../styles/settings.scss";
+import "./styles/settings.scss";
 
 interface SettingsPageProps {
     openDialog: (dialog: Dialog) => void;

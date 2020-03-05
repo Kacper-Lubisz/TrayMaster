@@ -13,7 +13,6 @@ import React from "react";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
 import {KeyboardName} from "../pages/ShelfViewPage";
-import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {trayComparisonFunction} from "../utils/sortCells";

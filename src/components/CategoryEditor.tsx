@@ -2,10 +2,10 @@ import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import {cloneDeep, isEqual} from "lodash";
 import React from "react";
-import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, WarehouseModel} from "../core/WarehouseModel";
 import {SettingsTab} from "../pages/SettingsPage";
+import {Dialog, DialogButtons, DialogTitle} from "./Dialog";
 
 import "./styles/_categoryeditor.scss";
 

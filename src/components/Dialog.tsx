@@ -1,7 +1,7 @@
 import {faExclamationTriangle as warningIcon} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon, FontAwesomeIconProps} from "@fortawesome/react-fontawesome";
 import React, {ReactNode} from "react";
-import "../styles/_dialog.scss";
+import "./styles/_dialog.scss";
 
 export type StoredDialog = {
     dialog: ReactNode;

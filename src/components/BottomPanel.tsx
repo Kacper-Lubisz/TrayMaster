@@ -1,11 +1,11 @@
 import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
-import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {getExpiryColor, interpolateTowardsGrey} from "../utils/getExpiryColor";
 import {byNullSafe} from "../utils/sortsUtils";
+import {Dialog, DialogTitle} from "./Dialog";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
 

@@ -20,10 +20,10 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import Popup from "reactjs-popup";
 import {BottomPanel} from "../components/BottomPanel";
+import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
 import {SideBar} from "../components/SideBar";
 import {ToolBar} from "../components/ToolBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
-import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {
     Bay,
@@ -38,11 +38,11 @@ import {
     WarehouseModel,
     Zone
 } from "../core/WarehouseModel";
-import "../styles/shelfview.scss";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
 import {SearchQuery, SortBy} from "./SearchPage";
+import "./styles/shelfview.scss";
 
 
 /**

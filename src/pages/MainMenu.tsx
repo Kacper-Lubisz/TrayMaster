@@ -3,13 +3,13 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {withRouter} from "react-router";
 import {RouteComponentProps} from "react-router-dom";
+import {Dialog} from "../components/Dialog";
 import {CustomButtonProps, Keyboard} from "../components/Keyboard";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
-import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Warehouse} from "../core/WarehouseModel";
-import "../styles/mainmenu.scss";
 import {SearchQuery, SortBy} from "./SearchPage";
+import "./styles/mainmenu.scss";
 
 /**
  * expiryAmount is the number of items expiring soon

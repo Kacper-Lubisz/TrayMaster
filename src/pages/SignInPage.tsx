@@ -3,8 +3,8 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import firebase from "../core/Firebase";
-import "../styles/settings.scss";
-import "../styles/signin.scss";
+import "./styles/settings.scss";
+import "./styles/signin.scss";
 
 const authErrorMessages: Map<string, string> = new Map<string, string>([
     ["auth/invalid-email", "Invalid email address."],
