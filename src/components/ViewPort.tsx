@@ -515,7 +515,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     updateCondensed(): void {
 
         // constant: decides the breakpoint in tray height at which to condense its parent column
-        const condenseMaxHeight = 65;
+        const condenseMaxHeight = 90;
 
         // check a tray from each column; generate a list indicating which columns should be condensed
         const newCondensed: boolean[] = this.trayRefs.map(trayRef => {

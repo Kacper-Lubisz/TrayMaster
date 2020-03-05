@@ -57,7 +57,7 @@ export class SideBar extends React.Component<SideBarProps> {
 
     render(): React.ReactNode {
         return <div id="sideBar">
-            <div
+            <button
                 id="shelfName"
                 className={this.props.openNavigatorDisabled ? "disabled" : undefined}
                 style={this.props.openNavigatorDisabled ? undefined : {
@@ -67,7 +67,7 @@ export class SideBar extends React.Component<SideBarProps> {
                 onClick={this.props.openNavigatorDisabled ? undefined : this.props.openNavigator}
             >
                 <h2>{this.props.locationString}</h2>
-            </div>
+            </button>
 
             <div id="sidebar-buttons-main">{
                 this.props.buttons.filter((props): props is SideBarButtonProps =>

@@ -837,13 +837,13 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 )
             },
             {
-                name: "Edit Comment",
+                name: "Tray Info",
                 icon: faStickyNote,
                 onClick: this.editTrayComment.bind(this),
                 disabled: this.getSelectedTrays(false, false).length === 0
             },
             {
-                name: "Clear Trays",
+                name: "Delete Tray(s)",
                 icon: faEraser,
                 onClick: this.clearTrays.bind(this),
                 disabled: this.getSelectedTrayCells().length === 0
@@ -882,14 +882,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 halfWidth: true
             },
             {
-                name: "Search",
-                onClick: this.makeSearch.bind(this),
-                halfWidth: false
-            },
-            {
                 name: "Edit Shelf",
                 onClick: this.enterEditShelf.bind(this),
-                halfWidth: false
+                halfWidth: true
+            },
+            {
+                name: "Search",
+                onClick: this.makeSearch.bind(this),
+                halfWidth: true
             },
             this.props.user.showPreviousShelfButton ? {
                 name: "Previous Shelf",

@@ -9,11 +9,7 @@
   flex-direction: column;
 
   #shelfName {
-    cursor: pointer;
-  }
-
-  #shelfName.disabled {
-    background-color: #eee;
+    height: 100px;
   }
 
   #sidebar-buttons-main {
