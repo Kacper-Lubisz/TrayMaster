@@ -2,7 +2,7 @@ import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
-import {ExpiryRange, Tray, TrayCell, Warehouse} from "../core/WarehouseModel";
+import {ExpiryRange, TrayCell, Warehouse} from "../core/WarehouseModel";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {
     buildDefaultUnifiedKeyboard,
@@ -117,12 +117,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     private chooseKeyboard(disabled: boolean): React.ReactNode {
 
         // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
-        const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
+        // const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
 
-        const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
-        const commonCat = firstCat !== undefined && traysOnly.every(item => item.category?.name === undefined || item.category.name === firstCat)
-                          ? firstCat : null;
-
+        // const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
+        // const commonCat = firstCat !== undefined && traysOnly.every(item => item.category?.name === undefined ||
+        // item.category.name === firstCat) ? firstCat : null; todo fixme highlight the things that are selected
 
         // TODO: consider applying database settings to this
 
