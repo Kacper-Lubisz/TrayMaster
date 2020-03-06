@@ -252,7 +252,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     },
                     closeOnDocumentClick: true,
                 }),
-                selected: false
+                selected: commonCat ? categories.some(cat => cat.name === commonCat) : false
             }));
 
             const categoryButtons: CustomButtonProps[] = buttonsWithoutGroups
@@ -328,9 +328,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             </div>;
 
         } else { // edit shelf
-            return <div>
-                Unimplemented Panel
-            </div>;
+            return <div/>;
         }
 
     }
