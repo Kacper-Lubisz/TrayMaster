@@ -2,15 +2,18 @@ import {
     faCheckCircle as tickSolid,
     faMinus as minus,
     faPlus as plus,
+    faStickyNote,
     faTrashAlt as trash
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames/bind";
+import {isEqual} from "lodash";
 import "pepjs";
 import React from "react";
 import {MAX_MAX_COLUMN_HEIGHT} from "../core/App";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
+import {KeyboardName} from "../pages/ShelfViewPage";
 import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
@@ -32,6 +35,8 @@ interface ViewPortProps {
     isShelfEdit: boolean;
 
     draftWeight: string | undefined;
+
+    currentKeyboard: KeyboardName;
 }
 
 /**
@@ -49,6 +54,12 @@ interface LongPress {
  */
 interface ViewPortState {
     longPress?: LongPress | null;
+
+    /**
+     * Which columns are condensed
+     * Eg [false, true, true, false] for 4 columns with the two middle ones being condensed
+     */
+    condensed: boolean[];
 }
 
 /**
@@ -61,10 +72,23 @@ const LONG_PRESS_TIMEOUT = 300;
  */
 export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
+    /**
+     * One tray from each column: used to check the height of the trays in each column
+     */
+    private readonly trayRefs: React.RefObject<HTMLDivElement>[];
+
     constructor(props: ViewPortProps) {
         super(props);
+
+        this.trayRefs = [];
+
+        if (this.props.current instanceof Shelf) {
+            this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
+        }
+
         this.state = {
             longPress: null,
+            condensed: this.props.current.columns.map(_ => false)
         };
     }
 
@@ -202,7 +226,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             if (this.state.longPress.isHappening) {
                 this.onDragSelectEnd(); // end of drag
             } else {
-                window.clearTimeout(this.state.longPress?.timeout);
+                window.clearTimeout(this.state.longPress.timeout);
                 this.setState(state => ({
                     ...state,
                     longPress: null
@@ -344,7 +368,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 order: order,
                 flexGrow: column.traySize.sizeRatio
             }}
-            className="column"
+            className={classNames("column", {
+                "column-condensed": this.state.condensed[order]
+            })}
             key={order}
         >{
             column.getPaddedTrays().map((tray, index) => {
@@ -364,6 +390,23 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 })();
 
                 const isSelected = this.props.isTraySelected(tray);
+
+                const weight: string | null = (() => {
+                    if (!(tray instanceof Tray)) {
+                        return null;
+                    }
+
+                    let weightVal: string | undefined;
+                    if (this.props.draftWeight && isSelected) {
+                        weightVal = this.props.draftWeight;
+                    } else if (tray.weight) {
+                        weightVal = tray.weight.toString();
+                    } else {
+                        return null;
+                    }
+                    return `${weightVal}kg`;
+                })();
+
                 return <div
                     className={classNames("tray", {
                         "multipleSelect": this.props.selectedTrayCells.length > 1 || this.state.longPress?.isHappening,
@@ -376,6 +419,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     onPointerLeave={this.onTrayPointerLeave.bind(this)}
                     onPointerUp={this.onTrayPointerUp.bind(this, tray)}
                     key={index}
+                    ref={index === 0 ? this.trayRefs[order] : undefined}
                 >
                     <FontAwesomeIcon
                         className={classNames("tray-tickbox", {
@@ -383,21 +427,21 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
-                        <div className="trayCategory">{tray.category?.name ?? "?"}</div>
+                        <div className="trayCategory">{tray.category?.name ?? "Unsorted"}</div>
 
-                        <div className="trayExpiry" style={expiryStyle}>{tray.expiry?.label ?? "?"}</div>
+                        {tray.expiry ? <div className="trayExpiry" style={expiryStyle}>
+                            <div>{tray.expiry.label}</div>
+                        </div> : null}
 
                         <div className={classNames("trayWeight", {
-                            // "trayWeightEdit": this.props.draftWeight && isSelected
+                            "trayWeightEditing": isSelected && this.props.currentKeyboard === "weight"
                         })}>
-                            {this.props.draftWeight && isSelected ? this.props.draftWeight
-                                                                  : tray.weight ?? "?"}kg
+                            {weight}
                         </div>
-                        <div className="trayComment">{tray.comment ?? ""}</div>
+                        {tray.comment ? <div className="trayComment">
+                            <FontAwesomeIcon icon={faStickyNote}/>
+                        </div> : null}
                     </> : null}
-                    {tray instanceof Tray ? null : <>
-                        <p>EMPTY SPACE</p>
-                    </>}
                 </div>;
             })}
             {this.props.isShelfEdit ? <div className="editShelfColumn">
@@ -449,6 +493,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         </div>;
     }
 
+    componentDidMount(): void {
+        this.updateCondensed();
+    }
 
     /**
      * This method clears the tray spaces if the shelf that is being displayed is changed.
@@ -458,9 +505,33 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
         }
+
+        this.updateCondensed();
     }
 
+    /**
+     * Update this.state.condensed when necessary
+     * Called after every render() call to ensure that columns become condensed when they get too full
+     */
+    updateCondensed(): void {
 
+        // constant: decides the breakpoint in tray height at which to condense its parent column
+        const condenseMaxHeight = 65;
+
+        // check a tray from each column; generate a list indicating which columns should be condensed
+        const newCondensed: boolean[] = this.trayRefs.map(trayRef => {
+            return !!(trayRef.current?.clientHeight && trayRef.current.clientHeight < condenseMaxHeight);
+        });
+
+        // VERY IMPORTANT: avoids render loops
+        // only update state if it's changed
+        if (!isEqual(newCondensed, this.state.condensed)) {
+            this.setState(state => ({
+                ...state,
+                condensed: newCondensed
+            }));
+        }
+    }
 }
 
 function stringToTitleCase(string: string): string {

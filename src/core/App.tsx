@@ -92,7 +92,7 @@ class App extends React.Component<unknown, AppState> {
         // localStorage.setItem("VERSION_NUMBER", "test version");
 
         const oldVersion = localStorage.getItem("VERSION_NUMBER");
-        if (process.env.REACT_APP_VERSION !== oldVersion) {
+        if (process.env.REACT_APP_VERSION !== oldVersion && process.env.NODE_ENV === "production") {
             localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION ?? "");
             const verDiff: 1 | 0 | -1 = ((old, current) => {
                 if (old === null) {
