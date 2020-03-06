@@ -409,6 +409,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             trays.forEach(tray => modify(tray));
             this.setSelected(this.advanceSelection(this.state.selected));
 
+            this.state.currentView.stage(false, true, WarehouseModel.tray).then(_ => _);
+
         });
 
     }
@@ -552,7 +554,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * category ought to be cleared
      * @param category The category that is selected or null to clear
      */
-    private async onCategorySelected(category: Category | null): Promise<void> {
+    private onCategorySelected(category: Category | null): void {
 
         this.applyAndAdvance(
             true,
@@ -565,8 +567,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             }
         );
 
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
-
     }
 
     /**
@@ -574,7 +574,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * ought to be cleared
      * @param expiry The expiry that is selected or null to clear
      */
-    private async onExpirySelected(expiry: ExpiryRange | null): Promise<void> {
+    private onExpirySelected(expiry: ExpiryRange | null): void {
 
         this.applyAndAdvance(
             true,
@@ -584,8 +584,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             }
         );
 
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
-
     }
 
     /**
@@ -593,7 +591,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param newWeight
      * @param couldAdvance If this weight set
      */
-    private async setWeight(newWeight: string | undefined, couldAdvance = false): Promise<void> {
+    private setWeight(newWeight: string | undefined, couldAdvance = false): void {
 
         if (couldAdvance) {
             this.applyAndAdvance(
@@ -621,7 +619,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             }
         );
 
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
         if (!couldAdvance) {
             this.setState(state => ({
                 ...state,
