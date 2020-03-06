@@ -85,7 +85,11 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         });
     }
 
-    private sanitiseStringToCSV(string: string): string {
+    /**
+     * This method escapes special character in the string making up a cell of a .csv file.
+     * @param string the string to escape
+     */
+    private static escapeStringToCSV(string: string): string {
         return `"${string.replace("\"", "\"\"")}"`;
     }
 
@@ -109,7 +113,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
 
             return `${line.map(element =>
-                this.sanitiseStringToCSV(element)
+                SearchPage.escapeStringToCSV(element)
             ).reduce((acc, cur) =>
                 `${acc}${cur},`, "")}\n`;
 
@@ -154,9 +158,13 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 </div>
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
-            <SearchPanel panelState={this.state.panelState} setPanelState={this.updatePanel.bind(this)}
-                         search={this.props.search} warehouse={this.props.warehouse}
-                         setQuery={this.props.setQuery}/>
+            <SearchPanel
+                panelState={this.state.panelState}
+                setPanelState={this.updatePanel.bind(this)}
+                search={this.props.search}
+                warehouse={this.props.warehouse}
+                setQuery={this.props.setQuery}
+            />
         </div>;
     }
 
