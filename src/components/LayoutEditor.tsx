@@ -98,11 +98,11 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
         } else {
-            this.setState({
+            this.setState(_ => ({
                 state: "editing",
                 selectedZone: zone,
                 editedZone: cloneDeep(zone)
-            });
+            }));
         }
     }
 
@@ -290,10 +290,10 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             this.props.openDialog(this.createUnsavedDialog());
 
         } else {
-            this.setState({
+            this.setState(_ => ({
                 state: "new",
                 newZone: cloneDeep(LayoutEditor.BLANK_ZONE)
-            });
+            }));
         }
     }
 
@@ -344,12 +344,11 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
 
 
         await newZone.stage(true, true);
-        this.props.updatePage();
-        this.setState({
+        this.setState(_ => ({
             state: "editing",
             selectedZone: newZone,
             editedZone: cloneDeep(newZone)
-        });
+        }), this.props.updatePage);
 
     }
 
@@ -365,12 +364,11 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         Object.assign(state.selectedZone, state.editedZone);
         await state.editedZone.stage(true, true);
 
-        this.setState({
+        this.setState(_ => ({
             state: "editing",
             selectedZone: state.selectedZone,
             editedZone: cloneDeep(state.selectedZone)
-        });
-        this.props.updatePage();
+        }), this.props.updatePage);
 
     }
 
@@ -378,9 +376,9 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      * Resets the editor to deselect everything (discards any changes)
      */
     private resetEditor(): void {
-        this.setState({
-            state: "nothingSelected",
-        });
+        this.setState(_ => ({
+            state: "nothingSelected"
+        }));
     }
 
     /**
@@ -390,10 +388,9 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     private async deleteZone(state: EditingState): Promise<void> {
 
         await state.selectedZone.delete(true);
-        this.setState({
+        this.setState(_ => ({
             state: "nothingSelected"
-        });
-        this.props.updatePage();
+        }), this.props.updatePage);
 
     }
 

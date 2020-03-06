@@ -88,11 +88,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
         } else {
-            this.setState({
+            this.setState(_ => ({
                 state: "editing",
                 selectedCategory: cat,
                 editedCategory: cloneDeep(cat)
-            });
+            }));
         }
     }
 
@@ -250,10 +250,10 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
         } else {
-            this.setState({
+            this.setState(_ => ({
                 state: "new",
                 newCategory: cloneDeep(CategoryEditor.BLANK_CATEGORY),
-            });
+            }));
         }
     }
 
@@ -282,12 +282,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.props.addCategory(state.newCategory);
         await this.props.stage(true, true);
 
-        this.props.updatePage();
-        this.setState({
+        this.setState(_ => ({
             state: "editing",
             selectedCategory: state.newCategory,
             editedCategory: state.newCategory
-        });
+        }), this.props.updatePage);
 
     }
 
@@ -303,13 +302,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.props.editCategory(this.props.getCategoryID(state.selectedCategory), state.editedCategory);
         await this.props.stage(true, true);
 
-        this.setState({
+        this.setState(_ => ({
             state: "editing",
             selectedCategory: state.editedCategory,
             editedCategory: cloneDeep(state.editedCategory)
-        });
-        this.props.updatePage();
-
+        }), this.props.updatePage);
 
     }
 
@@ -317,9 +314,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Resets the editor to deselect everything (discards any changes)
      */
     private resetEditor(): void {
-        this.setState({
+        this.setState(_ => ({
             state: "nothingSelected"
-        });
+        }));
     }
 
     /**
@@ -331,10 +328,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.props.removeCategory(state.selectedCategory);
         await this.props.stage(true, true);
 
-        this.setState({
+        this.setState(_ => ({
             state: "nothingSelected",
-        });
-        this.props.updatePage();
+        }), this.props.updatePage);
 
     }
 
