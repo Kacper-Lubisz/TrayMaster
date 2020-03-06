@@ -38,3 +38,9 @@ button:not(.btn-style-override), input[type="submit"] {
     }
   }
 }
+
+#disclaimer {
+  position: fixed;
+  bottom: 0;
+  margin: 10px;
+}
