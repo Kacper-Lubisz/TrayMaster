@@ -112,7 +112,7 @@ class SignInPage extends React.Component<RouteComponentProps & SignInPageProps, 
 
                 if (storageAvailable("localStorage")) {
                     const oldVersion = localStorage.getItem("VERSION_NUMBER");
-                    if (process.env.REACT_APP_VERSION !== oldVersion) {
+                    if (process.env.REACT_APP_VERSION !== oldVersion && process.env.NODE_ENV === "production") {
                         localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION ?? "");
                         const verDiff: 1 | 0 | -1 = ((old, current) => {
                             if (old === null) {
