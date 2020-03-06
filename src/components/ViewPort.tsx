@@ -8,6 +8,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames/bind";
 import "pepjs";
 import React from "react";
+import {MAX_MAX_COLUMN_HEIGHT} from "../core/App";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
 import "../styles/shelfview.scss";
@@ -31,7 +32,6 @@ interface ViewPortProps {
     isShelfEdit: boolean;
 
     draftWeight: string | undefined;
-
 }
 
 /**
@@ -49,7 +49,6 @@ interface LongPress {
  */
 interface ViewPortState {
     longPress?: LongPress | null;
-    maxHeight: number;
 }
 
 /**
@@ -66,7 +65,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         super(props);
         this.state = {
             longPress: null,
-            maxHeight: 20
         };
     }
 
@@ -284,12 +282,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     private changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        const newHeight = Math.max(change + column.maxHeight, 1);
-        if (newHeight <= this.state.maxHeight) {
-            column.maxHeight = newHeight;
-            Column.purgePaddedSpaces(column);
-            this.forceUpdate();
-        }
+        column.maxHeight = Math.min(Math.max(change + column.maxHeight, 1), MAX_MAX_COLUMN_HEIGHT);
+        Column.purgePaddedSpaces(column);
+        this.forceUpdate();
     }
 
     /**
@@ -297,9 +292,9 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column in question
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
-    private getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
+    private static getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
         if (column.maxHeight) {
-            return {inc: column.maxHeight !== this.state.maxHeight, dec: column.maxHeight !== 1};
+            return {inc: column.maxHeight !== MAX_MAX_COLUMN_HEIGHT, dec: column.maxHeight !== 1};
         } else {
 
             return {inc: true, dec: true};
@@ -326,7 +321,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param column The column in question
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
-    private getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
+    private static getPossibleSizeChanges(column: Column): { inc: boolean; dec: boolean } {
         const currentIndex = traySizes.indexOf(column.traySize);
         return {inc: currentIndex < traySizes.length - 1, dec: currentIndex > 0};
     }
@@ -338,8 +333,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @param order The index of the column
      */
     private renderColumn(shelf: Shelf, column: Column, order: number): React.ReactNode {
-        const possibleColumnChanges = this.getPossibleSizeChanges(column);
-        const possibleHeightChange = this.getPossibleHeightChanges(column);
+        const possibleColumnChanges = ViewPort.getPossibleSizeChanges(column);
+        const possibleHeightChange = ViewPort.getPossibleHeightChanges(column);
 
         const expiryColorMode = shelf.parentWarehouse.expiryColorMode;
 

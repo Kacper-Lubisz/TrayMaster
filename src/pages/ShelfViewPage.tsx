@@ -22,6 +22,7 @@ import {BottomPanel} from "../components/BottomPanel";
 import {SideBar} from "../components/SideBar";
 import {ToolBar} from "../components/ToolBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
+import {MAX_MAX_SHELF_WIDTH} from "../core/App";
 import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {
@@ -81,7 +82,6 @@ interface ShelfViewState {
     weight?: string;
     isEditShelf: boolean;
     isNavModalOpen: boolean;
-    maxShelfWidth: number;
 }
 
 class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
@@ -104,7 +104,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             weight: undefined,
             isEditShelf: false,
             isNavModalOpen: false, // change this to true when editing NavModal
-            maxShelfWidth: 8,
         };
     }
 
@@ -606,7 +605,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     private addColumn(shelf: Shelf): void {
-        if (shelf.columns.length < this.state.maxShelfWidth) {
+        if (shelf.columns.length < MAX_MAX_SHELF_WIDTH) {
             Column.create(3, shelf);
             this.forceUpdate();
         }
@@ -887,7 +886,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             name: "Add Column",
                             onClick: this.addColumn.bind(this, this.state.currentView),
                             halfWidth: false,
-                            disabled: this.state.currentView.columns.length >= this.state.maxShelfWidth
+                            disabled: this.state.currentView.columns.length >= MAX_MAX_SHELF_WIDTH
                         },
                         // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
                         {

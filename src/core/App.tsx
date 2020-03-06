@@ -16,6 +16,8 @@ import ErrorHandler from "./ErrorHandler";
 import firebase, {User} from "./Firebase";
 import {Warehouse, WarehouseManager} from "./WarehouseModel";
 
+export const MAX_MAX_COLUMN_HEIGHT = 20;
+export const MAX_MAX_SHELF_WIDTH = 8;
 
 interface AppState {
     search?: SearchResults;
