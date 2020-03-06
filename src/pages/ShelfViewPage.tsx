@@ -7,7 +7,6 @@ import {
     faClock as expiryIcon,
     faCog as settingsIcon,
     faCube as categoryIcon,
-    faEraser,
     faHome as menuIcon,
     faStickyNote,
     faTimes as cross
@@ -22,7 +21,6 @@ import Popup from "reactjs-popup";
 import {BottomPanel} from "../components/BottomPanel";
 import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
 import {SideBar} from "../components/SideBar";
-import {ToolBar} from "../components/ToolBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
 import {User} from "../core/Firebase";
 import {
@@ -827,29 +825,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         const locationString = this.state.currentView.toString();
 
-        const toolBarButtons = [
-            {
-                name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
-                icon: this.getSelectedTrayCells().length === 0 ? tickSolid : tickEmpty,
-                onClick: this.selectAll.bind(
-                    this,
-                    this.getSelectedTrayCells().length === 0 ? "all" : "none"
-                )
-            },
-            {
-                name: "Tray Info",
-                icon: faStickyNote,
-                onClick: this.editTrayComment.bind(this),
-                disabled: this.getSelectedTrays(false, false).length === 0
-            },
-            {
-                name: "Delete Tray(s)",
-                icon: faEraser,
-                onClick: this.clearTrays.bind(this),
-                disabled: this.getSelectedTrayCells().length === 0
-            }
-        ];
-
         const sideBarButtons = this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
             {
                 name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
@@ -891,6 +866,22 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 onClick: this.makeSearch.bind(this),
                 halfWidth: true
             },
+            {
+                name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
+                icon: this.getSelectedTrayCells().length === 0 ? tickSolid : tickEmpty,
+                onClick: this.selectAll.bind(
+                    this,
+                    this.getSelectedTrayCells().length === 0 ? "all" : "none"
+                ),
+                halfWidth: true
+            },
+            {
+                name: "Tray Info",
+                icon: faStickyNote,
+                onClick: this.editTrayComment.bind(this),
+                disabled: this.getSelectedTrays(false, false).length === 0,
+                halfWidth: true
+            },
             this.props.user.showPreviousShelfButton ? {
                 name: "Previous Shelf",
                 onClick: this.changeView.bind(this, "previousShelf"),
@@ -922,9 +913,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     currentKeyboard={this.state.currentKeyboard}
                 />
-                <ToolBar
-                    disabled={this.state.isEditShelf}
-                    toolbar={toolBarButtons}/>
+                {/*<ToolBar*/}
+                {/*    disabled={this.state.isEditShelf}*/}
+                {/*    toolbar={toolBarButtons}/>*/}
                 <SideBar
                     zoneColor={zoneColor}
                     locationString={locationString}

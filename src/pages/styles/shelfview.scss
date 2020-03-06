@@ -29,8 +29,9 @@
 
   // define grid
   display: grid;
+
   // MASTER GRID PARAMETERS: USE THESE TO ADJUST RATIOS
-  grid-template-columns: 80fr 4fr 16fr;
+  grid-template-columns: 84fr 16fr;
   grid-template-rows: 8fr 6fr;
 
   // these values specify what sectors of the grid each component takes up
@@ -38,13 +39,6 @@
   > div {
     min-height: 0;
     min-width: 0;
-  }
-
-  #toolBar {
-    grid-column-start: 2;
-    grid-column-end: 3;
-    grid-row-start: 1;
-    grid-row-end: 2;
   }
 
   #viewPort {
@@ -57,8 +51,8 @@
 
   #sideBar {
     // top right sector
-    grid-column-start: 3;
-    grid-column-end: 4;
+    grid-column-start: 2;
+    grid-column-end: 3;
     grid-row-start: 1;
     grid-row-end: 2;
   }
@@ -66,7 +60,7 @@
   #bottom {
     // whole bottom row
     grid-column-start: 1;
-    grid-column-end: 4;
+    grid-column-end: 3;
     grid-row-start: 2;
     grid-row-end: 3;
   }
