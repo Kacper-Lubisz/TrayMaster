@@ -133,6 +133,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
                     if (parent && !(parent instanceof BottomLayer)) {
                         parent.childrenLoaded = true;
                         const child: LowerLayer = currentState.generator(queryResult.id, queryResult.fields, parent);
+                        child.fieldsSaved();
                         child.loaded = true;
                         childMap.get(currentState.childCollectionName)?.set(queryResult.id, child);
                         if (child instanceof MiddleLayer && !nextState) {

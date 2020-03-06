@@ -269,9 +269,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 </div>
             );
         } else {
+            // todo Better message?
             return (
                 <div>
-                    <h2><b><i>NOTHING LOADED, SORT IT OUT</i></b></h2> // todo fixme SORT IT OUT
+                    <h2><b><i>Warehouse is empty (or no warehouse loaded).</i></b></h2>
                 </div>
             );
         }

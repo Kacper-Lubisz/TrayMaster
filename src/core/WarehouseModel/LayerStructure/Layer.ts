@@ -107,6 +107,9 @@ export abstract class Layer<TFields extends LayerFields> extends DatabaseObject<
     protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
             this.fields = (await firebase.database.loadDocument<TFields>(this.topLevelPath))?.fields ?? this.fields;
+            this.originalFields = {
+                ...this.fields,
+            };
             this.fieldsSaved();
             this.loaded = true;
         }
