@@ -23,7 +23,6 @@ import {BottomPanel} from "../components/BottomPanel";
 import {SideBar} from "../components/SideBar";
 import {ToolBar} from "../components/ToolBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
-import {MAX_MAX_SHELF_WIDTH} from "../core/App";
 import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {
@@ -50,6 +49,9 @@ import {SearchQuery, SortBy} from "./SearchPage";
  * Defines possible keyboard names
  */
 export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
+
+export const MAX_MAX_COLUMN_HEIGHT = 20;
+export const MAX_MAX_SHELF_WIDTH = 8;
 
 /**
  * The directions in which you can navigate
