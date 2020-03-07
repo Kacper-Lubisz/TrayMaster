@@ -10,6 +10,7 @@ import "./styles/_sidebar.scss";
 
 export type SideBarButtonProps = CustomButtonProps & {
     halfWidth: boolean;
+    trayMod?: boolean;
 };
 
 /**
@@ -80,7 +81,11 @@ export class SideBar extends React.Component<SideBarProps> {
                             button?.onClick?.call(undefined, e);
                             e.currentTarget.blur();
                         }}
-                        className={button.halfWidth ? "halfWidth" : ""}
+                        className={classNames({
+                            "halfWidth": button.halfWidth,
+                            "trayMod": button.trayMod
+                        })}
+                        disabled={button.disabled}
                     >{
                         button.icon ? <FontAwesomeIcon icon={button.icon} title={button.name}/>
                                     : button.name

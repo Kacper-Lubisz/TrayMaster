@@ -28,6 +28,11 @@
         min-width: 0;
       }
 
+      &.trayMod {
+        background-color: #dddddd;
+        margin-bottom: 15px;
+      }
+
       > svg {
         font-size: 50px;
       }

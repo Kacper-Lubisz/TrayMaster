@@ -20,7 +20,7 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import Popup from "reactjs-popup";
 import {BottomPanel} from "../components/BottomPanel";
 import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
-import {SideBar} from "../components/SideBar";
+import {SideBar, SideBarButtonProps} from "../components/SideBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
 import {User} from "../core/Firebase";
 import {
@@ -745,7 +745,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * Opens a popup which allows for editing the custom comment
      */
     private editTrayComment(): void {
-
         this.props.openDialog({
             closeOnDocumentClick: true,
             dialog: (close: () => void) => {
@@ -811,6 +810,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     render(): React.ReactNode {
+        console.log(this.getSelectedTrays(false, false).length === 0);
+
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
         const zoneColor: string = (() => {
@@ -845,6 +846,24 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             },
         ] : [ // Generate sidebar buttons
             {
+                name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
+                icon: this.getSelectedTrayCells().length === 0 ? tickSolid : tickEmpty,
+                onClick: this.selectAll.bind(
+                    this,
+                    this.getSelectedTrayCells().length === 0 ? "all" : "none"
+                ),
+                halfWidth: true,
+                trayMod: true
+            },
+            {
+                name: "Tray Info",
+                icon: faStickyNote,
+                onClick: this.editTrayComment.bind(this),
+                disabled: this.getSelectedTrays(false, false).length === 0,
+                halfWidth: true,
+                trayMod: true
+            },
+            {
                 name: "Main Menu",
                 icon: menuIcon,
                 onClick: () => this.props.history.push("/menu"),
@@ -866,22 +885,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 onClick: this.makeSearch.bind(this),
                 halfWidth: true
             },
-            {
-                name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
-                icon: this.getSelectedTrayCells().length === 0 ? tickSolid : tickEmpty,
-                onClick: this.selectAll.bind(
-                    this,
-                    this.getSelectedTrayCells().length === 0 ? "all" : "none"
-                ),
-                halfWidth: true
-            },
-            {
-                name: "Tray Info",
-                icon: faStickyNote,
-                onClick: this.editTrayComment.bind(this),
-                disabled: this.getSelectedTrays(false, false).length === 0,
-                halfWidth: true
-            },
             this.props.user.showPreviousShelfButton ? {
                 name: "Previous Shelf",
                 onClick: this.changeView.bind(this, "previousShelf"),
@@ -893,7 +896,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 onClick: this.changeView.bind(this, "nextShelf"),
                 disabled: !possibleMoveDirections.get("nextShelf"),
                 halfWidth: this.props.user.showPreviousShelfButton
-            }
+            } as SideBarButtonProps
         ];
 
         return <>
@@ -913,9 +916,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     currentKeyboard={this.state.currentKeyboard}
                 />
-                {/*<ToolBar*/}
-                {/*    disabled={this.state.isEditShelf}*/}
-                {/*    toolbar={toolBarButtons}/>*/}
                 <SideBar
                     zoneColor={zoneColor}
                     locationString={locationString}
