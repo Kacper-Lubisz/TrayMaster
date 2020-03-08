@@ -1,10 +1,10 @@
 import React from "react";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import Popup from "reactjs-popup";
+import SearchPage, {FindQuery, FindResults} from "../pages/FindPage";
 import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
-import SearchPage, {FindQuery, FindResults} from "../pages/FindPage";
 import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
@@ -90,7 +90,7 @@ class App extends React.Component<unknown, AppState> {
         // localStorage.setItem("VERSION_NUMBER", "test version");
 
         const oldVersion = localStorage.getItem("VERSION_NUMBER");
-        if (process.env.REACT_APP_VERSION !== oldVersion) {
+        if (process.env.REACT_APP_VERSION !== oldVersion && process.env.NODE_ENV === "production") {
             localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION ?? "");
             const verDiff: 1 | 0 | -1 = ((old, current) => {
                 if (old === null) {

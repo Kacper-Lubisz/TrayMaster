@@ -37,6 +37,7 @@
   &:active:enabled, &.key-btn-selected {
     background-color: #333333 !important;
     color: #ffffff !important;
+    border-color: #000000;
   }
 
   // If the button is disabled, grey it out and don't give any visual feedback
