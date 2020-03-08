@@ -12,7 +12,7 @@ import "pepjs";
 import React from "react";
 import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
-import {KeyboardName} from "../pages/ShelfViewPage";
+import {KeyboardName, MAX_MAX_COLUMN_HEIGHT} from "../pages/ShelfViewPage";
 import "../styles/shelfview.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
@@ -309,7 +309,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     private changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + column.maxHeight, 1);
+        column.maxHeight = Math.min(Math.max(change + column.maxHeight, 1), MAX_MAX_COLUMN_HEIGHT);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -320,9 +320,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
     private static getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
-        // todo decide if there ought to be max max height
         if (column.maxHeight) {
-            return {inc: true, dec: column.maxHeight !== 1};
+            return {inc: column.maxHeight !== MAX_MAX_COLUMN_HEIGHT, dec: column.maxHeight !== 1};
         } else {
 
             return {inc: true, dec: true};
