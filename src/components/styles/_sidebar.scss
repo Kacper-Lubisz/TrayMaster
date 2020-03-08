@@ -33,9 +33,7 @@
       }
 
       > svg {
-        width: 100%;
-        height: 50px;
-        // todo make sure this height works on all screen sizes - add breakpoints if not
+        font-size: 50px;
       }
     }
   }
@@ -70,8 +68,7 @@
 
       // Set icon to fill containing button
       > svg {
-        height: 100%;
-        width: 100%;
+        font-size: 50px;
       }
     }
   }

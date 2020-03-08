@@ -30,9 +30,7 @@ export class ToolBar extends React.Component<ToolBarProps> {
                     disabled={this.props.disabled || tool.disabled}
                     title={tool.name}
                 >
-                    <div>{// extra div needed to keep button square}{
-                        tool.icon ? <FontAwesomeIcon icon={tool.icon}/> : tool.name
-                    }</div>
+                    {tool.icon ? <FontAwesomeIcon icon={tool.icon}/> : tool.name}
                 </button>
             )
         }</div>;

@@ -1,12 +1,13 @@
 {
   "name": "software_engineering",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "engines": {
     "node": "12.x"
   },
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
+    "@fortawesome/free-regular-svg-icons": "^5.12.1",
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.1.8",
     "@types/classnames": "^2.2.9",

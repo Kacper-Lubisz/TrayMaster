@@ -35,7 +35,8 @@
 
   // When the button is pressed or reflects the selected tray, darken its background
   &:active:enabled, &.key-btn-selected {
-    background-color: #dddddd;
+    background-color: #333333 !important;
+    color: #ffffff !important;
   }
 
   // If the button is disabled, grey it out and don't give any visual feedback

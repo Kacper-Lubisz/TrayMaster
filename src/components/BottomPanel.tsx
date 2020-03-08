@@ -4,6 +4,7 @@ import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
 import {KeyboardName} from "../pages/ShelfViewPage";
+import {getExpiryColor, interpolateTowardsGrey} from "../utils/getExpiryColor";
 import {byNullSafe} from "../utils/sortsUtils";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
@@ -63,16 +64,31 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
     constructor(props: BottomPanelProps) {
         super(props);
 
+        const expiryGreyRatio = 0.8;
+        const expiryGrey = "#ffffff";
+
         // Expiry keyboard structures
         this.years = [];
         // TODO: consider applying database settings to this
         const thisYear = new Date().getFullYear();
+        const yearColors: any = {};
+
         for (let i = thisYear; i < thisYear + 8; i++) {
+            const exp = getExpiryColor(
+                {
+                    from: new Date(i, 0).getTime(),
+                    to: new Date(i + 1, 0).getTime(),
+                    label: i.toString()
+                },
+                "warehouse"
+            );
+            yearColors[i] = interpolateTowardsGrey(exp, expiryGrey, expiryGreyRatio);
             this.years.push({
                 name: i.toString(), onClick: () => {
                     this.selectRange({year: i});
                 },
-                expiryFrom: new Date(i, 0).getTime()
+                expiryFrom: new Date(i, 0).getTime(),
+                bg: yearColors[i]
             });
         }
 
@@ -85,7 +101,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 name: `${this.monthsTranslator[month]} ${year.toString()}`, onClick: () => {
                     this.selectRange({year: year, month: month});
                 },
-                expiryFrom: new Date(year, month).getTime()
+                expiryFrom: new Date(year, month).getTime(),
+                bg: yearColors[year]
             });
         }
 
@@ -98,7 +115,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 name: `Q${(quarter + 1).toString()} ${year.toString()}`, onClick: () => {
                     this.selectRange({year: year, quarter: quarter});
                 },
-                expiryFrom: new Date(year, quarter * 3).getTime()
+                expiryFrom: new Date(year, quarter * 3).getTime(),
+                bg: yearColors[year]
             });
         }
     }
@@ -210,7 +228,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
 
             const buttonsWithoutGroups = this.props.categories.filter(cat =>
                 cat.group === null
-            ).map((cat) => ({
+            ).map((cat): CustomButtonProps => ({
                 name: cat.shortName ?? cat.name,
                 onClick: () => this.props.categorySelected(cat),
                 selected: cat.name === commonCat
@@ -245,7 +263,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 {
                     name: "< Clear >",
                     onClick: () => this.props.categorySelected(null),
-                    selected: false
+                    selected: false,
+                    bg: "#ffffff"
                 }
             ];
 
@@ -269,7 +288,8 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                     })
                 }, {
                     name: "< Clear >",
-                    onClick: () => this.props.expirySelected(null)
+                    onClick: () => this.props.expirySelected(null),
+                    bg: "#ffffff"
                 }
             ];
 
@@ -294,12 +314,13 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             // Create numpadSide for the side buttons
             const numpadSide: CustomButtonProps[] = ([
                 "Backspace", "< Clear >"
-            ].concat(this.props.user.autoAdvanceMode === "off" ? [] : ["Next Tray"]) as WeightKeyboardButton[])
+            ].concat(this.props.user.autoAdvanceMode ? ["Next Tray"] : []) as WeightKeyboardButton[])
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
                     disabled: this.props.selectedTrayCells.length === 0,
-                    onClick: () => this.weightKeyHandler(a)
+                    onClick: () => this.weightKeyHandler(a),
+                    bg: a === "< Clear >" ? "#ffffff" : undefined
                 }));
 
             return <div className="keyboard-container weight-container">
@@ -310,9 +331,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             </div>;
 
         } else { // edit shelf
-            return <div>
-                Unimplemented Panel
-            </div>;
+            return <div/>;
         }
 
     }

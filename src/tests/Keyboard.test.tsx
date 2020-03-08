@@ -269,6 +269,65 @@ describe("Keyboard matches snapshots:", () => {
         expect(tree).toMatchSnapshot();
     });
 
+    it("renders coloured buttons", () => {
+        const props = {
+            buttons: [
+                {
+                    name: "Bob",
+                    onClick: () => {
+                        alert("hello");
+                    },
+                    bg: "#00ff00"
+                },
+                {
+                    name: "Geoffrey",
+                    onClick: () => {
+                        alert("I am the coolest because I'm selected");
+                    },
+                    selected: false
+                },
+                {
+                    name: "Doris",
+                    icon: icon2,
+                    onClick: () => {
+                        alert("Yes");
+                    },
+                    bg: "#00d2ff"
+                },
+                {
+                    name: "Steve",
+                    icon: icon3,
+                    onClick: () => {
+                        alert("No");
+                    },
+                    bg: "#000000"
+                },
+                {
+                    name: "Paul",
+                    onClick: () => {
+                        alert("Perhaps");
+                    },
+                    bg: "#212d3a"
+                },
+                {
+                    name: "Dave",
+                    icon: icon1,
+                    onClick: () => {
+                        alert("Absolutely not");
+                    },
+                    bg: "#ffffff"
+                }
+            ],
+            gridX: 4,
+            id: "BigBoy"
+        };
+
+        const kbRenderer = createRenderer(); // shallow render needed because FontAwesomeIcons change between runs
+        kbRenderer.render(<Keyboard {...props} />);
+        expect(kbRenderer.getRenderOutput()).toMatchSnapshot();
+        kbRenderer.unmount();
+    });
+
     it("renders with Font Awesome icons in buttons", () => {
         const props = {
             buttons: [
@@ -450,7 +509,8 @@ describe("Keyboard matches snapshots:", () => {
                     icon: icon2,
                     onClick: () => {
                         alert("Yes");
-                    }
+                    },
+                    bg: "#000000"
                 },
                 {
                     name: "Steve",
@@ -464,7 +524,8 @@ describe("Keyboard matches snapshots:", () => {
                     name: "Paul",
                     onClick: () => {
                         alert("Perhaps");
-                    }
+                    },
+                    bg: "#ff0000"
                 },
                 {
                     name: "Dave",

@@ -1,9 +1,16 @@
 #user-settings {
-  label {
-    display: block;
+  h3 {
+    font-size: 32px;
+    margin: 0;
+  }
 
-    &:not(:last-child) {
-      margin-bottom: 20px;
-    }
+  h4 {
+    font-size: 26px;
+    margin: 20px 0 5px 0;
+    width: 100%;
+  }
+
+  table {
+    border-collapse: collapse;
   }
 }

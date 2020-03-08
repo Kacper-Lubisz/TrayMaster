@@ -43,9 +43,9 @@ export class Database {
 
     public constructor() {
         this.db = fb.firestore();
-        if (ONLINE) {
-            this.db.enablePersistence().catch(err => console.log(err));
-        }
+        // if (ONLINE) {
+        //     this.db.enablePersistence().catch(err => console.log(err));
+        // }
 
         this.dbChangeQueue = new Queue<DatabaseOperation<any>>();
     }
