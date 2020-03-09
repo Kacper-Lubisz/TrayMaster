@@ -6,6 +6,7 @@ import {LoadingSpinner} from "../components/LoadingSpinner";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
 import {Category, NULL_CATEGORY_STRING, Tray, Warehouse} from "../core/WarehouseModel";
 import "../styles/search.scss";
+import Utils from "../core/WarehouseModel/Utils";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 
@@ -85,14 +86,6 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         });
     }
 
-    /**
-     * This method escapes special character in the string making up a cell of a .csv file.
-     * @param string the string to escape
-     */
-    private static escapeStringToCSV(string: string): string {
-        return `"${string.replace("\"", "\"\"")}"`;
-    }
-
     buildCSVFile(): Blob {
 
         const header = "Category, Expiry, Expiry From Timestamp, Expiry To Timestamp, Weight, Zone, Bay, Shelf, Comment\n";
@@ -113,7 +106,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
 
             return `${line.map(element =>
-                SearchPage.escapeStringToCSV(element)
+                Utils.escapeStringToCSV(element)
             ).reduce((acc, cur) =>
                 `${acc}${cur},`, "")}\n`;
 

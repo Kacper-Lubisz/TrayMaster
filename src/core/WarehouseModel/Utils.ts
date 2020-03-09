@@ -164,4 +164,12 @@ export default abstract class Utils {
     public static isWhiteSpace(text: string): boolean {
         return !/\S/.test(text);
     }
+
+    /**
+     * This method escapes special character in the string making up a cell of a .csv file.
+     * @param string the string to escape
+     */
+    public static escapeStringToCSV(string: string): string {
+        return `"${string.replace("\"", "\"\"")}"`;
+    }
 }
