@@ -5,8 +5,8 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
 import {Category, NULL_CATEGORY_STRING, Tray, Warehouse} from "../core/WarehouseModel";
-import "../styles/search.scss";
 import Utils from "../core/WarehouseModel/Utils";
+import "../styles/search.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 
@@ -139,7 +139,12 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     <div id="sentenceR">
                         <button
                             onClick={() => this.downloadFile(
-                                `Search ${new Date().toDateString()}.csv`,
+                                `Search ${new Date().toLocaleDateString("en-GB", {
+                                    weekday: "short",
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric"
+                                })}.csv`,
                                 this.buildCSVFile()
                             )}>
                             .CSV
