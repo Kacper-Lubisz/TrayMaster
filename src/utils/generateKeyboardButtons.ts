@@ -341,7 +341,7 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         buttons: CustomKeyboardButton[];
         row: number;
         column: number;
-    }).buttons;
+    }).buttons.splice(0, 36);
     // take the first 36 because that's all there's space for
 
     return {
