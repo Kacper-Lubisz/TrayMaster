@@ -88,7 +88,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
     buildCSVFile(): Blob {
 
-        const header = "Category, Expiry, Expiry From Timestamp, Expiry To Timestamp, Weight, Zone, Bay, Shelf, Comment\n";
+        const header = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Zone, Bay, Shelf, Comment\n";
 
         const content = this.props.search.results?.map(tray => {
 
