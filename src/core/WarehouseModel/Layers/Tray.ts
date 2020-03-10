@@ -2,7 +2,7 @@ import {Bay, Category, Column, ExpiryRange, Shelf, Warehouse, WarehouseModel, Zo
 import {BottomLayer} from "../LayerStructure/BottomLayer";
 import Utils from "../Utils";
 
-interface TrayFields {
+export interface TrayFields {
     categoryId: string;
     expiry: ExpiryRange | null;
     weight: number | null;
