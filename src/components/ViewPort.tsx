@@ -273,14 +273,14 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             return <div id="viewPort">
                 <div>{/* container needed to centre text inside viewport properly */}
                     <h1>Current warehouse '{this.props.current.toString()}' has no zones!</h1>
-                    <p>Go to <b>Settings > Layout Editor</b> to add zones & shelves to this zone</p>
+                    <p>Go to <b>Settings > Layout Editor</b> to add zones to this warehouse</p>
                 </div>
             </div>;
         } else if (this.props.current instanceof Zone) {
             return <div id="viewPort">
                 <div>
                     <h1>Current zone '{this.props.current.toString()}' has no bays!</h1>
-                    <p>Go to <b>Settings > Layout Editor</b> to add shelves to this zone</p>
+                    <p>Go to <b>Settings > Layout Editor</b> to edit zones</p>
                 </div>
             </div>;
         } else {

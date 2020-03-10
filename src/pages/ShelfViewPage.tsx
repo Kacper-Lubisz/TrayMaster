@@ -612,14 +612,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             );
         }
 
-        this.applyAndAdvance(
-            true,
-            true,
-            (tray) => {
-                tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-            }
-        );
-
         if (!couldAdvance) {
             this.setState(state => ({
                 ...state,
