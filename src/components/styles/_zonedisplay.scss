@@ -1,0 +1,41 @@
+// Zone visualiser containing div
+#nav-zone {
+  display: flex;
+  justify-content: center;
+  //height: 50vh;
+
+  // Each column of shelves
+  .nav-bay {
+    display: flex;
+    flex-direction: column-reverse;
+    margin: 5px;
+    width: 90px;
+    justify-content: stretch;
+
+    // Each shelf
+    .nav-shelf {
+      cursor: pointer;
+      height: 50px;
+      flex-shrink: 1;
+      display: flex;
+      justify-content: center;
+      margin: 5px;
+
+      // Text inside shelf box
+      > p {
+        margin: auto;
+        text-align: center;
+        font-size: 18px;
+      }
+
+      // Currently selected shelf
+      &.currentShelf {
+        box-shadow: 0 0 0 2px #000000;
+
+        > p {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}

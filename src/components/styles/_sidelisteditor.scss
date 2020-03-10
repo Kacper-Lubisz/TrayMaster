@@ -1,24 +1,24 @@
 
-#category-editor {
+#editor {
   display: grid;
-  grid-template-columns: 1fr 4fr;
+  grid-template-columns: 1fr 3fr;
   grid-template-rows: 1fr;
 
   height: 100%;
 }
 
-.add-cat-btn {
+.add-btn {
   margin-left: 300px;
 }
 
-#category-sidebar {
+#sidebar {
   display: flex;
   flex-direction: column;
 
   min-height: 0;
   height: 100%;
 
-  #category-list {
+  #list {
     grid-row-start: 1;
     grid-row-end: 2;
     grid-column-start: 1;
@@ -30,23 +30,29 @@
     overflow-y: auto;
     flex-grow: 1;
 
-    .category-list-item {
+    .list-item {
       font-size: 30px;
       cursor: pointer;
       padding: 10px;
 
-      &.cat-selected {
+      &.selected {
         background-color: #dddddd;
       }
     }
   }
 
-  #add-cat-btn {
-    margin-top: 20px;
+  #title {
+    font-size: 24pt;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  #top-btn {
+    margin-top: 12px;
   }
 }
 
-#cat-edit-main {
+#edit-main {
   grid-row-start: 1;
   grid-row-end: 2;
   grid-column-start: 2;
@@ -58,10 +64,10 @@
   flex-direction: column;
   align-items: stretch;
 
-  #cat-edit-controls {
+  #edit-controls {
     flex-grow: 1;
 
-    #cat-edit-header {
+    #edit-header {
       width: 100%;
       display: flex;
 
@@ -69,34 +75,12 @@
         font-size: 36px;
         flex-grow: 1;
       }
-    }
 
-    h3 {
-      font-size: 24px;
-      margin-bottom: 5px;
-    }
-
-    input[type=text] {
-      font-size: 24px;
-      padding: 10px;
-      background-color: #eeeeee;
-      border: none;
-    }
-
-    input[type=number] {
-      font-size: 24px;
-      padding: 10px;
-      background-color: #eeeeee;
-      border: none;
-    }
-
-    input {
-      min-width: 50%;
     }
 
   }
 
-  #cat-edit-bottom-btns {
+  #bottom-btns {
     display: flex;
     align-items: center;
 
@@ -106,3 +90,21 @@
   }
 }
 
+#empty-message-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+
+  #empty-message {
+    font-size: 16pt;
+
+    width: 100%;
+    text-align: center;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+}
