@@ -23,7 +23,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: space-around;
+    justify-content: center;
     align-items: stretch;
     width: calc(100% - 10px);
     height: calc(100% - 10px);
@@ -49,6 +49,7 @@
       align-items: flex-end;
       padding: 5px;
       position: relative; // needed to allow us to position shelf edit columns absolutely inside .column
+      max-width: 30%;
 
       // Styling
       text-align: center;
@@ -118,6 +119,7 @@
           // Layout
           margin: 5px;
           font-size: 22px;
+          line-height: 22px;
           top: 0;
           left: 0;
 
@@ -152,7 +154,8 @@
           -webkit-box-orient: vertical;
 
           // Truncate long categories
-          max-width: 60%;
+          max-width: 90%;
+          word-wrap: break-word;
           overflow: hidden;
           text-overflow: ellipsis;
           text-transform: uppercase;
@@ -163,10 +166,16 @@
           bottom: 0;
           right: 0;
           font-size: 22px;
+          height: 30px;
           min-width: 25%;
           padding: 0 10px;
 
-          background-color: #aaa; // this is the default color when there is no expiry specified
+          > div {
+            position: absolute;
+            top: 50%;
+            width: calc(100% - 20px);
+            transform: translate(0, -50%);
+          }
         }
 
         // Tray weight: top right
@@ -175,6 +184,8 @@
           right: 0;
           font-size: 20px;
           margin: 2px 5px;
+
+          line-height: 20px;
 
           &.trayWeightEditing {
             color: $accent-color;
@@ -189,6 +200,44 @@
           margin: 12px;
           font-size: 30px;
           line-height: 30px;
+        }
+      }
+
+      &.column-condensed .tray {
+        > svg.tray-tickbox {
+          margin: 0 0 0 8px;
+          top: 50%;
+          transform: translate(0, -50%);
+        }
+
+        > div.trayCategory {
+          left: 0;
+          padding-left: 38px;
+          text-align: left;
+          width: 50%;
+          transform: translate(0, -50%);
+
+          --webkit-line-clamp: 1;
+        }
+
+        > div.trayExpiry {
+          height: 100%;
+          min-width: 20%;
+        }
+
+        > div.trayWeight {
+          right: 30%;
+          top: 45%;
+          transform: translate(0, -50%);
+        }
+
+        > div.trayComment {
+          font-size: 20px;
+          line-height: 20px;
+          bottom: 50%;
+          left: 50%;
+          margin: 0;
+          transform: translate(0, 50%);
         }
       }
     }

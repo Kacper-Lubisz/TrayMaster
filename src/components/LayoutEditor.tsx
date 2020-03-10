@@ -4,12 +4,12 @@ import {cloneDeep, isEqual} from "lodash";
 import React from "react";
 import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
-import {Bay, Shelf, Warehouse, Zone} from "../core/WarehouseModel";
+import {Bay, Shelf, Warehouse, WarehouseModel, Zone} from "../core/WarehouseModel";
 import {ZoneFields} from "../core/WarehouseModel/Layers/Zone";
 import {SettingsTab} from "../pages/SettingsPage";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
 
-import "./styles/_layouteditor.scss";
+import "./styles/_sidelisteditor.scss";
 import {ZoneDisplayComponent} from "./ZoneDisplayComponent";
 
 
@@ -122,8 +122,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
             const zoneSettings: ControlledInputComponentProps[] = stateAtRender.state === "editing" ? [
                 {
-                    inputType: "textField",
-                    type: "text",
+                    inputType: "text",
                     placeholder: LayoutEditor.DEFAULT_NAME,
                     get: () => stateAtRender.editedZone.name,
                     set: (value: string) => {
@@ -151,8 +150,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                 }
             ] : [
                 {
-                    inputType: "textField",
-                    type: "text",
+                    inputType: "text",
                     placeholder: "Unnamed",
                     get: () => stateAtRender.newZone.name,
                     set: (value: string) => {
@@ -203,12 +201,12 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                             return state;
                         });
                     },
-                    label: "Number of Shelve Per Bay",
+                    label: "Number of Shelves Per Bay",
                     min: 1,
                     max: undefined,
                     placeholder: "1"
                 }, {
-                    inputType: "checkBox",
+                    inputType: "boolean",
                     get: () => stateAtRender.newZone.mirrorBayLabels,
                     set: (value: boolean) => {
                         this.setState(state => {
@@ -220,7 +218,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                     },
                     label: "Mirror Bay Labels",
                 }, {
-                    inputType: "checkBox",
+                    inputType: "boolean",
                     get: () => stateAtRender.newZone.addGroundShelves,
                     set: (value: boolean) => {
                         this.setState(state => {
@@ -235,8 +233,8 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             ];
 
             return <>
-                <div id="zone-edit-controls">
-                    <div id="zone-edit-header">
+                <div id="edit-controls">
+                    <div id="edit-header">
                         <h2>{stateAtRender.state === "editing"
                              ? `Edit '${stateAtRender.editedZone.name}'${unsavedLabel}`
                              : `New Zone '${stateAtRender.newZone.name}'`}</h2>
@@ -264,21 +262,17 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                 </div>
 
                 <div id="bottom-btns">
-                    {stateAtRender.state === "editing" ? <>
-                        <button
-                            disabled={!this.hasUnsavedChanges()}
-                            onClick={this.hasUnsavedChanges() ? this.updateZone.bind(this, stateAtRender) : undefined}
-                        >Save Changes
-                        </button>
-                    </> : <>
-                         <button
-                             disabled={!this.hasUnsavedChanges()}
-                             onClick={this.hasUnsavedChanges() ? this.createZone.bind(this, stateAtRender) : undefined}
-                         >Create Zone
-                         </button>
-                     </>}
+                    {stateAtRender.state === "editing" ? <button
+                        disabled={!this.hasUnsavedChanges()}
+                        onClick={this.hasUnsavedChanges() ? this.updateZone.bind(this, stateAtRender) : undefined}
+                    >Save Changes
+                    </button> : <button
+                         disabled={!this.hasUnsavedChanges()}
+                         onClick={this.hasUnsavedChanges() ? this.createZone.bind(this, stateAtRender) : undefined}
+                     >Create Zone
+                     </button>}
                     <button
-                        onClick={this.discardChanges.bind(this)}
+                        onClick={this.resetEditor.bind(this)}
                     >Discard {stateAtRender.state === "editing" ? "Changes" : ""}
                     </button>
                 </div>
@@ -288,14 +282,14 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     }
 
     /**
-     * Is called if user clicks button to add a new category
+     * Changes the edit panel to editing a new zone
      */
     private newZone(): void {
 
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
-        } else {
 
+        } else {
             this.setState(_ => ({
                 state: "new",
                 newZone: cloneDeep(LayoutEditor.BLANK_ZONE)
@@ -312,6 +306,10 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             || this.state.state === "new";
     }
 
+    /**
+     * This method saves the newly created zone and moves the editor into a state which edits it
+     * @param state The editor state containing the new zone
+     */
     private async createZone(state: NewState): Promise<void> {
 
         if (state.newZone.name.length === 0) {
@@ -345,13 +343,12 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         }
 
 
-        await newZone.stage(true, true);
-        this.props.updatePage();
+        await newZone.stage(true, true, WarehouseModel.shelf);
         this.setState(_ => ({
             state: "editing",
             selectedZone: newZone,
             editedZone: cloneDeep(newZone)
-        }));
+        }), this.props.updatePage);
 
     }
 
@@ -371,14 +368,16 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             state: "editing",
             selectedZone: state.selectedZone,
             editedZone: cloneDeep(state.selectedZone)
-        }));
-        this.props.updatePage();
+        }), this.props.updatePage);
 
     }
 
-    private discardChanges(): void {
+    /**
+     * Resets the editor to deselect everything (discards any changes)
+     */
+    private resetEditor(): void {
         this.setState(_ => ({
-            state: "nothingSelected",
+            state: "nothingSelected"
         }));
     }
 
@@ -391,28 +390,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         await state.selectedZone.delete(true);
         this.setState(_ => ({
             state: "nothingSelected"
-        }));
-        this.props.updatePage();
-
-        // this.props.removeCategory(this.state.oldCat);
-        // this.props.stage(true, true).then(() => {
-        //         if (this.state.oldCat && this.state.oldCat.index !== this.props.categories.length - 1) {
-        //             this.props.updatePage();
-        //             for (let j = this.state.oldCat.index; j < this.props.categories.length - 1; j++) {
-        //                 const category = this.props.categories[j];
-        //                 const id = this.props.getCategoryID(category);
-        //                 category.index = j;
-        //                 this.props.editCategory(id, category);
-        //             }
-        //         }
-        //         this.setState(state => ({
-        //             ...state,
-        //             oldCat: undefined,
-        //             draftCat: undefined
-        //         }));
-        //         this.props.updatePage();
-        //     }
-        // );
+        }), this.props.updatePage);
 
     }
 
@@ -421,10 +399,10 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
 
         const selectedZone = this.state.state === "editing" ? this.state.selectedZone : null;
 
-        return <div id="zone-editor">
-            <div id="zone-sidebar">
+        return <div id="editor">
+            <div id="sidebar">
                 <div id="title">Zones</div>
-                <div id="zone-list">
+                <div id="list">
                     {this.props.warehouse.zones.map((zone, index) => <div
                         className={classNames("list-item", {
                             "selected": selectedZone === zone
@@ -438,7 +416,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                 <button id="top-btn" onClick={this.newZone.bind(this)}>New Zone</button>
 
             </div>
-            <div id="zone-edit-main">
+            <div id="edit-main">
                 {this.renderEditPanel()}
             </div>
         </div>;

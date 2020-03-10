@@ -222,9 +222,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             }</div>;
 
         } else { // edit shelf
-            return <div>
-                Unimplemented Panel
-            </div>;
+            return <div/>;
         }
 
     }

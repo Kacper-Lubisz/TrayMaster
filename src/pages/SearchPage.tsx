@@ -4,7 +4,8 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {PanelState, SearchPanel} from "../components/SearchPanel";
-import {Category, Tray, Warehouse} from "../core/WarehouseModel";
+import {Category, NULL_CATEGORY_STRING, Tray, Warehouse} from "../core/WarehouseModel";
+import Utils from "../core/WarehouseModel/Utils";
 import "../styles/search.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
@@ -85,6 +86,45 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         });
     }
 
+    buildCSVFile(): Blob {
+
+        const header = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Zone, Bay, Shelf, Comment\n";
+
+        const content = this.props.search.results?.map(tray => {
+
+            const line: string[] = [
+                tray.category?.name ?? NULL_CATEGORY_STRING,
+                tray.expiry?.label ?? "",
+                tray.expiry?.from?.toString() ?? "",
+                tray.expiry?.to?.toString() ?? "",
+                tray.weight?.toString() ?? "",
+                tray.parentZone.name,
+                tray.parentBay.name,
+                tray.parentShelf.name,
+                tray.comment ?? ""
+            ];
+
+
+            return `${line.map(element =>
+                Utils.escapeStringToCSV(element)
+            ).reduce((acc, cur) =>
+                `${acc}${cur},`, "")}\n`;
+
+        }).reduce((acc, cur) => acc + cur) ?? null;
+
+        return new Blob([content ? header + content : ""], {type: "text/plain"});
+
+    }
+
+    downloadFile(filename: string, content: Blob): void {
+        const element = document.createElement("a");
+        element.href = URL.createObjectURL(content);
+        element.download = filename;
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+        document.body.removeChild(element);
+    }
+
     render(): React.ReactNode {
         return <div id="searchPage">
             <div id="leftPanel">
@@ -97,6 +137,18 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
                     </div>
                     <div id="sentenceR">
+                        <button
+                            onClick={() => this.downloadFile(
+                                `Search ${new Date().toLocaleDateString("en-GB", {
+                                    weekday: "short",
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric"
+                                })}.csv`,
+                                this.buildCSVFile()
+                            )}>
+                            .CSV
+                        </button>
                         <button onClick={() => this.props.history.push("/menu")}>
                             <FontAwesomeIcon icon={menuIcon}/>
                         </button>
@@ -104,9 +156,13 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 </div>
                 <div id="searchResults">{this.renderSearchResults()}</div>
             </div>
-            <SearchPanel panelState={this.state.panelState} setPanelState={this.updatePanel.bind(this)}
-                         search={this.props.search} warehouse={this.props.warehouse}
-                         setQuery={this.props.setQuery}/>
+            <SearchPanel
+                panelState={this.state.panelState}
+                setPanelState={this.updatePanel.bind(this)}
+                search={this.props.search}
+                warehouse={this.props.warehouse}
+                setQuery={this.props.setQuery}
+            />
         </div>;
     }
 
@@ -189,7 +245,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 <tr>
                     <th>Category</th>
                     <th>Expiry</th>
-                    <th>Weight</th>
+                    <th>Weight (kg)</th>
                     <th>Location</th>
                     <th>Comment</th>
                 </tr>
@@ -219,18 +275,13 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         };
                     })();
 
-                    const weightString = (() => {
-                        if (tray.weight) {
-                            return `${tray.weight.toLocaleString(undefined, {minimumFractionDigits: 2})}kg`;
-                        }
-                        return "?";
-                    })();
+                    const weightString = tray.weight?.toLocaleString(undefined, {minimumFractionDigits: 2}) ?? "";
 
                     const locationString = `${tray.parentZone.name} ${tray.parentBay.name}${tray.parentShelf.name}`;
 
                     return <tr key={i}>
-                        <td>{tray.category?.name ?? "?"}</td>
-                        <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
+                        <td>{tray.category?.name ?? ""}</td>
+                        <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCell">{weightString}</td>
                         <td style={zoneStyle}>{locationString}</td>
                         <td className="commentCell">{tray.comment}</td>

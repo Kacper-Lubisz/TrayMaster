@@ -3,6 +3,7 @@ import {AutoAdvanceModes, User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
 
+
 import "./styles/_usersettings.scss";
 
 
@@ -18,7 +19,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
 
         const settingsList: ControlledInputComponentProps[] = [
             {
-                inputType: "checkBox",
+                inputType: "boolean",
                 get: () => this.props.user.showPreviousShelfButton,
                 set: async (value: boolean) => {
                     this.props.user.showPreviousShelfButton = value;
@@ -26,7 +27,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 },
                 label: "Show Previous Shelf Button"
             }, {
-                inputType: "checkBox",
+                inputType: "boolean",
                 get: () => this.props.user.clearAboveSelection,
                 set: async (value: boolean) => {
                     this.props.user.clearAboveSelection = value;
@@ -48,7 +49,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 ],
                 label: "Auto Advance",
             }, {
-                inputType: "checkBox",
+                inputType: "boolean",
                 get: () => this.props.user.onlySingleAutoAdvance,
                 set: async (value: boolean) => {
                     this.props.user.onlySingleAutoAdvance = value;
@@ -56,7 +57,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 },
                 label: "Don't Advance in Multi-select"
             }, {
-                inputType: "checkBox",
+                inputType: "boolean",
                 get: () => this.props.user.useCustomKeyboard,
                 set: async (value: boolean) => {
                     this.props.repaintSettings();

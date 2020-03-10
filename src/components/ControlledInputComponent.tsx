@@ -6,15 +6,15 @@ import {isEqual} from "lodash";
 import React, {ReactNode} from "react";
 import {SketchPicker} from "react-color";
 
-import "./styles/_controleldinputcomponent.scss";
+import "./styles/_controlledinputcomponent.scss";
 
-export type Checkbox = {
-    inputType: "checkBox";
+export type BooleanInput = {
+    inputType: "boolean";
     get: () => boolean;
     set: (value: boolean) => void;
 };
 
-export type DropDown<T> = {
+export type OptionInput<T> = {
     inputType: "dropDown";
     options: DropDownOption<T>[];
     get: () => T;
@@ -26,9 +26,8 @@ export type DropDownOption<T> = {
     key: T;
 };
 
-export type TextField = {
-    inputType: "textField";
-    type: string;
+export type TextInput = {
+    inputType: "text";
     placeholder: string | undefined;
     get: () => string;
     set: (value: string) => void;
@@ -51,7 +50,7 @@ export type ColorInput = {
 };
 
 export type ControlledInputComponentProps =
-    (Checkbox | DropDown<any> | TextField | NumberInput | ColorInput)
+    (BooleanInput | OptionInput<any> | TextInput | NumberInput | ColorInput)
     & { label: string };
 
 
@@ -59,7 +58,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
 
     render(): React.ReactNode {
         const propsAtRender = this.props;
-        if (propsAtRender.inputType === "checkBox") {
+        if (propsAtRender.inputType === "boolean") {
             return <tr
                 className="settings-component setting-checkbox"
                 key={propsAtRender.label}
@@ -102,7 +101,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
                 </td>
             </tr>;
 
-        } else if (propsAtRender.inputType === "textField") {
+        } else if (propsAtRender.inputType === "text") {
 
             return <tr className="settings-component setting-text-field" key={propsAtRender.label}>
                 <td><label>{propsAtRender.label}</label></td>

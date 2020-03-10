@@ -57,6 +57,9 @@ import {SearchQuery, SortBy} from "./SearchPage";
  */
 export type KeyboardName = "category" | "expiry" | "weight" | "custom" | "edit-shelf";
 
+export const MAX_MAX_COLUMN_HEIGHT = 20;
+export const MAX_MAX_SHELF_WIDTH = 8;
+
 /**
  * The directions in which you can navigate
  */
@@ -112,7 +115,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             })(),
             weight: undefined,
             isEditShelf: false,
-            isNavModalOpen: false // change this to true when editing NavModal
+            isNavModalOpen: false, // change this to true when editing NavModal
         };
     }
 
@@ -419,6 +422,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             trays.forEach(tray => modify(tray));
             this.setSelected(this.advanceSelection(this.state.selected));
 
+            this.state.currentView.stage(false, true, WarehouseModel.tray).then(_ => _);
+
         });
 
     }
@@ -598,8 +603,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     private addColumn(shelf: Shelf): void {
-        Column.create(3, shelf);
-        this.forceUpdate();
+        if (shelf.columns.length < MAX_MAX_SHELF_WIDTH) {
+            Column.create(3, shelf);
+            this.forceUpdate();
+        }
     }
 
     /**
@@ -619,7 +626,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         shelf.columns.forEach(column => { // remove trays over max height
             if (column.maxHeight) {
                 const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
-                column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed => {
+                column.trays.slice(column.trays.length - 1 - traysToPop, column.trays.length - 1).forEach(removed => {
                     this.state.selected.delete(removed);
                     removed.delete(true);
                 });
@@ -905,11 +912,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             {
                 name: "Add Column",
                 onClick: this.addColumn.bind(this, this.state.currentView),
-                halfWidth: false
+                halfWidth: false,
+                disabled: this.state.currentView.columns.length >= MAX_MAX_SHELF_WIDTH
             },
             // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
             {
-                name: "Save",
+                name: "Done",
                 onClick: this.finaliseEditShelf.bind(this, this.state.currentView),
                 halfWidth: false
             },

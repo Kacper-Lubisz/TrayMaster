@@ -88,6 +88,8 @@ class SignInPage extends React.Component<RouteComponentProps, SignInPageState> {
     }
 
     private async signIn(email: string | undefined, password: string | undefined): Promise<void> {
+
+
         if (email && password) {
             try {
                 this.setState(state => ({

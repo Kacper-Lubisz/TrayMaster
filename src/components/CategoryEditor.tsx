@@ -9,7 +9,7 @@ import {NEVER_EXPIRY} from "../core/WarehouseModel/Layers/Warehouse";
 import {SettingsTab} from "../pages/SettingsPage";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
 
-import "./styles/_categoryeditor.scss";
+import "./styles/_sidelisteditor.scss";
 
 
 interface CategoryEditorProps {
@@ -89,11 +89,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
         } else {
-            this.setState({
+            this.setState(_ => ({
                 state: "editing",
                 selectedCategory: cat,
                 editedCategory: cloneDeep(cat)
-            });
+            }));
         }
     }
 
@@ -116,21 +116,18 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
             const categorySettings: ControlledInputComponentProps[] = [
                 {
-                    inputType: "textField",
-                    type: "text",
+                    inputType: "text",
                     get: () => categoryToEdit.name,
                     set: (value: string) => {
                         this.setState(state => {
                             categoryToEdit.name = value;
                             return state;
                         });
-
                     },
                     placeholder: CategoryEditor.DEFAULT_NAME,
                     label: "Name"
                 }, {
-                    inputType: "textField",
-                    type: "text",
+                    inputType: "text",
                     get: () => categoryToEdit.shortName ?? "",
                     set: (value: string) => {
                         this.setState(state => {
@@ -168,7 +165,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     placeholder: "No threshold",
                     label: "Over-Stock Threshold (trays)"
                 }, {
-                    inputType: "checkBox",
+                    inputType: "boolean",
                     get: () => categoryToEdit?.defaultExpiry !== null,
                     set: (value: boolean) => {
                         this.setState(state => {
@@ -179,8 +176,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     },
                     label: "Never Expires"
                 }, {
-                    inputType: "textField",
-                    type: "text",
+                    inputType: "text",
                     get: () => categoryToEdit?.group ?? "",
                     set: (value: string) => {
                         this.setState(state => {
@@ -198,8 +194,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                                                                    : "";
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
             return <>
-                <div id="cat-edit-controls">
-                    <div id="cat-edit-header">
+                <div id="edit-controls">
+                    <div id="edit-header">
                         <h2>{
                             stateAtRender.state === "editing"
                             ? `Edit '${categoryToEdit.name}'${defaultLabel}${unsavedLabel}`
@@ -224,24 +220,20 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 </div>
 
                 <div id="bottom-btns">
-                    {stateAtRender.state === "editing" ? <>
-                        <button
-                            disabled={!this.hasUnsavedChanges()}
-                            onClick={this.hasUnsavedChanges() ? this.updateCategory.bind(this, stateAtRender)
-                                                              : undefined}
-                        >Save Changes
-                        </button>
-                    </> : <>
-                         <button
-                             disabled={!this.hasUnsavedChanges()}
-                             onClick={this.hasUnsavedChanges() ? this.createCategory.bind(this, stateAtRender)
-                                                               : undefined}
-                         >Create Category
-                         </button>
-                     </>}
+                    {stateAtRender.state === "editing" ? <button
+                        disabled={!this.hasUnsavedChanges()}
+                        onClick={this.hasUnsavedChanges() ? this.updateCategory.bind(this, stateAtRender)
+                                                          : undefined}
+                    >Save Changes
+                    </button> : <button
+                         disabled={!this.hasUnsavedChanges()}
+                         onClick={this.hasUnsavedChanges() ? this.createCategory.bind(this, stateAtRender)
+                                                           : undefined}
+                     >Create Category
+                     </button>}
                     <button
-                        onClick={this.discardChanges.bind(this)}
-                    >Discard {stateAtRender.state === "editing" ? "Changes" : ""}
+                        onClick={this.resetEditor.bind(this)}
+                    >Discard{stateAtRender.state === "editing" ? " Changes" : ""}
                     </button>
                 </div>
 
@@ -259,15 +251,15 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         if (this.hasUnsavedChanges()) {
             this.props.openDialog(this.createUnsavedDialog());
         } else {
-            this.setState({
+            this.setState(_ => ({
                 state: "new",
                 newCategory: cloneDeep(CategoryEditor.BLANK_CATEGORY),
-            });
+            }));
         }
     }
 
     /**
-     * Checks if any of the fields in the currently displayed category has changed
+     * Checks if there is anything to save in the current state
      */
     private hasUnsavedChanges(): boolean {
         return this.state.state === "new" || (
@@ -277,6 +269,10 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         );
     }
 
+    /**
+     * This method saves the newly created category and moves the editor into a state which edits it
+     * @param state The editor state containing the new category
+     */
     private async createCategory(state: NewState): Promise<void> {
 
         if (state.newCategory.name.length === 0) {
@@ -287,17 +283,16 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.props.addCategory(state.newCategory);
         await this.props.stage(true, true);
 
-        this.props.repaintSettings();
-        this.setState({
+        this.setState(_ => ({
             state: "editing",
             selectedCategory: state.newCategory,
             editedCategory: state.newCategory
-        });
+        }), this.props.repaintSettings);
 
     }
 
     /**
-     *Saves changes to categories, doesn't let user save category with empty name
+     * Saves changes to the edited category in the EditingState state
      */
     private async updateCategory(state: EditingState): Promise<void> {
 
@@ -308,20 +303,21 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.props.editCategory(this.props.getCategoryID(state.selectedCategory), state.editedCategory);
         await this.props.stage(true, true);
 
-        this.setState({
+        this.setState(_ => ({
             state: "editing",
             selectedCategory: state.editedCategory,
             editedCategory: cloneDeep(state.editedCategory)
-        });
-        this.props.repaintSettings();
-
+        }), this.props.repaintSettings);
 
     }
 
-    private discardChanges(): void {
-        this.setState({
+    /**
+     * Resets the editor to deselect everything (discards any changes)
+     */
+    private resetEditor(): void {
+        this.setState(_ => ({
             state: "nothingSelected"
-        });
+        }));
     }
 
     /**
@@ -333,10 +329,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.props.removeCategory(state.selectedCategory);
         await this.props.stage(true, true);
 
-        this.setState({
+        this.setState(_ => ({
             state: "nothingSelected",
-        });
-        this.props.repaintSettings();
+        }), this.props.repaintSettings);
 
     }
 
@@ -344,13 +339,13 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     render(): React.ReactNode {
 
         const selected = this.state.state === "editing" ? this.state.selectedCategory : null;
-        return <div id="category-editor">
-            <div id="category-sidebar">
+        return <div id="editor">
+            <div id="sidebar">
                 <div id="title">Categories</div>
-                <div id="category-list">
+                <div id="list">
                     {this.props.categories.map((cat, index) => <div
-                        className={classNames("category-list-item", {
-                            "cat-selected": isEqual(selected, cat)
+                        className={classNames("list-item", {
+                            "selected": isEqual(selected, cat)
                         })}
                         key={index}
                         onClick={this.selectCategory.bind(this, cat)}
@@ -360,7 +355,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 </div>
                 <button id="top-btn" onClick={this.newCategory.bind(this)}>New Category</button>
             </div>
-            <div id="cat-edit-main">
+            <div id="edit-main">
                 {this.renderEditPanel()}
             </div>
         </div>;
