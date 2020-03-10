@@ -10,7 +10,7 @@ import classNames from "classnames/bind";
 import {isEqual} from "lodash";
 import "pepjs";
 import React from "react";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import {Column, NULL_CATEGORY_STRING, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
 import {KeyboardName, MAX_MAX_COLUMN_HEIGHT} from "../pages/ShelfViewPage";
 import "../styles/shelfview.scss";
@@ -428,7 +428,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
-                        <div className="trayCategory">{tray.category?.name ?? "Unsorted"}</div>
+                        <div className="trayCategory">{tray.category?.name ?? NULL_CATEGORY_STRING}</div>
 
                         {tray.expiry ? <div className="trayExpiry" style={expiryStyle}>
                             <div>{tray.expiry.label}</div>
