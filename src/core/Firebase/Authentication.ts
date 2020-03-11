@@ -36,7 +36,7 @@ interface UserFields {
 }
 
 export class User extends DatabaseObject<UserFields> {
-    private static defaultFields: UserFields = {
+    private static readonly defaultFields: UserFields = {
         isAdmin: false,
         name: "",
         accessibleWarehouseIDs: [],

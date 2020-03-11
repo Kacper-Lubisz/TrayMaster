@@ -16,6 +16,7 @@
     "@types/lodash": "^4.14.149",
     "@types/node": "13.1.1",
     "@types/react": "16.9.17",
+    "@types/react-color": "^3.0.1",
     "@types/react-dom": "16.9.4",
     "@types/react-router-dom": "^5.1.3",
     "classnames": "^2.2.6",
@@ -25,6 +26,7 @@
     "node-sass": "^4.13.0",
     "pepjs": "^0.5.2",
     "react": "^16.12.0",
+    "react-color": "^2.18.0",
     "react-dom": "^16.12.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.4.0",
@@ -35,7 +37,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "deploy-functions": "firebase deploy --only functions"
   },
   "eslintConfig": {
     "extends": "react-app"

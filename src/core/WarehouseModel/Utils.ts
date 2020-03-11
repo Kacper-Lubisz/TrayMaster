@@ -162,11 +162,25 @@ export default abstract class Utils {
     public static isWhiteSpace(text: string): boolean {
         return !/\S/.test(text);
     }
+
+    /**
+     * This method escapes special character in the string making up a cell of a .csv file.
+     * @param string the string to escape
+     */
+    public static escapeStringToCSV(string: string): string {
+        return `"${string.replace("\"", "\"\"")}"`;
+    }
 }
+
+export const NEVER_EXPIRY = {
+    from: null, to: null,
+    label: "Never"
+};
 
 export const defaultCategories: Category[] = [
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Baby...",
         shortName: null,
@@ -176,6 +190,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: "Baby...",
         shortName: null,
@@ -185,6 +200,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Baby...",
         shortName: null,
@@ -194,6 +210,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -203,6 +220,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -212,6 +230,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -221,6 +240,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -230,6 +250,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -239,6 +260,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -248,6 +270,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -257,6 +280,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Toiletries...",
         shortName: null,
@@ -266,6 +290,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -275,6 +300,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -284,6 +310,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -293,6 +320,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: "Hot Choc",
@@ -302,6 +330,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -311,6 +340,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -320,6 +350,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -329,6 +360,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Toiletries...",
         shortName: null,
@@ -338,6 +370,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -347,6 +380,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -356,6 +390,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Toiletries...",
         shortName: null,
@@ -365,6 +400,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -374,6 +410,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -383,6 +420,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -392,6 +430,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -401,6 +440,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -410,6 +450,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -419,6 +460,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -428,6 +470,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Toiletries...",
         shortName: null,
@@ -437,6 +480,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -446,6 +490,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Toiletries...",
         shortName: null,
@@ -455,6 +500,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -464,6 +510,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -473,6 +520,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: null,
         shortName: null,
@@ -482,6 +530,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -491,6 +540,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: NEVER_EXPIRY,
         type: "default",
         group: "Toiletries...",
         shortName: null,
@@ -500,6 +550,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -509,6 +560,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -518,6 +570,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -527,6 +580,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -536,6 +590,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: "Household...",
         shortName: null,
@@ -545,6 +600,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,
@@ -554,6 +610,7 @@ export const defaultCategories: Category[] = [
     },
     {
         index: 0,
+        defaultExpiry: null,
         type: "default",
         group: null,
         shortName: null,

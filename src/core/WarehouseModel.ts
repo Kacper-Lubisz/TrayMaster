@@ -37,6 +37,8 @@ export interface TraySpace {
     parentColumn: Column;
 }
 
+export const NULL_CATEGORY_STRING = "Unsorted";
+
 /**
  * Represents a single tray category
  */
@@ -48,6 +50,7 @@ export interface Category {
     overStockThreshold: number | null;
     type: "default" | "custom";
     group: string | null;
+    defaultExpiry: null | ExpiryRange;
 }
 
 /**

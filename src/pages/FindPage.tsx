@@ -2,14 +2,14 @@ import {faArrowLeft as arrowLeft, faHome as menuIcon, faTimes as cross} from "@f
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {FindPanel, PanelState} from "../components/FindPanel";
 import {LoadingSpinner} from "../components/LoadingSpinner";
-import {PanelState, FindPanel} from "../components/FindPanel";
-import {Category, Warehouse} from "../core/WarehouseModel";
-import "../styles/find.scss";
+import {Category, NULL_CATEGORY_STRING, Warehouse} from "../core/WarehouseModel";
 import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
+import Utils from "../core/WarehouseModel/Utils";
+import "../styles/find.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-
 
 export enum SortBy {
     expiry = "expiry",
@@ -71,7 +71,6 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
         this.state = {
             panelState: "category"
         };
-
     }
 
     /**
@@ -87,6 +86,38 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
         });
     }
 
+    buildCSVFile(): Blob {
+        const header = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Location, Comment\n";
+
+        const content = this.props.find.results?.map(tray => {
+            const line: string[] = [
+                this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING,
+                tray.expiry?.label ?? "",
+                tray.expiry?.from?.toString() ?? "",
+                tray.expiry?.to?.toString() ?? "",
+                tray.weight?.toString() ?? "",
+                tray.locationName,
+                tray.comment ?? ""
+            ];
+
+            return `${line.map(element =>
+                Utils.escapeStringToCSV(element)
+            ).reduce((acc, cur) =>
+                `${acc}${cur},`, "")}\n`;
+        }).reduce((acc, cur) => acc + cur) ?? null;
+
+        return new Blob([content ? header + content : ""], {type: "text/plain"});
+    }
+
+    downloadFile(filename: string, content: Blob): void {
+        const element = document.createElement("a");
+        element.href = URL.createObjectURL(content);
+        element.download = filename;
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+        document.body.removeChild(element);
+    }
+
     render(): React.ReactNode {
         return <div id="findPage">
             <div id="leftPanel">
@@ -99,6 +130,18 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
                     </div>
                     <div id="sentenceR">
+                        <button
+                            onClick={() => this.downloadFile(
+                                `Search ${new Date().toLocaleDateString("en-GB", {
+                                    weekday: "short",
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric"
+                                })}.csv`,
+                                this.buildCSVFile()
+                            )}>
+                            .CSV
+                        </button>
                         <button onClick={() => this.props.history.push("/menu")}>
                             <FontAwesomeIcon icon={menuIcon}/>
                         </button>
@@ -106,9 +149,12 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 </div>
                 <div id="findResults">{this.renderFindResults()}</div>
             </div>
-            <FindPanel panelState={this.state.panelState} setPanelState={this.updatePanel.bind(this)}
-                       find={this.props.find} warehouse={this.props.warehouse}
-                       setQuery={this.props.setQuery}/>
+            <FindPanel
+                panelState={this.state.panelState}
+                setPanelState={this.updatePanel.bind(this)}
+                find={this.props.find}
+                warehouse={this.props.warehouse}
+                setQuery={this.props.setQuery}/>
         </div>;
     }
 
@@ -191,7 +237,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 <tr>
                     <th>Category</th>
                     <th>Expiry</th>
-                    <th>Weight</th>
+                    <th>Weight (kg)</th>
                     <th>Location</th>
                     <th>Comment</th>
                 </tr>
@@ -221,17 +267,12 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         };
                     })();
 
-                    const weightString = (() => {
-                        if (tray.weight) {
-                            return `${tray.weight.toLocaleString(undefined, {minimumFractionDigits: 2})}kg`;
-                        }
-                        return "?";
-                    })();
+                    const weightString = tray.weight?.toLocaleString(undefined, {minimumFractionDigits: 2}) ?? "";
 
                     const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
-                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? "?"}</td>
-                        <td style={expiryStyle}>{tray.expiry?.label ?? "?"}</td>
+                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? ""}</td>
+                        <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCell">{weightString}</td>
                         <td style={zoneStyle}>{locationString}</td>
                         <td className="commentCell">{tray.comment}</td>
@@ -250,7 +291,6 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 Couldn't find any trays that match this query.
             </div>;
         }
-
     }
 }
 
