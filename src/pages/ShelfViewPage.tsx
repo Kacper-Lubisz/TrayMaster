@@ -1132,7 +1132,7 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
             <div className="infoBottom">
                 {
                     this.state.blameName && this.props.lastModified ? <div>This tray was last modified
-                                                                        by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString()}
+                                                                        by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString("en-GB")}
                                                                     </div>
                                                                     : <>
                         <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
