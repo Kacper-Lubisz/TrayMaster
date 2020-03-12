@@ -10,12 +10,22 @@ import classNames from "classnames/bind";
 import {isEqual} from "lodash";
 import "pepjs";
 import React from "react";
-import {Column, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import {
+    Column,
+    NULL_CATEGORY_STRING,
+    Shelf,
+    Tray,
+    TrayCell,
+    Warehouse,
+    WarehouseModel,
+    Zone
+} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
-import {KeyboardName} from "../pages/ShelfViewPage";
+import {KeyboardName, MAX_MAX_COLUMN_HEIGHT} from "../pages/ShelfViewPage";
 import {getTextColorForBackground} from "../utils/colorUtils";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {trayComparisonFunction} from "../utils/sortCells";
+import {LoadingSpinner} from "./LoadingSpinner";
 import "./styles/_viewport.scss";
 
 
@@ -29,7 +39,8 @@ interface ViewPortProps {
 
     removeColumn: (column: Column) => void;
 
-    current: ViewPortLocation;
+    availableLevel: WarehouseModel;
+    current?: Shelf;
     isShelfEdit: boolean;
 
     draftWeight: string | undefined;
@@ -80,13 +91,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.trayRefs = [];
 
-        if (this.props.current instanceof Shelf) {
+        if (this.props.current) {
             this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
         }
 
         this.state = {
             longPress: null,
-            condensed: this.props.current.columns.map(_ => false)
+            condensed: this.props.current?.columns.map(_ => false) ?? []
         };
     }
 
@@ -267,21 +278,19 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     render(): React.ReactNode {
-
-        if (this.props.current instanceof Warehouse) {
-            return <div id="viewPort">
-                <div>{/* container needed to centre text inside viewport properly */}
-                    <h1>Current warehouse {this.props.current.toString()} has no zones!</h1>
-                    <p>todo add a button to go to settings or wherever this can be changed</p>
-                </div>
-            </div>;
-        } else if (this.props.current instanceof Zone) {
-            return <div id="viewPort">
-                <h1>Current zone {this.props.current.toString()} has no bays</h1>
-                <p>todo add a button to go to settings or wherever this can be changed</p>
-            </div>;
-        } else {
+        if (this.props.current) {
             const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
+
+            if (!(shelf.loaded && shelf.childrenLoaded)) {
+                // todo fixme restyle this, ensure this is appropriate usage
+                return (
+                    <div id="loading-box" style={{margin: "auto"}}>
+                        <LoadingSpinner/>
+                        <h2>Loading...</h2>
+                    </div>
+                );
+            }
+
             return (
                 <div id="viewPort" touch-action="none" onPointerUp={this.onDragSelectEnd.bind(this)}
                      onPointerLeave={this.onDragSelectEnd.bind(this)}>
@@ -293,6 +302,26 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     </div>
                 </div>
             );
+        } else {
+            if (this.props.availableLevel === WarehouseModel.warehouse) {
+                return (
+                    <div id="viewPort">
+                        <div>
+                            <h1>Current warehouse has no zones!</h1>
+                            <p>Go to <b>Settings > Layout Editor</b> to add zones to this warehouse</p>
+                        </div>
+                    </div>
+                );
+            } else if (this.props.availableLevel === WarehouseModel.zone) {
+                return (
+                    <div id="viewPort">
+                        <div>
+                            <h1>Current zone has no bays!</h1>
+                            <p>Go to <b>Settings > Layout Editor</b> to edit zones</p>
+                        </div>
+                    </div>
+                );
+            }
         }
     }
 
@@ -304,7 +333,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     private changeColumnHeight(column: Column, changeType: "inc" | "dec"): void {
         const change = changeType === "inc" ? 1
                                             : -1;
-        column.maxHeight = Math.max(change + column.maxHeight, 1);
+        column.maxHeight = Math.min(Math.max(change + column.maxHeight, 1), MAX_MAX_COLUMN_HEIGHT);
         Column.purgePaddedSpaces(column);
         this.forceUpdate();
     }
@@ -315,9 +344,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @return an object map of possible inputs to the boolean which determines if they are possible
      */
     private static getPossibleHeightChanges(column: Column): { inc: boolean; dec: boolean } {
-        // todo decide if there ought to be max max height
         if (column.maxHeight) {
-            return {inc: true, dec: column.maxHeight !== 1};
+            return {inc: column.maxHeight !== MAX_MAX_COLUMN_HEIGHT, dec: column.maxHeight !== 1};
         } else {
 
             return {inc: true, dec: true};
@@ -426,7 +454,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                         })}
                         icon={tickSolid}/>
                     {tray instanceof Tray ? <>
-                        <div className="trayCategory">{tray.category?.name ?? "Unsorted"}</div>
+                        <div className="trayCategory">{tray.category?.name ?? NULL_CATEGORY_STRING}</div>
 
                         {tray.expiry ? <div className="trayExpiry" style={expiryStyle}>
                             <div>{tray.expiry.label}</div>

@@ -2,6 +2,7 @@ import {faBackspace} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
+import {NEVER_EXPIRY} from "../core/WarehouseModel/Utils";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {interpolateTowardsGrey} from "../utils/colorUtils";
 import {getExpiryColor} from "../utils/getExpiryColor";
@@ -9,7 +10,6 @@ import {byNullSafe} from "../utils/sortsUtils";
 import {Dialog, DialogTitle} from "./Dialog";
 import {CustomButtonProps, Keyboard} from "./Keyboard";
 import "./styles/_bottompanel.scss";
-
 
 export interface BottomPanelProps {
     openDialog: (dialog: Dialog) => void;
@@ -232,7 +232,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             ).map((cat): CustomButtonProps => ({
                 name: cat.shortName ?? cat.name,
                 onClick: () => this.props.categorySelected(cat),
-                selected: cat.name === commonCat
+                selected: cat.name === commonCat,
             }));
 
             const groupedButtons = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
@@ -283,10 +283,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             const specialButtons = [
                 {
                     name: "Never",
-                    onClick: () => this.props.expirySelected({
-                        from: null, to: null,
-                        label: "Never"
-                    })
+                    onClick: () => this.props.expirySelected(NEVER_EXPIRY),
                 }, {
                     name: "< Clear >",
                     onClick: () => this.props.expirySelected(null),
@@ -332,9 +329,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             </div>;
 
         } else { // edit shelf
-            return <div>
-                Unimplemented Panel
-            </div>;
+            return <div/>;
         }
 
     }

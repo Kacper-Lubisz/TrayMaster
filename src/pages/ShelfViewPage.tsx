@@ -7,13 +7,13 @@ import {
     faClock as expiryIcon,
     faCog as settingsIcon,
     faCube as categoryIcon,
+    faExclamationTriangle,
     faHome as menuIcon,
-    faStickyNote,
+    faInfo,
     faTimes as cross
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
-import reduce from "lodash/reduce";
+import {reduce} from "lodash";
 import React from "react";
 
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -22,7 +22,8 @@ import {BottomPanel} from "../components/BottomPanel";
 import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
 import {SideBar, SideBarButtonProps} from "../components/SideBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
-import {User} from "../core/Firebase";
+import {ZoneDisplayComponent} from "../components/ZoneDisplayComponent";
+import firebase, {User} from "../core/Firebase";
 import {
     Bay,
     Category,
@@ -36,10 +37,11 @@ import {
     WarehouseModel,
     Zone
 } from "../core/WarehouseModel";
+import Utils from "../core/WarehouseModel/Utils";
 import {getTextColorForBackground} from "../utils/colorUtils";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
-import {SearchQuery, SortBy} from "./SearchPage";
+import {FindQuery, SortBy} from "./FindPage";
 import "./styles/shelfview.scss";
 
 
@@ -48,16 +50,14 @@ import "./styles/shelfview.scss";
  */
 export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
 
+export const MAX_MAX_COLUMN_HEIGHT = 20;
+export const MAX_MAX_SHELF_WIDTH = 8;
+
 /**
  * The directions in which you can navigate
  */
 type ShelfMoveDirection =
-    "left"
-    | "right"
-    | "up"
-    | "down"
-    | "next"
-    | "nextShelf"
+    "nextShelf"
     | "previousShelf"
     | "nextZone"
     | "previousZone";
@@ -68,7 +68,7 @@ interface ShelfViewProps {
      * @param dialog A dialog builder function which takes the function that closes the dialog.
      */
     openDialog: (dialog: Dialog) => void;
-    setSearch: (query: SearchQuery) => void;
+    setFind: (query: FindQuery) => void;
     warehouse: Warehouse;
     user: User;
 }
@@ -96,12 +96,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 } else if (this.props.warehouse.shelves.length === 0) {
                     return this.props.warehouse.zones[0];
                 } else {
+                    this.props.warehouse.shelves[0].load(false, WarehouseModel.tray).then(() => {
+                        this.forceUpdate();
+                    });
                     return this.props.warehouse.shelves[0];
                 }
             })(),
             weight: undefined,
             isEditShelf: false,
-            isNavModalOpen: false // change this to true when editing NavModal
+            isNavModalOpen: false, // change this to true when editing NavModal
         };
     }
 
@@ -151,39 +154,29 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param direction The shelf to move to or otherwise the direction in which to move.
      */
     private changeView(direction: ShelfMoveDirection | Shelf): void {
-
         if (direction instanceof Shelf) { // to specific shelf
+            direction.load(true, WarehouseModel.tray).then(() => {
+                this.forceUpdate();
+            });
             this.setState(state => ({
                 ...state,
                 selected: new Map(),
                 currentView: direction
             }));
             return;
-        } else if (direction === "next") { // decide if next zone or shelf
-
-            if (this.state.currentView instanceof Zone) {
-                this.changeView("nextZone");
-            } else if (this.state.currentView instanceof Shelf) {
-                this.changeView("nextShelf");
-            } else {
-                throw Error("Can't change view in direction 'next' when looking at a warehouse");
-            }
-
         } else if (this.state.currentView instanceof Warehouse) {
-            throw Error("Trying to navigate an empty warehouse");
+            return;
             // this can't be navigated and ought not to happen
 
         } else if (this.state.currentView instanceof Zone && (
-            direction === "left" || direction === "right" ||
-            direction === "up" || direction === "down" ||
             direction === "nextShelf" || direction === "previousShelf"
         )) {
-            throw Error("These move directions are not possible when the current view is a Zone");
+            return;
 
         } else if (this.state.currentView instanceof Zone) { // if we're moving from a zone
             const increment = direction === "nextZone" ? 1 : -1; // only nextZone or previousZone possible
 
-            const zoneIndex = this.props.warehouse.zones.indexOf(this.state.currentView);
+            const zoneIndex = this.state.currentView.index;
             const newZoneIndex = properMod(zoneIndex + increment, this.props.warehouse.zones.length);
             const newZone = this.props.warehouse.zones[newZoneIndex];
 
@@ -201,6 +194,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentView: newBay.shelves.length === 0 ? newZone
                                                              : newBay.shelves[0]
                 }));
+
+                if (!newBay.shelves.length) {
+                    newBay.shelves[0].load(true, WarehouseModel.tray).then(() => {
+                        this.forceUpdate();
+                    });
+                }
             }
         } else { // moving from a shelf
             const
@@ -211,14 +210,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 bayIndex: number = currentBay.index,
                 zoneIndex: number = currentZone.index;
 
-            if (direction === "up" || direction === "down") { // vertical
+            // "nextShelf", "previousShelf", "nextZone", "previousZone"
+            // cyclic, inc/dec shelf -> bay -> zone
+            const increment = direction === "nextShelf" || direction === "nextZone" ? 1 : -1;
+            const isZone = direction === "nextZone" || direction === "previousZone";
 
-                const increment = direction === "up" ? 1 : -1;
-                const newShelfIndex: number = shelfIndex + increment;
+            if (shelfIndex + increment !== currentBay.shelves.length &&
+                shelfIndex + increment !== -1 && !isZone) {// increment shelfIndex
 
-                if (newShelfIndex < 0 || newShelfIndex >= currentBay.shelves.length) {
-                    return;
-                }
+                const newShelfIndex = shelfIndex + increment;
 
                 this.setState(state => ({
                     ...state,
@@ -226,79 +226,58 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentView: currentBay.shelves[newShelfIndex]
                 }));
 
-            } else if (direction === "left" || direction === "right") { // horizontal
+                currentBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                    this.forceUpdate();
+                });
+            } else if (bayIndex + increment !== currentZone.bays.length
+                && bayIndex + increment !== -1 && !isZone) { // increment bayIndex
 
-                const increment = direction === "right" ? 1 : -1;
-                const newBayIndex: number = bayIndex + increment;
+                const newBay = currentZone.bays[bayIndex + increment];
+                const newShelfIndex = direction === "nextShelf" ? 0
+                                                                : newBay.shelves.length - 1;
 
-                if (newBayIndex < 0 || newBayIndex >= currentZone.bays.length) {
-                    return;
-                }
-
-                const newShelfIndex: number = Math.max(Math.min(
-                    shelfIndex,
-                    currentZone.bays[newBayIndex].shelves.length - 1),
-                    0
-                );
                 this.setState(state => ({
                     ...state,
                     selected: new Map(),
-                    currentView: currentZone.bays[newBayIndex].shelves[newShelfIndex]
+                    currentView: newBay.shelves.length === 0 ? currentZone
+                                                             : newBay.shelves[newShelfIndex]
                 }));
 
-            } else {
-                // "nextShelf", "previousShelf", "nextZone", "previousZone"
-                // cyclic, inc/dec shelf -> bay -> zone
-                const increment = direction === "nextShelf" || direction === "nextZone" ? 1 : -1;
-                const isZone = direction === "nextZone" || direction === "previousZone";
+                if (newBay.shelves.length) {
+                    newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                        this.forceUpdate();
+                    });
+                }
+            } else { // increment zone
 
-                if (shelfIndex + increment !== currentBay.shelves.length &&
-                    shelfIndex + increment !== -1 && !isZone) {// increment shelfIndex
+                const newZone = currentZone.parent.zones[properMod(zoneIndex + increment,
+                    currentZone.parent.zones.length)];
 
-                    const newShelfIndex = shelfIndex + increment;
+                if (newZone.bays.length === 0) {
                     this.setState(state => ({
                         ...state,
                         selected: new Map(),
-                        currentView: currentBay.shelves[newShelfIndex]
+                        currentView: newZone
                     }));
-                } else if (bayIndex + increment !== currentZone.bays.length
-                    && bayIndex + increment !== -1 && !isZone) { // increment bayIndex
+                } else {
+                    const bayIndex = increment === 1 ? 0
+                                                     : newZone.bays.length - 1;
+                    const newBay = newZone.bays[bayIndex];
 
-                    const newBay = currentZone.bays[bayIndex + increment];
-                    const newShelfIndex = direction === "nextShelf" ? 0
-                                                                    : newBay.shelves.length - 1;
+                    const newShelfIndex = increment === 1 ? 0
+                                                          : newBay.shelves.length - 1;
 
                     this.setState(state => ({
                         ...state,
                         selected: new Map(),
-                        currentView: newBay.shelves.length === 0 ? currentZone
+                        currentView: newBay.shelves.length === 0 ? newZone
                                                                  : newBay.shelves[newShelfIndex]
                     }));
-                } else { // increment zone
 
-                    const newZone = currentZone.parent.zones[properMod(zoneIndex + increment,
-                        currentZone.parent.zones.length)];
-
-                    if (newZone.bays.length === 0) {
-                        this.setState(state => ({
-                            ...state,
-                            selected: new Map(),
-                            currentView: newZone
-                        }));
-                    } else {
-                        const bayIndex = increment === 1 ? 0
-                                                         : newZone.bays.length - 1;
-                        const newBay = newZone.bays[bayIndex];
-
-                        const newShelfIndex = increment === 1 ? 0
-                                                              : newBay.shelves.length - 1;
-
-                        this.setState(state => ({
-                            ...state,
-                            selected: new Map(),
-                            currentView: newBay.shelves.length === 0 ? newZone
-                                                                     : newBay.shelves[newShelfIndex]
-                        }));
+                    if (newBay.shelves.length) {
+                        newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                            this.forceUpdate();
+                        });
                     }
                 }
             }
@@ -322,10 +301,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         }
 
         return new Map([
-            ["left", location.parentBay.index - 1 !== -1],
-            ["right", location.parentBay.index + 1 !== location.parentZone.bays.length],
-            ["up", location.index + 1 !== location.parentBay.shelves.length],
-            ["down", location.index - 1 !== -1],
             ["nextShelf", location.parentWarehouse.shelves.length > 1],
             ["previousShelf", location.parentWarehouse.shelves.length > 1],
             ["nextZone", location.parentWarehouse.zones.length > 1],
@@ -357,10 +332,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * repaint to follow after the triggering handler is finished.
      * @param fillSpaces If spaces are to be filled
      * @param ignoreAirSpaces If air trays are to be ignored
+     * @param callback This callback is invoked after the new selection is set
      */
     private getSelectedTrays(
         fillSpaces: boolean,
         ignoreAirSpaces: boolean,
+        callback?: () => void
     ): Tray[] {
 
         const selectedCells = this.state.currentView.columns
@@ -388,12 +365,30 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
             }).filter(tray => tray) as Tray[];
 
-            this.setSelected(this.advanceSelection(newSelection));
+            this.setSelected(newSelection, callback);
             return trays.concat(newTrays);
         } else {
             return trays;
         }
     }
+
+    private applyAndAdvance(
+        fillSpaces: boolean,
+        ignoreAirSpaces: boolean,
+        modify: (tray: Tray) => void,
+    ): void {
+
+        const trays = this.getSelectedTrays(fillSpaces, ignoreAirSpaces, () => {
+
+            trays.forEach(tray => modify(tray));
+            this.setSelected(this.advanceSelection(this.state.selected));
+
+            this.state.currentView.stage(false, true, WarehouseModel.tray).then(_ => _);
+
+        });
+
+    }
+
 
     /**
      * This splits a list of TrayCells into a list of trays and spaces
@@ -426,8 +421,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             byNullSafe<TrayCell>(cell => cell.index, false, false)
         ]);
 
-        const selected = Array.from(selection.entries())
-                              .filter(([_, selected]) => selected);
+        const selected: TrayCell[] = Array.from(selection.entries())
+                                          .filter(([_, selected]) => selected)
+                                          .map(([cell, _]) => cell);
 
         if (selected.length !== 1 && this.props.user.onlySingleAutoAdvance) {
             return selection;
@@ -441,21 +437,39 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             return selection;
         }
 
-        const nextIndex = (keyboardIndex + 1) % this.props.user.autoAdvanceMode.length;
+        const possibleKeyboards: KeyboardName[] = (() => {
+
+            const first = selected[0];
+            if (first instanceof Tray) {
+                const possible: (KeyboardName | null)[] = [
+                    first.category ? null : "category",
+                    first.expiry ? null : "expiry",
+                    first.weight ? null : "weight"
+                ];
+                return possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null);
+
+            } else {
+                return ["category", "expiry", "weight"] as KeyboardName[];
+            }
+
+        })();
+
+        const nextIndex = Math.max(this.props.user.autoAdvanceMode.findIndex(
+            (kb, index) => index > keyboardIndex && possibleKeyboards.includes(kb)
+        ), 0);
         this.switchKeyboard(this.props.user.autoAdvanceMode[nextIndex]);
 
         if (nextIndex > keyboardIndex) { // else, only move the selection if the cycle repeats
             return selection;
         }
 
-        const maxSelected = selected.map(([cell, _]) => cell)
-                                    .reduce((max, cur) => {
-                                        if (max && comparison(max, cur) !== 1) {
-                                            return max;
-                                        } else {
-                                            return cur;
-                                        }
-                                    }, undefined as (TrayCell | undefined));
+        const maxSelected = selected.reduce((max, cur) => {
+            if (max && comparison(max, cur) !== 1) {
+                return max;
+            } else {
+                return cur;
+            }
+        }, undefined as (TrayCell | undefined));
 
         if (maxSelected) {
 
@@ -514,23 +528,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * category ought to be cleared
      * @param category The category that is selected or null to clear
      */
-    private async onCategorySelected(category: Category | null): Promise<void> {
+    private onCategorySelected(category: Category | null): void {
 
-        this.getSelectedTrays(
+        this.applyAndAdvance(
             true,
             true,
-        ).forEach((tray) => {
-            tray.category = category ?? undefined;
-            tray.expiry = undefined;
-            tray.weight = undefined;
-            tray.comment = undefined;
-        });
-        this.setState(state => ({
-            ...state,
-            weight: undefined
-        }));
-
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
+            tray => {
+                tray.category = category ?? undefined;
+                tray.expiry = category?.defaultExpiry ?? undefined;
+                tray.weight = undefined;
+                tray.comment = undefined;
+            }
+        );
 
     }
 
@@ -539,17 +548,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * ought to be cleared
      * @param expiry The expiry that is selected or null to clear
      */
-    private async onExpirySelected(expiry: ExpiryRange | null): Promise<void> {
+    private onExpirySelected(expiry: ExpiryRange | null): void {
 
-        this.getSelectedTrays(
+        this.applyAndAdvance(
             true,
             true,
-        ).forEach((tray) => {
-            tray.expiry = expiry ?? undefined;
-        });
-        this.forceUpdate();
-
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
+            (tray) => {
+                tray.expiry = expiry ?? undefined;
+            }
+        );
 
     }
 
@@ -558,16 +565,26 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param newWeight
      * @param couldAdvance If this weight set
      */
-    private async setWeight(newWeight: string | undefined, couldAdvance = false): Promise<void> {
+    private setWeight(newWeight: string | undefined, couldAdvance = false): void {
 
-        this.getSelectedTrays(
-            true,
-            true,
-        ).forEach((tray) => {
-            tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-        });
+        if (couldAdvance) {
+            this.applyAndAdvance(
+                true,
+                true,
+                (tray) => {
+                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
+                }
+            );
+        } else {
+            this.getSelectedTrays(
+                true,
+                true
+            ).forEach((tray) => {
+                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
+                }
+            );
+        }
 
-        await this.state.currentView.stage(false, true, WarehouseModel.tray);
         if (!couldAdvance) {
             this.setState(state => ({
                 ...state,
@@ -603,15 +620,17 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     private addColumn(shelf: Shelf): void {
-        Column.create(3, shelf);
-        this.forceUpdate();
+        if (shelf.columns.length < MAX_MAX_SHELF_WIDTH) {
+            Column.create(3, shelf);
+            this.forceUpdate();
+        }
     }
 
     /**
      * This method is called when a column is to be removed
      * @param column The column to remove
      */
-    async removeColumn(column: Column): Promise<void> {
+    private async removeColumn(column: Column): Promise<void> {
         await column.delete(true);
         this.forceUpdate();
     }
@@ -624,7 +643,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         shelf.columns.forEach(column => { // remove trays over max height
             if (column.maxHeight) {
                 const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
-                column.trays.splice(column.trays.length - traysToPop - 1, traysToPop).forEach(removed => {
+                column.trays.slice(column.trays.length - 1 - traysToPop, column.trays.length - 1).forEach(removed => {
                     this.state.selected.delete(removed);
                     removed.delete(true);
                 });
@@ -671,7 +690,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     /**
      * This method removes all the trays that are currently selected
      */
-    private async clearTrays(): Promise<void> {
+
+    /*private async clearTrays(): Promise<void> {
 
         const columnMap: Map<Column, TrayCell[]> = new Map();
         this.getSelectedTrayCells().forEach(cell => {
@@ -717,8 +737,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.setSelected(newSelectedMap);
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
-
-    }
+    }*/
 
     /**
      * Sets the selection of all trays and tray spaces in the shelf.  If
@@ -742,16 +761,20 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * Opens a popup which allows for editing the custom comment
+     * Opens a popup of tray information
      */
-    private editTrayComment(): void {
+    private trayInfo(): void {
+
         this.props.openDialog({
             closeOnDocumentClick: true,
             dialog: (close: () => void) => {
                 const trays = this.getSelectedTrayCells();
-                return <EditCommentContent
+                return <TrayInfoContent
                     onDiscard={close}
                     draft={trays.length === 1 && trays[0] instanceof Tray ? trays[0].comment ?? null : null}
+                    numberOfTrays={trays.length}
+                    blame={trays.length === 1 && trays[0] instanceof Tray ? trays[0].blame : undefined}
+                    lastModified={trays.length === 1 && trays[0] instanceof Tray ? trays[0].lastModified : undefined}
                     onSubmit={(comment) => {
                         this.getSelectedTrays(true, false).forEach(tray => {
                                 tray.comment = comment ?? undefined;
@@ -767,14 +790,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * This method performs a search for the categories of the currently selected trays
+     * This method performs a find for the categories of the currently selected trays
      */
-    private makeSearch(): void {
+    private makeFind(): void {
 
         const catSet = new Set(this.getSelectedTrays(false, false)
                                    .map(tray => tray.category ?? null)
                                    .filter((cat): cat is Category => cat !== null));
-        this.props.setSearch({
+        this.props.setFind({
             categories: catSet.size ? catSet : null,
             weight: null,
             commentSubstring: null,
@@ -783,7 +806,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         });
 
-        this.props.history.push("/search");
+        this.props.history.push("/find");
     }
 
     /**
@@ -836,11 +859,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             {
                 name: "Add Column",
                 onClick: this.addColumn.bind(this, this.state.currentView),
-                halfWidth: false
+                halfWidth: false,
+                disabled: this.state.currentView.columns.length >= MAX_MAX_SHELF_WIDTH
             },
             // {name: "Cancel", onClick: this.discardEditShelf.bind(this, this.state.currentView)},
             {
-                name: "Save",
+                name: "Done",
                 onClick: this.finaliseEditShelf.bind(this, this.state.currentView),
                 halfWidth: false
             },
@@ -857,8 +881,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             },
             {
                 name: "Tray Info",
-                icon: faStickyNote,
-                onClick: this.editTrayComment.bind(this),
+                icon: faInfo,
+                onClick: this.trayInfo.bind(this),
                 disabled: this.getSelectedTrays(false, false).length === 0,
                 halfWidth: true,
                 trayMod: true
@@ -878,12 +902,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             {
                 name: "Edit Shelf",
                 onClick: this.enterEditShelf.bind(this),
-                halfWidth: true
+                halfWidth: false
             },
             {
-                name: "Search",
-                onClick: this.makeSearch.bind(this),
-                halfWidth: true
+                name: "Find",
+                onClick: this.makeFind.bind(this),
+                halfWidth: false
             },
             this.props.user.showPreviousShelfButton ? {
                 name: "Previous Shelf",
@@ -909,7 +933,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     removeColumn={this.removeColumn.bind(this)}
 
-                    current={this.state.currentView}
+                    current={this.state.currentView instanceof Shelf ? this.state.currentView : undefined}
+                    availableLevel={this.state.currentView instanceof Warehouse ? WarehouseModel.warehouse :
+                                    (this.state.currentView instanceof Zone ? WarehouseModel.zone
+                                                                            : WarehouseModel.shelf)}
                     isShelfEdit={this.state.isEditShelf}
 
                     draftWeight={this.state.weight}
@@ -922,7 +949,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     openNavigator={this.openNavigator.bind(this)}
                     openNavigatorDisabled={this.state.isEditShelf}
-
                     buttons={sideBarButtons}
                     keyboards={[
                         {name: "category", icon: categoryIcon},
@@ -951,7 +977,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             this.renderNavigationPopup(this.state.currentView, possibleMoveDirections)
             }
         </>;
-
     }
 
     /**
@@ -999,31 +1024,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 </div>
 
                 {/* Grid of shelves in zone */}
-                <div id="nav-zone">{
-                    zone.bays.length ? (() => {
-                        const textColor = getTextColorForBackground(zone.color);
-                        return zone.bays.flatMap((bay, bayIndex) =>
-                            <div className="nav-bay" key={bayIndex}>
-                                {bay.shelves.map((shelf, shelfIndex) =>
-                                    <div key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
-                                         className={classNames("nav-shelf", {
-                                             "currentShelf": this.state.currentView === shelf
-                                         })} style={{
-                                        backgroundColor: zone.color,
-                                        color: textColor,
-                                        border: `1px solid ${textColor}`
-                                    }}
-                                         onClick={this.changeView.bind(this, shelf)}
-                                    >
-                                        <p className="shelfLabel">{bay.name}{shelf.name}</p>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })() : <h3>This zone has no bays</h3>
-                }</div>
+                <ZoneDisplayComponent
+                    zone={zone}
+                    selected={this.state.currentView instanceof Shelf ? this.state.currentView : null}
+                    onSelected={(shelf: Shelf) => this.changeView(shelf)}
+                />
 
-                {/* Arrow grid */}
                 <div id="nav-arrow-area">
                     {this.state.currentView instanceof Shelf ?
                      <p
@@ -1056,47 +1062,61 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
 }
 
-type EditCommentDialogState = { draft: string | null };
-type EditCommentDialogProps = {
+type TrayInfoDialogState = { draft: string | null; blameName?: string };
+type TrayInfoDialogProps = {
     onDiscard: () => void;
     onSubmit: (draft: string | null) => void;
-} & EditCommentDialogState;
+    numberOfTrays: number;
+    blame?: string;
+    lastModified?: number;
+} & TrayInfoDialogState;
 
 /**
  * This is the the content of the dialog which is shown when the comment on a tray is being edited
  */
-class EditCommentContent extends React.Component<EditCommentDialogProps, EditCommentDialogState> {
-    constructor(props: EditCommentDialogProps) {
+class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialogState> {
+    constructor(props: TrayInfoDialogProps) {
         super(props);
-        this.state = {draft: this.props.draft};
+        this.state = {draft: this.props.draft, blameName: undefined};
+
+        if (this.props.blame) {
+            firebase.database.db.doc(Utils.joinPaths("users", this.props.blame))
+                    .get().then(doc =>
+                this.setState(state => ({
+                    ...state,
+                    blameName: (doc.data()?.name ?? "") as string
+                })));
+        }
     }
 
     render(): React.ReactElement {
         return <>
-            <DialogTitle title="Edit Comment"/>
+            <DialogTitle title="Information"/>
             <div className="dialogContent">
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    this.props.onSubmit(this.state.draft);
-                }}>
-                    <input
-                        id="editCommentInput"
-                        autoFocus={true}
-                        type="text"
-                        onChange={(event) => {
-                            const newValue = event.target.value;
-                            this.setState(state => ({
-                                ...state,
-                                draft: newValue.length === 0 ? null : newValue
-                            }));
-                        }}
-                        value={this.state.draft ?? ""}
-                    /></form>
+                <div className="editCommentForm">
+                    <div>Comment:</div>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        this.props.onSubmit(this.state.draft);
+                    }}>
+                        <input
+                            autoFocus={true}
+                            type="text"
+                            onChange={(event) => {
+                                const newValue = event.target.value;
+                                this.setState(state => ({
+                                    ...state,
+                                    draft: newValue.length === 0 ? null : newValue
+                                }));
+                            }}
+                            value={this.state.draft ?? ""}
+                        /></form>
+                </div>
                 <DialogButtons buttons={[
                     {
                         name: "Discard", buttonProps: {
                             onClick: this.props.onDiscard,
-                            className: "dialogBtnRed"
+                            style: {borderColor: "red"}
                         }
                     }, {
                         name: "Done", buttonProps: {
@@ -1105,6 +1125,19 @@ class EditCommentContent extends React.Component<EditCommentDialogProps, EditCom
                     }
                 ]}/>
             </div>
+            <div className="infoBottom">
+                {
+                    this.state.blameName && this.props.lastModified ? <div>This tray was last modified
+                                                                        by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString("en-GB")}
+                                                                    </div>
+                                                                    : <>
+                        <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
+                        Multiple trays selected!<br/>
+                        Adding a comment will overwrite any existing comments. Select a single tray to view Last
+                        Modified data.</>
+                }
+            </div>
+
         </>;
     }
 }

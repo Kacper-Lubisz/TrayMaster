@@ -1,4 +1,5 @@
 import {Bay, Shelf, Tray, TrayCell, TraySpace, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {LayerFields} from "../LayerStructure/Layer";
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
@@ -23,7 +24,7 @@ export enum TraySizes {
     wide
 }
 
-interface ColumnFields {
+interface ColumnFields extends LayerFields {
     traySize: TraySizes;
     maxHeight: number;
 }
@@ -45,6 +46,8 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
      */
     public static create(maxHeight: number, parent: Shelf): Column {
         return new Column(Utils.generateRandomId(), {
+            lastModified: Date.now(),
+            blame: "",
             traySize: TraySizes.standard,
             maxHeight
         }, parent);

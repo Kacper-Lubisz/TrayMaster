@@ -8,7 +8,7 @@ import {CustomButtonProps, Keyboard} from "../components/Keyboard";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import {User} from "../core/Firebase";
 import {Warehouse} from "../core/WarehouseModel";
-import {SearchQuery, SortBy} from "./SearchPage";
+import {FindQuery, SortBy} from "./FindPage";
 import "./styles/mainmenu.scss";
 
 /**
@@ -25,7 +25,7 @@ interface MainMenuProps {
     user: User;
     expiryAmount: number;
 
-    setSearch: (query: SearchQuery) => void;
+    setFind: (query: FindQuery) => void;
 }
 
 
@@ -44,16 +44,16 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                 onClick: () => this.props.history.push("/")
             },
             {
-                name: "Search",
+                name: "Find",
                 onClick: () => {
-                    this.props.setSearch({
+                    this.props.setFind({
                         categories: null,
                         weight: null,
                         commentSubstring: null,
                         excludePickingArea: true,
                         sort: {orderAscending: true, type: SortBy.expiry}
                     });
-                    this.props.history.push("/search");
+                    this.props.history.push("/find");
                 }
             },
             {
@@ -73,14 +73,14 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             {this.props.expiryAmount === 0 ? undefined : <div
                 className="alert"
                 onClick={(_) => {
-                    this.props.setSearch({
+                    this.props.setFind({
                         categories: null,
                         weight: null,
                         commentSubstring: null,
                         excludePickingArea: true,
                         sort: {orderAscending: true, type: SortBy.expiry}
                     });
-                    this.props.history.push("/search");
+                    this.props.history.push("/find");
                 }}>
                 <div className="alert-header">
                     <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>

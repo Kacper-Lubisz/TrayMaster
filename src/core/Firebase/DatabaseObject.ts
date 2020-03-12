@@ -29,8 +29,10 @@ export abstract class DatabaseObject<TFields> {
 
     public async load(forceLoad = false): Promise<this> {
         if (!this.loaded || forceLoad) {
-            const fields = (await firebase.database.loadDocument<TFields>(this.path))?.fields;
-            this.fields = fields ?? this.fields;
+            this.fields = (await firebase.database.loadDocument<TFields>(this.path))?.fields ?? this.fields;
+            this.originalFields = {
+                ...this.fields,
+            };
             this.loaded = true;
         }
         return this;
@@ -58,7 +60,7 @@ export abstract class DatabaseObject<TFields> {
         return !isEqual(this.fields, this.originalFields);
     }
 
-    protected fieldsSaved(): void {
+    public fieldsSaved(): void {
         this.originalFields = Object.assign({}, this.fields);
     }
 }

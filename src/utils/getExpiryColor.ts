@@ -118,7 +118,7 @@ function getWarehouseColor(range: SafeExpiryRange): string {
  */
 export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" | "warehouse"): string {
     if (range.from === null || range.to === null) {
-        return "#000000";
+        return "#ffffff00";
     } else if (mode === "computed") {
         return computeColorFromRange(range as SafeExpiryRange);
     } else if (mode === "hybrid") {
