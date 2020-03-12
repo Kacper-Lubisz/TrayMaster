@@ -27,6 +27,7 @@ export const exportToCSV: functions.HttpsFunction =
                     tray.expiry?.from?.toString() ?? "",
                     tray.expiry?.to?.toString() ?? "",
                     tray.weight?.toString() ?? "",
+                    tray.locationName,
                     tray.comment ?? ""
                 ];
 
@@ -35,7 +36,7 @@ export const exportToCSV: functions.HttpsFunction =
 
             }).reduce((acc, cur) => acc + cur) ?? null;
 
-            const csvHeader: string = "Category, Expiry, Expiry From Timestamp, Expiry To Timestamp, Weight, Comment\n";
+            const csvHeader: string = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Location, Comment\n";
 
             response.statusCode = 200;
             response.setHeader("content-type", "text/plain");

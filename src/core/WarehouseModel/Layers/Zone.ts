@@ -1,9 +1,10 @@
 import {Bay, Column, Shelf, Tray, Warehouse, WarehouseModel} from "../../WarehouseModel";
+import {LayerFields} from "../LayerStructure/Layer";
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
 
-export interface ZoneFields {
+export interface ZoneFields extends LayerFields {
     name: string;
     color: string;
 }
@@ -19,7 +20,12 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
      * @param parent - The parent warehouse
      */
     public static create(name: string, color: string, parent: Warehouse): Zone {
-        return new Zone(Utils.generateRandomId(), {name, color}, parent);
+        return new Zone(Utils.generateRandomId(), {
+            lastModified: Date.now(),
+            blame: "",
+            name,
+            color
+        }, parent);
     }
 
     /**

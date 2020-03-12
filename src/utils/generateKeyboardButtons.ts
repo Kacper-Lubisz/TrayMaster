@@ -1,6 +1,6 @@
 import {EXPIRY_GREY, EXPIRY_GREY_RATIO} from "../components/BottomPanel";
-import {Category, ExpiryRange} from "../core/WarehouseModel";
-import {NEVER_EXPIRY, Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {Category, ExpiryRange, Warehouse} from "../core/WarehouseModel";
+import {NEVER_EXPIRY} from "../core/WarehouseModel/Utils";
 import {getExpiryColor, interpolateTowardsGrey, toExpiryRange} from "./getExpiryColor";
 import {MONTHS_TRANSLATOR} from "./monthsTranslator";
 import {byNullSafe} from "./sortsUtils";

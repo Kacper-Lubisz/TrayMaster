@@ -11,13 +11,13 @@ describe("Crash tests: ", () => {
         const mockOpenDialog = jest.fn();
         const mockChangeWarehouse = jest.fn();
         const mockSignOut = jest.fn();
-        const mockSetSearch = jest.fn();
+        const mockSetFind = jest.fn();
 
         const props = {
             openDialog: mockOpenDialog,
             changeWarehouse: mockChangeWarehouse,
             signOut: mockSignOut,
-            setSearch: mockSetSearch,
+            setFind: mockSetFind,
             warehouse: mockWarehouse,
             user: mockUser,
             expiryAmount: 4

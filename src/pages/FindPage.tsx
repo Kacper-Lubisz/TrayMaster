@@ -2,14 +2,14 @@ import {faArrowLeft as arrowLeft, faHome as menuIcon, faTimes as cross} from "@f
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
+import {FindPanel, PanelState} from "../components/FindPanel";
 import {LoadingSpinner} from "../components/LoadingSpinner";
-import {PanelState, SearchPanel} from "../components/SearchPanel";
-import {Category, NULL_CATEGORY_STRING, Tray, Warehouse} from "../core/WarehouseModel";
+import {Category, NULL_CATEGORY_STRING, Warehouse} from "../core/WarehouseModel";
+import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
 import Utils from "../core/WarehouseModel/Utils";
-import "../styles/search.scss";
+import "../styles/find.scss";
 import {getExpiryColor} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
-
 
 export enum SortBy {
     expiry = "expiry",
@@ -27,10 +27,10 @@ export interface SortQueryOptions {
 type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
- * Defines the search queries that can be run on the warehouse
+ * Defines the find queries that can be run on the warehouse
  * todo fixme document this properly
  */
-export interface SearchQuery {
+export interface FindQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */
     categories: CategoryQueryOptions;
 
@@ -47,34 +47,34 @@ export interface SearchQuery {
     sort: SortQueryOptions;
 }
 
-export interface SearchResults {
-    query: SearchQuery;
-    results: null | Tray[];
+export interface FindResults {
+    query: FindQuery;
+    outcome: boolean;
+    results: null | TrayFields[];
 }
 
-interface SearchPageProps {
+interface FindPageProps {
     warehouse?: Warehouse;
-    search: SearchResults;
-    setQuery: (query: SearchQuery) => void;
+    find: FindResults;
+    setQuery: (query: FindQuery) => void;
 }
 
-interface SearchPageState {
+interface FindPageState {
     panelState: PanelState;
 }
 
-class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, SearchPageState> {
+class FindPage extends React.Component<FindPageProps & RouteComponentProps, FindPageState> {
 
-    constructor(props: SearchPageProps & RouteComponentProps) {
+    constructor(props: FindPageProps & RouteComponentProps) {
         super(props);
 
         this.state = {
             panelState: "category"
         };
-
     }
 
     /**
-     * This method resets the current search query
+     * This method resets the current find query
      */
     private clearQuery(): void {
         this.props.setQuery({
@@ -87,33 +87,26 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     }
 
     buildCSVFile(): Blob {
+        const header = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Location, Comment\n";
 
-        const header = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Zone, Bay, Shelf, Comment\n";
-
-        const content = this.props.search.results?.map(tray => {
-
+        const content = this.props.find.results?.map(tray => {
             const line: string[] = [
-                tray.category?.name ?? NULL_CATEGORY_STRING,
+                this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING,
                 tray.expiry?.label ?? "",
                 tray.expiry?.from?.toString() ?? "",
                 tray.expiry?.to?.toString() ?? "",
                 tray.weight?.toString() ?? "",
-                tray.parentZone.name,
-                tray.parentBay.name,
-                tray.parentShelf.name,
+                tray.locationName,
                 tray.comment ?? ""
             ];
-
 
             return `${line.map(element =>
                 Utils.escapeStringToCSV(element)
             ).reduce((acc, cur) =>
                 `${acc}${cur},`, "")}\n`;
-
         }).reduce((acc, cur) => acc + cur) ?? null;
 
         return new Blob([content ? header + content : ""], {type: "text/plain"});
-
     }
 
     downloadFile(filename: string, content: Blob): void {
@@ -126,20 +119,20 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
     }
 
     render(): React.ReactNode {
-        return <div id="searchPage">
+        return <div id="findPage">
             <div id="leftPanel">
                 <div id="topPanel">
                     <div id="sentenceL">
                         <FontAwesomeIcon icon={arrowLeft} onClick={() => this.props.history.goBack()}/>
                     </div>
                     <div id="sentenceBox">
-                        {this.renderSearchSentence()}
+                        {this.renderFindSentence()}
                         <FontAwesomeIcon icon={cross} onClick={this.clearQuery.bind(this)}/>
                     </div>
                     <div id="sentenceR">
                         <button
                             onClick={() => this.downloadFile(
-                                `Search ${new Date().toLocaleDateString("en-GB", {
+                                `Find ${new Date().toLocaleDateString("en-GB", {
                                     weekday: "short",
                                     year: "numeric",
                                     month: "short",
@@ -154,15 +147,14 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                         </button>
                     </div>
                 </div>
-                <div id="searchResults">{this.renderSearchResults()}</div>
+                <div id="findResults">{this.renderFindResults()}</div>
             </div>
-            <SearchPanel
+            <FindPanel
                 panelState={this.state.panelState}
                 setPanelState={this.updatePanel.bind(this)}
-                search={this.props.search}
+                find={this.props.find}
                 warehouse={this.props.warehouse}
-                setQuery={this.props.setQuery}
-            />
+                setQuery={this.props.setQuery}/>
         </div>;
     }
 
@@ -173,11 +165,11 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
         }));
     }
 
-    private renderSearchSentence(): React.ReactNode {
+    private renderFindSentence(): React.ReactNode {
 
-        const categories: CategoryQueryOptions = this.props.search.query?.categories ?? null;
-        const weight = this.props.search.query.weight;
-        const sortBy = this.props.search.query.sort;
+        const categories: CategoryQueryOptions = this.props.find.query?.categories ?? null;
+        const weight = this.props.find.query.weight;
+        const sortBy = this.props.find.query.sort;
 
         const catList = (() => {
             if (categories === null) {
@@ -226,20 +218,20 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
         const expiryString = `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" : "descending"}`;
 
-        return <span id="searchSentence">
-            <span className="searchField" onClick={() => this.updatePanel("category")}>
+        return <span id="findSentence">
+            <span className="findField" onClick={() => this.updatePanel("category")}>
                 {filterString}
-            </span>; <span className="searchField" onClick={() => this.updatePanel("weight")}>
+            </span>; <span className="findField" onClick={() => this.updatePanel("weight")}>
                 {weightString}
-            </span>; <span id="searchSort" className="searchField">
+            </span>; <span id="findSort" className="findField">
                 {expiryString}
             </span>.
         </span>;
     }
 
-    private renderSearchResults(): React.ReactNode {
+    private renderFindResults(): React.ReactNode {
         const expiryColorMode = this.props.warehouse?.expiryColorMode ?? "warehouse";
-        if (this.props.search?.results && this.props.search.results.length !== 0) {
+        if (this.props.find?.results && this.props.find.results.length !== 0) {
             return <table>
                 <thead>
                 <tr>
@@ -251,7 +243,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 </tr>
                 </thead>
                 <tbody>
-                {this.props.search.results.map((tray, i) => {
+                {this.props.find.results.map((tray, i) => {
 
                     const expiryStyle = (() => {
                         if (tray.expiry) {
@@ -268,7 +260,7 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                     })();
 
                     const zoneStyle = (() => {
-                        const background = tray.parentZone.color;
+                        const background = "#ffffff"; //todo fixme tray.parentZone.color;
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)
@@ -277,10 +269,9 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
 
                     const weightString = tray.weight?.toLocaleString(undefined, {minimumFractionDigits: 2}) ?? "";
 
-                    const locationString = `${tray.parentZone.name} ${tray.parentBay.name}${tray.parentShelf.name}`;
-
+                    const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
-                        <td>{tray.category?.name ?? ""}</td>
+                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? ""}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCell">{weightString}</td>
                         <td style={zoneStyle}>{locationString}</td>
@@ -289,15 +280,18 @@ class SearchPage extends React.Component<SearchPageProps & RouteComponentProps, 
                 })}
                 </tbody>
             </table>;
-        } else if (!this.props.search?.results) {
+        } else if (!this.props.find?.results) {
             return <LoadingSpinner/>;
-        } else if (this.props.search.results.length === 0) {
-            return <div id="search-no-results">
-                Couldn't find any trays which match this search!
+        } else if (!this.props.find.outcome) {
+            return <div id="find-no-results">
+                Cannot find more than 10 categories at a time.
+            </div>;
+        } else if (this.props.find.results.length === 0) {
+            return <div id="find-no-results">
+                Couldn't find any trays that match this query.
             </div>;
         }
-
     }
 }
 
-export default withRouter(SearchPage);
+export default withRouter(FindPage);

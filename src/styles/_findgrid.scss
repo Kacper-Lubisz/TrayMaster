@@ -1,6 +1,6 @@
-// SEARCH VIEW GRID LAYOUT
+// FIND VIEW GRID LAYOUT
 
-#searchPage {
+#findPage {
   // fill whole screen
   overflow: hidden;
   position: absolute;
@@ -27,7 +27,7 @@
     overflow-y: auto;
   }
 
-  #searchPanel {
+  #findPanel {
     grid-column-start: 2;
     grid-column-end: 3;
     grid-row-start: 1;

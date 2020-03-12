@@ -64,12 +64,13 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     private static readonly DEFAULT_NAME = "Unnamed";
 
     private static readonly BLANK_ZONE: NewZone = {
+        blame: "", lastModified: 0,
         name: "",
         color: "#ff0000",
         bays: 5,
         shelves: 5,
         mirrorBayLabels: false,
-        addGroundShelves: true,
+        addGroundShelves: true
     };
 
     private static readonly GROUND_ROW_NAME = "G";

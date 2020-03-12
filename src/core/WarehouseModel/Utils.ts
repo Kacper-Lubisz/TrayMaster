@@ -4,15 +4,13 @@ Warehouse
 >   Categories
 >   TraySizes
 >   Zones
-    >   Bays
-        >   Shelves
-            >   Columns
-                >   Trays
 >   Bays
 >   Shelves
 >   Columns
 >   Trays
  */
+
+import {Category} from "../WarehouseModel";
 
 export abstract class Collection<T> {
     protected items: T[];
@@ -173,3 +171,451 @@ export default abstract class Utils {
         return `"${string.replace("\"", "\"\"")}"`;
     }
 }
+
+export const NEVER_EXPIRY = {
+    from: null, to: null,
+    label: "Never"
+};
+
+export const defaultCategories: Category[] = [
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Baby...",
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Baby Care"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: "Baby...",
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Baby Food"
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Baby...",
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Nappies"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 36,
+        overStockThreshold: 120,
+        name: "Beans"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Biscuits"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 20,
+        overStockThreshold: 180,
+        name: "Cereal"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 10,
+        overStockThreshold: 30,
+        name: "Choc/Sweet"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 3,
+        overStockThreshold: 10,
+        name: "Coffee",
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Cleaning"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 12,
+        name: "Custard"
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Toiletries...",
+        shortName: null,
+        underStockThreshold: 2,
+        overStockThreshold: 15,
+        name: "Feminine Hygiene"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 20,
+        overStockThreshold: 120,
+        name: "Fish"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 24,
+        overStockThreshold: 60,
+        name: "Fruit"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 24,
+        overStockThreshold: 48,
+        name: "Fruit Juice"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: "Hot Choc",
+        underStockThreshold: 1,
+        overStockThreshold: 4,
+        name: "Hot Chocolate"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 6,
+        overStockThreshold: 36,
+        name: "Instant Meals"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 10,
+        overStockThreshold: 24,
+        name: "Jam"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 36,
+        overStockThreshold: 120,
+        name: "Meat"
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Toiletries...",
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 5,
+        name: "Men's Toiletries"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 30,
+        overStockThreshold: 80,
+        name: "Milk"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 18,
+        name: "Misc."
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Toiletries...",
+        shortName: null,
+        underStockThreshold: 2,
+        overStockThreshold: 15,
+        name: "Misc. Toiletries"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 36,
+        overStockThreshold: 120,
+        name: "Pasta"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 24,
+        overStockThreshold: 72,
+        name: "Pasta Sauce"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 3,
+        overStockThreshold: 12,
+        name: "Pet Food"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 10,
+        overStockThreshold: 36,
+        name: "Potatoes"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 5,
+        overStockThreshold: 15,
+        name: "Rice"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 31,
+        overStockThreshold: 10,
+        name: "Rice Pudding"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 10,
+        overStockThreshold: 36,
+        name: "Savoury Treats"
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Toiletries...",
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 8,
+        name: "Shampoo"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 36,
+        overStockThreshold: 120,
+        name: "Soup"
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Toiletries...",
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 10,
+        name: "Soap & Shower Gel"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 12,
+        overStockThreshold: 120,
+        name: "Spaghetti"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 12,
+        name: "Sponge Pudding"
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 10,
+        overStockThreshold: 36,
+        name: "Sugar"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 31,
+        overStockThreshold: 60,
+        name: "Tea Bags"
+    },
+    {
+        index: 0,
+        defaultExpiry: NEVER_EXPIRY,
+        type: "default",
+        group: "Toiletries...",
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Toilet Rolls"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 24,
+        overStockThreshold: 75,
+        name: "Tomatoes"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 36,
+        overStockThreshold: 100,
+        name: "Vegetables"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 2,
+        overStockThreshold: 12,
+        name: "Pop/Squash"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: 4,
+        overStockThreshold: 75,
+        name: "Biscuits"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: "Household...",
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 10,
+        name: "Household Cleaning"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Christmas"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        type: "default",
+        group: null,
+        shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Mixed"
+    }
+];

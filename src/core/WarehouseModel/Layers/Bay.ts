@@ -1,8 +1,9 @@
 import {Column, Shelf, Tray, Warehouse, WarehouseModel, Zone} from "../../WarehouseModel";
+import {LayerFields} from "../LayerStructure/Layer";
 import {MiddleLayer} from "../LayerStructure/MiddleLayer";
 import Utils from "../Utils";
 
-interface BayFields {
+interface BayFields extends LayerFields {
     name: string;
 }
 
@@ -16,7 +17,11 @@ export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
      * @param parent - The parent zone
      */
     public static create(name: string, parent: Zone): Bay {
-        return new Bay(Utils.generateRandomId(), {name}, parent);
+        return new Bay(Utils.generateRandomId(), {
+            lastModified: Date.now(),
+            blame: "",
+            name
+        }, parent);
     }
 
     /**
