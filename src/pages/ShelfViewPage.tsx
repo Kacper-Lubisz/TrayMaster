@@ -41,16 +41,22 @@ import {
 } from "../core/WarehouseModel";
 import Utils from "../core/WarehouseModel/Utils";
 import "../styles/shelfview.scss";
+import {
+    CategoryAlteration,
+    CommentAlteration,
+    ExpiryAlteration,
+    WeightAlteration
+} from "../utils/generateKeyboardButtons";
+import {toExpiryRange} from "../utils/getExpiryColor";
 import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
 import {FindQuery, SortBy} from "./FindPage";
 
-
 /**
  * Defines possible keyboard names
  */
-export type KeyboardName = "category" | "expiry" | "weight" | "edit-shelf";
+export type KeyboardName = "category" | "expiry" | "weight" | "custom" | "edit-shelf";
 
 export const MAX_MAX_COLUMN_HEIGHT = 20;
 export const MAX_MAX_SHELF_WIDTH = 8;
@@ -63,6 +69,8 @@ type ShelfMoveDirection =
     | "previousShelf"
     | "nextZone"
     | "previousZone";
+
+export type SimpleExpiryRange = { year: number } & ({ quarter: number } | { month: number } | {});
 
 interface ShelfViewProps {
     /**
@@ -91,7 +99,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         this.state = {
             selected: new Map(),
-            currentKeyboard: "category",
+            currentKeyboard: this.props.user.useCustomKeyboard ? "custom" : "category",
             currentView: (() => {
                 if (this.props.warehouse.zones.length === 0) {
                     return this.props.warehouse;
@@ -414,7 +422,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private advanceSelection(selection: Map<TrayCell, boolean>): Map<TrayCell, boolean> {
 
-        if (this.props.user.autoAdvanceMode === null) {
+        const mode = this.props.user.autoAdvanceMode;
+
+        if (mode === null) {
             return selection;
         }
 
@@ -431,41 +441,52 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             return selection;
         }
 
-        const keyboardIndex = this.props.user.autoAdvanceMode.findIndex(keyboard =>
-            keyboard === this.state.currentKeyboard
-        );
-
-        if (keyboardIndex === undefined) { // not in the cycle, do nothing
-            return selection;
-        }
-
-        const possibleKeyboards: KeyboardName[] = (() => {
+        const keyboardsNeeded: KeyboardName[] = (() => {
 
             const first = selected[0];
             if (first instanceof Tray) {
-                const possible: (KeyboardName | null)[] = [
-                    first.category ? null : "category",
-                    first.expiry ? null : "expiry",
-                    first.weight ? null : "weight"
+
+                const possible: (KeyboardName | null)[] = this.props.user.useCustomKeyboard ? [
+                    (((mode.category && first.category === undefined) || (mode.expiry && first.expiry === undefined)))
+                    ? "custom" : null,
+                    (mode.weight && first.weight === undefined && this.state.currentKeyboard !== "weight") ? "weight"
+                                                                                                           : null
+                ] : [
+                    (mode.category && first.category === undefined && this.state.currentKeyboard !== "category")
+                    ? "category" : null,
+                    (mode.expiry && first.expiry === undefined && this.state.currentKeyboard !== "expiry")
+                    ? "expiry" : null,
+                    (mode.weight && first.weight === undefined && this.state.currentKeyboard !== "weight")
+                    ? "weight" : null
                 ];
                 return possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null);
 
             } else {
-                return ["category", "expiry", "weight"] as KeyboardName[];
+                return (this.props.user.useCustomKeyboard ? [
+                    "category", "expiry", "weight"
+                ] : [
+                    "custom", "weight"
+                ]) as KeyboardName[];
             }
-
         })();
 
-        const nextIndex = Math.max(this.props.user.autoAdvanceMode.findIndex(
-            (kb, index) => index > keyboardIndex && possibleKeyboards.includes(kb)
-        ), 0);
-        this.switchKeyboard(this.props.user.autoAdvanceMode[nextIndex]);
+        if (keyboardsNeeded.length === 0) {
 
-        if (nextIndex > keyboardIndex) { // else, only move the selection if the cycle repeats
+            const possible: (KeyboardName | null)[] = this.props.user.useCustomKeyboard ? [
+                (mode.category || mode.expiry) ? "custom" : null,
+                mode.weight ? "weight" : null
+            ] : [
+                mode.category ? "category" : null,
+                mode.expiry ? "expiry" : null,
+                mode.weight ? "weight" : null
+            ];
+            this.switchKeyboard(possible.filter((kb: KeyboardName | null): kb is KeyboardName => kb !== null)[0]);
+        } else {
+            this.switchKeyboard(keyboardsNeeded[0]);
             return selection;
         }
 
-        const maxSelected = selected.reduce((max, cur) => {
+        const furthestSelected = selected.reduce((max, cur) => {
             if (max && comparison(max, cur) !== 1) {
                 return max;
             } else {
@@ -473,14 +494,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             }
         }, undefined as (TrayCell | undefined));
 
-        if (maxSelected) {
+        if (furthestSelected) {
 
-            const columnIndex = maxSelected.parentColumn.index;
+            const columnIndex = furthestSelected.parentColumn.index;
 
-            const trayIndex = maxSelected.index;
+            const trayIndex = furthestSelected.index;
 
-            const shelf = maxSelected instanceof Tray ? maxSelected.parentShelf
-                                                      : maxSelected.parentColumn.parentShelf;
+            const shelf = furthestSelected instanceof Tray ? furthestSelected.parentShelf
+                                                           : furthestSelected.parentColumn.parentShelf;
 
             const currentCellsLength = shelf.columns[columnIndex].getPaddedTrays().length;
 
@@ -519,80 +540,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }
 
             }
+
         } else {
             return selection;
         }
 
-    }
-
-    /**
-     * This method is called when a category is selected on the category keyboard, null category signifies that the
-     * category ought to be cleared
-     * @param category The category that is selected or null to clear
-     */
-    private onCategorySelected(category: Category | null): void {
-
-        this.applyAndAdvance(
-            true,
-            true,
-            tray => {
-                tray.category = category ?? undefined;
-                tray.expiry = category?.defaultExpiry ?? undefined;
-                tray.weight = undefined;
-                tray.comment = undefined;
-            }
-        );
-
-    }
-
-    /**
-     * This method is called when an expiry is selected on the expiry keyboard, null expiry signifies that the expiry
-     * ought to be cleared
-     * @param expiry The expiry that is selected or null to clear
-     */
-    private onExpirySelected(expiry: ExpiryRange | null): void {
-
-        this.applyAndAdvance(
-            true,
-            true,
-            (tray) => {
-                tray.expiry = expiry ?? undefined;
-            }
-        );
-
-    }
-
-    /**
-     * Updates state's draftWeight. Called by typing on the weight keyboard
-     * @param newWeight
-     * @param couldAdvance If this weight set
-     */
-    private setWeight(newWeight: string | undefined, couldAdvance = false): void {
-
-        if (couldAdvance) {
-            this.applyAndAdvance(
-                true,
-                true,
-                (tray) => {
-                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-                }
-            );
-        } else {
-            this.getSelectedTrays(
-                true,
-                true
-            ).forEach((tray) => {
-                    tray.weight = isNaN(Number(newWeight)) ? undefined : Number(newWeight);
-                }
-            );
-        }
-
-        if (!couldAdvance) {
-            this.setState(state => ({
-                ...state,
-                weight: newWeight
-            }));
-        }
     }
 
     /**
@@ -833,6 +785,58 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.forceUpdate();
     }
 
+    private async updateTrayProperties(
+        category: CategoryAlteration,
+        expiry: ExpiryAlteration,
+        weight: WeightAlteration,
+        comment: CommentAlteration,
+        couldAdvance: boolean,
+    ): Promise<void> {
+
+        const modify = (tray: Tray): void => {
+            if (category.type !== "nothing") {
+                tray.category = category.type === "set"
+                                ? this.props.warehouse.getCategoryByID(category.categoryID) ?? undefined
+                                : undefined;
+            }
+            if (expiry.type !== "nothing") {
+                tray.expiry = expiry.type === "set" ? toExpiryRange(expiry.expiry) : undefined;
+            }
+            if (weight.type !== "nothing") {
+                if (weight.type === "clear") {
+                    tray.weight = undefined;
+                } else {
+                    tray.weight = isNaN(Number(weight.weight)) ? tray.weight : Number(weight.weight);
+                }
+            }
+            if (comment.type !== "nothing") {
+                tray.comment = comment.type === "set" ? comment.comment : undefined;
+            }
+        };
+
+        if (couldAdvance) {
+            this.applyAndAdvance(
+                true,
+                true,
+                modify);
+        } else {
+            this.getSelectedTrays(
+                true,
+                true
+            ).forEach(modify);
+        }
+
+        await this.state.currentView.stage(false, true, WarehouseModel.tray);
+
+        if (!couldAdvance && weight !== undefined && weight.type === "set") {
+            this.setState(state => ({
+                ...state,
+                weight: weight.weight
+            }));
+        }
+
+    }
+
     render(): React.ReactNode {
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
@@ -956,8 +960,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     openNavigator={this.openNavigator.bind(this)}
                     openNavigatorDisabled={this.state.isEditShelf}
+
                     buttons={sideBarButtons}
-                    keyboards={[
+                    keyboards={this.props.user.useCustomKeyboard ? [
+                        {name: "custom", icon: categoryIcon},
+                        {name: "weight", icon: weightIcon}
+                    ] : [
                         {name: "category", icon: categoryIcon},
                         {name: "expiry", icon: expiryIcon},
                         {name: "weight", icon: weightIcon}
@@ -968,12 +976,13 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 />
                 <BottomPanel
                     openDialog={this.props.openDialog}
-                    categories={this.props.warehouse.categories}
-                    categorySelected={this.onCategorySelected.bind(this)}
-                    expirySelected={this.onExpirySelected.bind(this)}
+                    warehouse={this.props.warehouse}
+
+                    updateTrayProperties={this.updateTrayProperties.bind(this)}
+                    removeSelection={this.clearTrays.bind(this)}
+
                     commonRange={this.state.currentKeyboard === "expiry" ? this.getCommonRange() : undefined}
                     weight={this.state.weight}
-                    setWeight={this.setWeight.bind(this)}
                     keyboardState={this.state.isEditShelf ? "edit-shelf" : this.state.currentKeyboard}
                     selectedTrayCells={this.getSelectedTrayCells()}
                     user={this.props.user}
@@ -1087,12 +1096,12 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
         this.state = {draft: this.props.draft, blameName: undefined};
 
         if (this.props.blame) {
-            firebase.database.db.doc(Utils.joinPaths("users", this.props.blame))
-                    .get().then(doc =>
+            firebase.database.db.doc(Utils.joinPaths("users", this.props.blame)).get().then(doc =>
                 this.setState(state => ({
                     ...state,
                     blameName: (doc.data()?.name ?? "") as string
-                })));
+                }))
+            );
         }
     }
 

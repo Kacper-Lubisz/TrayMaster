@@ -169,10 +169,8 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
     }
 
     public async delete(commit = false): Promise<void> {
-        // todo fixme this needs a big looking at
-        // potential for this.children to change as its being iterated over (due to line after loop)
-        for (const child of this.children) {
-            await child.delete(false);
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            await this.children[i].delete(false);
         }
 
         this.parent.children.splice(this.index, 1);

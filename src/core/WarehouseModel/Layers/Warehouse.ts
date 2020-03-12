@@ -1,3 +1,5 @@
+import * as fb from "firebase/app";
+import "firebase/firestore";
 import {FindQuery, SortBy} from "../../../pages/FindPage";
 import {byNullSafe, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
@@ -7,14 +9,23 @@ import {LayerFields} from "../LayerStructure/Layer";
 import {TopLayer} from "../LayerStructure/TopLayer";
 import Utils, {defaultCategories} from "../Utils";
 import {TrayFields} from "./Tray";
-import * as fb from "firebase/app";
-import "firebase/firestore";
 
 interface WarehouseFields extends LayerFields {
     name: string;
     defaultTraySizeID: string;
     expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
+
+const MIXED_CATEGORY: Category = {
+    index: defaultCategories.length,
+    name: "Mixed",
+    shortName: null,
+    underStockThreshold: null,
+    overStockThreshold: null,
+    type: "default",
+    group: null,
+    defaultExpiry: null,
+};
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     public readonly layerID: WarehouseModel = WarehouseModel.warehouse;
@@ -80,6 +91,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     index: i
                 });
             }
+            this.categoryCollection.add(MIXED_CATEGORY);
         }
     }
 
@@ -180,7 +192,9 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             firebaseQuery = firebaseQuery.orderBy(orderByField);
         }
         if (query.categories instanceof Set) {
-            if (query.categories.size > 10) return [false, []];
+            if (query.categories.size > 10) {
+                return [false, []];
+            }
             firebaseQuery = firebaseQuery.where("categoryId", "in", Array.from(query.categories).map(category => this.getCategoryID(category)));
         }
         const trays: TrayFields[] = (await firebase.database.loadQuery<TrayFields>(firebaseQuery)).map(trayDoc => trayDoc.fields);

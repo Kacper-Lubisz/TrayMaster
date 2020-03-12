@@ -25,8 +25,9 @@ interface CategoryEditorProps {
     getCategoryID: (category?: Category) => string;
     stage: (forceStage?: boolean, commit?: boolean, minLayer?: WarehouseModel) => Promise<void>;
 
-    updatePage: () => void;
+    repaintSettings: () => void;
 }
+
 
 type EditingState = {
     state: "editing";
@@ -286,7 +287,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             state: "editing",
             selectedCategory: state.newCategory,
             editedCategory: state.newCategory
-        }), this.props.updatePage);
+        }), this.props.repaintSettings);
 
     }
 
@@ -306,7 +307,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             state: "editing",
             selectedCategory: state.editedCategory,
             editedCategory: cloneDeep(state.editedCategory)
-        }), this.props.updatePage);
+        }), this.props.repaintSettings);
 
     }
 
@@ -330,7 +331,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
         this.setState(_ => ({
             state: "nothingSelected",
-        }), this.props.updatePage);
+        }), this.props.repaintSettings);
 
     }
 
