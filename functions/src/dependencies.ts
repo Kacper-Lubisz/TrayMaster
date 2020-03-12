@@ -5,6 +5,7 @@ export interface ExpiryRange {
 }
 
 export interface TrayFields {
+    locationName: string;
     categoryId: string;
     expiry: ExpiryRange | null;
     weight: number | null;
@@ -22,6 +23,7 @@ export interface Category {
     overStockThreshold: number | null;
     type: "default" | "custom";
     group: string | null;
+    defaultExpiry: null | ExpiryRange;
 }
 
 export const NULL_CATEGORY_STRING = "Unsorted";

@@ -9,10 +9,10 @@ import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
 describe("Crash tests: ", () => {
     it("renders without crashing", () => {
         const mockOpenDialog = jest.fn();
-        const mockSetSearch = jest.fn();
+        const mockSetFind = jest.fn();
         const props = {
             openDialog: mockOpenDialog,
-            setSearch: mockSetSearch,
+            setFind: mockSetFind,
             user: mockUser,
             warehouse: mockWarehouse
         };

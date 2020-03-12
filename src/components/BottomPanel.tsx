@@ -3,7 +3,7 @@ import React from "react";
 import {Dialog, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, ExpiryRange, Tray, TrayCell} from "../core/WarehouseModel";
-import {NEVER_EXPIRY} from "../core/WarehouseModel/Layers/Warehouse";
+import {NEVER_EXPIRY} from "../core/WarehouseModel/Utils";
 import {KeyboardName} from "../pages/ShelfViewPage";
 import {getExpiryColor, interpolateTowardsGrey} from "../utils/getExpiryColor";
 import {byNullSafe} from "../utils/sortsUtils";

@@ -1,11 +1,11 @@
-// SEARCH PAGE STYLING
+// FIND PAGE STYLING
 
 @import "./variables";
 // Import global variables: we need $accent-color
-@import "./searchgrid";
-// Import search page grid layout
+@import "findgrid";
+// Import find page grid layout
 
-#searchPage {
+#findPage {
   #topPanel {
     display: flex;
     align-items: stretch;
@@ -33,7 +33,7 @@
 
       padding: 10px;
 
-      #searchSentence {
+      #findSentence {
         margin: -2px 0;
         font-size: 24px;
         line-height: 40px;
@@ -42,12 +42,12 @@
 
         padding-right: 10px;
 
-        span.searchMessage {
+        span.findMessage {
           padding: 2px;
           margin-right: 10px;
         }
 
-        span.searchField {
+        span.findField {
           color: $accent-color;
           background-color: #dddddd;
           padding: 2px 5px;
@@ -72,13 +72,13 @@
     }
   }
 
-  #searchResults {
+  #findResults {
     position: relative;
     height: 100%;
     padding: 0 20px;
 
     // loading spinner
-    svg, div#search-no-results {
+    svg, div#find-no-results {
       position: absolute;
       top: 20%;
       left: 50%;
