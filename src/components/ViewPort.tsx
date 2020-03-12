@@ -10,7 +10,16 @@ import classNames from "classnames/bind";
 import {isEqual} from "lodash";
 import "pepjs";
 import React from "react";
-import {Column, NULL_CATEGORY_STRING, Shelf, Tray, TrayCell, Warehouse, Zone} from "../core/WarehouseModel";
+import {
+    Column,
+    NULL_CATEGORY_STRING,
+    Shelf,
+    Tray,
+    TrayCell,
+    Warehouse,
+    WarehouseModel,
+    Zone
+} from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
 import {KeyboardName, MAX_MAX_COLUMN_HEIGHT} from "../pages/ShelfViewPage";
 import "../styles/shelfview.scss";
@@ -31,6 +40,7 @@ interface ViewPortProps {
 
     removeColumn: (column: Column) => void;
 
+    availableLevel: WarehouseModel;
     current?: Shelf;
     isShelfEdit: boolean;
 
@@ -82,7 +92,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         this.trayRefs = [];
 
-        if (this.props.current instanceof Shelf) {
+        if (this.props.current) {
             this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
         }
 
@@ -269,32 +279,17 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     render(): React.ReactNode {
-        /*        if (this.props.current instanceof Warehouse) {
-                    return <div id="viewPort">
-                        <div>{/!* container needed to centre text inside viewport properly *!/}
-                            <h1>Current warehouse '{this.props.current.toString()}' has no zones!</h1>
-                            <p>Go to <b>Settings > Layout Editor</b> to add zones to this warehouse</p>
-                        </div>
-                    </div>;
-                } else if (this.props.current instanceof Zone) {
-                    return <div id="viewPort">
-                        <div>
-                            <h1>Current zone '{this.props.current.toString()}' has no bays!</h1>
-                            <p>Go to <b>Settings > Layout Editor</b> to edit zones</p>
-                        </div>
-                    </div>;
-                }*/
-
-
         if (this.props.current) {
             const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
 
             if (!(shelf.loaded && shelf.childrenLoaded)) {
                 // todo fixme restyle this, ensure this is appropriate usage
-                return <div id="loading-box" style={{margin: "auto"}}>
-                    <LoadingSpinner/>
-                    <h2>Loading...</h2>
-                </div>;
+                return (
+                    <div id="loading-box" style={{margin: "auto"}}>
+                        <LoadingSpinner/>
+                        <h2>Loading...</h2>
+                    </div>
+                );
             }
 
             return (
@@ -309,12 +304,25 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 </div>
             );
         } else {
-            // todo Better message?
-            return (
-                <div>
-                    <h2><b><i>Warehouse is empty (or no warehouse loaded).</i></b></h2>
-                </div>
-            );
+            if (this.props.availableLevel === WarehouseModel.warehouse) {
+                return (
+                    <div id="viewPort">
+                        <div>
+                            <h1>Current warehouse has no zones!</h1>
+                            <p>Go to <b>Settings > Layout Editor</b> to add zones to this warehouse</p>
+                        </div>
+                    </div>
+                );
+            } else if (this.props.availableLevel === WarehouseModel.zone) {
+                return (
+                    <div id="viewPort">
+                        <div>
+                            <h1>Current zone has no bays!</h1>
+                            <p>Go to <b>Settings > Layout Editor</b> to edit zones</p>
+                        </div>
+                    </div>
+                );
+            }
         }
     }
 

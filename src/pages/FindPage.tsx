@@ -132,7 +132,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                     <div id="sentenceR">
                         <button
                             onClick={() => this.downloadFile(
-                                `Search ${new Date().toLocaleDateString("en-GB", {
+                                `Find ${new Date().toLocaleDateString("en-GB", {
                                     weekday: "short",
                                     year: "numeric",
                                     month: "short",

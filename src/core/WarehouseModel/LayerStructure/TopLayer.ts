@@ -2,14 +2,7 @@ import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
 import Utils, {Collection, Queue, Stack} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
-import {
-    collectionNameRange,
-    Layer,
-    LayerFields,
-    LayerIdentifiers,
-    Layers,
-    LowerLayer, TopLevelFields
-} from "./Layer";
+import {collectionNameRange, Layer, LayerFields, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
 import {MiddleLayer} from "./MiddleLayer";
 
 /**
@@ -151,6 +144,8 @@ export abstract class TopLayer<TFields extends LayerFields, TChildren extends Lo
                 }
             }
 
+            this.childrenLoaded = true;
+
             for (const colName of collectionNameRange(minLayer + 1, this.layerID)) {
                 for (const parent of Array.from(childMap.get(colName)?.values() ?? [])) {
                     if (!(parent instanceof BottomLayer)) {
@@ -164,8 +159,10 @@ export abstract class TopLayer<TFields extends LayerFields, TChildren extends Lo
     }
 
     public async delete(commit = false): Promise<void> {
+        // todo fixme this needs a big looking at
+        // potential for this.children to change as its being iterated over (due to line after loop)
         for (const child of this.children) {
-            await child.delete();
+            await child.delete(false);
         }
 
         firebase.database.delete(this.topLevelPath);

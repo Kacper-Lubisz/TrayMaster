@@ -70,7 +70,7 @@ interface ShelfViewProps {
      * @param dialog A dialog builder function which takes the function that closes the dialog.
      */
     openDialog: (dialog: Dialog) => void;
-    setSearch: (query: FindQuery) => void;
+    setFind: (query: FindQuery) => void;
     warehouse: Warehouse;
     user: User;
 }
@@ -791,14 +791,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     /**
-     * This method performs a search for the categories of the currently selected trays
+     * This method performs a find for the categories of the currently selected trays
      */
-    private makeSearch(): void {
+    private makeFind(): void {
 
         const catSet = new Set(this.getSelectedTrays(false, false)
                                    .map(tray => tray.category ?? null)
                                    .filter((cat): cat is Category => cat !== null));
-        this.props.setSearch({
+        this.props.setFind({
             categories: catSet.size ? catSet : null,
             weight: null,
             commentSubstring: null,
@@ -807,7 +807,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         });
 
-        this.props.history.push("/search");
+        this.props.history.push("/find");
     }
 
     /**
@@ -904,8 +904,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 halfWidth: true
             },
             {
-                name: "Search",
-                onClick: this.makeSearch.bind(this),
+                name: "Find",
+                onClick: this.makeFind.bind(this),
                 halfWidth: false
             },
             {
@@ -938,6 +938,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     removeColumn={this.removeColumn.bind(this)}
 
                     current={this.state.currentView instanceof Shelf ? this.state.currentView : undefined}
+                    availableLevel={this.state.currentView instanceof Warehouse ? WarehouseModel.warehouse :
+                                    (this.state.currentView instanceof Zone ? WarehouseModel.zone
+                                                                            : WarehouseModel.shelf)}
                     isShelfEdit={this.state.isEditShelf}
 
                     draftWeight={this.state.weight}

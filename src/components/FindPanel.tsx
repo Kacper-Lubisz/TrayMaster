@@ -2,7 +2,7 @@ import classNames from "classnames";
 import React from "react";
 import {Category, Warehouse} from "../core/WarehouseModel";
 import {FindQuery, FindResults} from "../pages/FindPage";
-import "./styles/_searchpanel.scss";
+import "./styles/_findpanel.scss";
 
 export type PanelState = "category" | "weight" | "expiry";
 
@@ -42,8 +42,8 @@ export class FindPanel extends React.Component<FindPanelProps> {
             a.name < b.name ? -1 : 1
         );
 
-        const searchCategories = this.props.find.query.categories instanceof Set ? this.props.find.query.categories
-                                                                                 : new Set<Category>();
+        const findCategories = this.props.find.query.categories instanceof Set ? this.props.find.query.categories
+                                                                               : new Set<Category>();
 
         if (allCategories) {
 
@@ -59,7 +59,7 @@ export class FindPanel extends React.Component<FindPanelProps> {
                 }
             });
 
-            return <div id="searchPanel">
+            return <div id="findPanel">
                 <div id="cat-table">
                     {Array.from(groups.keys()).sort((a, b) =>
                         a < b ? -1 : 1
@@ -72,27 +72,15 @@ export class FindPanel extends React.Component<FindPanelProps> {
                             <div className="categoryGroupCategories"
                             >{groups.get(group)?.map(cat => <button
                                 key={cat.name}
-                                className={classNames("searchPanelButton", {
-                                    "selected": searchCategories.has(cat)
+                                className={classNames("findPanelButton", {
+                                    "selected": findCategories.has(cat)
                                 })}
                                 onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
                             }</div>
                         </div>
                     )}
                 </div>
-                {/*<div className="categoryGroup" key={-1}>*/}
-                {/*<h1 className="categoryGroupTitle">{"~"}</h1>*/}
-                {/*<div className="categoryGroupCategories">*/}
-                {/*    <button*/}
-                {/*        className={classNames("searchPanelButton", {*/}
-                {/*            // "selected": searchCategories.has(cat)*/}
-                {/*        })}*/}
-                {/*        // onClick={}*/}
-                {/*    >{"~"}*/}
-                {/*    </button>*/}
-
-                {/*</div>*/}
-                {/*</div>*/}</div>;
+            </div>;
         }
     }
 

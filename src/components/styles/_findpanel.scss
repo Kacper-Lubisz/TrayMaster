@@ -1,4 +1,4 @@
-#searchPanel {
+#findPanel {
   #cat-table {
     height: 100vh;
     overflow-y: auto;
@@ -27,7 +27,7 @@
         justify-content: stretch;
         align-content: center;
 
-        .searchPanelButton {
+        .findPanelButton {
           flex-grow: 1;
           margin: 5px;
           height: 50px;

@@ -1,7 +1,7 @@
 import React from "react";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import Popup from "reactjs-popup";
-import SearchPage, {FindQuery, FindResults} from "../pages/FindPage";
+import FindPage, {FindQuery, FindResults} from "../pages/FindPage";
 import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
@@ -134,7 +134,7 @@ class App extends React.Component<unknown, AppState> {
                 <Switch>
                     <Route path="/" exact>
                         {this.state.user && this.state.warehouse ? <ShelfViewPage
-                            setSearch={this.setFindQuery.bind(this)}
+                            setFind={this.setFindQuery.bind(this)}
                             openDialog={this.openDialog.bind(this)}
 
                             warehouse={this.state.warehouse}
@@ -160,7 +160,7 @@ class App extends React.Component<unknown, AppState> {
                                     }));
                                 }}
                                 user={this.state.user}
-                                setSearch={this.setFindQuery.bind(this)}
+                                setFind={this.setFindQuery.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
                                 expiryAmount={5}//todo fixme
                             />;
@@ -199,9 +199,9 @@ class App extends React.Component<unknown, AppState> {
                             />;
                         }
                     })()}</Route>
-                    <Route path="/search">{
+                    <Route path="/find">{
                         this.state.user && this.state.warehouse ?
-                        this.state.find ? <SearchPage
+                        this.state.find ? <FindPage
                             warehouse={this.state.warehouse}
                             find={this.state.find}
                             setQuery={this.setFindQuery.bind(this)}
@@ -273,7 +273,7 @@ class App extends React.Component<unknown, AppState> {
             );
 
         } else {
-            throw new Error("Can't perform search when the warehouse is undefined");
+            throw new Error("Can't perform find when the warehouse is undefined");
         }
     }
 

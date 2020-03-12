@@ -154,6 +154,8 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
                 }
             }
 
+            this.childrenLoaded = true;
+
             for (const colName of collectionNameRange(minLayer + 1, this.layerID)) {
                 for (const parent of Array.from(childMap.get(colName)?.values() ?? [])) {
                     if (!(parent instanceof BottomLayer)) {
@@ -167,8 +169,10 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
     }
 
     public async delete(commit = false): Promise<void> {
+        // todo fixme this needs a big looking at
+        // potential for this.children to change as its being iterated over (due to line after loop)
         for (const child of this.children) {
-            await child.delete();
+            await child.delete(false);
         }
 
         this.parent.children.splice(this.index, 1);
