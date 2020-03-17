@@ -1029,7 +1029,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     >
                         <FontAwesomeIcon icon={leftArrow}/> &nbsp; Previous Zone
                     </button>
-                    <p className="centerText">{`${zone.name} Zone`}</p>
+                    <p className="centerText">{zone.name}</p>
                     <button
                         id="nextZone"
                         onClick={this.changeView.bind(this, "nextZone")}

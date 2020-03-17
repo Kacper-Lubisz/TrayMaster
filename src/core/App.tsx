@@ -117,7 +117,6 @@ class App extends React.Component<unknown, AppState> {
                                 user={this.state.user}
                                 setFind={this.setFindQuery.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
-                                expiryAmount={5}//todo fixme
                             />;
 
                         } else if (!this.state.user) {
@@ -220,11 +219,11 @@ class App extends React.Component<unknown, AppState> {
             const results = await warehouse.trayFind(query);
             this.setState(state => ({
                     ...state,
-                find: {
-                    query: query,
-                    outcome: results[0],
-                    results: results[1]
-                }
+                    find: {
+                        query: query,
+                        outcome: results[0],
+                        results: results[1]
+                    }
                 })
             );
 

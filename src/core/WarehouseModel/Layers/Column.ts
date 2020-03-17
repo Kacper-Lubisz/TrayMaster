@@ -134,19 +134,19 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
                 return (this.trays as TrayCell[]).concat(newSpaces);
             } else { // there are not enough tray spaces
                 const traysToAdd = missingTrays - existing.length;
-                const newSpaces = Array(traysToAdd).fill(0).map((_, index) => {
-                    return ({parentColumn: this, index: this.trays.length + index} as TraySpace);
-                    }
-                ).concat(existing);
+                const newSpaces = Array(traysToAdd).fill(0).map((_, index) => ({
+                    parentColumn: this,
+                    index: this.trays.length + index
+                } as TraySpace)).concat(existing);
 
                 Column.traySpaces.set(this, newSpaces);
                 return (this.trays as TrayCell[]).concat(newSpaces);
             }
         } else { // build tray spaces
-            const newSpaces = Array(missingTrays).fill(0).map((_, index) => {
-                return {parentColumn: this, index: this.trays.length + index};
-                }
-            );
+            const newSpaces = Array(missingTrays).fill(0).map((_, index) => ({
+                parentColumn: this,
+                index: this.trays.length + index
+            }));
             Column.traySpaces.set(this, newSpaces);
 
             return (this.trays as TrayCell[]).concat(newSpaces);
