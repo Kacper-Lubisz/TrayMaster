@@ -1,4 +1,4 @@
-import {faExchangeAlt, faExclamationTriangle as warningIcon, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
+import {faExchangeAlt, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {withRouter} from "react-router";
