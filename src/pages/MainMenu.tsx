@@ -23,7 +23,6 @@ interface MainMenuProps {
 
     warehouse: Warehouse;
     user: User;
-    expiryAmount: number;
 
     setFind: (query: FindQuery) => void;
 }
@@ -69,26 +68,6 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
 
         return <div className="main-menu">
             <TrayMasterLogo message={<>{`v${process.env.REACT_APP_VERSION}`}</>}/>
-            {/*todo fixme the expiry amount ought to be derived from warehouse*/}
-            {this.props.expiryAmount === 0 ? undefined : <div
-                className="alert"
-                onClick={(_) => {
-                    this.props.setFind({
-                        categories: null,
-                        weight: null,
-                        commentSubstring: null,
-                        excludePickingArea: true,
-                        sort: {orderAscending: true, type: SortBy.expiry}
-                    });
-                    this.props.history.push("/find");
-                }}>
-                <div className="alert-header">
-                    <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
-                    <h2>Expiry Imminent</h2>
-                </div>
-                <p>There are {this.props.expiryAmount} items expiring soon! Click here to see them.</p>
-            </div>
-            }
 
             <Keyboard id="menu-nav-kb" buttons={menuButtons} gridX={1}/>
 

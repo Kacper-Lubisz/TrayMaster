@@ -117,7 +117,6 @@ class App extends React.Component<unknown, AppState> {
                                 user={this.state.user}
                                 setFind={this.setFindQuery.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
-                                expiryAmount={5}//todo fixme
                             />;
 
                         } else if (!this.state.user) {

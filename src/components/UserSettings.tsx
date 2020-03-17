@@ -33,7 +33,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     this.props.user.clearAboveSelection = value;
                     await this.props.user.stage(true, true);
                 },
-                label: "Clear all trays above when clearing"
+                label: "Clear All Trays Above When Clearing"
             }, {
                 inputType: "dropDown",
                 get: () => this.props.user.autoAdvanceMode,
