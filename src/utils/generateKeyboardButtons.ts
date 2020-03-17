@@ -160,7 +160,7 @@ function buildCategoryButtons(warehouse: Warehouse): TrayEditingButton[] {
     }));
 
     const groupedButtons: TrayEditingButton[] = Array.from(categoryGroups.entries()).map(([group, categories]) => ({
-        label: group,
+        label: `${group}...`,
         type: "grouped",
         alterations: categories.map(category => ({
             label: category.shortName ?? category.name,
