@@ -2,7 +2,7 @@ import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
 import Utils, {Collection, Queue, Stack} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
-import {Layer, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
+import {collectionNameRange, Layer, LayerFields, LayerIdentifiers, Layers, LowerLayer, TopLevelFields} from "./Layer";
 import {MiddleLayer} from "./MiddleLayer";
 
 /**
@@ -10,7 +10,7 @@ import {MiddleLayer} from "./MiddleLayer";
  * @template TFields - The Fields type to have its members saved to and loaded from the database
  * @template TChildren - The type of the type's children
  */
-export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends Layer<TFields> {
+export abstract class TopLayer<TFields extends LayerFields, TChildren extends LowerLayer> extends Layer<TFields> {
     public abstract readonly childCollectionName: string = "";
     public children: TChildren[];
     public childrenLoaded: boolean;
@@ -84,88 +84,83 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
         }
     }
 
-    public abstract async loadChildren(forceLoad: boolean): Promise<void>;
+    // noinspection DuplicatedCode
+    public async load(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
+        await this.loadLayer(forceLoad);
 
-    /**
-     * Load down to minLayer a layer at a time (using the top-level structure in the database).
-     * @async
-     * @param minLayer - The number of the layer to load down to
-     */
-    protected async breadthFirstLoad(minLayer: WarehouseModel = this.layerID): Promise<void> {
-        this.loadLayer();
-        this.childrenLoaded = minLayer < this.layerID || this.childrenLoaded;
+        if (!this.childrenLoaded || forceLoad) {
+            if (this.childrenLoaded) {
+                this.children = [];
+            }
 
-        const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
-            [this.collectionName, new Map<string, Layers>([[this.id, this]])]
-        ]);
+            const queriesResults = await Promise.all(collectionNameRange(minLayer, this.layerID)
+                .map(async colName => firebase.database.loadQuery<unknown & TopLevelFields>(firebase.database.db.collection(Utils.joinPaths(this.topLayerPath, colName)).orderBy("index"))));
 
-        type State = {
-            generator: (id: string, fields: unknown, parent: any) => LowerLayer;
-            collectionName: string;
-            childCollectionName: string;
-            topLevelChildCollectionPath: string;
-        };
+            type State = {
+                generator: (id: string, fields: unknown, parent: any) => LowerLayer;
+                collectionName: string;
+                childCollectionName: string;
+                topLevelChildCollectionPath: string;
+            };
 
-        let currentState: State = {
-            generator: this.createChild,
-            collectionName: this.collectionName,
-            childCollectionName: this.childCollectionName,
-            topLevelChildCollectionPath: this.topLevelChildCollectionPath,
-        };
+            let currentState: State = {
+                generator: this.createChild,
+                collectionName: this.collectionName,
+                childCollectionName: this.childCollectionName,
+                topLevelChildCollectionPath: this.topLevelChildCollectionPath
+            };
 
-        for (let i = this.layerID - 1; i >= minLayer; i--) {
-            childMap.set(currentState.childCollectionName, new Map<string, Layers>());
-            let nextState: State | undefined;
+            const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
+                [this.collectionName, new Map<string, Layers>([[this.id, this]])]
+            ]);
 
-            const query =
-                firebase.database.db.collection(currentState.topLevelChildCollectionPath).orderBy("index");
-            for (const document of (await firebase.database.loadQuery<unknown & TopLevelFields>(query))) {
-                const parent = childMap.get(currentState.collectionName)?.get(document.fields.layerIdentifiers[currentState.collectionName]);
-                if (parent && !(parent instanceof BottomLayer)) {
-                    parent.childrenLoaded = true;
-                    const child: LowerLayer = currentState.generator(document.id, document.fields, parent);
-                    child.loaded = true;
-                    childMap.get(currentState.childCollectionName)?.set(document.id, child);
-                    if (child instanceof MiddleLayer && !nextState) {
-                        nextState = {
-                            generator: child.createChild,
-                            collectionName: child.collectionName,
-                            childCollectionName: child.childCollectionName,
-                            topLevelChildCollectionPath: child.topLevelChildCollectionPath
-                        };
+            for (const queryResults of queriesResults) {
+                childMap.set(currentState.childCollectionName, new Map<string, Layers>());
+                let nextState: State | undefined;
+
+                for (const queryResult of queryResults) {
+                    const parent = childMap.get(currentState.collectionName)?.get(queryResult.fields.layerIdentifiers[currentState.collectionName]);
+                    if (parent && !(parent instanceof BottomLayer)) {
+                        parent.childrenLoaded = true;
+                        const child: LowerLayer = currentState.generator(queryResult.id, queryResult.fields, parent);
+                        child.fieldsSaved();
+                        child.loaded = true;
+                        childMap.get(currentState.childCollectionName)?.set(queryResult.id, child);
+                        if (child instanceof MiddleLayer && !nextState) {
+                            nextState = {
+                                generator: child.createChild,
+                                collectionName: child.collectionName,
+                                childCollectionName: child.childCollectionName,
+                                topLevelChildCollectionPath: child.topLevelChildCollectionPath
+                            };
+                        }
                     }
+                }
+
+                if (nextState) {
+                    currentState = {...nextState};
+                } else {
+                    break;
                 }
             }
 
-            if (nextState) {
-                currentState = {...nextState};
-            } else {
-                break;
-            }
-        }
-    }
+            this.childrenLoaded = true;
 
-    public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
-        await this.loadLayer(forceLoad);
-
-        if (this.layerID >= minLayer) {
-            await this.loadChildren(forceLoad);
-            for (const child of this.children) {
-                await child.loadDepthFirst(forceLoad, minLayer);
+            for (const colName of collectionNameRange(minLayer + 1, this.layerID)) {
+                for (const parent of Array.from(childMap.get(colName)?.values() ?? [])) {
+                    if (!(parent instanceof BottomLayer)) {
+                        parent.childrenLoaded = true;
+                    }
+                }
             }
         }
 
-        return this;
-    }
-
-    public async load(minLayer: WarehouseModel = this.layerID): Promise<this> {
-        await this.breadthFirstLoad.call(this, minLayer);
         return this;
     }
 
     public async delete(commit = false): Promise<void> {
-        for (const child of this.children) {
-            await child.delete();
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            await this.children[i].delete(false);
         }
 
         firebase.database.delete(this.topLevelPath);
@@ -177,6 +172,7 @@ export abstract class TopLayer<TFields, TChildren extends LowerLayer> extends La
 
     protected stageLayer(forceStage = false): void {
         if (this.changed || forceStage) {
+            this.updateBlame();
             firebase.database.set(this.topLevelPath, {
                 ...this.fields,
                 layerIdentifiers: this.layerIdentifiers

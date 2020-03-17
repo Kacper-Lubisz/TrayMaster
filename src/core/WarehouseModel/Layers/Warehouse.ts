@@ -1,60 +1,31 @@
-import {SearchQuery, SortBy} from "../../../pages/SearchPage";
-import {byNullSafe, composeSort, composeSorts, partitionBy} from "../../../utils/sortsUtils";
+import * as fb from "firebase/app";
+import "firebase/firestore";
+import {FindQuery, SortBy} from "../../../pages/FindPage";
+import {byNullSafe, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 import {Bay, Category, Column, Shelf, Tray, WarehouseModel, Zone} from "../../WarehouseModel";
+import {LayerFields} from "../LayerStructure/Layer";
 import {TopLayer} from "../LayerStructure/TopLayer";
-import Utils from "../Utils";
+import Utils, {defaultCategories} from "../Utils";
+import {TrayFields} from "./Tray";
 
-const defaultCategories: { name: string; group?: string }[] = [
-    {name: "Baby Care", group: "Baby..."},
-    {name: "Baby Food", group: "Baby..."},
-    {name: "Nappies", group: "Baby..."},
-    {name: "Beans"},
-    {name: "Biscuits"},
-    {name: "Cereal"},
-    {name: "Choc/Sweet"},
-    {name: "Coffee"},
-    {name: "Cleaning"},
-    {name: "Custard"},
-    {name: "Feminine Hygiene", group: "Toiletries..."},
-    {name: "Fish"},
-    {name: "Fruit"},
-    {name: "Fruit Juice"},
-    {name: "Hot Choc"},
-    {name: "Instant Meals"},
-    {name: "Jam"},
-    {name: "Meat"},
-    {name: "Men's Toiletries", group: "Toiletries..."},
-    {name: "Milk"},
-    {name: "Misc."},
-    {name: "Misc. Toiletries", group: "Toiletries..."},
-    {name: "Pasta"},
-    {name: "Pasta Sauce"},
-    {name: "Pet Food"},
-    {name: "Potatoes"},
-    {name: "Rice"},
-    {name: "Rice Pudding"},
-    {name: "Savoury Treats"},
-    {name: "Shampoo", group: "Toiletries..."},
-    {name: "Soup"},
-    {name: "Soap & Shower Gel", group: "Toiletries..."},
-    {name: "Spaghetti"},
-    {name: "Sponge Pudding"},
-    {name: "Sugar"},
-    {name: "Tea Bags"},
-    {name: "Toilet Rolls", group: "Toiletries..."},
-    {name: "Tomatoes"},
-    {name: "Vegetables"},
-    {name: "Christmas"},
-    {name: "Mixed"}
-];
-
-interface WarehouseFields {
+interface WarehouseFields extends LayerFields {
     name: string;
     defaultTraySizeID: string;
     expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
+
+const MIXED_CATEGORY: Category = {
+    index: defaultCategories.length,
+    name: "Mixed",
+    shortName: null,
+    underStockThreshold: null,
+    overStockThreshold: null,
+    type: "default",
+    group: null,
+    defaultExpiry: null,
+};
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     public readonly layerID: WarehouseModel = WarehouseModel.warehouse;
@@ -76,6 +47,8 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      */
     public static create(id?: string, name?: string): Warehouse {
         return new Warehouse(id ?? Utils.generateRandomId(), {
+            lastModified: Date.now(),
+            blame: "",
             name: name ?? "",
             defaultTraySizeID: "",
             expiryColorMode: "hybrid"
@@ -100,15 +73,10 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         }
     }
 
-    public async loadDepthFirst(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
-        await this.loadCollections(forceLoad);
-        return super.loadDepthFirst(forceLoad, minLayer);
-    }
-
-    public async load(minLayer = this.layerID, forceLoad = false): Promise<this> {
+    public async load(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
         await this.loadCollections(forceLoad);
         if ((!this.loaded || (!this.childrenLoaded && this.layerID > minLayer)) || forceLoad) {
-            return super.load(minLayer);
+            return super.load(forceLoad, minLayer);
         }
         return this;
     }
@@ -119,16 +87,11 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
         if (this.categoryCollection.size === 0) {
             for (let i = 0; i < defaultCategories.length; i++) {
                 this.categoryCollection.add({
-                    index: i,
-                    name: "Unnamed",
-                    shortName: null,
-                    underStockThreshold: null,
-                    overStockThreshold: null,
-                    type: "default",
-                    group: null,
                     ...defaultCategories[i],
+                    index: i
                 });
             }
+            this.categoryCollection.add(MIXED_CATEGORY);
         }
     }
 
@@ -214,73 +177,59 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //#endregion
 
-    //region search
-    public async traySearch(query: SearchQuery): Promise<Tray[]> {
+    //region find
+    public async trayFind(query: FindQuery): Promise<[boolean, TrayFields[]]> {
+        const orderByFields = new Map<SortBy, string | undefined>([
+            [SortBy.expiry, "expiry.from"],
+            [SortBy.location, "locationName"],
+            [SortBy.weight, "weight"]
+        ]);
 
-        return await new Promise((resolve, _) => {
-            //todo make this feature full, it's actually a complete mess right now, needs a redoing
+        const orderByField = orderByFields.get(query.sort.type);
 
-            const filteredTrays = this.trays.filter(tray =>
-                query.categories === null ||
-                (query.categories === "set" && tray.category) ||
-                (query.categories === "unset" && !tray.category) ||
-                (query.categories instanceof Set && tray.category && query.categories.has(tray.category))
-            ).filter(tray => {
-                if (query.weight === null) {
-                    return true;
-                } else if (query.weight === "set") {
-                    return tray.weight;
-                } else if (query.weight === "unset") {
-                    return !tray.weight;
-                } else {
-                    return tray.weight && query.weight.from <= tray.weight && tray.weight <= query.weight.to;
-                }
-            }).filter(tray => {
-                if (!query.commentSubstring || tray.comment) {
-                    return true;
-                } else {
-                    return query.commentSubstring.includes(query.commentSubstring);
-                }
-            }).filter(tray => {
-                return !query.excludePickingArea || !tray.parentShelf.isPickingArea;
-            });
+        let firebaseQuery: fb.firestore.Query = firebase.database.db.collection(Utils.joinPaths("warehouses", this.id, "trays")) as fb.firestore.Query;
+        if (orderByField) {
+            firebaseQuery = firebaseQuery.orderBy(orderByField);
+        }
+        if (query.categories instanceof Set) {
+            if (query.categories.size > 10) {
+                return [false, []];
+            }
+            firebaseQuery = firebaseQuery.where("categoryId", "in", Array.from(query.categories).map(category => this.getCategoryID(category)));
+        }
+        const trays: TrayFields[] = (await firebase.database.loadQuery<TrayFields>(firebaseQuery)).map(trayDoc => trayDoc.fields);
 
-            const defaultSort = composeSorts<Tray>([
-                partitionBy<Tray>((a) => !!(a.expiry)), // draw a diagram to understand this
-                partitionBy<Tray>((a) => !(!a.expiry?.from && a.expiry?.to)),
-                partitionBy<Tray>((a) => (!a.expiry?.from && !a.expiry?.to)),
-
-                byNullSafe<Tray>((a) => a.expiry?.from, true),
-                byNullSafe<Tray>((a) => a.expiry?.to, false, false),
-                byNullSafe<Tray>((a) => a.category?.name, false, true),
-                byNullSafe<Tray>((a) => a.weight, false, true),
-            ]);
-
-            const sort = (() => {
-                if (query.sort.type === SortBy.category) {
-                    return composeSort(
-                        byNullSafe<Tray>((a) => a.category?.name, false, true),
-                        defaultSort
-                    );
-                } else if (query.sort.type === SortBy.location) {
-                    return composeSort(
-                        byNullSafe<Tray>((a) => a.locationString, false, true),
-                        defaultSort
-                    );
-                } else if (query.sort.type === SortBy.weight) {
-                    return composeSort(
-                        byNullSafe<Tray>((a) => a.weight, false, true),
-                        defaultSort
-                    );
-                } else { // none or SortBy.expiry
-                    return defaultSort;
-                }
-            })();
-
-            resolve(filteredTrays.sort(sort));
-
+        const filteredTrays = trays.filter(tray => {
+            if (query.weight === null) {
+                return true;
+            } else if (query.weight === "set") {
+                return tray.weight;
+            } else if (query.weight === "unset") {
+                return !tray.weight;
+            } else {
+                return tray.weight && query.weight.from <= tray.weight && tray.weight <= query.weight.to;
+            }
+        }).filter(tray => {
+            if (!query.commentSubstring || tray.comment) {
+                return true;
+            } else {
+                return query.commentSubstring.includes(query.commentSubstring);
+            }
         });
 
+        const sort = composeSorts<TrayFields>([
+            byNullSafe<TrayFields>((a) => this.getCategoryByID(a.categoryId)?.name, false, true),
+            partitionBy<TrayFields>((a) => !!(a.expiry)), // draw a diagram to understand this
+            partitionBy<TrayFields>((a) => !(!a.expiry?.from && a.expiry?.to)),
+            partitionBy<TrayFields>((a) => (!a.expiry?.from && !a.expiry?.to)),
+
+            byNullSafe<TrayFields>((a) => a.expiry?.from, true),
+            byNullSafe<TrayFields>((a) => a.expiry?.to, false, false),
+            byNullSafe<TrayFields>((a) => this.getCategoryByID(a.categoryId)?.name, false, true),
+            byNullSafe<TrayFields>((a) => a.weight, false, true),
+        ]);
+
+        return [true, filteredTrays.sort(sort)];
     }
 
     //endregion

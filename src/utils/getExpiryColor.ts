@@ -1,5 +1,7 @@
 import dayjs, {Dayjs} from "dayjs";
 import {ExpiryRange} from "../core/WarehouseModel";
+import {SimpleExpiryRange} from "../pages/ShelfViewPage";
+import {MONTHS_TRANSLATOR} from "./monthsTranslator";
 
 
 /**
@@ -152,14 +154,13 @@ function computeHybridColorFromRange(range: SafeExpiryRange): string {
         60,
         180,
         320,
-        290,
         120
     ];
 
     const djsDate: Dayjs = dayjs(range.from);
 
     const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
-    return hslToHex(yearHueCycle[djsDate.year() % 5], saturation, 1);
+    return hslToHex(yearHueCycle[djsDate.year() % 4], saturation, 1);
 }
 
 /**
@@ -173,23 +174,28 @@ function getWarehouseColor(range: SafeExpiryRange): string {
         "#fff44d",
         "#0ea5ff",
         "#ff97cc",
-        "#d597ff",
         "#49ff55"
     ];
 
-    return yearCycle[dayjs(range.from).year() % 5];
+    return yearCycle[dayjs(range.from).year() % 4];
 }
 
 
 /**
  * Takes in an ExpiryRange and chooses the colour to use for it, based on current settings
- * @param range {ExpiryRange} - the expiry range to return a color for
+ * @param simple - the expiry range to return a color for
  * @param mode - The mode detailing how colouring should be done, either 'computed', 'hybrid or, 'warehouse'
  * @return string - the 7-digit hex value to use for that expiry range
  */
-export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" | "warehouse"): string {
+export function getExpiryColor(
+    simple: ExpiryRange | SimpleExpiryRange,
+    mode: "computed" | "hybrid" | "warehouse"
+): string {
+
+    const range = toExpiryRange(simple);
+
     if (range.from === null || range.to === null) {
-        return "#000000";
+        return "#ffffff00";
     } else if (mode === "computed") {
         return computeColorFromRange(range as SafeExpiryRange);
     } else if (mode === "hybrid") {
@@ -198,6 +204,47 @@ export function getExpiryColor(range: ExpiryRange, mode: "computed" | "hybrid" |
         return getWarehouseColor(range as SafeExpiryRange);
     }
 }
+
+export function toExpiryRange(range: SimpleExpiryRange | ExpiryRange): ExpiryRange {
+    // choose range start and end points
+
+    if (range === null || !("year" in range)) {
+        return range;
+    } else if ("month" in range) {
+
+        const fromDate = new Date(range.year, range.month);
+        const toDate = new Date(fromDate);
+        toDate.setMonth(fromDate.getMonth() + 1);
+
+        return {
+            from: fromDate.getTime(), to: toDate.getTime(),
+            label: `${MONTHS_TRANSLATOR[range.month]} ${range.year}`
+        };
+
+    } else if ("quarter" in range) {
+
+        // Multiply by 3 to map quarter indices to the first month in that range
+        const fromDate = new Date(range.year, range.quarter * 3);
+        const toDate = new Date(fromDate);
+
+        toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
+
+        return {
+            from: fromDate.getTime(), to: toDate.getTime(),
+            label: `Q${(range.quarter + 1).toString()} ${range.year}`
+        };
+
+    } else { // Year
+
+        return {
+            from: new Date(range.year, 0).getTime(),
+            to: new Date(range.year + 1, 0).getTime(),
+            label: `${range.year}`
+        };
+    }
+
+}
+
 
 /**
  * Interpolates between the given colour and the given grey colour by the given ratio

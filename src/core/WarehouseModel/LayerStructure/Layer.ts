@@ -20,6 +20,11 @@ export interface LayerIdentifiers {
     [collectionName: string]: string;
 }
 
+export interface LayerFields {
+    lastModified: number;
+    blame: string;
+}
+
 /**
  * Represents one of the three sub-classes of Layer
  */
@@ -33,16 +38,31 @@ export type UpperLayer = TopLayer<any, any> | MiddleLayer<any, any, any>;
  */
 export type LowerLayer = MiddleLayer<any, any, any> | BottomLayer<any, any>;
 
+export function collectionNameRange(minLayer: WarehouseModel, currentLayer: WarehouseModel): string[] {
+    return ["trays", "columns", "shelves", "bays", "zones", "warehouses"].slice(minLayer, currentLayer).reverse();
+}
+
 /**
  * Represents data and methods common to all layers in the object model
  * @template TFields - The Fields type to have its members saved to and loaded from the database
  */
-export abstract class Layer<TFields> extends DatabaseObject<TFields> {
+export abstract class Layer<TFields extends LayerFields> extends DatabaseObject<TFields> {
     public abstract readonly collectionName: string;
     public abstract readonly layerID: WarehouseModel;
 
     protected constructor(id: string, fields: TFields) {
         super(id, fields);
+        if (!this.fields.lastModified) {
+            this.fields.lastModified = Date.now();
+        }
+        if (!this.fields.blame) {
+            this.fields.blame = firebase.auth.currentUser?.id ?? "";
+        }
+    }
+
+    protected updateBlame(): void {
+        this.fields.lastModified = Date.now();
+        this.fields.blame = firebase.auth.currentUser?.id ?? "";
     }
 
     /**
@@ -50,6 +70,14 @@ export abstract class Layer<TFields> extends DatabaseObject<TFields> {
      */
     public get topLevelPath(): string {
         return Utils.joinPaths(this.topLayerPath, this.collectionName, this.id);
+    }
+
+    public get blame(): string {
+        return this.fields.blame;
+    }
+
+    public get lastModified(): number {
+        return this.fields.lastModified;
     }
 
     /**
@@ -79,6 +107,9 @@ export abstract class Layer<TFields> extends DatabaseObject<TFields> {
     protected async loadLayer(forceLoad = true): Promise<this> {
         if (!this.loaded || forceLoad) {
             this.fields = (await firebase.database.loadDocument<TFields>(this.topLevelPath))?.fields ?? this.fields;
+            this.originalFields = {
+                ...this.fields,
+            };
             this.fieldsSaved();
             this.loaded = true;
         }
@@ -91,11 +122,5 @@ export abstract class Layer<TFields> extends DatabaseObject<TFields> {
      * Load the object (breadth first)
      * @async
      */
-    public abstract load(): Promise<this>;
-
-    /**
-     * Load the object (depth first)
-     * @param forceLoad
-     */
-    public abstract loadDepthFirst(forceLoad: boolean): Promise<this>;
+    public abstract load(forceLoad: boolean): Promise<this>;
 }
