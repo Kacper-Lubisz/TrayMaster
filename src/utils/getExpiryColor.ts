@@ -1,7 +1,7 @@
 import dayjs, {Dayjs} from "dayjs";
 import {ExpiryRange} from "../core/WarehouseModel";
 import {SimpleExpiryRange} from "../pages/ShelfViewPage";
-import {hslToHex} from "./colorUtils";
+import {hslToHex, rgbToHex} from "./colorUtils";
 import {MONTHS_TRANSLATOR} from "./monthsTranslator";
 
 

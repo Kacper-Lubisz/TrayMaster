@@ -643,7 +643,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * This method removes all the trays that are currently selected
      */
 
-    /*private async clearTrays(): Promise<void> {
+    private async clearTrays(): Promise<void> {
 
         const columnMap: Map<Column, TrayCell[]> = new Map();
         this.getSelectedTrayCells().forEach(cell => {
@@ -689,11 +689,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         this.setSelected(newSelectedMap);
 
         await this.state.currentView.stage(false, true, WarehouseModel.tray);
-    }*/
+    }
 
     /**
      * Sets the selection of all trays and tray spaces in the shelf.  If
-     * @param select if all should be  selected or deslected
+     * @param select if all should be  selected or deselected
      */
     private selectAll(select: "none" | "trays" | "all"): void {
         if (this.state.currentView instanceof Shelf) {
@@ -1136,7 +1136,7 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
             </div>
             <div className="infoBottom">
                 {
-                    this.state.blameName && this.props.lastModified ? <div>This tray was last modified
+                    this.state.blameName && this.props.lastModified ? <div>This shelf was last modified
                                                                         by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString("en-GB")}
                                                                     </div>
                                                                     : <>

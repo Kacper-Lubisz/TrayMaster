@@ -3,7 +3,7 @@
  * Converts a single member of an rgb(x, x, x) color value into two hex digits
  * @param rgb - one of the three r, g, b, values constituting a color
  */
-function rgbToHex(rgb: number): string {
+export function rgbToHex(rgb: number): string {
     let hex = Math.round(Number(rgb)).toString(16);
     if (hex.length < 2) {
         hex = `0${hex}`;
