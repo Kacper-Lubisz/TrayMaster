@@ -16,6 +16,17 @@ interface WarehouseFields extends LayerFields {
     expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
 
+const MIXED_CATEGORY: Category = {
+    index: defaultCategories.length,
+    name: "Mixed",
+    shortName: null,
+    underStockThreshold: null,
+    overStockThreshold: null,
+    type: "default",
+    group: null,
+    defaultExpiry: null,
+};
+
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     public readonly layerID: WarehouseModel = WarehouseModel.warehouse;
     public readonly collectionName = "warehouses";
@@ -80,6 +91,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                     index: i
                 });
             }
+            this.categoryCollection.add(MIXED_CATEGORY);
         }
     }
 

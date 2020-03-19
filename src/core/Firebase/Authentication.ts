@@ -1,6 +1,5 @@
 import * as fb from "firebase/app";
 import "firebase/auth";
-import {KeyboardName} from "../../pages/ShelfViewPage";
 import {ONLINE} from "../Firebase";
 import {WarehouseManager} from "../WarehouseModel";
 import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
@@ -18,7 +17,11 @@ export class AuthenticationError extends FirebaseError {
  * off is off
  * a list defines a cycle
  */
-export type AutoAdvanceModes = null | (KeyboardName[]);
+export type AutoAdvanceModes = null | {
+    category: boolean;
+    expiry: boolean;
+    weight: boolean;
+};
 
 interface UserFields {
     isAdmin: boolean;
@@ -33,6 +36,9 @@ interface UserFields {
     showPreviousShelfButton: boolean;
 
     clearAboveSelection: boolean;
+
+    // customKeyboard: null | CustomKeyboard;
+    useCustomKeyboard: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
@@ -44,7 +50,8 @@ export class User extends DatabaseObject<UserFields> {
         autoAdvanceMode: null,
         onlySingleAutoAdvance: false,
         showPreviousShelfButton: false,
-        clearAboveSelection: true
+        clearAboveSelection: true,
+        useCustomKeyboard: false
     };
 
     public constructor(id: string, fields?: UserFields) {
@@ -129,6 +136,16 @@ export class User extends DatabaseObject<UserFields> {
     public set clearAboveSelection(clearAboveSelection: boolean) {
         this.fields.clearAboveSelection = clearAboveSelection;
     }
+
+    public get useCustomKeyboard(): boolean {
+        return this.fields.useCustomKeyboard;
+    }
+
+    public set useCustomKeyboard(useCustomKeyboard: boolean) {
+        this.fields.useCustomKeyboard = useCustomKeyboard;
+    }
+
+
 }
 
 export class Authentication {
