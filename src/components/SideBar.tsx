@@ -68,9 +68,7 @@ export class SideBar extends React.Component<SideBarProps> {
                                                             : textColor
                 }}
                 onClick={this.props.openNavigatorDisabled ? undefined : this.props.openNavigator}
-            >
-                <h2>{this.props.locationString}</h2>
-            </button>
+            >{this.props.locationString}</button>
 
             <div id="sidebar-buttons-main">{
                 this.props.buttons.filter((props): props is SideBarButtonProps =>
