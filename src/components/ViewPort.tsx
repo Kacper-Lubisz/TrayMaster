@@ -7,6 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames/bind";
+import detectZoom from "detect-zoom";
 import {isEqual} from "lodash";
 import "pepjs";
 import React from "react";
@@ -547,7 +548,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         // check a tray from each column; generate a list indicating which columns should be condensed
         const newCondensed: boolean[] = this.trayRefs.map(trayRef => {
-            return !!(trayRef.current?.clientHeight && trayRef.current.clientHeight < condenseMaxHeight);
+            const trayHeight = trayRef.current?.clientHeight ? trayRef.current.clientHeight / detectZoom.device()
+                                                             : null;
+            console.log(detectZoom.device());
+            return !!(trayHeight && trayHeight < condenseMaxHeight);
         });
 
         // VERY IMPORTANT: avoids render loops
