@@ -6,14 +6,28 @@
 @import "src/pages/styles/shelfnavigator";
 // SHELF VIEW GRID LAYOUT
 
-#editCommentInput {
-  font-size: 28px;
-  padding: 10px;
+.dialogContent {
+  flex-direction: column;
 
-  background-color: #dddddd;
-  border: none;
+  #editCommentInput {
+    font-size: 22px;
+    padding: 10px;
 
-  width: calc(100% - 20px);
+    background-color: #dddddd;
+    border: none;
+
+    width: calc(100% - 20px);
+  }
+
+  .infoBottom {
+    margin-top: 10px;
+
+    .dialogButtons {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0;
+    }
+  }
 }
 
 #shelfView {
@@ -63,13 +77,5 @@
     grid-column-end: 3;
     grid-row-start: 2;
     grid-row-end: 3;
-  }
-}
-
-.infoBottom {
-  margin-top: 10px;
-
-  .icon {
-    padding-right: 5px;
   }
 }

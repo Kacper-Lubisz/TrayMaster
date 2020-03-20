@@ -7,7 +7,6 @@ import {
     faClock as expiryIcon,
     faCog as settingsIcon,
     faCube as categoryIcon,
-    faExclamationTriangle,
     faHome as menuIcon,
     faInfo,
     faTimes as cross
@@ -837,8 +836,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     }
 
     render(): React.ReactNode {
-        console.log(this.getSelectedTrays(false, false).length === 0);
-
         const possibleMoveDirections = this.possibleMoveDirections(this.state.currentView);
 
         const zoneColor: string = (() => {
@@ -1099,54 +1096,56 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
     }
 
     render(): React.ReactElement {
+        const blameText = (() => {
+            if (this.state.blameName && this.props.lastModified) {
+                return <div>
+                    This shelf was last modified
+                    by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString("en-GB")}
+                </div>;
+            }
+            return <>
+                Multiple trays selected!<br/>
+                Adding a comment will overwrite any existing comments. Select a single tray to view Last Modified data.
+            </>;
+        })();
         return <>
-            <DialogTitle title="Information"/>
+            <DialogTitle title="Tray Information"/>
             <div className="dialogContent">
-                <div className="editCommentForm">
-                    <div>Comment:</div>
-                    <form onSubmit={(e) => {
-                        e.preventDefault();
-                        this.props.onSubmit(this.state.draft);
-                    }}>
-                        <input
-                            autoFocus={true}
-                            type="text"
-                            onChange={(event) => {
-                                const newValue = event.target.value;
-                                this.setState(state => ({
-                                    ...state,
-                                    draft: newValue.length === 0 ? null : newValue
-                                }));
-                            }}
-                            value={this.state.draft ?? ""}
-                        /></form>
+                <form className="editCommentForm" onSubmit={(e) => {
+                    e.preventDefault();
+                    this.props.onSubmit(this.state.draft);
+                }}>
+                    <label>Comment:</label>
+                    <input
+                        autoFocus={true}
+                        type="text"
+                        id="editCommentInput"
+                        onChange={(event) => {
+                            const newValue = event.target.value;
+                            this.setState(state => ({
+                                ...state,
+                                draft: newValue.length === 0 ? null : newValue
+                            }));
+                        }}
+                        value={this.state.draft ?? ""}
+                    />
+                </form>
+                <div className="infoBottom">
+                    {blameText}
+                    <DialogButtons buttons={[
+                        {
+                            name: "Discard", buttonProps: {
+                                onClick: this.props.onDiscard,
+                                style: {borderColor: "red"}
+                            }
+                        }, {
+                            name: "Done", buttonProps: {
+                                onClick: () => this.props.onSubmit(this.state.draft),
+                            }
+                        }
+                    ]}/>
                 </div>
-                <DialogButtons buttons={[
-                    {
-                        name: "Discard", buttonProps: {
-                            onClick: this.props.onDiscard,
-                            style: {borderColor: "red"}
-                        }
-                    }, {
-                        name: "Done", buttonProps: {
-                            onClick: () => this.props.onSubmit(this.state.draft),
-                        }
-                    }
-                ]}/>
             </div>
-            <div className="infoBottom">
-                {
-                    this.state.blameName && this.props.lastModified ? <div>This shelf was last modified
-                                                                        by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString("en-GB")}
-                                                                    </div>
-                                                                    : <>
-                        <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
-                        Multiple trays selected!<br/>
-                        Adding a comment will overwrite any existing comments. Select a single tray to view Last
-                        Modified data.</>
-                }
-            </div>
-
         </>;
     }
 }

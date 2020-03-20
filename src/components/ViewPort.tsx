@@ -550,7 +550,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         const newCondensed: boolean[] = this.trayRefs.map(trayRef => {
             const trayHeight = trayRef.current?.clientHeight ? trayRef.current.clientHeight / detectZoom.device()
                                                              : null;
-            console.log(detectZoom.device());
             return !!(trayHeight && trayHeight < condenseMaxHeight);
         });
 
