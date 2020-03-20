@@ -1104,11 +1104,11 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
                     data.
                 </div>;
             } else {
+                const blameTimeString = this.props.lastModified
+                                        ? new Date(this.props.lastModified).toLocaleString("en-GB")
+                                        : "Unknown";
                 return <div>
-                    This shelf was last modified by {this.state.blameName ? this.state.blameName
-                                                                          : "Unknown"} at {this.props.lastModified
-                                                                                           ? new Date(this.props.lastModified).toLocaleString("en-GB")
-                                                                                           : "Unknown"}
+                    This shelf was last modified by {this.state.blameName ?? "Unknown"} at {blameTimeString}
                 </div>;
             }
 
