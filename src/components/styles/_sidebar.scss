@@ -27,6 +27,8 @@
       grid-column: span 2;
       padding: 0;
       font-size: $btn-font-size;
+      word-wrap: break-word;
+      overflow: hidden;
 
       &.halfWidth {
         grid-column: span 1;
@@ -84,11 +86,16 @@
     $btn-font-size: 14px;
 
     #shelfName {
-      padding: 5px;
+      padding-top: 5px;
+      padding-bottom: 5px;
       font-size: 1.2 * $btn-font-size;
     }
     #sidebar-buttons-main > button {
       font-size: $btn-font-size;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
       &.trayMod {
         margin-bottom: 8px;
@@ -96,6 +103,49 @@
 
       > svg {
         font-size: 1.6 * $btn-font-size;
+      }
+    }
+  }
+
+  @media screen and (max-width: 1640px) {
+    $btn-font-size: 16px;
+
+    #shelfName {
+      padding-left: 5px;
+      padding-right: 5px;
+      font-size: $btn-font-size;
+    }
+    #sidebar-buttons-main > button {
+      font-size: $btn-font-size;
+
+      > svg {
+        font-size: 1.5 * $btn-font-size;
+      }
+    }
+
+    @media (max-width: 1280px) {
+      $btn-font-size: 14px;
+      #sidebar-buttons-main > button {
+        font-size: $btn-font-size;
+
+        > svg {
+          font-size: 1.5 * $btn-font-size;
+        }
+      }
+      #kb-switcher {
+        height: 40px;
+
+        > button > svg {
+          font-size: 40px;
+        }
+
+        @media (max-width: 960px) {
+          height: 30px;
+
+          > button > svg {
+            font-size: 30px;
+          }
+        }
       }
     }
   }
