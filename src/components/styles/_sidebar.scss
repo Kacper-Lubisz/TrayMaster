@@ -81,7 +81,7 @@
     }
   }
 
-  @media screen and (max-height: 800px) {
+  @media screen and (max-height: 767px) {
 
     $btn-font-size: 14px;
 
@@ -138,8 +138,16 @@
         > button > svg {
           font-size: 40px;
         }
+      }
 
-        @media (max-width: 960px) {
+      @media (max-width: 960px) {
+        #sidebar-buttons-main > button {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        #kb-switcher {
           height: 30px;
 
           > button > svg {
