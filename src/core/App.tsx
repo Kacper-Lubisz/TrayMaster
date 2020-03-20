@@ -218,14 +218,13 @@ class App extends React.Component<unknown, AppState> {
 
             const results = await warehouse.trayFind(query);
             this.setState(state => ({
-                    ...state,
-                    find: {
-                        query: query,
-                        outcome: results[0],
-                        results: results[1]
-                    }
-                })
-            );
+                ...state,
+                find: {
+                    query: query,
+                    outcome: results[0],
+                    results: results[1]
+                }
+            }));
 
         } else {
             throw new Error("Can't perform find when the warehouse is undefined");
