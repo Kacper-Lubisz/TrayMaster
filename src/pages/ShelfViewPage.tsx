@@ -1097,16 +1097,21 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
 
     render(): React.ReactElement {
         const blameText = (() => {
-            if (this.state.blameName && this.props.lastModified) {
+            if (this.props.numberOfTrays > 1) {
                 return <div>
-                    This shelf was last modified
-                    by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString("en-GB")}
+                    Multiple trays selected!<br/>
+                    Adding a comment will overwrite any existing comments. Select a single tray to view Last Modified
+                    data.
+                </div>;
+            } else {
+                return <div>
+                    This shelf was last modified by {this.state.blameName ? this.state.blameName
+                                                                          : "Unknown"} at {this.props.lastModified
+                                                                                           ? new Date(this.props.lastModified).toLocaleString("en-GB")
+                                                                                           : "Unknown"}
                 </div>;
             }
-            return <>
-                Multiple trays selected!<br/>
-                Adding a comment will overwrite any existing comments. Select a single tray to view Last Modified data.
-            </>;
+
         })();
         return <>
             <DialogTitle title="Tray Information"/>
