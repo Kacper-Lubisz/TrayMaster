@@ -1,4 +1,9 @@
-import {faArrowLeft as arrowLeft, faHome as menuIcon, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
+import {
+    faArrowLeft as arrowLeft,
+    faDownload as downloadIcon,
+    faHome as menuIcon,
+    faTimes as cross
+} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
@@ -123,7 +128,12 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
             <div id="leftPanel">
                 <div id="topPanel">
                     <div id="sentenceL">
-                        <FontAwesomeIcon icon={arrowLeft} onClick={() => this.props.history.goBack()}/>
+                        <button onClick={() => this.props.history.goBack()}>
+                            <FontAwesomeIcon icon={arrowLeft}/>
+                        </button>
+                        <button onClick={() => this.props.history.push("/menu")}>
+                            <FontAwesomeIcon icon={menuIcon}/>
+                        </button>
                     </div>
                     <div id="sentenceBox">
                         {this.renderFindSentence()}
@@ -140,10 +150,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                                 })}.csv`,
                                 this.buildCSVFile()
                             )}>
-                            .CSV
-                        </button>
-                        <button onClick={() => this.props.history.push("/menu")}>
-                            <FontAwesomeIcon icon={menuIcon}/>
+                            <FontAwesomeIcon icon={downloadIcon}/>
                         </button>
                     </div>
                 </div>
