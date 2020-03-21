@@ -6,7 +6,7 @@ import {RouteComponentProps, withRouter} from "react-router-dom";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel";
-import "../styles/warehouseswitcher.scss";
+import "./styles/warehouseswitcher.scss";
 
 interface WarehouseSwitcherProps {
     user: User;

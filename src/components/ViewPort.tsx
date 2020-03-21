@@ -7,6 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames/bind";
+import detectZoom from "detect-zoom";
 import {isEqual} from "lodash";
 import "pepjs";
 import React from "react";
@@ -22,9 +23,8 @@ import {
 } from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
 import {KeyboardName, MAX_MAX_COLUMN_HEIGHT} from "../pages/ShelfViewPage";
-import "../styles/shelfview.scss";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import {getExpiryColor} from "../utils/getExpiryColor";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {trayComparisonFunction} from "../utils/sortCells";
 import {LoadingSpinner} from "./LoadingSpinner";
 import "./styles/_viewport.scss";
@@ -544,11 +544,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     updateCondensed(): void {
 
         // constant: decides the breakpoint in tray height at which to condense its parent column
-        const condenseMaxHeight = 65;
+        const condenseMaxHeight = 90;
 
         // check a tray from each column; generate a list indicating which columns should be condensed
         const newCondensed: boolean[] = this.trayRefs.map(trayRef => {
-            return !!(trayRef.current?.clientHeight && trayRef.current.clientHeight < condenseMaxHeight);
+            const trayHeight = trayRef.current?.clientHeight ? trayRef.current.clientHeight / detectZoom.device()
+                                                             : null;
+            return !!(trayHeight && trayHeight < condenseMaxHeight);
         });
 
         // VERY IMPORTANT: avoids render loops

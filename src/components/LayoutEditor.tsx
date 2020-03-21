@@ -2,12 +2,12 @@ import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import {cloneDeep, isEqual} from "lodash";
 import React from "react";
-import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Bay, Shelf, Warehouse, WarehouseModel, Zone} from "../core/WarehouseModel";
 import {ZoneFields} from "../core/WarehouseModel/Layers/Zone";
 import {SettingsTab} from "../pages/SettingsPage";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
+import {Dialog, DialogButtons, DialogTitle} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
 import {ZoneDisplayComponent} from "./ZoneDisplayComponent";

@@ -1,13 +1,13 @@
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import storageAvailable from "storage-available";
+import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
-import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import firebase from "../core/Firebase";
-import "../styles/settings.scss";
-import "../styles/signin.scss";
 import {compareVersions} from "../utils/compareVersions";
+import "./styles/settings.scss";
+import "./styles/signin.scss";
 
 const authErrorMessages: Map<string, string> = new Map<string, string>([
     ["auth/invalid-email", "Invalid email address."],

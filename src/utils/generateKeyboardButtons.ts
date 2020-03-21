@@ -274,7 +274,8 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         years,
         quarters,
         months,
-        mixedYears
+        mixedYears,
+        specialCategoryButtons
     } = buildKeyboardButtons(4, 4, false, false, warehouse);
 
     const yearButtons: CustomKeyboardButton[] = years.map((button, index) => ({
@@ -314,9 +315,8 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         if (button.label === "Mixed") {
             // absolutely awful code, this needs to be replaced with a category editor
             return acc;
+
         }
-
-
         const currentButton: CustomKeyboardButton = ({
             ...button,
             columnStart: acc.column,
@@ -336,16 +336,24 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
     }, {
         buttons: [],
         row: 1,
-        column: 1
+        column: 4
     } as {
         buttons: CustomKeyboardButton[];
         row: number;
         column: number;
-    }).buttons.splice(0, 36);
+    }).buttons.splice(0, 35);
     // take the first 36 because that's all there's space for
 
     return {
-        buttons: yearButtons.concat(quarterButtons, monthButtons, categoryButtons, mixedButtons)
+        buttons: yearButtons.concat(quarterButtons, monthButtons, categoryButtons, mixedButtons, [
+            {
+                ...specialCategoryButtons.removeTray,
+                columnStart: 1,
+                columnEnd: 4,
+                rowStart: 1,
+                rowEnd: 2,
+            }
+        ])
     };
 }
 

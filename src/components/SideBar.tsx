@@ -3,13 +3,14 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 import {KeyboardName} from "../pages/ShelfViewPage";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getTextColorForBackground, interpolateTowardsGrey} from "../utils/colorUtils";
 import {CustomButtonProps} from "./Keyboard";
 import "./styles/_sidebar.scss";
 
 
 export type SideBarButtonProps = CustomButtonProps & {
     halfWidth: boolean;
+    trayMod?: boolean;
 };
 
 /**
@@ -56,18 +57,18 @@ interface KeyboardSwitch {
 export class SideBar extends React.Component<SideBarProps> {
 
     render(): React.ReactNode {
+        const textColor = getTextColorForBackground(this.props.zoneColor);
         return <div id="sideBar">
-            <div
+            <button
                 id="shelfName"
-                className={this.props.openNavigatorDisabled ? "disabled" : undefined}
-                style={this.props.openNavigatorDisabled ? undefined : {
+                disabled={this.props.openNavigatorDisabled}
+                style={{
                     backgroundColor: this.props.zoneColor,
-                    color: getTextColorForBackground(this.props.zoneColor)
+                    color: this.props.openNavigatorDisabled ? interpolateTowardsGrey(textColor, "#888888", 0.8)
+                                                            : textColor
                 }}
                 onClick={this.props.openNavigatorDisabled ? undefined : this.props.openNavigator}
-            >
-                <h2>{this.props.locationString}</h2>
-            </div>
+            >{this.props.locationString}</button>
 
             <div id="sidebar-buttons-main">{
                 this.props.buttons.filter((props): props is SideBarButtonProps =>
@@ -78,7 +79,10 @@ export class SideBar extends React.Component<SideBarProps> {
                             button?.onClick?.call(undefined, e);
                             e.currentTarget.blur();
                         }}
-                        className={button.halfWidth ? "halfWidth" : ""}
+                        className={classNames({
+                            "halfWidth": button.halfWidth,
+                            "trayMod": button.trayMod
+                        })}
                         disabled={button.disabled}
                     >{
                         button.icon ? <FontAwesomeIcon icon={button.icon} title={button.name}/>

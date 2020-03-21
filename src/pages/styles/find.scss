@@ -2,7 +2,7 @@
 
 @import "./variables";
 // Import global variables: we need $accent-color
-@import "findgrid";
+@import "./findgrid";
 // Import find page grid layout
 
 #findPage {
@@ -16,12 +16,6 @@
     svg {
       cursor: pointer;
       font-size: 36px;
-    }
-
-    #sentenceL {
-      margin: 0 30px 0 10px;
-      display: flex;
-      align-items: center;
     }
 
     #sentenceBox {
@@ -57,17 +51,26 @@
       }
     }
 
+    #sentenceL {
+      margin: 0 30px 0 10px;
+    }
+
     #sentenceR {
-      display: flex;
-      margin: 0 0 0 10px;
+      margin: 0 10px 0 30px;
+    }
+
+    #sentenceR, #sentenceL {
+      flex-shrink: 0;
+      height: 100%;
 
       button {
-        margin: 0 0 0 10px;
-
+        margin: 0;
         border-radius: 0;
         height: 100%;
-        width: 120px;
-        font-size: 24px;
+
+        &:not(:last-child) {
+          margin-right: 10px;
+        }
       }
     }
   }

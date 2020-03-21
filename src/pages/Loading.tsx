@@ -1,7 +1,7 @@
 import React from "react";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
-import "../styles/loading.scss";
+import "./styles/loading.scss";
 
 /**
  * Loading page component

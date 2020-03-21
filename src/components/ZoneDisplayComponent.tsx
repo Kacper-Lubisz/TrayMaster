@@ -2,7 +2,7 @@ import classNames from "classnames";
 import React, {ReactNode} from "react";
 import {Shelf} from "../core/WarehouseModel/Layers/Shelf";
 import {Zone} from "../core/WarehouseModel/Layers/Zone";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import "./styles/_zonedisplay.scss";
 
 interface ZoneDisplayComponentProps {

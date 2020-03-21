@@ -1,6 +1,8 @@
 import React from "react";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import Popup from "reactjs-popup";
+import {buildErrorDialog, Dialog, StoredDialog} from "../components/Dialog";
+import ErrorHandler from "../components/ErrorHandler";
 import FindPage, {FindQuery, FindResults} from "../pages/FindPage";
 import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
@@ -9,8 +11,6 @@ import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
-import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
-import ErrorHandler from "./ErrorHandler";
 
 import firebase, {User} from "./Firebase";
 import {Warehouse, WarehouseManager} from "./WarehouseModel";
@@ -216,16 +216,15 @@ class App extends React.Component<unknown, AppState> {
                 }
             }));
 
-            const results = await warehouse.trayFind(query);
+            const [outcome, results] = await warehouse.trayFind(query);
             this.setState(state => ({
-                    ...state,
-                    find: {
-                        query: query,
-                        outcome: results[0],
-                        results: results[1]
-                    }
-                })
-            );
+                ...state,
+                find: {
+                    query: query,
+                    outcome: outcome,
+                    results: results
+                }
+            }));
 
         } else {
             throw new Error("Can't perform find when the warehouse is undefined");

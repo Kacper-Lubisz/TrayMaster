@@ -7,8 +7,6 @@ import {
     faClock as expiryIcon,
     faCog as settingsIcon,
     faCube as categoryIcon,
-    faEraser,
-    faExclamationTriangle,
     faHome as menuIcon,
     faInfo,
     faTimes as cross
@@ -20,11 +18,10 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import Popup from "reactjs-popup";
 import {BottomPanel} from "../components/BottomPanel";
-import {SideBar} from "../components/SideBar";
-import {ToolBar} from "../components/ToolBar";
+import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
+import {SideBar, SideBarButtonProps} from "../components/SideBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
 import {ZoneDisplayComponent} from "../components/ZoneDisplayComponent";
-import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import firebase, {User} from "../core/Firebase";
 import {
     Bay,
@@ -40,7 +37,7 @@ import {
     Zone
 } from "../core/WarehouseModel";
 import Utils from "../core/WarehouseModel/Utils";
-import "../styles/shelfview.scss";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import {
     CategoryAlteration,
     CommentAlteration,
@@ -48,10 +45,10 @@ import {
     WeightAlteration
 } from "../utils/generateKeyboardButtons";
 import {toExpiryRange} from "../utils/getExpiryColor";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {properMod} from "../utils/properMod";
 import {byNullSafe, composeSorts} from "../utils/sortsUtils";
 import {FindQuery, SortBy} from "./FindPage";
+import "./styles/shelfview.scss";
 
 /**
  * Defines possible keyboard names
@@ -644,6 +641,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
     /**
      * This method removes all the trays that are currently selected
      */
+
     private async clearTrays(): Promise<void> {
 
         const columnMap: Map<Column, TrayCell[]> = new Map();
@@ -694,7 +692,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     /**
      * Sets the selection of all trays and tray spaces in the shelf.  If
-     * @param select if all should be  selected or deslected
+     * @param select if all should be  selected or deselected
      */
     private selectAll(select: "none" | "trays" | "all"): void {
         if (this.state.currentView instanceof Shelf) {
@@ -852,29 +850,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         const locationString = this.state.currentView.toString();
 
-        const toolBarButtons = [
-            {
-                name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
-                icon: this.getSelectedTrayCells().length === 0 ? tickSolid : tickEmpty,
-                onClick: this.selectAll.bind(
-                    this,
-                    this.getSelectedTrayCells().length === 0 ? "all" : "none"
-                )
-            },
-            {
-                name: "Edit Comment",
-                icon: faInfo,
-                onClick: this.trayInfo.bind(this),
-                disabled: this.getSelectedTrays(false, false).length === 0
-            },
-            {
-                name: "Clear Trays",
-                icon: faEraser,
-                onClick: this.clearTrays.bind(this),
-                disabled: this.getSelectedTrayCells().length === 0
-            }
-        ];
-
         const sideBarButtons = this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
             {
                 name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
@@ -896,6 +871,24 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             },
         ] : [ // Generate sidebar buttons
             {
+                name: this.getSelectedTrayCells().length === 0 ? "Select All" : "Deselect All",
+                icon: this.getSelectedTrayCells().length === 0 ? tickSolid : tickEmpty,
+                onClick: this.selectAll.bind(
+                    this,
+                    this.getSelectedTrayCells().length === 0 ? "all" : "none"
+                ),
+                halfWidth: true,
+                trayMod: true
+            },
+            {
+                name: "Tray Info",
+                icon: faInfo,
+                onClick: this.trayInfo.bind(this),
+                disabled: this.getSelectedTrays(false, false).length === 0,
+                halfWidth: true,
+                trayMod: true
+            },
+            {
                 name: "Main Menu",
                 icon: menuIcon,
                 onClick: () => this.props.history.push("/menu"),
@@ -908,13 +901,13 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 halfWidth: true
             },
             {
-                name: "Find",
-                onClick: this.makeFind.bind(this),
+                name: "Edit Shelf",
+                onClick: this.enterEditShelf.bind(this),
                 halfWidth: false
             },
             {
-                name: "Edit Shelf",
-                onClick: this.enterEditShelf.bind(this),
+                name: "Find",
+                onClick: this.makeFind.bind(this),
                 halfWidth: false
             },
             this.props.user.showPreviousShelfButton ? {
@@ -928,7 +921,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 onClick: this.changeView.bind(this, "nextShelf"),
                 disabled: !possibleMoveDirections.get("nextShelf"),
                 halfWidth: this.props.user.showPreviousShelfButton
-            }
+            } as SideBarButtonProps
         ];
 
         return <>
@@ -951,9 +944,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
                     currentKeyboard={this.state.currentKeyboard}
                 />
-                <ToolBar
-                    disabled={this.state.isEditShelf}
-                    toolbar={toolBarButtons}/>
                 <SideBar
                     zoneColor={zoneColor}
                     locationString={locationString}
@@ -1106,54 +1096,61 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
     }
 
     render(): React.ReactElement {
-        return <>
-            <DialogTitle title="Information"/>
-            <div className="dialogContent">
-                <div className="editCommentForm">
-                    <div>Comment:</div>
-                    <form onSubmit={(e) => {
-                        e.preventDefault();
-                        this.props.onSubmit(this.state.draft);
-                    }}>
-                        <input
-                            autoFocus={true}
-                            type="text"
-                            onChange={(event) => {
-                                const newValue = event.target.value;
-                                this.setState(state => ({
-                                    ...state,
-                                    draft: newValue.length === 0 ? null : newValue
-                                }));
-                            }}
-                            value={this.state.draft ?? ""}
-                        /></form>
-                </div>
-                <DialogButtons buttons={[
-                    {
-                        name: "Discard", buttonProps: {
-                            onClick: this.props.onDiscard,
-                            style: {borderColor: "red"}
-                        }
-                    }, {
-                        name: "Done", buttonProps: {
-                            onClick: () => this.props.onSubmit(this.state.draft),
-                        }
-                    }
-                ]}/>
-            </div>
-            <div className="infoBottom">
-                {
-                    this.state.blameName && this.props.lastModified ? <div>This tray was last modified
-                                                                        by {this.state.blameName} at {new Date(this.props.lastModified).toLocaleString("en-GB")}
-                                                                    </div>
-                                                                    : <>
-                        <span className="icon"><FontAwesomeIcon icon={faExclamationTriangle}/></span>
-                        Multiple trays selected!<br/>
-                        Adding a comment will overwrite any existing comments. Select a single tray to view Last
-                        Modified data.</>
-                }
-            </div>
+        const blameText = (() => {
+            if (this.props.numberOfTrays > 1) {
+                return <div>
+                    Multiple trays selected!<br/>
+                    Adding a comment will overwrite any existing comments. Select a single tray to view Last Modified
+                    data.
+                </div>;
+            } else {
+                const blameTimeString = this.props.lastModified
+                                        ? new Date(this.props.lastModified).toLocaleString("en-GB")
+                                        : "Unknown";
+                return <div>
+                    This shelf was last modified by {this.state.blameName ?? "Unknown"} at {blameTimeString}
+                </div>;
+            }
 
+        })();
+        return <>
+            <DialogTitle title="Tray Information"/>
+            <div className="dialogContent">
+                <form className="editCommentForm" onSubmit={(e) => {
+                    e.preventDefault();
+                    this.props.onSubmit(this.state.draft);
+                }}>
+                    <label>Comment:</label>
+                    <input
+                        autoFocus={true}
+                        type="text"
+                        id="editCommentInput"
+                        onChange={(event) => {
+                            const newValue = event.target.value;
+                            this.setState(state => ({
+                                ...state,
+                                draft: newValue.length === 0 ? null : newValue
+                            }));
+                        }}
+                        value={this.state.draft ?? ""}
+                    />
+                </form>
+                <div className="infoBottom">
+                    {blameText}
+                    <DialogButtons buttons={[
+                        {
+                            name: "Discard", buttonProps: {
+                                onClick: this.props.onDiscard,
+                                style: {borderColor: "red"}
+                            }
+                        }, {
+                            name: "Done", buttonProps: {
+                                onClick: () => this.props.onSubmit(this.state.draft),
+                            }
+                        }
+                    ]}/>
+                </div>
+            </div>
         </>;
     }
 }
