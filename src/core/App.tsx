@@ -216,13 +216,13 @@ class App extends React.Component<unknown, AppState> {
                 }
             }));
 
-            const results = await warehouse.trayFind(query);
+            const [outcome, results] = await warehouse.trayFind(query);
             this.setState(state => ({
                 ...state,
                 find: {
                     query: query,
-                    outcome: results[0],
-                    results: results[1]
+                    outcome: outcome,
+                    results: results
                 }
             }));
 
