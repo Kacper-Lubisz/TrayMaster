@@ -1,0 +1,110 @@
+
+#editor {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  grid-template-rows: 1fr;
+
+  height: 100%;
+}
+
+.add-btn {
+  margin-left: 300px;
+}
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+  height: 100%;
+
+  #list {
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 1;
+    grid-column-end: 2;
+
+    border: 1px solid #aaaaaa;
+
+    height: 100%;
+    overflow-y: auto;
+    flex-grow: 1;
+
+    .list-item {
+      font-size: 30px;
+      cursor: pointer;
+      padding: 10px;
+
+      &.selected {
+        background-color: #dddddd;
+      }
+    }
+  }
+
+  #title {
+    font-size: 24pt;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  #top-btn {
+    margin-top: 12px;
+  }
+}
+
+#edit-main {
+  grid-row-start: 1;
+  grid-row-end: 2;
+  grid-column-start: 2;
+  grid-column-end: 3;
+
+  padding-left: 50px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  #edit-controls {
+    flex-grow: 1;
+
+    #edit-header {
+      width: 100%;
+      display: flex;
+
+      h2 {
+        font-size: 36px;
+        flex-grow: 1;
+      }
+
+    }
+
+  }
+
+  #bottom-btns {
+    display: flex;
+    align-items: center;
+
+    #del-msg {
+      margin-left: 30px;
+    }
+  }
+}
+
+#empty-message-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+
+  #empty-message {
+    font-size: 16pt;
+
+    width: 100%;
+    text-align: center;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+}

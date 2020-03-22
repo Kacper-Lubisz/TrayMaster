@@ -4,12 +4,14 @@ import classNames from "classnames";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {CategoryEditor} from "../components/CategoryEditor";
+import {CustomKeyboardEditor} from "../components/CustomKeyboardPage";
+import {Dialog} from "../components/Dialog";
+import {LayoutEditor} from "../components/LayoutEditor";
 import {UserSettings} from "../components/UserSettings";
-import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 
-import "../styles/settings.scss";
+import "./styles/settings.scss";
 
 interface SettingsPageProps {
     openDialog: (dialog: Dialog) => void;
@@ -17,7 +19,13 @@ interface SettingsPageProps {
     user: User;
 }
 
-export type SettingsTab = "personal" | "wh-edit" | "cat-edit" | "handle-users";
+export type SettingsTab =
+    "personal"
+    | "layout-edit"
+    | "cat-edit"
+    | "handle-users"
+    | "keyboard-editor"
+    | "handle-warehouses";
 
 interface SettingsPageState {
     currentTab: SettingsTab;
@@ -45,6 +53,8 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
         if (this.state.currentTab === "personal") {
             return <UserSettings
                 user={this.props.user}
+                warehouse={this.props.warehouse}
+                repaintSettings={this.forceUpdate.bind(this)}
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor
@@ -61,13 +71,27 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 getCategoryID={this.props.warehouse.getCategoryID.bind(this.props.warehouse)}
                 stage={this.props.warehouse.stage.bind(this.props.warehouse)}
 
+                repaintSettings={this.forceUpdate.bind(this)}
+            />;
+        } else if (this.state.currentTab === "layout-edit") {
+            return <LayoutEditor
+                setLock={this.setLock.bind(this)}
+
+                openDialog={this.props.openDialog}
+                user={this.props.user}
+                warehouse={this.props.warehouse}
+
                 updatePage={() => this.forceUpdate()}
             />;
-        } else if (this.state.currentTab === "wh-edit") {
-            return <div>TODO Warehouse Editor</div>;
+
+        } else if (this.state.currentTab === "handle-warehouses") {
+            return <div>Make new warehouses here </div>;
+        } else if (this.state.currentTab === "keyboard-editor") {
+            return <CustomKeyboardEditor user={this.props.user} warehouse={this.props.warehouse}/>;
         } else { // "handle-users"
             return <div>TODO User Manager</div>;
         }
+
     }
 
     private setLock(lockFunction: (tab: SettingsTab) => boolean): void {
@@ -110,6 +134,14 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                         >
                             Personal Settings
                         </div>
+                        {/*{this.props.user.customKeyboard ? <div*/}
+                        {/*    className={classNames("tab", {*/}
+                        {/*        "tab-selected": this.state.currentTab === "keyboard-editor"*/}
+                        {/*    })}*/}
+                        {/*    onClick={this.changeTab.bind(this, "keyboard-editor")}*/}
+                        {/*>*/}
+                        {/*    Custom Keyboard*/}
+                        {/*</div> : null}*/}
                     </div>
                     {this.props.user.isAdmin ? <>
                         <div>
@@ -124,11 +156,11 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                             </div>
                             <div
                                 className={classNames("tab", {
-                                    "tab-selected": this.state.currentTab === "wh-edit"
+                                    "tab-selected": this.state.currentTab === "layout-edit"
                                 })}
-                                onClick={this.changeTab.bind(this, "wh-edit")}
+                                onClick={this.changeTab.bind(this, "layout-edit")}
                             >
-                                Warehouse Editor
+                                Layout Editor
                             </div>
                         </div>
                         <div>
@@ -139,7 +171,15 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                                 })}
                                 onClick={this.changeTab.bind(this, "handle-users")}
                             >
-                                Handle Users
+                                Users
+                            </div>
+                            <div
+                                className={classNames("tab", {
+                                    "tab-selected": this.state.currentTab === "handle-warehouses"
+                                })}
+                                onClick={this.changeTab.bind(this, "handle-warehouses")}
+                            >
+                                Warehouses
                             </div>
                         </div>
                     </> : undefined}

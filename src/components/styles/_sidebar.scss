@@ -1,6 +1,6 @@
 // ShelfView sidebar styling
 
-@import "../../styles/variables";
+@import "../../pages/styles/variables";
 
 #sideBar {
   // arrange children
@@ -8,12 +8,12 @@
   display: flex;
   flex-direction: column;
 
-  #shelfName {
-    cursor: pointer;
-  }
+  $btn-font-size: 20px;
 
-  #shelfName.disabled {
-    background-color: #eee;
+  #shelfName {
+    padding: 15px;
+    font-weight: bold;
+    font-size: 1.2 * $btn-font-size;
   }
 
   #sidebar-buttons-main {
@@ -26,14 +26,22 @@
     > button {
       grid-column: span 2;
       padding: 0;
+      font-size: $btn-font-size;
+      word-wrap: break-word;
+      overflow: hidden;
 
       &.halfWidth {
         grid-column: span 1;
         min-width: 0;
       }
 
+      &.trayMod {
+        background-color: #dddddd;
+        margin-bottom: 15px;
+      }
+
       > svg {
-        font-size: 50px;
+        font-size: 1.6 * $btn-font-size;
       }
     }
   }
@@ -69,6 +77,83 @@
       // Set icon to fill containing button
       > svg {
         font-size: 50px;
+      }
+    }
+  }
+
+  @media screen and (max-height: 767px) {
+
+    $btn-font-size: 14px;
+
+    #shelfName {
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-size: 1.2 * $btn-font-size;
+    }
+    #sidebar-buttons-main > button {
+      font-size: $btn-font-size;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &.trayMod {
+        margin-bottom: 8px;
+      }
+
+      > svg {
+        font-size: 1.6 * $btn-font-size;
+      }
+    }
+  }
+
+  @media screen and (max-width: 1640px) {
+    $btn-font-size: 16px;
+
+    #shelfName {
+      padding-left: 5px;
+      padding-right: 5px;
+      font-size: $btn-font-size;
+    }
+    #sidebar-buttons-main > button {
+      font-size: $btn-font-size;
+
+      > svg {
+        font-size: 1.5 * $btn-font-size;
+      }
+    }
+
+    @media (max-width: 1280px) {
+      $btn-font-size: 14px;
+      #sidebar-buttons-main > button {
+        font-size: $btn-font-size;
+
+        > svg {
+          font-size: 1.5 * $btn-font-size;
+        }
+      }
+      #kb-switcher {
+        height: 40px;
+
+        > button > svg {
+          font-size: 40px;
+        }
+      }
+
+      @media (max-width: 960px) {
+        #sidebar-buttons-main > button {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        #kb-switcher {
+          height: 30px;
+
+          > button > svg {
+            font-size: 30px;
+          }
+        }
       }
     }
   }

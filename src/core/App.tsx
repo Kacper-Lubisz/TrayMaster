@@ -1,24 +1,23 @@
 import React from "react";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import Popup from "reactjs-popup";
+import {buildErrorDialog, Dialog, StoredDialog} from "../components/Dialog";
+import ErrorHandler from "../components/ErrorHandler";
+import FindPage, {FindQuery, FindResults} from "../pages/FindPage";
 import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
 import PageNotFoundPage from "../pages/PageNotFoundPage";
-import SearchPage, {SearchQuery, SearchResults} from "../pages/SearchPage";
 import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
-import {compareVersions} from "../utils/compareVersions";
-import {buildErrorDialog, Dialog, DialogButtons, DialogTitle, StoredDialog} from "./Dialog";
-import ErrorHandler from "./ErrorHandler";
 
 import firebase, {User} from "./Firebase";
 import {Warehouse, WarehouseManager} from "./WarehouseModel";
 
 
 interface AppState {
-    search?: SearchResults;
+    find?: FindResults;
     loading: boolean;
     user?: User | null;
     warehouse?: Warehouse | null;
@@ -82,50 +81,6 @@ class App extends React.Component<unknown, AppState> {
 
     }
 
-    componentDidMount(): void {
-
-        // to force this to trigger, call
-        // localStorage.clear("VERSION_NUMBER")
-        // or
-        // localStorage.setItem("VERSION_NUMBER", "test version");
-
-        const oldVersion = localStorage.getItem("VERSION_NUMBER");
-        if (process.env.REACT_APP_VERSION !== oldVersion) {
-            localStorage.setItem("VERSION_NUMBER", process.env.REACT_APP_VERSION ?? "");
-            const verDiff: 1 | 0 | -1 = ((old, current) => {
-                if (old === null) {
-                    return 1;
-                } else if (current === undefined) {
-                    return 0;
-                }
-                return compareVersions(old, current);
-            })(oldVersion, process.env.REACT_APP_VERSION);
-
-            const message: string = (() => {
-                if (verDiff === 1) {
-                    return `You've been updated from ${oldVersion ?? "a previous version"} to ${process.env.REACT_APP_VERSION ?? "the latest version"}!`;
-                } else if (verDiff === -1) {
-                    return `We've rolled you back from ${oldVersion ?? "a newer version"} to ${process.env.REACT_APP_VERSION ?? "a previous version"}. This has probably been done so that we can work to iron out some bugs that you might have encountered!`;
-                }
-                return "Your version number has changed, but something seems to have gone wrong. Sorry!";
-            })();
-
-            this.openDialog({
-                closeOnDocumentClick: true,
-                dialog: (close: () => void) => {
-                    return <>
-                        <DialogTitle title="TrayMaster Update"/>
-                        <div className="dialogContent">
-                            <p>{message}</p>
-                            <DialogButtons buttons={[{name: "Thanks!", buttonProps: {onClick: close,}}]}/>
-                        </div>
-                    </>;
-                }
-            });
-        }
-
-    }
-
     render(): React.ReactNode {
 
         return <>
@@ -134,7 +89,7 @@ class App extends React.Component<unknown, AppState> {
                 <Switch>
                     <Route path="/" exact>
                         {this.state.user && this.state.warehouse ? <ShelfViewPage
-                            setSearch={this.setSearch.bind(this)}
+                            setFind={this.setFindQuery.bind(this)}
                             openDialog={this.openDialog.bind(this)}
 
                             warehouse={this.state.warehouse}
@@ -160,9 +115,8 @@ class App extends React.Component<unknown, AppState> {
                                     }));
                                 }}
                                 user={this.state.user}
-                                setSearch={this.setSearch.bind(this)}
+                                setFind={this.setFindQuery.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
-                                expiryAmount={5}//todo fixme
                             />;
 
                         } else if (!this.state.user) {
@@ -185,7 +139,8 @@ class App extends React.Component<unknown, AppState> {
                         }
                     })()}</Route>
                     <Route path="/signin">{
-                        this.state.user ? <Redirect to={"/menu"}/> : <SignInPage/>
+                        this.state.user ? <Redirect to={"/menu"}/> : <SignInPage openDialog={this.openDialog.bind(this)}
+                        />
                     }</Route>
                     <Route path="/warehouses">{(() => {
                         if (this.state.user && this.state.warehouse) {
@@ -199,12 +154,12 @@ class App extends React.Component<unknown, AppState> {
                             />;
                         }
                     })()}</Route>
-                    <Route path="/search">{
+                    <Route path="/find">{
                         this.state.user && this.state.warehouse ?
-                        this.state.search ? <SearchPage
+                        this.state.find ? <FindPage
                             warehouse={this.state.warehouse}
-                            search={this.state.search}
-                            setQuery={this.setSearch.bind(this)}
+                            find={this.state.find}
+                            setQuery={this.setFindQuery.bind(this)}
                         /> : <Redirect to="/"/> : <Redirect to="/menu"/>
                     }</Route>
                     <Route component={PageNotFoundPage}/>
@@ -245,33 +200,34 @@ class App extends React.Component<unknown, AppState> {
 
 
     /**
-     * This method allows for setting the search query
+     * This method allows for setting the find query
      * @param query
      */
-    private async setSearch(query: SearchQuery): Promise<void> {
+    private async setFindQuery(query: FindQuery): Promise<void> {
         if (this.state.warehouse) {
             const warehouse = this.state.warehouse;
 
             this.setState(state => ({
                 ...state,
-                search: {
+                find: {
                     query: query,
+                    outcome: true,
                     results: null
                 }
             }));
 
-            const results = await warehouse.traySearch(query);
+            const [outcome, results] = await warehouse.trayFind(query);
             this.setState(state => ({
-                    ...state,
-                    search: {
-                        query: query,
-                        results: results
-                    }
-                })
-            );
+                ...state,
+                find: {
+                    query: query,
+                    outcome: outcome,
+                    results: results
+                }
+            }));
 
         } else {
-            throw new Error("Can't perform search when the warehouse is undefined");
+            throw new Error("Can't perform find when the warehouse is undefined");
         }
     }
 

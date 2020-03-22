@@ -1,11 +1,9 @@
 import * as fb from "firebase/app";
 import "firebase/auth";
-import {KeyboardName} from "../../pages/ShelfViewPage";
 import {ONLINE} from "../Firebase";
 import {WarehouseManager} from "../WarehouseModel";
 import {Warehouse} from "../WarehouseModel/Layers/Warehouse";
 import Utils from "../WarehouseModel/Utils";
-import {DatabaseCollection} from "./DatabaseCollection";
 import {DatabaseObject} from "./DatabaseObject";
 import {FirebaseError} from "./FirebaseError";
 
@@ -14,20 +12,22 @@ type Auth = fb.auth.Auth;
 export class AuthenticationError extends FirebaseError {
 }
 
-interface UserWarehouseSettings {
-    testUserWarehouseSetting: string;
-}
-
 /**
  * The various auto-advance modes
  * off is off
  * a list defines a cycle
  */
-export type AutoAdvanceModes = null | (KeyboardName[]);
+export type AutoAdvanceModes = null | {
+    category: boolean;
+    expiry: boolean;
+    weight: boolean;
+};
 
 interface UserFields {
     isAdmin: boolean;
     name: string;
+
+    accessibleWarehouseIDs: string[];
     lastWarehouseID: string;
 
     autoAdvanceMode: AutoAdvanceModes;
@@ -36,48 +36,49 @@ interface UserFields {
     showPreviousShelfButton: boolean;
 
     clearAboveSelection: boolean;
+
+    // customKeyboard: null | CustomKeyboard;
+    useCustomKeyboard: boolean;
 }
 
 export class User extends DatabaseObject<UserFields> {
-    private warehouseSettings: DatabaseCollection<UserWarehouseSettings>;
+    private static readonly defaultFields: UserFields = {
+        isAdmin: false,
+        name: "",
+        accessibleWarehouseIDs: [],
+        lastWarehouseID: "",
+        autoAdvanceMode: null,
+        onlySingleAutoAdvance: false,
+        showPreviousShelfButton: false,
+        clearAboveSelection: true,
+        useCustomKeyboard: false
+    };
 
     public constructor(id: string, fields?: UserFields) {
-        super(id, fields ?? {
-            isAdmin: false,
-            name: "",
-            lastWarehouseID: "",
-            autoAdvanceMode: null,
-            onlySingleAutoAdvance: false,
-            showPreviousShelfButton: false,
-            clearAboveSelection: true
-        });
-        this.warehouseSettings = new DatabaseCollection<UserWarehouseSettings>(Utils.joinPaths("users", id, "warehouses"), false);
+        super(id, fields ?? User.defaultFields);
     }
 
     public async load(forceLoad = false): Promise<this> {
         if (ONLINE) {
-            await this.warehouseSettings.load(forceLoad);
-            return super.load(forceLoad);
+            await super.load(forceLoad);
+            this.fields = {
+                ...User.defaultFields,
+                ...this.fields
+            };
+            return this;
         } else {
-            this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_0");
-            this.warehouseSettings.add({testUserWarehouseSetting: "MOCK"}, "MOCK_WAREHOUSE_1");
+            this.fields = {
+                ...User.defaultFields,
+                name: "Offline User",
+                accessibleWarehouseIDs: ["MOCK_WAREHOUSE_0", "MOCK_WAREHOUSE_1"],
+                lastWarehouseID: "MOCK_WAREHOUSE_0"
+            };
             return this;
         }
     }
 
-    public async stage(forceStage = false, commit = false): Promise<void> {
-        await this.warehouseSettings.stage(forceStage);
-        super.stage(forceStage, commit);
-    }
-
     public get accessibleWarehouses(): Warehouse[] {
-        const accessibleWarehouses: Warehouse[] = [];
-        for (const warehouse of WarehouseManager.warehouseList) {
-            if (this.warehouseSettings.idList.includes(warehouse.id)) {
-                accessibleWarehouses.push(warehouse);
-            }
-        }
-        return accessibleWarehouses;
+        return WarehouseManager.warehouseList.filter(warehouse => this.fields.accessibleWarehouseIDs.includes(warehouse.id));
     }
 
     public get lastWarehouseID(): string | null {
@@ -136,6 +137,14 @@ export class User extends DatabaseObject<UserFields> {
         this.fields.clearAboveSelection = clearAboveSelection;
     }
 
+    public get useCustomKeyboard(): boolean {
+        return this.fields.useCustomKeyboard;
+    }
+
+    public set useCustomKeyboard(useCustomKeyboard: boolean) {
+        this.fields.useCustomKeyboard = useCustomKeyboard;
+    }
+
 
 }
 
@@ -167,16 +176,7 @@ export class Authentication {
                 }
             });
         } else {
-            this.currentUser = await new User("MOCK_USER",
-                {
-                    name: "Mock User",
-                    lastWarehouseID: "MOCK_WAREHOUSE_0",
-                    isAdmin: true,
-                    autoAdvanceMode: null,
-                    onlySingleAutoAdvance: false,
-                    showPreviousShelfButton: false,
-                    clearAboveSelection: true
-                }).load();
+            this.currentUser = await new User("MOCK_USER").load();
             onSignIn?.call(this, this.currentUser);
         }
     }
@@ -192,18 +192,11 @@ export class Authentication {
             throw new AuthenticationError("Password must contain at least one lower and upper case character.");
         }
         if (ONLINE) {
+            // Call to firebase to create the user, if successful the above onAuthStateChanged will be called with a
+            // user
             await this.auth.createUserWithEmailAndPassword(email, password);
         } else {
-            this.currentUser = await new User("MOCK_USER",
-                {
-                    name: "Mock User",
-                    lastWarehouseID: "",
-                    isAdmin: true,
-                    autoAdvanceMode: null,
-                    onlySingleAutoAdvance: false,
-                    showPreviousShelfButton: false,
-                    clearAboveSelection: true
-                }).load();
+            this.currentUser = await new User("MOCK_USER").load();
             this.onSignIn?.call(this, this.currentUser);
         }
     }
@@ -213,24 +206,18 @@ export class Authentication {
             throw new AuthenticationError("Invalid email");
         }
         if (ONLINE) {
+            // Call to firebase to sign in the user, if successful the above onAuthStateChanged will be called with a
+            // user
             await this.auth.signInWithEmailAndPassword(email, password);
         } else {
-            this.currentUser = await new User("MOCK_USER",
-                {
-                    name: "Mock User",
-                    lastWarehouseID: "",
-                    isAdmin: true,
-                    autoAdvanceMode: null,
-                    onlySingleAutoAdvance: false,
-                    showPreviousShelfButton: false,
-                    clearAboveSelection: true
-                }).load();
+            this.currentUser = await new User("MOCK_USER").load();
             this.onSignIn?.call(this, this.currentUser);
         }
     }
 
     public async signOut(): Promise<void> {
         if (ONLINE) {
+            // Once signed out, the above onAuthStateChanged will be called with a null user
             await this.auth.signOut();
         } else {
             this.onSignOut?.call(this);

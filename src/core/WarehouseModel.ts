@@ -37,6 +37,8 @@ export interface TraySpace {
     parentColumn: Column;
 }
 
+export const NULL_CATEGORY_STRING = "Unsorted";
+
 /**
  * Represents a single tray category
  */
@@ -48,6 +50,7 @@ export interface Category {
     overStockThreshold: number | null;
     type: "default" | "custom";
     group: string | null;
+    defaultExpiry: null | ExpiryRange;
 }
 
 /**
@@ -77,17 +80,7 @@ const trayExpiries: ExpiryRange[] = [
     {
         from: null,
         to: null,
-        label: "Indefinite"
-    },
-    {
-        from: new Date(2020, 0).getTime(),
-        to: null,
-        label: "After Jan 2020"
-    },
-    {
-        from: null,
-        to: new Date(2020, 9).getTime(),
-        label: "Before Oct 2020"
+        label: "Never"
     },
     {
         from: new Date(2020, 2).getTime(),
@@ -225,7 +218,7 @@ export class WarehouseManager {
     }
 
     public static async loadWarehouse(warehouse: Warehouse): Promise<Warehouse> {
-        return await warehouse.load(WarehouseModel.tray);
+        return await warehouse.load(false, WarehouseModel.shelf);
     }
 
     /**
