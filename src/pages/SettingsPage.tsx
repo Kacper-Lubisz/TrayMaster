@@ -143,7 +143,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                         {/*    Custom Keyboard*/}
                         {/*</div> : null}*/}
                     </div>
-                    {/*this.props.user.isAdmin ? <>
+                    {this.props.user.isAdmin ? <>
                         <div>
                             <h2>Warehouse</h2>
                             <div
@@ -163,7 +163,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                                 Layout Editor
                             </div>
                         </div>
-                        <div>
+                        {/*<div>
                             <h2>Admin</h2>
                             <div
                                 className={classNames("tab", {
@@ -181,8 +181,8 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                             >
                                 Warehouses
                             </div>
-                        </div>
-                    </> : undefined*/}
+                        </div>*/}
+                    </> : undefined}
                 </div>
 
                 <div id="settings-btns">
