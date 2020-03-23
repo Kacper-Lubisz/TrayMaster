@@ -291,6 +291,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 );
             }
 
+            if (this.props.current.columns.length !== this.trayRefs.length) {
+                this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
+            }
+
             return (
                 <div id="viewPort" touch-action="none" onPointerUp={this.onDragSelectEnd.bind(this)}
                      onPointerLeave={this.onDragSelectEnd.bind(this)}>
@@ -534,9 +538,6 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     componentDidUpdate(prevProps: Readonly<ViewPortProps>): void {
-        if (this.props.current && this.props.current.columns.length !== this.trayRefs.length) {
-            this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
-        }
 
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
