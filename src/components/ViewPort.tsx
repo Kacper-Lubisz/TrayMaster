@@ -85,16 +85,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     /**
      * One tray from each column: used to check the height of the trays in each column
      */
-    private readonly trayRefs: React.RefObject<HTMLDivElement>[];
+    private trayRefs: React.RefObject<HTMLDivElement>[];
 
     constructor(props: ViewPortProps) {
         super(props);
 
         this.trayRefs = [];
-
-        if (this.props.current) {
-            this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
-        }
 
         this.state = {
             longPress: null,
@@ -530,6 +526,10 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     componentDidUpdate(prevProps: Readonly<ViewPortProps>): void {
+        if (this.props.current && this.props.current.columns.length !== this.trayRefs.length) {
+            this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
+        }
+
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
         }
