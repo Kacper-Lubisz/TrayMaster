@@ -4,6 +4,7 @@
     overflow-y: auto;
 
     .categoryGroup {
+      width: 100%;
       display: flex;
       margin: 20px 0;
 
@@ -15,23 +16,16 @@
         text-align: center;
         padding: 0 20px;
 
-
         > span {
           width: 100%;
         }
       }
 
       .categoryGroupCategories {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: stretch;
-        align-content: center;
 
         .findPanelButton {
-          flex-grow: 1;
           margin: 5px;
           height: 50px;
-          width: 150px;
 
           white-space: nowrap;
           overflow: hidden;
