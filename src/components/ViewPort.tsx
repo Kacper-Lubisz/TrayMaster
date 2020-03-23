@@ -557,7 +557,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
         // check a tray from each column; generate a list indicating which columns should be condensed
         const newCondensed: boolean[] = this.trayRefs.map(trayRef => {
-            const trayHeight = trayRef.current?.clientHeight ? trayRef.current.clientHeight : null;
+            const trayHeight = trayRef.current?.clientHeight;
             return !!(trayHeight && trayHeight < condenseMaxHeight);
         });
 
