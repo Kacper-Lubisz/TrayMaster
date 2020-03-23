@@ -278,7 +278,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
 
                     const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
-                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? ""}</td>
+                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? "Unsorted"}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCell">{weightString}</td>
                         <td style={zoneStyle}>{locationString}</td>
