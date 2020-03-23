@@ -70,8 +70,8 @@ export class FindPanel extends React.Component<FindPanelProps> {
                         >
                             <div className="categoryGroupTitle"><span>{group}</span></div>
                             <div className="categoryGroupCategories"
-                            >{groups.get(group)?.map(cat => <button
-                                key={cat.name}
+                            >{groups.get(group)?.map((cat, index) => <button
+                                key={index}
                                 className={classNames("findPanelButton", {
                                     "selected": findCategories.has(cat)
                                 })}

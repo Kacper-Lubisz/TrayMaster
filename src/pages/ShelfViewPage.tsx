@@ -878,7 +878,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     this.getSelectedTrayCells().length === 0 ? "all" : "none"
                 ),
                 halfWidth: true,
-                trayMod: true
+                trayMod: true,
+                disabled: !(this.state.currentView instanceof Shelf)
             },
             {
                 name: "Tray Info",
@@ -903,7 +904,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             {
                 name: "Edit Shelf",
                 onClick: this.enterEditShelf.bind(this),
-                halfWidth: false
+                halfWidth: false,
+                disabled: !(this.state.currentView instanceof Shelf)
             },
             {
                 name: "Find",
