@@ -181,10 +181,11 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
                 .map((a) => ({
                     name: a.toString(),
                     icon: a === "Backspace" ? faBackspace : undefined,
-                    disabled: this.props.selectedTrayCells.length === 0,
+                    disabled: this.props.selectedTrayCells.length === 0 || (a === "Next Tray" && this.props.user.onlySingleAutoAdvance && this.props.selectedTrayCells.length !== 1),
                     onClick: () => this.weightKeyHandler(a),
                     background: a === "Clear Weight" ? "#ffffff" : undefined
                 }));
+
 
             return <div className="keyboard-container weight-container">
                 <Keyboard id="weight-numpad" buttons={numpadButtons} gridX={3}/>
