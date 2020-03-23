@@ -773,15 +773,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         ) ? firstExp : undefined;
     }
 
-    /**
-     * This method toggles if a shelf is in the picking area and stages the change.
-     * @param shelf The shelf to be toggled
-     */
-    private async togglePickingArea(shelf: Shelf): Promise<void> {
-        shelf.isPickingArea = !shelf.isPickingArea;
-        await shelf.stage(false, true);
-        this.forceUpdate();
-    }
+    // /**
+    //  * This method toggles if a shelf is in the picking area and stages the change.
+    //  * @param shelf The shelf to be toggled
+    //  */
+    // private async togglePickingArea(shelf: Shelf): Promise<void> {
+    //     shelf.isPickingArea = !shelf.isPickingArea;
+    //     await shelf.stage(false, true);
+    //     this.forceUpdate();
+    // }
 
     private async updateTrayProperties(
         category: CategoryAlteration,
@@ -1104,11 +1104,12 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
                     data.
                 </div>;
             } else {
+                const blameName = this.state.blameName ? this.state.blameName : "Unknown";
                 const blameTimeString = this.props.lastModified
                                         ? new Date(this.props.lastModified).toLocaleString("en-GB")
                                         : "Unknown";
                 return <div>
-                    This shelf was last modified by {this.state.blameName ?? "Unknown"} at {blameTimeString}
+                    This shelf was last modified by {blameName} at {blameTimeString}
                 </div>;
             }
 
