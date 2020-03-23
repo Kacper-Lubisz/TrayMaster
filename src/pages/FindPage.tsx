@@ -89,7 +89,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
     }
 
     buildCSVFile(): Blob {
-        const header = "Category, Expiry, Expiry From (Unix Timestamp), Expiry To (Unix Timestamp), Weight, Location, Comment\n";
+        const header = "Category, Expiry, Expiry From (Unix Timestamp), Expiry To (Unix Timestamp), Weight (kg), Location, Comment\n";
 
         const content = this.props.find.results?.map(tray => {
             const line: string[] = [
