@@ -92,6 +92,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                 });
             }
             this.categoryCollection.add(MIXED_CATEGORY);
+            await this.categoryCollection.stage(true, true);
         }
     }
 
