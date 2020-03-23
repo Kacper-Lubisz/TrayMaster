@@ -25,7 +25,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     this.props.user.showPreviousShelfButton = value;
                     await this.props.user.stage(true, true);
                 },
-                label: "Show Previous Shelf Button"
+                label: "Show Previous Shelf button"
             }, {
                 inputType: "boolean",
                 get: () => this.props.user.clearAboveSelection,
@@ -33,7 +33,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     this.props.user.clearAboveSelection = value;
                     await this.props.user.stage(true, true);
                 },
-                label: "Clear All Trays Above When Clearing"
+                label: "Clear all trays above when clearing"
             }, {
                 inputType: "dropDown",
                 get: () => this.props.user.autoAdvanceMode,
@@ -47,15 +47,16 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     {label: "Weight > Next Tray", key: {category: false, expiry: false, weight: true}},
                     {label: "Category > Expiry > Weight > Next Tray", key: {category: true, expiry: true, weight: true}}
                 ],
-                label: "Auto Advance",
+                label: "Auto-advance mode",
             }, {
+                // Be careful here, the setting name is inverted from the variable!
                 inputType: "boolean",
-                get: () => this.props.user.onlySingleAutoAdvance,
+                get: () => !this.props.user.onlySingleAutoAdvance,
                 set: async (value: boolean) => {
-                    this.props.user.onlySingleAutoAdvance = value;
+                    this.props.user.onlySingleAutoAdvance = !value;
                     await this.props.user.stage(true, true);
                 },
-                label: "Don't Advance in Multi-select"
+                label: "Auto-advance with multiple trays selected"
             }, {
                 inputType: "boolean",
                 get: () => this.props.user.useCustomKeyboard,
@@ -64,7 +65,7 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                     this.props.user.useCustomKeyboard = value;
                     await this.props.user.stage(true, true);
                 },
-                label: "Use Experimental Keyboard"
+                label: "Use unified keyboard (beta)"
             }
         ];
         return <div id="user-settings">
