@@ -851,12 +851,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         const locationString = this.state.currentView.toString();
 
         const sideBarButtons = this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
-            {
+            /*{
                 name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
                                                            : "Mark as Picking Area",
                 onClick: this.togglePickingArea.bind(this, this.state.currentView),
                 halfWidth: false
-            },
+            },*/
             {
                 name: "Add Column",
                 onClick: this.addColumn.bind(this, this.state.currentView),
