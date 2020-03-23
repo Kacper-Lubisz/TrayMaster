@@ -85,16 +85,22 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * One tray from each column: used to check the height of the trays in each column
      */
     private trayRefs: React.RefObject<HTMLDivElement>[];
+    private condensedUpdater: () => void;
 
     constructor(props: ViewPortProps) {
         super(props);
 
         this.trayRefs = [];
+        this.condensedUpdater = () => {
+            console.log("Tried to update condensed status before component was mounted!");
+        };
 
         this.state = {
             longPress: null,
             condensed: this.props.current?.columns.map(_ => false) ?? []
         };
+
+
     }
 
     /**
@@ -517,12 +523,13 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     }
 
     componentDidMount(): void {
+        this.condensedUpdater = this.updateCondensed.bind(this);
         this.updateCondensed();
-        window.addEventListener("resize", this.updateCondensed.bind(this));
+        window.addEventListener("resize", this.condensedUpdater);
     }
 
     componentWillUnmount(): void {
-        window.removeEventListener("resize", this.updateCondensed.bind(this));
+        window.removeEventListener("resize", this.condensedUpdater);
     }
 
     /**
