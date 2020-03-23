@@ -75,7 +75,10 @@ export class FindPanel extends React.Component<FindPanelProps> {
                                 className={classNames("findPanelButton", {
                                     "selected": findCategories.has(cat)
                                 })}
-                                onClick={this.toggleCategory.bind(this, cat)}>{cat.name}</button>)
+                                onClick={(e) => {
+                                    this.toggleCategory(cat);
+                                    e.currentTarget.blur();
+                                }}>{cat.name}</button>)
                             }</div>
                         </div>
                     )}
