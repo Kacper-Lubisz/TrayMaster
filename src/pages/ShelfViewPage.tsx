@@ -37,6 +37,7 @@ import {
     Zone
 } from "../core/WarehouseModel";
 import Utils from "../core/WarehouseModel/Utils";
+import {CancellablePromise, makeCancelable} from "../utils/cancellablePromise";
 import {getTextColorForBackground} from "../utils/colorUtils";
 import {
     CategoryAlteration,
@@ -91,6 +92,33 @@ interface ShelfViewState {
 
 class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
 
+    static cancellablePromises: Set<CancellablePromise<any>> = new Set();
+
+    static registerCancellable(cancelable: CancellablePromise<any>): void {
+
+        ShelfViewPage.cancellablePromises.add(cancelable);
+
+        cancelable.promise.then(() => {
+            ShelfViewPage.cancellablePromises.delete(cancelable);
+        }).catch((reason) => {
+            if (reason !== "cancelled") {
+                throw reason;
+            }
+        });
+    }
+
+    static cancelAllPendingPromises(): void {
+        ShelfViewPage.cancellablePromises.forEach((cancellable) => {
+            cancellable.cancel();
+        });
+        ShelfViewPage.cancellablePromises.clear();
+    }
+
+    componentWillUnmount(): void {
+        super.componentWillUnmount?.();
+        ShelfViewPage.cancelAllPendingPromises();
+    }
+
     constructor(props: any) {
         super(props);
 
@@ -103,9 +131,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 } else if (this.props.warehouse.shelves.length === 0) {
                     return this.props.warehouse.zones[0];
                 } else {
-                    this.props.warehouse.shelves[0].load(false, WarehouseModel.tray).then(() => {
+                    const cancelable = makeCancelable(this.props.warehouse.shelves[0].load(false, WarehouseModel.tray));
+                    cancelable.promise.then(() => {
                         this.forceUpdate();
+                    }).catch(reason => {
+                        if (reason === "cancelled") {
+                            console.warn("Loading promise cancelled");
+                        } else {
+                            throw reason;
+                        }
                     });
+                    ShelfViewPage.cancelAllPendingPromises(); // this means that only load happens at once
+                    ShelfViewPage.registerCancellable(cancelable);
                     return this.props.warehouse.shelves[0];
                 }
             })(),
@@ -162,9 +199,19 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private changeView(direction: ShelfMoveDirection | Shelf): void {
         if (direction instanceof Shelf) { // to specific shelf
-            direction.load(true, WarehouseModel.tray).then(() => {
+            const cancelable = makeCancelable(direction.load(true, WarehouseModel.tray));
+            cancelable.promise.then(() => {
                 this.forceUpdate();
+            }).catch(reason => {
+                if (reason === "cancelled") {
+                    console.warn("Loading promise cancelled");
+                } else {
+                    throw reason;
+                }
             });
+            ShelfViewPage.cancelAllPendingPromises();
+            ShelfViewPage.registerCancellable(cancelable);
+
             this.setState(state => ({
                 ...state,
                 selected: new Map(),
@@ -203,9 +250,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }));
 
                 if (!newBay.shelves.length) {
-                    newBay.shelves[0].load(true, WarehouseModel.tray).then(() => {
+                    const cancelable = makeCancelable(newBay.shelves[0].load(true, WarehouseModel.tray));
+                    cancelable.promise.then(() => {
                         this.forceUpdate();
+                    }).catch(reason => {
+                        if (reason === "cancelled") {
+                            console.warn("Loading promise cancelled");
+                        } else {
+                            throw reason;
+                        }
                     });
+                    ShelfViewPage.cancelAllPendingPromises();
+                    ShelfViewPage.registerCancellable(cancelable);
                 }
             }
         } else { // moving from a shelf
@@ -233,9 +289,19 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentView: currentBay.shelves[newShelfIndex]
                 }));
 
-                currentBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                const cancelable = makeCancelable(currentBay.shelves[newShelfIndex].load(true, WarehouseModel.tray));
+                cancelable.promise.then(() => {
                     this.forceUpdate();
+                }).catch(reason => {
+                    if (reason === "cancelled") {
+                        console.warn("Loading promise cancelled");
+                    } else {
+                        throw reason;
+                    }
                 });
+                ShelfViewPage.cancelAllPendingPromises();
+                ShelfViewPage.registerCancellable(cancelable);
+
             } else if (bayIndex + increment !== currentZone.bays.length
                 && bayIndex + increment !== -1 && !isZone) { // increment bayIndex
 
@@ -251,9 +317,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }));
 
                 if (newBay.shelves.length) {
-                    newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                    const cancelable = makeCancelable(newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray));
+                    cancelable.promise.then(() => {
                         this.forceUpdate();
+                    }).catch(reason => {
+                        if (reason === "cancelled") {
+                            console.warn("Loading promise cancelled");
+                        } else {
+                            throw reason;
+                        }
                     });
+                    ShelfViewPage.cancelAllPendingPromises();
+                    ShelfViewPage.registerCancellable(cancelable);
                 }
             } else { // increment zone
 
@@ -282,9 +357,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     }));
 
                     if (newBay.shelves.length) {
-                        newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                        const cancelable = makeCancelable(newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray));
+                        cancelable.promise.then(() => {
                             this.forceUpdate();
+                        }).catch(reason => {
+                            if (reason === "cancelled") {
+                                console.warn("Loading promise cancelled");
+                            } else {
+                                throw reason;
+                            }
                         });
+                        ShelfViewPage.cancelAllPendingPromises();
+                        ShelfViewPage.registerCancellable(cancelable);
                     }
                 }
             }
