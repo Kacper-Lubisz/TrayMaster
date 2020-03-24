@@ -752,7 +752,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             categories: catSet.size ? catSet : null,
             weight: null,
             commentSubstring: null,
-            excludePickingArea: true,
+            excludePickingArea: false,
             sort: {orderAscending: true, type: SortBy.expiry}
 
         });
