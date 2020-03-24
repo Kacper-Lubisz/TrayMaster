@@ -180,18 +180,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //region find
     public async trayFind(query: FindQuery): Promise<[boolean, TrayFields[]]> {
-        const orderByFields = new Map<SortBy, string | undefined>([
-            [SortBy.expiry, "expiry.from"],
-            [SortBy.location, "locationName"],
-            [SortBy.weight, "weight"]
-        ]);
-
-        const orderByField = orderByFields.get(query.sort.type);
-
         let firebaseQuery: fb.firestore.Query = firebase.database.db.collection(Utils.joinPaths("warehouses", this.id, "trays")) as fb.firestore.Query;
-        if (orderByField) {
-            firebaseQuery = firebaseQuery.orderBy(orderByField);
-        }
         if (query.categories instanceof Set) {
             if (query.categories.size > 10) {
                 return [false, []];
