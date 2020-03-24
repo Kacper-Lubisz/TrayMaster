@@ -1,12 +1,13 @@
 export type CancellablePromise<T> = { promise: Promise<T>; cancel: () => void };
 
-export function makeCancelable<T>(promise: Promise<T>, rejectReasonOnCancel: any = "cancelled"): CancellablePromise<T> {
-    let isCanceled = false;
+export function makeCancellable<T>(
+    promise: Promise<T>, rejectReasonOnCancel: any = "cancelled"): CancellablePromise<T> {
+    let isCancelled = false;
 
     const wrappedPromise: Promise<T> = new Promise((resolve, reject) => {
         promise.then(
-            val => isCanceled ? reject(rejectReasonOnCancel) : resolve(val),
-            error => isCanceled ? reject(rejectReasonOnCancel) : reject(error),
+            val => isCancelled ? reject(rejectReasonOnCancel) : resolve(val),
+            error => isCancelled ? reject(rejectReasonOnCancel) : reject(error),
         );
     });
 
@@ -14,7 +15,7 @@ export function makeCancelable<T>(promise: Promise<T>, rejectReasonOnCancel: any
         promise: wrappedPromise,
         cancel() {
             // noinspection ReuseOfLocalVariableJS
-            isCanceled = true;
+            isCancelled = true;
         },
     };
 }
