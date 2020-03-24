@@ -61,7 +61,6 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
         if (propsAtRender.inputType === "boolean") {
             return <tr
                 className="settings-component setting-checkbox"
-                key={propsAtRender.label}
                 onClick={() => {
                     propsAtRender.set(!propsAtRender.get());
                     this.forceUpdate();
@@ -85,7 +84,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
                 isEqual(this.props.get(), item.key)
             );
 
-            return <tr className="settings-component setting-drop-down" key={propsAtRender.label}>
+            return <tr className="settings-component setting-drop-down">
                 <td><label>{this.props.label}</label></td>
                 <td>
                     <select
@@ -103,7 +102,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
 
         } else if (propsAtRender.inputType === "text") {
 
-            return <tr className="settings-component setting-text-field" key={propsAtRender.label}>
+            return <tr className="settings-component setting-text-field">
                 <td><label>{propsAtRender.label}</label></td>
                 <td>
                     <input
@@ -117,7 +116,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
         } else if (propsAtRender.inputType === "number") { //
 
             const value = propsAtRender.get();
-            return <tr className="settings-component setting-number" key={propsAtRender.label}>
+            return <tr className="settings-component setting-number">
                 <td><label>{propsAtRender.label}</label></td>
                 <td>
                     <input
@@ -136,7 +135,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
 
         } else { //propsAtRender.inputType === "color"
 
-            return <tr className="settings-component setting-color" key={propsAtRender.label}>
+            return <tr className="settings-component setting-color">
                 <td><label>{propsAtRender.label}</label></td>
                 <td>
                     <SketchPopup

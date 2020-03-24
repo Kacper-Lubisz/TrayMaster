@@ -89,7 +89,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
         } else if (this.state.currentTab === "keyboard-editor") {
             return <CustomKeyboardEditor user={this.props.user} warehouse={this.props.warehouse}/>;
         } else { // "handle-users"
-            return <div>TODO User Manager</div>;
+            return <div>Unimplemented Tab</div>;
         }
 
     }
@@ -163,7 +163,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                                 Layout Editor
                             </div>
                         </div>
-                        <div>
+                        {/*<div>
                             <h2>Admin</h2>
                             <div
                                 className={classNames("tab", {
@@ -181,7 +181,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                             >
                                 Warehouses
                             </div>
-                        </div>
+                        </div>*/}
                     </> : undefined}
                 </div>
 

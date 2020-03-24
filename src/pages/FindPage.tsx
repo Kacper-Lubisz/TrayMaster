@@ -83,16 +83,13 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
      */
     private clearQuery(): void {
         this.props.setQuery({
-            commentSubstring: null,
-            excludePickingArea: true,
-            categories: null,
-            sort: {type: SortBy.none, orderAscending: true},
-            weight: null
+            ...this.props.find.query,
+            categories: null
         });
     }
 
     buildCSVFile(): Blob {
-        const header = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Location, Comment\n";
+        const header = "Category, Expiry, Expiry From (Unix Timestamp), Expiry To (Unix Timestamp), Weight (kg), Location, Comment\n";
 
         const content = this.props.find.results?.map(tray => {
             const line: string[] = [
@@ -109,7 +106,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 Utils.escapeStringToCSV(element)
             ).reduce((acc, cur) =>
                 `${acc}${cur},`, "")}\n`;
-        }).reduce((acc, cur) => acc + cur) ?? null;
+        }).reduce((acc, cur) => acc + cur, "") ?? null;
 
         return new Blob([content ? header + content : ""], {type: "text/plain"});
     }
@@ -141,15 +138,19 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                     </div>
                     <div id="sentenceR">
                         <button
-                            onClick={() => this.downloadFile(
-                                `Find ${new Date().toLocaleDateString("en-GB", {
-                                    weekday: "short",
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric"
-                                })}.csv`,
-                                this.buildCSVFile()
-                            )}>
+                            onClick={(e) => {
+                                e.currentTarget.blur();
+                                this.downloadFile(
+                                    `Find ${new Date().toLocaleDateString("en-GB", {
+                                        weekday: "short",
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric"
+                                    })}.csv`,
+                                    this.buildCSVFile()
+                                );
+                            }}
+                            disabled={!this.props.find.results?.length}>
                             <FontAwesomeIcon icon={downloadIcon}/>
                         </button>
                     </div>
@@ -175,8 +176,8 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
     private renderFindSentence(): React.ReactNode {
 
         const categories: CategoryQueryOptions = this.props.find.query?.categories ?? null;
-        const weight = this.props.find.query.weight;
-        const sortBy = this.props.find.query.sort;
+        // const weight = this.props.find.query.weight;
+        // const sortBy = this.props.find.query.sort;
 
         const catList = (() => {
             if (categories === null) {
@@ -207,32 +208,34 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
             } else if (len === 1) {
                 return catList[0];
             } else {
-                return "Any category";
+                return "all categories";
             }
         })();
 
-        const weightString = (() => {
-            if (typeof weight === "object" && weight) {
-                return `between ${weight.from} and ${weight.to} kg`;
-            } else if (weight === "set") {
-                return "without a set weight value";
-            } else if (weight === "unset") {
-                return "with any set weight value";
-            } else { // null
-                return "with any weight value";
-            }
-        })();
-
-        const expiryString = `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" : "descending"}`;
+        // const weightString = (() => {
+        //     if (typeof weight === "object" && weight) {
+        //         return `between ${weight.from} and ${weight.to} kg`;
+        //     } else if (weight === "set") {
+        //         return "without a set weight value";
+        //     } else if (weight === "unset") {
+        //         return "with any set weight value";
+        //     } else { // null
+        //         return "with any weight value";
+        //     }
+        // })();
+        //
+        // const expiryString = `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" :
+        // "descending"}`;
 
         return <span id="findSentence">
-            <span className="findField" onClick={() => this.updatePanel("category")}>
+            Finding <span className="findField" onClick={() => this.updatePanel("category")}>
                 {filterString}
-            </span>; <span className="findField" onClick={() => this.updatePanel("weight")}>
-                {weightString}
-            </span>; <span id="findSort" className="findField">
-                {expiryString}
             </span>.
+            {/*; <span className="findField" onClick={() => this.updatePanel("weight")}>*/}
+            {/*    {weightString}*/}
+            {/*</span>; <span id="findSort" className="findField">*/}
+            {/*    {expiryString}*/}
+            {/*</span>.*/}
         </span>;
     }
 
@@ -278,7 +281,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
 
                     const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
-                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? ""}</td>
+                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCell">{weightString}</td>
                         <td style={zoneStyle}>{locationString}</td>

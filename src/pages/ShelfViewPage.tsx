@@ -37,6 +37,7 @@ import {
     Zone
 } from "../core/WarehouseModel";
 import Utils from "../core/WarehouseModel/Utils";
+import {CancellablePromise, makeCancellable} from "../utils/cancellablePromise";
 import {getTextColorForBackground} from "../utils/colorUtils";
 import {
     CategoryAlteration,
@@ -91,6 +92,33 @@ interface ShelfViewState {
 
 class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps, ShelfViewState> {
 
+    static cancellablePromises: Set<CancellablePromise<any>> = new Set();
+
+    static registerCancellable(cancellable: CancellablePromise<any>): void {
+
+        ShelfViewPage.cancellablePromises.add(cancellable);
+
+        cancellable.promise.then(() => {
+            ShelfViewPage.cancellablePromises.delete(cancellable);
+        }).catch((reason) => {
+            if (reason !== "cancelled") {
+                throw reason;
+            }
+        });
+    }
+
+    static cancelAllPendingPromises(): void {
+        ShelfViewPage.cancellablePromises.forEach((cancellable) => {
+            cancellable.cancel();
+        });
+        ShelfViewPage.cancellablePromises.clear();
+    }
+
+    componentWillUnmount(): void {
+        super.componentWillUnmount?.();
+        ShelfViewPage.cancelAllPendingPromises();
+    }
+
     constructor(props: any) {
         super(props);
 
@@ -103,9 +131,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 } else if (this.props.warehouse.shelves.length === 0) {
                     return this.props.warehouse.zones[0];
                 } else {
-                    this.props.warehouse.shelves[0].load(false, WarehouseModel.tray).then(() => {
+                    const cancellable = makeCancellable(this.props.warehouse.shelves[0].load(false, WarehouseModel.tray));
+                    cancellable.promise.then(() => {
                         this.forceUpdate();
+                    }).catch(reason => {
+                        if (reason === "cancelled") {
+                            console.warn("Loading promise cancelled");
+                        } else {
+                            throw reason;
+                        }
                     });
+                    ShelfViewPage.cancelAllPendingPromises(); // this means that only load happens at once
+                    ShelfViewPage.registerCancellable(cancellable);
                     return this.props.warehouse.shelves[0];
                 }
             })(),
@@ -162,9 +199,19 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
     private changeView(direction: ShelfMoveDirection | Shelf): void {
         if (direction instanceof Shelf) { // to specific shelf
-            direction.load(true, WarehouseModel.tray).then(() => {
+            const cancellable = makeCancellable(direction.load(true, WarehouseModel.tray));
+            cancellable.promise.then(() => {
                 this.forceUpdate();
+            }).catch(reason => {
+                if (reason === "cancelled") {
+                    console.warn("Loading promise cancelled");
+                } else {
+                    throw reason;
+                }
             });
+            ShelfViewPage.cancelAllPendingPromises();
+            ShelfViewPage.registerCancellable(cancellable);
+
             this.setState(state => ({
                 ...state,
                 selected: new Map(),
@@ -203,9 +250,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }));
 
                 if (!newBay.shelves.length) {
-                    newBay.shelves[0].load(true, WarehouseModel.tray).then(() => {
+                    const cancellable = makeCancellable(newBay.shelves[0].load(true, WarehouseModel.tray));
+                    cancellable.promise.then(() => {
                         this.forceUpdate();
+                    }).catch(reason => {
+                        if (reason === "cancelled") {
+                            console.warn("Loading promise cancelled");
+                        } else {
+                            throw reason;
+                        }
                     });
+                    ShelfViewPage.cancelAllPendingPromises();
+                    ShelfViewPage.registerCancellable(cancellable);
                 }
             }
         } else { // moving from a shelf
@@ -233,9 +289,19 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     currentView: currentBay.shelves[newShelfIndex]
                 }));
 
-                currentBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                const cancellable = makeCancellable(currentBay.shelves[newShelfIndex].load(true, WarehouseModel.tray));
+                cancellable.promise.then(() => {
                     this.forceUpdate();
+                }).catch(reason => {
+                    if (reason === "cancelled") {
+                        console.warn("Loading promise cancelled");
+                    } else {
+                        throw reason;
+                    }
                 });
+                ShelfViewPage.cancelAllPendingPromises();
+                ShelfViewPage.registerCancellable(cancellable);
+
             } else if (bayIndex + increment !== currentZone.bays.length
                 && bayIndex + increment !== -1 && !isZone) { // increment bayIndex
 
@@ -251,9 +317,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 }));
 
                 if (newBay.shelves.length) {
-                    newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                    const cancellable = makeCancellable(newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray));
+                    cancellable.promise.then(() => {
                         this.forceUpdate();
+                    }).catch(reason => {
+                        if (reason === "cancelled") {
+                            console.warn("Loading promise cancelled");
+                        } else {
+                            throw reason;
+                        }
                     });
+                    ShelfViewPage.cancelAllPendingPromises();
+                    ShelfViewPage.registerCancellable(cancellable);
                 }
             } else { // increment zone
 
@@ -282,9 +357,18 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     }));
 
                     if (newBay.shelves.length) {
-                        newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray).then(() => {
+                        const cancellable = makeCancellable(newBay.shelves[newShelfIndex].load(true, WarehouseModel.tray));
+                        cancellable.promise.then(() => {
                             this.forceUpdate();
+                        }).catch(reason => {
+                            if (reason === "cancelled") {
+                                console.warn("Loading promise cancelled");
+                            } else {
+                                throw reason;
+                            }
                         });
+                        ShelfViewPage.cancelAllPendingPromises();
+                        ShelfViewPage.registerCancellable(cancellable);
                     }
                 }
             }
@@ -752,7 +836,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             categories: catSet.size ? catSet : null,
             weight: null,
             commentSubstring: null,
-            excludePickingArea: true,
+            excludePickingArea: false,
             sort: {orderAscending: true, type: SortBy.expiry}
 
         });
@@ -773,15 +857,15 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         ) ? firstExp : undefined;
     }
 
-    /**
-     * This method toggles if a shelf is in the picking area and stages the change.
-     * @param shelf The shelf to be toggled
-     */
-    private async togglePickingArea(shelf: Shelf): Promise<void> {
-        shelf.isPickingArea = !shelf.isPickingArea;
-        await shelf.stage(false, true);
-        this.forceUpdate();
-    }
+    // /**
+    //  * This method toggles if a shelf is in the picking area and stages the change.
+    //  * @param shelf The shelf to be toggled
+    //  */
+    // private async togglePickingArea(shelf: Shelf): Promise<void> {
+    //     shelf.isPickingArea = !shelf.isPickingArea;
+    //     await shelf.stage(false, true);
+    //     this.forceUpdate();
+    // }
 
     private async updateTrayProperties(
         category: CategoryAlteration,
@@ -851,12 +935,12 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         const locationString = this.state.currentView.toString();
 
         const sideBarButtons = this.state.isEditShelf && this.state.currentView instanceof Shelf ? [
-            {
+            /*{
                 name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
                                                            : "Mark as Picking Area",
                 onClick: this.togglePickingArea.bind(this, this.state.currentView),
                 halfWidth: false
-            },
+            },*/
             {
                 name: "Add Column",
                 onClick: this.addColumn.bind(this, this.state.currentView),
@@ -878,7 +962,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     this.getSelectedTrayCells().length === 0 ? "all" : "none"
                 ),
                 halfWidth: true,
-                trayMod: true
+                trayMod: true,
+                disabled: !(this.state.currentView instanceof Shelf)
             },
             {
                 name: "Tray Info",
@@ -903,7 +988,8 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             {
                 name: "Edit Shelf",
                 onClick: this.enterEditShelf.bind(this),
-                halfWidth: false
+                halfWidth: false,
+                disabled: !(this.state.currentView instanceof Shelf)
             },
             {
                 name: "Find",
@@ -1104,11 +1190,12 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
                     data.
                 </div>;
             } else {
+                const blameName = this.state.blameName ? this.state.blameName : "Unknown";
                 const blameTimeString = this.props.lastModified
                                         ? new Date(this.props.lastModified).toLocaleString("en-GB")
                                         : "Unknown";
                 return <div>
-                    This shelf was last modified by {this.state.blameName ?? "Unknown"} at {blameTimeString}
+                    This shelf was last modified by {blameName} at {blameTimeString}
                 </div>;
             }
 
