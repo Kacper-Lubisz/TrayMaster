@@ -1,6 +1,6 @@
 import * as fb from "firebase/app";
 import "firebase/firestore";
-import {FindQuery, SortBy} from "../../../pages/FindPage";
+import {FindQuery} from "../../../pages/FindPage";
 import {byNullSafe, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
