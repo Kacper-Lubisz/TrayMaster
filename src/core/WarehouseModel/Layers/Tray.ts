@@ -26,6 +26,7 @@ export class Tray extends BottomLayer<Column, TrayFields> {
                          comment?: string
     ): Tray {
         return new Tray(Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             locationName: parent.parentShelf.toString(),
