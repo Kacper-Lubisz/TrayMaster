@@ -181,7 +181,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Baby",
         shortName: null,
         underStockThreshold: null,
@@ -191,7 +190,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: "Baby",
         shortName: null,
         underStockThreshold: null,
@@ -201,7 +199,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Baby",
         shortName: null,
         underStockThreshold: null,
@@ -211,7 +208,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 36,
@@ -221,7 +217,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: null,
@@ -231,7 +226,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 20,
@@ -241,7 +235,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 10,
@@ -251,7 +244,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 3,
@@ -261,7 +253,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: null,
@@ -271,7 +262,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 1,
@@ -281,7 +271,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Toiletries",
         shortName: null,
         underStockThreshold: 2,
@@ -291,7 +280,8 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
+
+
         group: null,
         shortName: null,
         underStockThreshold: 20,
@@ -301,7 +291,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 24,
@@ -311,7 +300,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 24,
@@ -321,7 +309,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: "Hot Choc",
         underStockThreshold: 1,
@@ -331,7 +318,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 6,
@@ -341,7 +327,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 10,
@@ -351,7 +336,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 36,
@@ -361,7 +345,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Toiletries",
         shortName: null,
         underStockThreshold: 1,
@@ -371,7 +354,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 30,
@@ -381,7 +363,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 1,
@@ -391,7 +372,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Toiletries",
         shortName: null,
         underStockThreshold: 2,
@@ -401,7 +381,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 36,
@@ -411,7 +390,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 24,
@@ -421,7 +399,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 3,
@@ -431,7 +408,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 10,
@@ -441,7 +417,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 5,
@@ -451,7 +426,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 31,
@@ -461,7 +435,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 10,
@@ -471,7 +444,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Toiletries",
         shortName: null,
         underStockThreshold: 1,
@@ -481,7 +453,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 36,
@@ -491,7 +462,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Toiletries",
         shortName: null,
         underStockThreshold: 1,
@@ -501,7 +471,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 12,
@@ -511,7 +480,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 1,
@@ -521,7 +489,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 10,
@@ -531,7 +498,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 31,
@@ -541,7 +507,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: NEVER_EXPIRY,
-        type: "default",
         group: "Toiletries",
         shortName: null,
         underStockThreshold: null,
@@ -551,7 +516,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 24,
@@ -561,7 +525,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 36,
@@ -571,7 +534,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 2,
@@ -581,7 +543,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: 4,
@@ -591,7 +552,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: "Household",
         shortName: null,
         underStockThreshold: 1,
@@ -601,7 +561,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: null,
@@ -611,7 +570,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-        type: "default",
         group: null,
         shortName: null,
         underStockThreshold: null,

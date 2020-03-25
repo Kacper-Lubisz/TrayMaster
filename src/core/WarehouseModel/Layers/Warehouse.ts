@@ -22,7 +22,6 @@ const MIXED_CATEGORY: Category = {
     shortName: null,
     underStockThreshold: null,
     overStockThreshold: null,
-    type: "default",
     group: null,
     defaultExpiry: null,
 };
@@ -47,6 +46,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      */
     public static create(id?: string, name?: string): Warehouse {
         return new Warehouse(id ?? Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             name: name ?? "",

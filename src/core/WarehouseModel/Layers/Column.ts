@@ -46,6 +46,7 @@ export class Column extends MiddleLayer<Shelf, ColumnFields, Tray> {
      */
     public static create(maxHeight: number, parent: Shelf): Column {
         return new Column(Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             traySize: TraySizes.standard,

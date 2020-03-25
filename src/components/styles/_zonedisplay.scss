@@ -14,7 +14,10 @@
 
     // Each shelf
     .nav-shelf {
-      cursor: pointer;
+      &.clickable {
+        cursor: pointer;
+      }
+
       height: 50px;
       flex-shrink: 1;
       display: flex;

@@ -21,7 +21,6 @@ export interface Category {
     shortName: string | null;
     underStockThreshold: number | null;
     overStockThreshold: number | null;
-    type: "default" | "custom";
     group: string | null;
     defaultExpiry: null | ExpiryRange;
 }

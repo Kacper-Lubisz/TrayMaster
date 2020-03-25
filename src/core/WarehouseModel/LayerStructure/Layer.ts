@@ -23,6 +23,7 @@ export interface LayerIdentifiers {
 export interface LayerFields {
     lastModified: number;
     blame: string;
+    layerIdentifiers: LayerIdentifiers;
 }
 
 /**

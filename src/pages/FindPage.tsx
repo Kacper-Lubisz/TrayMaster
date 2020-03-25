@@ -9,7 +9,7 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FindPanel, PanelState} from "../components/FindPanel";
 import {LoadingSpinner} from "../components/LoadingSpinner";
-import {Category, NULL_CATEGORY_STRING, Warehouse} from "../core/WarehouseModel";
+import {Category, NULL_CATEGORY_STRING, Shelf, Warehouse} from "../core/WarehouseModel";
 import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
 import Utils from "../core/WarehouseModel/Utils";
 import {getTextColorForBackground} from "../utils/colorUtils";
@@ -33,7 +33,6 @@ type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * Defines the find queries that can be run on the warehouse
- * todo fixme document this properly
  */
 export interface FindQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */
@@ -240,6 +239,9 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
     }
 
     private renderFindResults(): React.ReactNode {
+        const shelfMap: Map<string, Shelf> = new Map<string, Shelf>(
+            this.props.warehouse?.shelves.map<[string, Shelf]>(shelf => [shelf.id, shelf]
+            ) ?? []);
         const expiryColorMode = this.props.warehouse?.expiryColorMode ?? "warehouse";
         if (this.props.find?.results && this.props.find.results.length !== 0) {
             return <table>
@@ -254,7 +256,6 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 </thead>
                 <tbody>
                 {this.props.find.results.map((tray, i) => {
-
                     const expiryStyle = (() => {
                         if (tray.expiry) {
                             const background = getExpiryColor(tray.expiry, expiryColorMode);
@@ -269,8 +270,11 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         }
                     })();
 
+                    const shelf: Shelf | undefined = shelfMap.get(tray.layerIdentifiers["shelves"]);
+                    const locationString: string = shelf ? shelf.toString() : "<SHELF DELETED>";
+                    const background: string = shelf ? shelf.parentZone.color : "#ffffff";
+
                     const zoneStyle = (() => {
-                        const background = "#ffffff"; //todo fixme tray.parentZone.color;
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)
@@ -279,7 +283,6 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
 
                     const weightString = tray.weight?.toLocaleString(undefined, {minimumFractionDigits: 2}) ?? "";
 
-                    const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
                         <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
