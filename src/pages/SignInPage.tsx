@@ -53,7 +53,7 @@ class SignInPage extends React.Component<RouteComponentProps & SignInPageProps, 
                 message={this.state.feedback ? <span style={{color: "red"}}>{this.state.feedback}</span> : undefined}/>
             <div id="signin-box">
                 <h1>Sign in</h1>
-                {this.state.loading ? <LoadingSpinner/> : <>
+                {this.state.loading ? <div id="spinnerDiv"><LoadingSpinner/></div> : <>
                     <form onSubmit={async (event) => {
                         event.preventDefault();
                         await this.signIn(this.state.emailField, this.state.passwordField);
