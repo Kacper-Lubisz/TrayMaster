@@ -9,7 +9,7 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FindPanel, PanelState} from "../components/FindPanel";
 import {LoadingSpinner} from "../components/LoadingSpinner";
-import {Category, NULL_CATEGORY_STRING, Warehouse} from "../core/WarehouseModel";
+import {Category, NULL_CATEGORY_STRING, Shelf, Warehouse} from "../core/WarehouseModel";
 import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
 import Utils from "../core/WarehouseModel/Utils";
 import {getTextColorForBackground} from "../utils/colorUtils";
@@ -239,6 +239,9 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
     }
 
     private renderFindResults(): React.ReactNode {
+        const shelfMap: Map<string, Shelf> = new Map<string, Shelf>(
+            this.props.warehouse?.shelves.map<[string, Shelf]>(shelf => [shelf.id, shelf]
+            ) ?? []);
         const expiryColorMode = this.props.warehouse?.expiryColorMode ?? "warehouse";
         if (this.props.find?.results && this.props.find.results.length !== 0) {
             return <table>
@@ -253,7 +256,6 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 </thead>
                 <tbody>
                 {this.props.find.results.map((tray, i) => {
-
                     const expiryStyle = (() => {
                         if (tray.expiry) {
                             const background = getExpiryColor(tray.expiry, expiryColorMode);
@@ -268,17 +270,9 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         }
                     })();
 
-                    let locationString = "<SHELF DELETED>";
-                    let background = "#ffffff";
-                    if (this.props.warehouse?.shelves) {
-                        for (const shelf of this.props.warehouse.shelves) {
-                            if (shelf.id === tray.layerIdentifiers["shelves"]) {
-                                background = shelf.parentZone.color;
-                                locationString = shelf.toString();
-                                break;
-                            }
-                        }
-                    }
+                    const shelf: Shelf | undefined = shelfMap.get(tray.layerIdentifiers["shelves"]);
+                    const locationString: string = shelf ? shelf.toString() : "<SHELF DELETED>";
+                    const background: string = shelf ? shelf.parentZone.color : "#ffffff";
 
                     const zoneStyle = (() => {
                         return {
