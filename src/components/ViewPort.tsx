@@ -282,9 +282,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
 
             if (!(shelf.loaded && shelf.childrenLoaded)) {
-                // todo fixme restyle this, ensure this is appropriate usage
                 return (
-                    <div id="loading-box" style={{margin: "auto"}}>
+                    <div id="loading-box">
                         <LoadingSpinner/>
                         <h2>Loading...</h2>
                     </div>
@@ -478,7 +477,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             {this.props.isShelfEdit ? <div className="editShelfColumn">
                 <button className="colDeleteBtn"
                         onClick={() => this.props.removeColumn(column)}
-                > {/*todo revise these icons*/}
+                >
                     <FontAwesomeIcon icon={trash}/>
                 </button>
 
