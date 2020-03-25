@@ -93,12 +93,14 @@
     #sidebar-buttons-main > button {
       font-size: $btn-font-size;
 
+      margin: 3px;
+
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
 
       &.trayMod {
-        margin-bottom: 8px;
+        margin-bottom: 5px;
       }
 
       > svg {
@@ -145,6 +147,8 @@
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+
+          font-size: 10px;
         }
 
         #kb-switcher {
