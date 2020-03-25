@@ -9,3 +9,14 @@
     color: #bbbbbb;
   }
 }
+
+@media screen and (max-width: 1000px) {
+  #tm-logo {
+    top: 10px;
+    left: 20px;
+
+    img {
+      width: 50%;
+    }
+  }
+}

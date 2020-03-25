@@ -24,7 +24,6 @@
 
   form {
     margin-top: 20px;
-    font-size: 24px;
 
     input {
       display: block;
@@ -46,6 +45,41 @@
         right: 20px;
         padding: 20px 40px;
         cursor: pointer;
+      }
+    }
+  }
+}
+
+
+#disclaimer {
+  position: absolute;
+  bottom: 0;
+  width: 60%;
+  margin: 10px;
+  text-align: justify;
+}
+
+@media screen and (max-height: 770px) {
+  #signin-box {
+    top: 10px;
+    right: 10px;
+    box-shadow: none;
+    border-color: #aaaaaa;
+    min-height: 0;
+    padding-bottom: 80px;
+
+    h1 {
+      font-size: 20px;
+    }
+
+    form input {
+      font-size: 16px;
+      padding: 5px;
+      margin-bottom: 5px;
+
+      &[type="submit"] {
+        margin-top: 10px;
+        padding: 10px 20px;
       }
     }
   }
