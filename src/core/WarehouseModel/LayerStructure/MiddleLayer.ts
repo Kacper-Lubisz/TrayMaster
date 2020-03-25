@@ -2,16 +2,7 @@ import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
 import Utils, {Queue} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
-import {
-    collectionNameRange,
-    Layer,
-    LayerFields,
-    LayerIdentifiers,
-    Layers,
-    LowerLayer,
-    TopLevelFields,
-    UpperLayer
-} from "./Layer";
+import {collectionNameRange, Layer, LayerFields, LayerIdentifiers, Layers, LowerLayer, UpperLayer} from "./Layer";
 
 /**
  * Represents a middle layer in the object model (that has children and a parent)
