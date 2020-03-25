@@ -10,13 +10,17 @@
   }
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1280px) {
   #tm-logo {
     top: 10px;
     left: 20px;
 
     img {
-      width: 50%;
+      max-width: 70%;
+
+      @media (max-width: 1024px) {
+        max-width: 50%;
+      }
     }
   }
 }
