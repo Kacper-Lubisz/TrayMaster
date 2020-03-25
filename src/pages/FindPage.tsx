@@ -33,7 +33,6 @@ type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * Defines the find queries that can be run on the warehouse
- * todo fixme document this properly
  */
 export interface FindQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */

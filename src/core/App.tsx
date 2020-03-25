@@ -105,15 +105,7 @@ class App extends React.Component<unknown, AppState> {
                                         warehouse: undefined
                                     }));
                                 }}
-                                signOut={async () => {
-                                    await firebase.auth.signOut();
-                                    this.setState(state => ({
-                                        ...state,
-                                        dialog: state.dialog,
-                                        user: null,
-                                        warehouse: null
-                                    }));
-                                }}
+                                signOut={this.signOut.bind(this)}
                                 user={this.state.user}
                                 setFind={this.setFindQuery.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
@@ -150,6 +142,7 @@ class App extends React.Component<unknown, AppState> {
                         } else {
                             return <WarehouseSwitcher
                                 user={this.state.user}
+                                signOut={this.signOut.bind(this)}
                                 setWarehouse={this.setWarehouse.bind(this)}
                             />;
                         }
@@ -177,6 +170,16 @@ class App extends React.Component<unknown, AppState> {
 
     }
 
+    private async signOut(): Promise<void> {
+        await firebase.auth.signOut();
+        this.setState(state => ({
+            ...state,
+            dialog: state.dialog,
+            user: null,
+            warehouse: null
+        }));
+    }
+
     /**
      * This method sets the current warehouse
      * @param warehouse The warehouse to be set
@@ -186,11 +189,10 @@ class App extends React.Component<unknown, AppState> {
             if (state.user) {
                 state.user.lastWarehouseID = warehouse.id;
                 if (!warehouse.childrenLoaded) {
-                    WarehouseManager.loadWarehouse(warehouse).then(); // todo change to async await with loading screen
+                    WarehouseManager.loadWarehouse(warehouse).then();
                 }
                 state.user.stage(false, true).then();
             }
-            //todo decide if this needs to call any load the warehouse or anything like that
             return {
                 ...state,
                 warehouse: warehouse
