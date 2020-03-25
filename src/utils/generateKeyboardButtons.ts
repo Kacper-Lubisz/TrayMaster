@@ -276,7 +276,7 @@ export function buildDefaultUnifiedKeyboard(warehouse: Warehouse): CustomKeyboar
         months,
         mixedYears,
         specialCategoryButtons
-    } = buildKeyboardButtons(4, 4, false, false, warehouse);
+    } = buildKeyboardButtons(4, 4, true, true, warehouse);
 
     const yearButtons: CustomKeyboardButton[] = years.map((button, index) => ({
         ...button,

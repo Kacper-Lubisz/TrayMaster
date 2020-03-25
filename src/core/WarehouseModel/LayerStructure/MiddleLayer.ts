@@ -2,16 +2,7 @@ import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
 import Utils, {Queue} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
-import {
-    collectionNameRange,
-    Layer,
-    LayerFields,
-    LayerIdentifiers,
-    Layers,
-    LowerLayer,
-    TopLevelFields,
-    UpperLayer
-} from "./Layer";
+import {collectionNameRange, Layer, LayerFields, LayerIdentifiers, Layers, LowerLayer, UpperLayer} from "./Layer";
 
 /**
  * Represents a middle layer in the object model (that has children and a parent)
@@ -24,9 +15,11 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
     public parent: TParent;
     public children: TChildren[];
     public childrenLoaded: boolean;
+    private loading: boolean;
 
     protected constructor(id: string, fields: TFields, parent: TParent, children?: TChildren[]) {
         super(id, fields);
+        this.loading = false;
         this.parent = parent;
         this.children = children ?? [];
         this.childrenLoaded = typeof children !== "undefined";
@@ -94,75 +87,79 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
         }
     }
 
-    // noinspection DuplicatedCode
     public async load(forceLoad = false, minLayer: WarehouseModel = this.layerID): Promise<this> {
-        await this.loadLayer(forceLoad);
+        if (!this.loading) {
+            this.loading = true;
+            await this.loadLayer(forceLoad);
 
-        if (!this.childrenLoaded || forceLoad) {
-            if (this.childrenLoaded) {
-                this.children = [];
-            }
+            if (!this.childrenLoaded || forceLoad) {
+                if (this.childrenLoaded) {
+                    this.remove(true);
+                }
 
-            const queriesResults = await Promise.all(collectionNameRange(minLayer, this.layerID)
-                .map(async colName => firebase.database.loadQuery<unknown & TopLevelFields>(firebase.database.db.collection(Utils.joinPaths(this.topLayerPath, colName)).orderBy("index"))));
+                const queriesResults = await Promise.all(collectionNameRange(minLayer, this.layerID)
+                    .map(async colName => firebase.database.loadQuery<LayerFields>(firebase.database.db.collection(Utils.joinPaths(this.topLayerPath, colName)).orderBy("index"))));
 
-            type State = {
-                generator: (id: string, fields: unknown, parent: any) => LowerLayer;
-                collectionName: string;
-                childCollectionName: string;
-                topLevelChildCollectionPath: string;
-            };
+                type State = {
+                    generator: (id: string, fields: unknown, parent: any) => LowerLayer;
+                    collectionName: string;
+                    childCollectionName: string;
+                    topLevelChildCollectionPath: string;
+                };
 
-            let currentState: State = {
-                generator: this.createChild,
-                collectionName: this.collectionName,
-                childCollectionName: this.childCollectionName,
-                topLevelChildCollectionPath: this.topLevelChildCollectionPath
-            };
+                let currentState: State = {
+                    generator: this.createChild,
+                    collectionName: this.collectionName,
+                    childCollectionName: this.childCollectionName,
+                    topLevelChildCollectionPath: this.topLevelChildCollectionPath
+                };
 
-            const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
-                [this.collectionName, new Map<string, Layers>([[this.id, this]])]
-            ]);
+                const childMap: Map<string, Map<string, Layers>> = new Map<string, Map<string, Layers>>([
+                    [this.collectionName, new Map<string, Layers>([[this.id, this]])]
+                ]);
 
-            for (const queryResults of queriesResults) {
-                childMap.set(currentState.childCollectionName, new Map<string, Layers>());
-                let nextState: State | undefined;
+                for (const queryResults of queriesResults) {
+                    childMap.set(currentState.childCollectionName, new Map<string, Layers>());
+                    let nextState: State | undefined;
 
-                for (const queryResult of queryResults) {
-                    const parent = childMap.get(currentState.collectionName)?.get(queryResult.fields.layerIdentifiers[currentState.collectionName]);
-                    if (parent && !(parent instanceof BottomLayer)) {
-                        parent.childrenLoaded = true;
-                        const child: LowerLayer = currentState.generator(queryResult.id, queryResult.fields, parent);
-                        child.fieldsSaved();
-                        child.loaded = true;
-                        childMap.get(currentState.childCollectionName)?.set(queryResult.id, child);
-                        if (child instanceof MiddleLayer && !nextState) {
-                            nextState = {
-                                generator: child.createChild,
-                                collectionName: child.collectionName,
-                                childCollectionName: child.childCollectionName,
-                                topLevelChildCollectionPath: child.topLevelChildCollectionPath
-                            };
+                    for (const queryResult of queryResults) {
+                        const parent = childMap.get(currentState.collectionName)?.get(queryResult.fields.layerIdentifiers[currentState.collectionName]);
+                        if (parent && !(parent instanceof BottomLayer)) {
+                            parent.childrenLoaded = true;
+                            const child: LowerLayer = currentState.generator(queryResult.id, queryResult.fields, parent);
+                            child.fieldsSaved();
+                            child.loaded = true;
+                            childMap.get(currentState.childCollectionName)?.set(queryResult.id, child);
+                            if (child instanceof MiddleLayer && !nextState) {
+                                nextState = {
+                                    generator: child.createChild,
+                                    collectionName: child.collectionName,
+                                    childCollectionName: child.childCollectionName,
+                                    topLevelChildCollectionPath: child.topLevelChildCollectionPath
+                                };
+                            }
+                        }
+                    }
+
+                    if (nextState) {
+                        currentState = {...nextState};
+                    } else {
+                        break;
+                    }
+                }
+
+                this.childrenLoaded = true;
+
+                for (const colName of collectionNameRange(minLayer + 1, this.layerID)) {
+                    for (const parent of Array.from(childMap.get(colName)?.values() ?? [])) {
+                        if (!(parent instanceof BottomLayer)) {
+                            parent.childrenLoaded = true;
                         }
                     }
                 }
-
-                if (nextState) {
-                    currentState = {...nextState};
-                } else {
-                    break;
-                }
             }
 
-            this.childrenLoaded = true;
-
-            for (const colName of collectionNameRange(minLayer + 1, this.layerID)) {
-                for (const parent of Array.from(childMap.get(colName)?.values() ?? [])) {
-                    if (!(parent instanceof BottomLayer)) {
-                        parent.childrenLoaded = true;
-                    }
-                }
-            }
+            this.loading = false;
         }
 
         return this;
@@ -179,6 +176,16 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
 
         if (commit) {
             await firebase.database.commit();
+        }
+    }
+
+    public remove(onlyChildren = false): void {
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            this.children[i].remove();
+        }
+
+        if (!onlyChildren) {
+            this.parent.children.splice(this.index, 1);
         }
     }
 

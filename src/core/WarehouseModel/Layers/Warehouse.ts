@@ -1,6 +1,6 @@
 import * as fb from "firebase/app";
 import "firebase/firestore";
-import {FindQuery, SortBy} from "../../../pages/FindPage";
+import {FindQuery} from "../../../pages/FindPage";
 import {byNullSafe, composeSorts, partitionBy} from "../../../utils/sortsUtils";
 import firebase from "../../Firebase";
 import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
@@ -22,7 +22,6 @@ const MIXED_CATEGORY: Category = {
     shortName: null,
     underStockThreshold: null,
     overStockThreshold: null,
-    type: "default",
     group: null,
     defaultExpiry: null,
 };
@@ -47,6 +46,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      */
     public static create(id?: string, name?: string): Warehouse {
         return new Warehouse(id ?? Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             name: name ?? "",
@@ -92,6 +92,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
                 });
             }
             this.categoryCollection.add(MIXED_CATEGORY);
+            await this.categoryCollection.stage(true, true);
         }
     }
 
@@ -179,18 +180,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
 
     //region find
     public async trayFind(query: FindQuery): Promise<[boolean, TrayFields[]]> {
-        const orderByFields = new Map<SortBy, string | undefined>([
-            [SortBy.expiry, "expiry.from"],
-            [SortBy.location, "locationName"],
-            [SortBy.weight, "weight"]
-        ]);
-
-        const orderByField = orderByFields.get(query.sort.type);
-
         let firebaseQuery: fb.firestore.Query = firebase.database.db.collection(Utils.joinPaths("warehouses", this.id, "trays")) as fb.firestore.Query;
-        if (orderByField) {
-            firebaseQuery = firebaseQuery.orderBy(orderByField);
-        }
         if (query.categories instanceof Set) {
             if (query.categories.size > 10) {
                 return [false, []];

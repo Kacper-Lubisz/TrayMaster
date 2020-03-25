@@ -97,7 +97,11 @@ export class SideBar extends React.Component<SideBarProps> {
                         key={index}
                         className={classNames("btn-style-override", {
                             "active": this.props.currentKeyboard === keyboard.name
-                        })} onClick={this.props.keyboardSwitcher.bind(undefined, keyboard.name)}>
+                        })}
+                        onClick={(e) => {
+                            this.props.keyboardSwitcher(keyboard.name);
+                            e.currentTarget.blur();
+                        }}>
                         <FontAwesomeIcon icon={keyboard.icon}/>
                     </button>
                 )}

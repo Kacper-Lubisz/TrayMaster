@@ -64,6 +64,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     private static readonly DEFAULT_NAME = "Unnamed";
 
     private static readonly BLANK_ZONE: NewZone = {
+        layerIdentifiers: {},
         blame: "", lastModified: 0,
         name: "",
         color: "#ff0000",

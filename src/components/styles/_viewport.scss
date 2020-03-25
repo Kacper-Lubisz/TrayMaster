@@ -7,6 +7,10 @@
   transition: flex-grow 0.5s ease;
 }
 
+#loading-box {
+  margin: auto;
+}
+
 #viewPort {
   background-color: #eeeeee;
   display: flex;
@@ -167,7 +171,7 @@
           right: 0;
           font-size: 22px;
           height: 30px;
-          min-width: 25%;
+          min-width: 50%;
           padding: 0 10px;
 
           > div {

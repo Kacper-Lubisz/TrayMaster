@@ -11,10 +11,6 @@ import {Warehouse} from "../core/WarehouseModel";
 import {FindQuery, SortBy} from "./FindPage";
 import "./styles/mainmenu.scss";
 
-/**
- * expiryAmount is the number of items expiring soon
- * TODO needs to be fetched from db
- */
 interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
 
@@ -49,17 +45,17 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                         categories: null,
                         weight: null,
                         commentSubstring: null,
-                        excludePickingArea: true,
+                        excludePickingArea: false,
                         sort: {orderAscending: true, type: SortBy.expiry}
                     });
                     this.props.history.push("/find");
                 }
             },
-            {
+            /*{
                 name: "Report",
                 onClick: () => alert("Report"),
                 disabled: true
-            },
+            },*/
             {
                 name: "Settings",
                 onClick: () => this.props.history.push("Settings")

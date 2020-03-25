@@ -99,9 +99,12 @@ export class LoadingSpinner extends React.Component<any, LoadingSpinnerState> {
         return <svg id="spinner">
             <g>{Array(gridCols).fill(0).map((_, i) => {
                 return Array(gridRows).fill(0).map((_, j) => {
-                    const key = `${i}${j}`;
-                    return <rect className="spinner-tray-slot" key={key} x={i * gridDistX}
-                                 y={j * gridDistY}/>;
+                    return <rect
+                        className="spinner-tray-slot"
+                        key={`${i}_${j}`}
+                        x={i * gridDistX}
+                        y={j * gridDistY}
+                    />;
                 });
             })}</g>
             {Array(gridCols).fill(0).map((_, i) => {
