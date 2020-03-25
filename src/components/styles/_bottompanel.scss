@@ -44,7 +44,13 @@
       // weight keyboard: side section (with backspace, clear)
       #numpadR {
         height: 100%;
-        width: 10%;
+        width: 15%;
+
+        .key-btn {
+          line-height: 24px;
+          text-overflow: unset;
+          white-space: normal;
+        }
       }
     }
   }

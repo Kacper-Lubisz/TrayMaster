@@ -2,16 +2,7 @@ import firebase from "../../Firebase";
 import {WarehouseModel} from "../../WarehouseModel";
 import Utils, {Queue} from "../Utils";
 import {BottomLayer} from "./BottomLayer";
-import {
-    collectionNameRange,
-    Layer,
-    LayerFields,
-    LayerIdentifiers,
-    Layers,
-    LowerLayer,
-    TopLevelFields,
-    UpperLayer
-} from "./Layer";
+import {collectionNameRange, Layer, LayerFields, LayerIdentifiers, Layers, LowerLayer, UpperLayer} from "./Layer";
 
 /**
  * Represents a middle layer in the object model (that has children and a parent)
@@ -107,7 +98,7 @@ export abstract class MiddleLayer<TParent extends UpperLayer, TFields extends La
                 }
 
                 const queriesResults = await Promise.all(collectionNameRange(minLayer, this.layerID)
-                    .map(async colName => firebase.database.loadQuery<unknown & TopLevelFields>(firebase.database.db.collection(Utils.joinPaths(this.topLayerPath, colName)).orderBy("index"))));
+                    .map(async colName => firebase.database.loadQuery<LayerFields>(firebase.database.db.collection(Utils.joinPaths(this.topLayerPath, colName)).orderBy("index"))));
 
                 type State = {
                     generator: (id: string, fields: unknown, parent: any) => LowerLayer;

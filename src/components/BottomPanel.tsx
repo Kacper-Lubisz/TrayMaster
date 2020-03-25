@@ -115,16 +115,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
      * @param disabled whether the keyboard is disabled (ie no trays are selected)
      */
     private chooseKeyboard(disabled: boolean): React.ReactNode {
-
-        // We are passed all of the selected TrayCells, only want to consider the actual Trays (not TraySpaces)
-        // const traysOnly: Tray[] = this.props.selectedTrayCells.filter((a): a is Tray => a instanceof Tray);
-
-        // const firstCat = traysOnly.find(i => i !== undefined)?.category?.name;
-        // const commonCat = firstCat !== undefined && traysOnly.every(item => item.category?.name === undefined ||
-        // item.category.name === firstCat) ? firstCat : null; todo fixme highlight the things that are selected
-
-        // TODO: consider applying database settings to this
-
+        // TODO: Consider highlighting buttons on the keyboard that apply to currently selected trays
         const {
             categories,
             specialCategoryButtons,
@@ -133,6 +124,7 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             quarters,
             months,
         } = buildKeyboardButtons(8, 8, true, true, this.props.warehouse);
+        // TODO: consider applying database settings to this
 
         if (this.props.keyboardState === "category") {
 
@@ -144,10 +136,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
             />;
 
         } else if (this.props.keyboardState === "expiry") {
-            // todo this might be worth making a setting for; it's the kind of thing someone might want to disable for
-            //  performance on low-end devices
-            // this.highlightExpiryKey();
-
 
             return <div className="keyboard-container expiry-container">
                 <Keyboard
@@ -227,27 +215,6 @@ export class BottomPanel extends React.Component<BottomPanelProps> {
         }
 
     }
-
-
-// /** todo fixme reintroduce this within the new system
-    //  * Highlight the key corresponding to the current selection
-    //  */
-    // private highlightExpiryKey(): void {
-    //     // this isn't the best way to do this but it's more performant than other options
-    //     const isYear = this.props.commonRange?.label.length === 4;
-    //     const isMonth = this.props.commonRange?.label.length === 8;
-    //     const isQuarter = !isYear && !isMonth;
-    //
-    //     for (const year of this.years) {
-    //         year.selected = isYear && year.expiryFrom === this.props.commonRange?.from;
-    //     }
-    //     for (const month of this.months) {
-    //         month.selected = isMonth && month.expiryFrom === this.props.commonRange?.from;
-    //     }
-    //     for (const quarter of this.quarters) {
-    //         quarter.selected = isQuarter && quarter.expiryFrom === this.props.commonRange?.from;
-    //     }
-    // }
 
     /**
      * @inheritDoc

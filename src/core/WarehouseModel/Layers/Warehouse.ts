@@ -46,6 +46,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
      */
     public static create(id?: string, name?: string): Warehouse {
         return new Warehouse(id ?? Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             name: name ?? "",

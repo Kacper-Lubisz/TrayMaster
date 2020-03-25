@@ -21,6 +21,7 @@ export class Zone extends MiddleLayer<Warehouse, ZoneFields, Bay> {
      */
     public static create(name: string, color: string, parent: Warehouse): Zone {
         return new Zone(Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             name,

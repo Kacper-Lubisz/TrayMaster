@@ -32,10 +32,6 @@ interface SettingsPageState {
     tabChangeLock: (tab: SettingsTab) => boolean;
 }
 
-/**
- * RouteComponentProps enables the history.push to change paths
- * TODO change paths when those screens are added
- */
 class SettingsPage extends React.Component<RouteComponentProps & SettingsPageProps, SettingsPageState> {
 
     constructor(props: any) {

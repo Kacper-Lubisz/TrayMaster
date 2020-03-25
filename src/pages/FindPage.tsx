@@ -33,7 +33,6 @@ type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * Defines the find queries that can be run on the warehouse
- * todo fixme document this properly
  */
 export interface FindQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */
@@ -269,8 +268,19 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         }
                     })();
 
+                    let locationString = "<SHELF DELETED>";
+                    let background = "#ffffff";
+                    if (this.props.warehouse?.shelves) {
+                        for (const shelf of this.props.warehouse.shelves) {
+                            if (shelf.id === tray.layerIdentifiers["shelves"]) {
+                                background = shelf.parentZone.color;
+                                locationString = shelf.toString();
+                                break;
+                            }
+                        }
+                    }
+
                     const zoneStyle = (() => {
-                        const background = "#ffffff"; //todo fixme tray.parentZone.color;
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)
@@ -279,7 +289,6 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
 
                     const weightString = tray.weight?.toLocaleString(undefined, {minimumFractionDigits: 2}) ?? "";
 
-                    const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
                         <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
