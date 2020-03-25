@@ -11,7 +11,6 @@
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.1.8",
     "@types/classnames": "^2.2.9",
-    "@types/firebase": "^3.2.1",
     "@types/jest": "24.0.25",
     "@types/lodash": "^4.14.149",
     "@types/node": "13.1.1",
