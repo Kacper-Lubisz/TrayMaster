@@ -22,7 +22,6 @@ const MIXED_CATEGORY: Category = {
     shortName: null,
     underStockThreshold: null,
     overStockThreshold: null,
-    type: "default",
     group: null,
     defaultExpiry: null,
 };

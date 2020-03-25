@@ -58,7 +58,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         shortName: null,
         underStockThreshold: null,
         overStockThreshold: null,
-        type: "custom",
         group: null,
         defaultExpiry: null
     };
@@ -189,26 +188,20 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 }
             ];
 
-
-            const defaultLabel = categoryToEdit.type === "default" ? " (default)"
-                                                                   : "";
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
             return <>
                 <div id="edit-controls">
                     <div id="edit-header">
                         <h2>{
                             stateAtRender.state === "editing"
-                            ? `Edit '${categoryToEdit.name}'${defaultLabel}${unsavedLabel}`
+                            ? `Edit '${categoryToEdit.name}'${unsavedLabel}`
                             : `New Category '${categoryToEdit.name}'`
                         }</h2>
                         {
                             stateAtRender.state === "editing" ? <button
-                                disabled={categoryToEdit.type === "default"}
                                 onClick={this.deleteCategory.bind(this, stateAtRender)}
                             >Delete Category </button> : null
                         }
-                        {categoryToEdit.type === "default" ? <div id="del-msg">You cannot delete a default
-                            category!</div> : null}
                     </div>
                     <table>
                         <tbody>
