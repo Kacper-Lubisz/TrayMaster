@@ -192,11 +192,11 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             return <>
                 <div id="edit-controls">
                     <div id="edit-header">
-                        <h2>{
+                        <h4>{
                             stateAtRender.state === "editing"
                             ? `Edit '${categoryToEdit.name}'${unsavedLabel}`
                             : `New Category '${categoryToEdit.name}'`
-                        }</h2>
+                        }</h4>
                         {
                             stateAtRender.state === "editing" ? <button
                                 onClick={this.deleteCategory.bind(this, stateAtRender)}
@@ -334,7 +334,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         const selected = this.state.state === "editing" ? this.state.selectedCategory : null;
         return <div id="editor">
             <div id="sidebar">
-                <div id="title">Categories</div>
+                <h3>Categories</h3>
                 <div id="list">
                     {this.props.categories.map((cat, index) => <div
                         className={classNames("list-item", {
@@ -346,7 +346,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         {cat.name}
                     </div>)}
                 </div>
-                <button id="top-btn" onClick={this.newCategory.bind(this)}>New Category</button>
+                <button id="list-bottom-btn" onClick={this.newCategory.bind(this)}>New Category</button>
             </div>
             <div id="edit-main">
                 {this.renderEditPanel()}

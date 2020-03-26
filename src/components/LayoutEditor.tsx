@@ -237,9 +237,9 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             return <>
                 <div id="edit-controls">
                     <div id="edit-header">
-                        <h2>{stateAtRender.state === "editing"
+                        <h4>{stateAtRender.state === "editing"
                              ? `Edit '${stateAtRender.editedZone.name}'${unsavedLabel}`
-                             : `New Zone '${stateAtRender.newZone.name}'`}</h2>
+                             : `New Zone: '${stateAtRender.newZone.name}'`}</h4>
 
                         {stateAtRender.state === "editing" ? <button
                             onClick={this.deleteZone.bind(this, stateAtRender)}
@@ -255,12 +255,11 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                     </table>
 
                     {stateAtRender.state === "editing" ? <>
-                        <h3>An existing zone's dimensions can't be edited!</h3>
                         <ZoneDisplayComponent
                             zone={stateAtRender.editedZone}
                             selected={null} onSelected={null}
                         />
-                    </> : null}
+                    </> : <div id="new-zone-msg">NB: A zone's dimensions can't be changed once it's created.</div>}
                 </div>
 
                 <div id="bottom-btns">
@@ -403,7 +402,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
 
         return <div id="editor">
             <div id="sidebar">
-                <div id="title">Zones</div>
+                <h3>Zones</h3>
                 <div id="list">
                     {this.props.warehouse.zones.map((zone, index) => <div
                         className={classNames("list-item", {
@@ -415,7 +414,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                         {zone.name}
                     </div>)}
                 </div>
-                <button id="top-btn" onClick={this.newZone.bind(this)}>New Zone</button>
+                <button id="list-bottom-btn" onClick={this.newZone.bind(this)}>New Zone</button>
 
             </div>
             <div id="edit-main">
