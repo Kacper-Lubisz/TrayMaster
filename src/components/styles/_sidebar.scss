@@ -109,7 +109,7 @@
     }
   }
 
-  @media screen and (max-width: 1640px) {
+  @media screen and (max-width: 1639px) {
     $btn-font-size: 16px;
 
     #shelfName {
@@ -125,7 +125,7 @@
       }
     }
 
-    @media (max-width: 1280px) {
+    @media (max-width: 1279px) {
       $btn-font-size: 14px;
       #sidebar-buttons-main > button {
         font-size: $btn-font-size;
@@ -142,7 +142,7 @@
         }
       }
 
-      @media (max-width: 960px) {
+      @media (max-width: 959px) {
         #sidebar-buttons-main > button {
           white-space: nowrap;
           overflow: hidden;

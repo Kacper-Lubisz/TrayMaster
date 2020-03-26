@@ -253,7 +253,7 @@
   }
 }
 
-@media screen and (max-width: 1600px) {
+@media screen and (max-width: 1599px) {
   #viewPort #shelf .column.column-condensed .tray {
     > svg.tray-tickbox {
       margin-left: 3px;
@@ -284,7 +284,7 @@
     }
   }
 
-  @media (max-width: 1280px), (max-height: 400px) {
+  @media (max-width: 1279px), (max-height: 399px) {
     #viewPort #shelf .column .tray {
       > div.trayCategory {
         font-size: 24px;
