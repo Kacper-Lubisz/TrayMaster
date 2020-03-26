@@ -1,32 +1,27 @@
 // Main modal
 .nav-modal {
-  // Relative positioning: allows us to position close button absolutely
-  position: relative;
 
-  #nav-close-btn {
-    // top left corner
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 5px;
+  #nav-top {
+    text-align: right;
 
-    height: 30px;
-    width: 30px;
+    #nav-close-btn {
+      // top left corner
+      padding: 5px;
 
-    // Remove button styling
-    background-color: rgba(255, 255, 255, 0);
-    border: none;
-    cursor: pointer;
+      height: 30px;
+      width: 30px;
 
-    // Icon
-    > svg {
-      font-size: 20px;
+      // Remove button styling
+      background-color: rgba(255, 255, 255, 0);
+      border: none;
+      cursor: pointer;
+      box-shadow: none;
+
+      // Icon
+      > svg {
+        font-size: 20px;
+      }
     }
-  }
-
-  // First div: add space for close button
-  > div:first-of-type {
-    padding-top: 35px;
   }
 
   // Top zone selection buttons
@@ -48,13 +43,13 @@
   }
 
   // Bottom section containing shelf navigation buttons and current shelf information
-  #nav-arrow-area {
+  #nav-bottom {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     font-size: 18px;
 
     // Current shelf information
-    #arrow-area-label {
+    #nav-bottom-label {
       grid-row: 1;
       grid-column: 2;
 
@@ -64,21 +59,11 @@
       font-weight: 600;
     }
 
-    // Directional shelf navigation buttons
-    .nav-arrow-btn {
-      padding: 10px;
-      margin: 2px;
-
-      // Arrow icons
-      > svg {
-        font-size: 18px;
-      }
-    }
-
     // Next Shelf / Previous Shelf buttons
     .nav-prev-next-btn {
-      margin: 2px;
+      margin: 5px;
       font-size: 16px;
+      border-radius: 0;
     }
 
     // Position buttons in the grid
@@ -90,6 +75,35 @@
     #nav-next {
       grid-row: 1;
       grid-column: 3;
+    }
+  }
+}
+
+@media screen and (max-width: 1600px), (max-height: 719px) {
+  .nav-modal {
+    #nav-zone-select button {
+      font-size: 16px;
+    }
+
+    #nav-bottom .nav-prev-next-btn {
+      font-size: 14px;
+    }
+  }
+  @media (max-width: 960px), (max-height: 640px) {
+    .nav-modal {
+      #nav-zone-select button {
+        font-size: 12px;
+      }
+
+      #nav-bottom {
+        #nav-bottom-label {
+          font-size: 14px;
+        }
+
+        .nav-prev-next-btn {
+          font-size: 10px;
+        }
+      }
     }
   }
 }

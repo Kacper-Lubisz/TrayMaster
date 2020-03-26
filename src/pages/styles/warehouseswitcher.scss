@@ -58,3 +58,30 @@
     }
   }
 }
+
+@media screen and (max-width: 960px), (max-height: 640px) {
+  #switch-box {
+    bottom: 20px;
+    right: 10px;
+
+    h1 {
+      font-size: 28px;
+    }
+
+    > p {
+      font-size: 18px;
+    }
+
+    #warehouse-list #warehouse-options-container .warehouse-option {
+      svg {
+        font-size: 28px;
+        margin: 16px;
+      }
+
+      p {
+        font-size: 24px;
+        margin-right: 16px;
+      }
+    }
+  }
+}

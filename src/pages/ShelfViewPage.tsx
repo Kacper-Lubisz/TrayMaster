@@ -1092,9 +1092,11 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             onClose={this.closeNavigator.bind(this)}
         >
             <div className="nav-modal">
-                <button id="nav-close-btn" onClick={this.closeNavigator.bind(this)}>
-                    <FontAwesomeIcon icon={cross}/>
-                </button>
+                <div id="nav-top">
+                    <button id="nav-close-btn" onClick={this.closeNavigator.bind(this)}>
+                        <FontAwesomeIcon icon={cross}/>
+                    </button>
+                </div>
 
                 {/* Top zone selector */}
                 <div id="nav-zone-select">
@@ -1122,10 +1124,10 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     onSelected={(shelf: Shelf) => this.changeView(shelf)}
                 />
 
-                <div id="nav-arrow-area">
+                <div id="nav-bottom">
                     {this.state.currentView instanceof Shelf ?
                      <p
-                         id="arrow-area-label"
+                         id="nav-bottom-label"
                          style={{
                              backgroundColor: zone.color,
                              color: getTextColorForBackground(zone.color)
