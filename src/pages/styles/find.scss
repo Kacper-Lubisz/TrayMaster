@@ -39,11 +39,6 @@
 
         padding-right: 10px;
 
-        span.findMessage {
-          padding: 2px;
-          margin-right: 10px;
-        }
-
         span.findField {
           color: $accent-color;
           background-color: #dddddd;
@@ -102,28 +97,37 @@
       width: 100%;
       border-collapse: collapse;
       margin: 15px 0;
+      font-size: 16px;
 
-      th {
+      tr > *.weightCol {
+        width: 100px;
+      }
+
+      tr > th {
+        padding: 5px;
+        text-align: center;
         border-bottom: 1px solid #aaaaaa;
       }
 
-      tr > * {
+      tr > td {
         padding: 5px;
         text-align: center;
+        background-color: #ececec;
 
         &:not(:first-child):not(:last-child) {
           border-left: 1px solid #aaaaaa;
           border-right: 1px solid #aaaaaa;
         }
-      }
 
-      td {
-        background-color: #ececec;
-      }
+        &.weightCol {
+          text-align: right;
 
-      .weightCell {
-        font-kerning: none;
-        text-align: right;
+          > span {
+            width: 100%;
+            font-kerning: none;
+            padding-right: 5px;
+          }
+        }
       }
 
       tr:nth-child(2n) > td {
@@ -133,3 +137,54 @@
   }
 }
 
+@media screen and (max-width: 1279px), (max-height: 719px) {
+  #findPage {
+    #topPanel {
+      padding: 10px;
+
+      svg {
+        font-size: 24px;
+      }
+
+      #sentenceBox {
+        padding: 5px 10px;
+
+        #findSentence {
+          font-size: 20px;
+          line-height: 30px;
+
+          span.findField {
+            padding: 0 5px;
+          }
+        }
+      }
+
+      #sentenceL {
+        margin: 0 10px 0 5px;
+      }
+
+      #sentenceR {
+        margin: 0 5px 0 10px;
+      }
+
+      #sentenceR, #sentenceL {
+        button {
+          padding: 5px 10px;
+        }
+      }
+    }
+
+    #findResults {
+      padding: 0 10px;
+
+      table {
+        margin: 10px 0;
+        font-size: 14px;
+
+        tr > td, tr > th {
+          padding: 3px 5px;
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,9 @@
 #findPanel {
+  h2 {
+    font-size: 40px;
+    margin: 20px 0 20px 20px;
+  }
+
   #cat-table {
     height: 100vh;
     overflow-y: auto;
@@ -7,6 +12,10 @@
       width: 100%;
       display: flex;
       margin: 20px 0;
+
+      &:first-child {
+        margin-top: 0;
+      }
 
       .categoryGroupTitle {
         flex-shrink: 0;
@@ -22,18 +31,69 @@
       }
 
       .categoryGroupCategories {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
 
-        .findPanelButton {
+        button {
           margin: 5px;
-          height: 50px;
+          height: 40px;
+          max-width: calc(100% - 10px);
 
+          font-size: 18px;
           white-space: nowrap;
           overflow: hidden;
-          text-overflow: ellipsis;
 
           &.selected {
             background-color: #cccccc;
           }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1600px), (max-height: 640px) {
+  #findPanel {
+    h2 {
+      font-size: 32px;
+      margin: 10px 0 10px 20px;
+    }
+
+    #cat-table .categoryGroup {
+      margin: 5px 0;
+
+      .categoryGroupTitle {
+        width: 40px;
+        font-size: 40px;
+        padding: 0 10px;
+      }
+
+      .categoryGroupCategories button {
+        margin: 3px;
+        font-size: 16px;
+        padding: 5px 10px;
+        height: unset;
+      }
+    }
+  }
+
+  @media (max-width: 960px) {
+    #findPanel {
+      h2 {
+        font-size: 28px;
+        margin: 5px 0 5px 10px;
+      }
+
+      #cat-table .categoryGroup {
+        .categoryGroupTitle {
+          width: 30px;
+          font-size: 28px;
+        }
+
+        .categoryGroupCategories button {
+          font-size: 12px;
+          padding: 3px 8px;
         }
       }
     }
