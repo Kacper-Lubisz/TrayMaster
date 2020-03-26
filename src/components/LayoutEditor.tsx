@@ -148,7 +148,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                         });
                     },
                     onClear: null,
-                    label: "Color"
+                    label: "Colour"
                 }
             ] : [
                 {
@@ -176,7 +176,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                         });
                     },
                     onClear: null,
-                    label: "Color"
+                    label: "Colour"
                 }, {
                     inputType: "number",
                     get: () => stateAtRender.newZone.bays,
