@@ -6,7 +6,10 @@
 // Import find page grid layout
 
 #findPage {
+  height: 100%;
+
   #leftPanel {
+    height: 100%;
     display: flex;
     flex-direction: column;
 
