@@ -6,132 +6,139 @@
 // Import find page grid layout
 
 #findPage {
-  #topPanel {
+  #leftPanel {
     display: flex;
-    align-items: stretch;
-    padding: 20px;
-    background-color: #ffffff;
-    box-shadow: 0 -20px 15px 10px #000000;
+    flex-direction: column;
 
-    svg {
-      font-size: 36px;
-    }
-
-    #sentenceBox {
-      flex-grow: 1;
-
+    #topPanel {
       display: flex;
-      background-color: #eeeeee;
-      align-items: center;
-
-      padding: 10px;
+      align-items: stretch;
+      padding: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 -20px 15px 10px #000000;
 
       svg {
-        cursor: pointer;
+        font-size: 36px;
       }
 
-      #findSentence {
-        margin: -2px 0;
-        font-size: 24px;
-        line-height: 40px;
-
+      #sentenceBox {
         flex-grow: 1;
 
-        padding-right: 10px;
+        display: flex;
+        background-color: #eeeeee;
+        align-items: center;
 
-        span.findField {
-          color: $accent-color;
-          background-color: #dddddd;
-          padding: 2px 5px;
-          border-radius: 5px;
-          //cursor: pointer;
-        }
-      }
-    }
+        padding: 10px;
 
-    #sentenceL {
-      margin: 0 30px 0 10px;
-    }
-
-    #sentenceR {
-      margin: 0 10px 0 30px;
-    }
-
-    #sentenceR, #sentenceL {
-      flex-shrink: 0;
-      height: 100%;
-
-      button {
-        margin: 0;
-        border-radius: 0;
-        height: 100%;
-
-        &:not(:last-child) {
-          margin-right: 10px;
-        }
-      }
-    }
-  }
-
-  #findResults {
-    position: relative;
-    height: 100%;
-    padding: 0 20px;
-
-    // loading spinner
-    svg, div#find-no-results {
-      position: absolute;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-
-      // only really applies to div
-      font-size: 25px;
-      font-weight: bold;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-      font-size: 16px;
-
-      tr > *.weightCol {
-        width: 100px;
-      }
-
-      tr > th {
-        padding: 5px;
-        text-align: center;
-        border-bottom: 1px solid #aaaaaa;
-      }
-
-      tr > td {
-        padding: 5px;
-        text-align: center;
-        background-color: #ececec;
-
-        &:not(:first-child):not(:last-child) {
-          border-left: 1px solid #aaaaaa;
-          border-right: 1px solid #aaaaaa;
+        svg {
+          cursor: pointer;
         }
 
-        &.weightCol {
-          text-align: right;
+        #findSentence {
+          margin: -2px 0;
+          font-size: 24px;
+          line-height: 40px;
 
-          > span {
-            width: 100%;
-            font-kerning: none;
-            padding-right: 5px;
+          flex-grow: 1;
+
+          padding-right: 10px;
+
+          span.findField {
+            color: $accent-color;
+            background-color: #dddddd;
+            padding: 2px 5px;
+            border-radius: 5px;
+            //cursor: pointer;
           }
         }
       }
 
-      tr:nth-child(2n) > td {
-        background-color: #f4f4f4;
+      #sentenceL {
+        margin: 0 30px 0 10px;
+      }
+
+      #sentenceR {
+        margin: 0 10px 0 30px;
+      }
+
+      #sentenceR, #sentenceL {
+        flex-shrink: 0;
+        height: 100%;
+
+        button {
+          margin: 0;
+          border-radius: 0;
+          height: 100%;
+
+          &:not(:last-child) {
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+
+    #findResults {
+      flex-grow: 1;
+      height: 0;
+      position: relative;
+      padding: 0 20px;
+      overflow-y: auto;
+
+      // loading spinner
+      svg, div#find-no-results {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        // only really applies to div
+        font-size: 25px;
+        font-weight: bold;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 16px;
+
+        tr > *.weightCol {
+          width: 100px;
+        }
+
+        tr > th {
+          padding: 5px;
+          text-align: center;
+          border-bottom: 1px solid #aaaaaa;
+        }
+
+        tr > td {
+          padding: 5px;
+          text-align: center;
+          background-color: #ececec;
+
+          &:not(:first-child):not(:last-child) {
+            border-left: 1px solid #aaaaaa;
+            border-right: 1px solid #aaaaaa;
+          }
+
+          &.weightCol {
+            text-align: right;
+
+            > span {
+              width: 100%;
+              font-kerning: none;
+              padding-right: 5px;
+            }
+          }
+        }
+
+        tr:nth-child(2n) > td {
+          background-color: #f4f4f4;
+        }
       }
     }
   }

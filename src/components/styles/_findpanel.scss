@@ -1,12 +1,16 @@
 #findPanel {
+  display: flex;
+  flex-direction: column;
+
   h2 {
     font-size: 40px;
     margin: 20px 0 20px 20px;
   }
 
   #cat-table {
-    height: 100vh;
+    height: 0;
     overflow-y: auto;
+    flex-grow: 1;
 
     .categoryGroup {
       width: 100%;
