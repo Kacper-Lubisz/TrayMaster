@@ -6,7 +6,6 @@
   bottom: 15px;
   height: 40%;
   width: 300px;
-
 }
 
 #menu-warehouse-user-area {
@@ -23,50 +22,32 @@
     justify-content: flex-end;
 
     > button {
-      font-size: 2em;
-      margin: .33em;
-      padding: 14px 16px 14px 16px;
+      font-size: 32px;
+      margin: 10px;
+      padding: 14px 16px;
     }
 
   }
 
 }
 
-.alert {
-  //container for the alert
-  position: fixed;
-  width: 400px;
-  right: 30px;
-  top: 30px;
-  box-shadow: 0 0 30px -15px #000000;
-  border-radius: 10px;
-  border: 1px solid #bbbbbb;
-  padding: 20px;
+@media screen and (max-width: 959px), (max-height: 767px) {
+  #menu-nav-kb {
+    width: 200px;
 
-  cursor: pointer;
-
-  .alert-header {
-    display: flex;
-    align-items: center;
-
-    .alert-warning {
-      //warning icon
-      flex-shrink: 1;
-      color: #ff0000;
-      height: 55px;
-      width: 55px;
-    }
-
-    h2 {
-      margin: 0 0 0 20px;
-      //text "expiry imminent"
-      font-size: 30px;
+    .key-btn {
+      font-size: 18px;
     }
   }
 
-  p {
-    //text how many items expire
-    font-size: 16px;
-    margin-bottom: 0;
+  #menu-warehouse-user-area {
+    > div > h1 {
+      font-size: 24px;
+    }
+
+    > div > button {
+      font-size: 24px;
+      padding: 7px 8px;
+    }
   }
 }

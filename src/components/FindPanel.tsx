@@ -60,6 +60,7 @@ export class FindPanel extends React.Component<FindPanelProps> {
             });
 
             return <div id="findPanel">
+                <h2>Categories</h2>
                 <div id="cat-table">
                     {Array.from(groups.keys()).sort((a, b) =>
                         a < b ? -1 : 1
@@ -72,13 +73,13 @@ export class FindPanel extends React.Component<FindPanelProps> {
                             <div className="categoryGroupCategories"
                             >{groups.get(group)?.map((cat, index) => <button
                                 key={index}
-                                className={classNames("findPanelButton", {
+                                className={classNames({
                                     "selected": findCategories.has(cat)
                                 })}
                                 onClick={(e) => {
                                     this.toggleCategory(cat);
                                     e.currentTarget.blur();
-                                }}>{cat.name}</button>)
+                                }}>{cat.shortName ?? cat.name}</button>)
                             }</div>
                         </div>
                     )}

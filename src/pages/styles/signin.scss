@@ -7,15 +7,8 @@
   border-radius: 10px;
   border: 1px solid #eeeeee;
   box-shadow: 0 0 30px -15px #000000;
-  padding: 20px 20px 100px 20px;
+  padding: 20px;
   min-height: 20%;
-
-  svg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
 
   h1 {
     margin: 0;
@@ -24,7 +17,6 @@
 
   form {
     margin-top: 20px;
-    font-size: 24px;
 
     input {
       display: block;
@@ -35,17 +27,67 @@
       border: none;
 
       &:not([type="submit"]) {
-        width: 80%;
+        width: calc(100% - 10px);
       }
 
       &[type="submit"] {
+        float: right;
         margin-top: 30px;
-        position: absolute;
         border: 1px solid #aaaaaa;
-        bottom: 10px;
-        right: 20px;
         padding: 20px 40px;
         cursor: pointer;
+      }
+    }
+  }
+
+  // loading spinner
+  #spinnerDiv {
+    padding: 20px 0;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+
+#disclaimer {
+  position: absolute;
+  bottom: 0;
+  width: 60%;
+  margin: 10px;
+  text-align: justify;
+}
+
+@media screen and (max-width: 1024px) {
+  #signin-box {
+    width: 30%;
+  }
+}
+
+@media screen and (max-height: 767px) {
+  #signin-box {
+    top: 10px;
+    right: 10px;
+    box-shadow: none;
+    border-color: #cccccc;
+    min-height: 0;
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+
+    form {
+      margin-top: 10px;
+
+      input {
+        font-size: 16px;
+        padding: 5px;
+        margin-bottom: 5px;
+
+        &[type="submit"] {
+          margin-top: 10px;
+          padding: 10px 20px;
+        }
       }
     }
   }

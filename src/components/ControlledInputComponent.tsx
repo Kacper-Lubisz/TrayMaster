@@ -137,7 +137,7 @@ export class ControlledInputComponent extends React.Component<ControlledInputCom
 
             return <tr className="settings-component setting-color">
                 <td><label>{propsAtRender.label}</label></td>
-                <td>
+                <td className="color-cell">
                     <SketchPopup
                         color={propsAtRender.get()}
                         onChange={color => propsAtRender.set(color)}/>
@@ -178,38 +178,18 @@ class SketchPopup extends React.Component<SketchPopupProps, SketchPopupState> {
 
     render(): ReactNode {
         return <div>
-            <div style={{
-                padding: "5px",
-                background: "#ffffff",
-                borderRadius: "1px",
-                boxShadow: "0 0 0 1px rgba(0,0,0,.1)",
-                display: "inline-block",
-                cursor: "pointer",
-            }} onClick={this.toggleOpen.bind(this)}>
-                <div style={{
-                    width: "36px",
-                    height: "14px",
-                    borderRadius: "2px",
-                    background: this.props.color,
-                }}/>
+            <div className="color-display" onClick={this.toggleOpen.bind(this)}>
+                <div style={{background: this.props.color}}/>
             </div>
-            {this.state.displayColorPicker ? <div style={{
-                position: "absolute",
-                zIndex: 2,
-            }}>
-                <div style={{
-                    position: "fixed",
-                    top: "0px",
-                    right: "0px",
-                    bottom: "0px",
-                    left: "0px",
-                }} onClick={this.close.bind(this)}/>
-                <SketchPicker
-                    color={this.props.color}
-                    onChange={color => this.props.onChange(color.hex)}
-                />
-            </div> : null}
-
+            {this.state.displayColorPicker ? <>
+                <div className="page-cover" onClick={this.close.bind(this)}/>
+                <div className="color-picker">
+                    <SketchPicker
+                        color={this.props.color}
+                        onChange={color => this.props.onChange(color.hex)}
+                    />
+                </div>
+            </> : null}
         </div>;
     }
 }

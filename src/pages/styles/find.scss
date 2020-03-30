@@ -6,130 +6,195 @@
 // Import find page grid layout
 
 #findPage {
-  #topPanel {
+  height: 100%;
+
+  #leftPanel {
+    height: 100%;
     display: flex;
-    align-items: stretch;
-    padding: 20px;
-    background-color: #ffffff;
-    box-shadow: 0 -20px 15px 10px #000000;
+    flex-direction: column;
 
-    svg {
-      font-size: 36px;
-    }
-
-    #sentenceBox {
-      flex-grow: 1;
-
+    #topPanel {
       display: flex;
-      background-color: #eeeeee;
-      align-items: center;
-
-      padding: 10px;
+      align-items: stretch;
+      padding: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 -20px 15px 10px #000000;
 
       svg {
-        cursor: pointer;
+        font-size: 36px;
       }
 
-      #findSentence {
-        margin: -2px 0;
-        font-size: 24px;
-        line-height: 40px;
-
+      #sentenceBox {
         flex-grow: 1;
 
-        padding-right: 10px;
+        display: flex;
+        background-color: #eeeeee;
+        align-items: center;
 
-        span.findMessage {
-          padding: 2px;
-          margin-right: 10px;
+        padding: 10px;
+
+        svg {
+          cursor: pointer;
         }
 
-        span.findField {
-          color: $accent-color;
-          background-color: #dddddd;
-          padding: 2px 5px;
-          border-radius: 5px;
-          //cursor: pointer;
+        #findSentence {
+          margin: -2px 0;
+          font-size: 24px;
+          line-height: 40px;
+
+          flex-grow: 1;
+
+          padding-right: 10px;
+
+          span.findField {
+            color: $accent-color;
+            background-color: #dddddd;
+            padding: 2px 5px;
+            border-radius: 5px;
+            //cursor: pointer;
+          }
         }
       }
-    }
 
-    #sentenceL {
-      margin: 0 30px 0 10px;
-    }
+      #sentenceL {
+        margin: 0 30px 0 10px;
+      }
 
-    #sentenceR {
-      margin: 0 10px 0 30px;
-    }
+      #sentenceR {
+        margin: 0 10px 0 30px;
+      }
 
-    #sentenceR, #sentenceL {
-      flex-shrink: 0;
-      height: 100%;
-
-      button {
-        margin: 0;
-        border-radius: 0;
+      #sentenceR, #sentenceL {
+        flex-shrink: 0;
         height: 100%;
 
-        &:not(:last-child) {
-          margin-right: 10px;
+        button {
+          margin: 0;
+          border-radius: 0;
+          height: 100%;
+
+          &:not(:last-child) {
+            margin-right: 10px;
+          }
         }
       }
     }
-  }
 
-  #findResults {
-    position: relative;
-    height: 100%;
-    padding: 0 20px;
+    #findResults {
+      flex-grow: 1;
+      height: 0;
+      position: relative;
+      padding: 0 20px;
+      overflow-y: auto;
 
-    // loading spinner
-    svg, div#find-no-results {
-      position: absolute;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      // loading spinner
+      svg, div#find-no-results {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -50%);
 
-      // only really applies to div
-      font-size: 25px;
-      font-weight: bold;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-
-      th {
-        border-bottom: 1px solid #aaaaaa;
-      }
-
-      tr > * {
-        padding: 5px;
+        // only really applies to div
+        font-size: 25px;
+        font-weight: bold;
         text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+      }
 
-        &:not(:first-child):not(:last-child) {
-          border-left: 1px solid #aaaaaa;
-          border-right: 1px solid #aaaaaa;
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 16px;
+
+        tr > *.weightCol {
+          width: 100px;
         }
-      }
 
-      td {
-        background-color: #ececec;
-      }
+        tr > th {
+          padding: 5px;
+          text-align: center;
+          border-bottom: 1px solid #aaaaaa;
+        }
 
-      .weightCell {
-        font-kerning: none;
-        text-align: right;
-      }
+        tr > td {
+          padding: 5px;
+          text-align: center;
+          background-color: #ececec;
 
-      tr:nth-child(2n) > td {
-        background-color: #f4f4f4;
+          &:not(:first-child):not(:last-child) {
+            border-left: 1px solid #aaaaaa;
+            border-right: 1px solid #aaaaaa;
+          }
+
+          &.weightCol {
+            text-align: right;
+
+            > span {
+              width: 100%;
+              font-kerning: none;
+              padding-right: 5px;
+            }
+          }
+        }
+
+        tr:nth-child(2n) > td {
+          background-color: #f4f4f4;
+        }
       }
     }
   }
 }
 
+@media screen and (max-width: 1279px), (max-height: 719px) {
+  #findPage {
+    #topPanel {
+      padding: 10px;
+
+      svg {
+        font-size: 24px;
+      }
+
+      #sentenceBox {
+        padding: 5px 10px;
+
+        #findSentence {
+          font-size: 20px;
+          line-height: 30px;
+
+          span.findField {
+            padding: 0 5px;
+          }
+        }
+      }
+
+      #sentenceL {
+        margin: 0 10px 0 5px;
+      }
+
+      #sentenceR {
+        margin: 0 5px 0 10px;
+      }
+
+      #sentenceR, #sentenceL {
+        button {
+          padding: 5px 10px;
+        }
+      }
+    }
+
+    #findResults {
+      padding: 0 10px;
+
+      table {
+        margin: 10px 0;
+        font-size: 14px;
+
+        tr > td, tr > th {
+          padding: 3px 5px;
+        }
+      }
+    }
+  }
+}
