@@ -1,6 +1,8 @@
 import React from "react";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import Popup from "reactjs-popup";
+import {buildErrorDialog, Dialog, StoredDialog} from "../components/Dialog";
+import ErrorHandler from "../components/ErrorHandler";
 import FindPage, {FindQuery, FindResults} from "../pages/FindPage";
 import {LoadingPage} from "../pages/Loading";
 import MainMenu from "../pages/MainMenu";
@@ -9,8 +11,6 @@ import SettingsPage from "../pages/SettingsPage";
 import ShelfViewPage from "../pages/ShelfViewPage";
 import SignInPage from "../pages/SignInPage";
 import WarehouseSwitcher from "../pages/WarehouseSwitcher";
-import {buildErrorDialog, Dialog, StoredDialog} from "./Dialog";
-import ErrorHandler from "./ErrorHandler";
 
 import firebase, {User} from "./Firebase";
 import {Warehouse, WarehouseManager} from "./WarehouseModel";
@@ -105,19 +105,10 @@ class App extends React.Component<unknown, AppState> {
                                         warehouse: undefined
                                     }));
                                 }}
-                                signOut={async () => {
-                                    await firebase.auth.signOut();
-                                    this.setState(state => ({
-                                        ...state,
-                                        dialog: state.dialog,
-                                        user: null,
-                                        warehouse: null
-                                    }));
-                                }}
+                                signOut={this.signOut.bind(this)}
                                 user={this.state.user}
                                 setFind={this.setFindQuery.bind(this)}
                                 warehouse={this.state.warehouse} openDialog={this.openDialog.bind(this)}
-                                expiryAmount={5}//todo fixme
                             />;
 
                         } else if (!this.state.user) {
@@ -151,6 +142,7 @@ class App extends React.Component<unknown, AppState> {
                         } else {
                             return <WarehouseSwitcher
                                 user={this.state.user}
+                                signOut={this.signOut.bind(this)}
                                 setWarehouse={this.setWarehouse.bind(this)}
                             />;
                         }
@@ -178,6 +170,16 @@ class App extends React.Component<unknown, AppState> {
 
     }
 
+    private async signOut(): Promise<void> {
+        await firebase.auth.signOut();
+        this.setState(state => ({
+            ...state,
+            dialog: state.dialog,
+            user: null,
+            warehouse: null
+        }));
+    }
+
     /**
      * This method sets the current warehouse
      * @param warehouse The warehouse to be set
@@ -187,11 +189,10 @@ class App extends React.Component<unknown, AppState> {
             if (state.user) {
                 state.user.lastWarehouseID = warehouse.id;
                 if (!warehouse.childrenLoaded) {
-                    WarehouseManager.loadWarehouse(warehouse).then(); // todo change to async await with loading screen
+                    WarehouseManager.loadWarehouse(warehouse).then();
                 }
                 state.user.stage(false, true).then();
             }
-            //todo decide if this needs to call any load the warehouse or anything like that
             return {
                 ...state,
                 warehouse: warehouse
@@ -217,16 +218,15 @@ class App extends React.Component<unknown, AppState> {
                 }
             }));
 
-            const results = await warehouse.trayFind(query);
+            const [outcome, results] = await warehouse.trayFind(query);
             this.setState(state => ({
-                    ...state,
-                    find: {
-                        query: query,
-                        outcome: results[0],
-                        results: results[1]
-                    }
-                })
-            );
+                ...state,
+                find: {
+                    query: query,
+                    outcome: outcome,
+                    results: results
+                }
+            }));
 
         } else {
             throw new Error("Can't perform find when the warehouse is undefined");

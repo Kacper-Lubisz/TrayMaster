@@ -22,9 +22,8 @@ import {
 } from "../core/WarehouseModel";
 import {traySizes} from "../core/WarehouseModel/Layers/Column";
 import {KeyboardName, MAX_MAX_COLUMN_HEIGHT} from "../pages/ShelfViewPage";
-import "../styles/shelfview.scss";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import {getExpiryColor} from "../utils/getExpiryColor";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
 import {trayComparisonFunction} from "../utils/sortCells";
 import {LoadingSpinner} from "./LoadingSpinner";
 import "./styles/_viewport.scss";
@@ -85,21 +84,21 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     /**
      * One tray from each column: used to check the height of the trays in each column
      */
-    private readonly trayRefs: React.RefObject<HTMLDivElement>[];
+    private trayRefs: React.RefObject<HTMLDivElement>[];
+    private readonly condensedUpdater: () => void;
 
     constructor(props: ViewPortProps) {
         super(props);
 
         this.trayRefs = [];
-
-        if (this.props.current) {
-            this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
-        }
+        this.condensedUpdater = this.updateCondensed.bind(this);
 
         this.state = {
             longPress: null,
             condensed: this.props.current?.columns.map(_ => false) ?? []
         };
+
+
     }
 
     /**
@@ -283,13 +282,16 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             const shelf: Shelf = this.props.current;// this variable exists only because of poor type inference
 
             if (!(shelf.loaded && shelf.childrenLoaded)) {
-                // todo fixme restyle this, ensure this is appropriate usage
                 return (
-                    <div id="loading-box" style={{margin: "auto"}}>
+                    <div id="loading-box">
                         <LoadingSpinner/>
                         <h2>Loading...</h2>
                     </div>
                 );
+            }
+
+            if (this.props.current.columns.length !== this.trayRefs.length) {
+                this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
             }
 
             return (
@@ -475,7 +477,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
             {this.props.isShelfEdit ? <div className="editShelfColumn">
                 <button className="colDeleteBtn"
                         onClick={() => this.props.removeColumn(column)}
-                > {/*todo revise these icons*/}
+                >
                     <FontAwesomeIcon icon={trash}/>
                 </button>
 
@@ -523,6 +525,11 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
 
     componentDidMount(): void {
         this.updateCondensed();
+        window.addEventListener("resize", this.condensedUpdater);
+    }
+
+    componentWillUnmount(): void {
+        window.removeEventListener("resize", this.condensedUpdater);
     }
 
     /**
@@ -530,6 +537,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
      * @inheritDoc
      */
     componentDidUpdate(prevProps: Readonly<ViewPortProps>): void {
+
         if (this.props.current !== prevProps.current) {
             Column.purgePaddedSpaces();
         }
@@ -544,11 +552,12 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
     updateCondensed(): void {
 
         // constant: decides the breakpoint in tray height at which to condense its parent column
-        const condenseMaxHeight = 65;
+        const condenseMaxHeight = 90;
 
         // check a tray from each column; generate a list indicating which columns should be condensed
         const newCondensed: boolean[] = this.trayRefs.map(trayRef => {
-            return !!(trayRef.current?.clientHeight && trayRef.current.clientHeight < condenseMaxHeight);
+            const trayHeight = trayRef.current?.clientHeight;
+            return !!(trayHeight && trayHeight < condenseMaxHeight);
         });
 
         // VERY IMPORTANT: avoids render loops

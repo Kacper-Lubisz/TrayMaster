@@ -18,6 +18,7 @@ export class Bay extends MiddleLayer<Zone, BayFields, Shelf> {
      */
     public static create(name: string, parent: Zone): Bay {
         return new Bay(Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             name

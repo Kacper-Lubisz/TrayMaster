@@ -4,13 +4,14 @@ import classNames from "classnames";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {CategoryEditor} from "../components/CategoryEditor";
+import {CustomKeyboardEditor} from "../components/CustomKeyboardPage";
+import {Dialog} from "../components/Dialog";
 import {LayoutEditor} from "../components/LayoutEditor";
 import {UserSettings} from "../components/UserSettings";
-import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 
-import "../styles/settings.scss";
+import "./styles/settings.scss";
 
 interface SettingsPageProps {
     openDialog: (dialog: Dialog) => void;
@@ -18,17 +19,19 @@ interface SettingsPageProps {
     user: User;
 }
 
-export type SettingsTab = "personal" | "layout-edit" | "cat-edit" | "handle-users" | "handle-warehouses";
+export type SettingsTab =
+    "personal"
+    | "layout-edit"
+    | "cat-edit"
+    | "handle-users"
+    | "keyboard-editor"
+    | "handle-warehouses";
 
 interface SettingsPageState {
     currentTab: SettingsTab;
     tabChangeLock: (tab: SettingsTab) => boolean;
 }
 
-/**
- * RouteComponentProps enables the history.push to change paths
- * TODO change paths when those screens are added
- */
 class SettingsPage extends React.Component<RouteComponentProps & SettingsPageProps, SettingsPageState> {
 
     constructor(props: any) {
@@ -46,6 +49,8 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
         if (this.state.currentTab === "personal") {
             return <UserSettings
                 user={this.props.user}
+                warehouse={this.props.warehouse}
+                repaintSettings={this.forceUpdate.bind(this)}
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor
@@ -62,7 +67,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 getCategoryID={this.props.warehouse.getCategoryID.bind(this.props.warehouse)}
                 stage={this.props.warehouse.stage.bind(this.props.warehouse)}
 
-                updatePage={() => this.forceUpdate()}
+                repaintSettings={this.forceUpdate.bind(this)}
             />;
         } else if (this.state.currentTab === "layout-edit") {
             return <LayoutEditor
@@ -77,9 +82,12 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
 
         } else if (this.state.currentTab === "handle-warehouses") {
             return <div>Make new warehouses here </div>;
+        } else if (this.state.currentTab === "keyboard-editor") {
+            return <CustomKeyboardEditor user={this.props.user} warehouse={this.props.warehouse}/>;
         } else { // "handle-users"
-            return <div>TODO User Manager</div>;
+            return <div>Unimplemented Tab</div>;
         }
+
     }
 
     private setLock(lockFunction: (tab: SettingsTab) => boolean): void {
@@ -122,6 +130,14 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                         >
                             Personal Settings
                         </div>
+                        {/*{this.props.user.customKeyboard ? <div*/}
+                        {/*    className={classNames("tab", {*/}
+                        {/*        "tab-selected": this.state.currentTab === "keyboard-editor"*/}
+                        {/*    })}*/}
+                        {/*    onClick={this.changeTab.bind(this, "keyboard-editor")}*/}
+                        {/*>*/}
+                        {/*    Custom Keyboard*/}
+                        {/*</div> : null}*/}
                     </div>
                     {this.props.user.isAdmin ? <>
                         <div>
@@ -143,7 +159,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                                 Layout Editor
                             </div>
                         </div>
-                        <div>
+                        {/*<div>
                             <h2>Admin</h2>
                             <div
                                 className={classNames("tab", {
@@ -161,7 +177,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                             >
                                 Warehouses
                             </div>
-                        </div>
+                        </div>*/}
                     </> : undefined}
                 </div>
 

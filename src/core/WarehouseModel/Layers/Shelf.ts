@@ -20,6 +20,7 @@ export class Shelf extends MiddleLayer<Bay, ShelfFields, Column> {
      */
     public static create(name: string, isPickingArea: boolean, parent: Bay): Shelf {
         return new Shelf(Utils.generateRandomId(), {
+            layerIdentifiers: {},
             lastModified: Date.now(),
             blame: "",
             name,

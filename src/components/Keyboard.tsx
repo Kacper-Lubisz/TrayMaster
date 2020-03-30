@@ -2,7 +2,7 @@ import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import "./styles/_keyboard.scss";
 
 /**
@@ -26,7 +26,7 @@ export interface CustomButtonProps {
     disabled?: boolean;
 
     /** Background colour to apply to the button */
-    bg?: string;
+    background?: string;
 }
 
 /**
@@ -40,9 +40,9 @@ class KeyboardButton extends React.Component<CustomButtonProps> {
                     className={classNames("key-btn btn-style-override", {
                         "key-btn-selected": this.props.selected
                     })}
-                    style={this.props.bg ? {
-                        background: this.props.bg,
-                        color: this.props.disabled ? undefined : getTextColorForBackground(this.props.bg)
+                    style={this.props.background ? {
+                        background: this.props.background,
+                        color: this.props.disabled ? undefined : getTextColorForBackground(this.props.background)
                     } : undefined}
                     onClick={(e) => {
                         // if button isn't disabled, and we've been given an onClick function, run it

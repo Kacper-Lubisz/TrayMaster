@@ -2,7 +2,7 @@ import classNames from "classnames";
 import React, {ReactNode} from "react";
 import {Shelf} from "../core/WarehouseModel/Layers/Shelf";
 import {Zone} from "../core/WarehouseModel/Layers/Zone";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import "./styles/_zonedisplay.scss";
 
 interface ZoneDisplayComponentProps {
@@ -27,13 +27,15 @@ export class ZoneDisplayComponent extends React.Component<ZoneDisplayComponentPr
                             <div
                                 key={`${bayIndex.toString()}_${shelfIndex.toString()}`}
                                 className={classNames("nav-shelf", {
-                                    "currentShelf": this.props.selected === shelf
+                                    "currentShelf": this.props.selected === shelf,
+                                    "clickable": this.props.selected !== shelf && this.props.onSelected
                                 })} style={{
                                 backgroundColor: this.props.zone.color,
                                 color: textColor,
                                 border: `1px solid ${textColor}`
                             }}
-                                onClick={this.props.onSelected?.bind(this, shelf)}
+                                onClick={this.props.selected === shelf ? undefined
+                                                                       : this.props.onSelected?.bind(this, shelf)}
                             >
                                 <p className="shelfLabel">{bay.name}{shelf.name}</p>
                             </div>

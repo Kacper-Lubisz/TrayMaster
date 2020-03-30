@@ -1,7 +1,7 @@
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
-import {TrayMasterLogo} from "../components/TrayMasterLogo";
-import "../styles/errorhandler.scss";
+import "./styles/_errorhandler.scss";
+import {TrayMasterLogo} from "./TrayMasterLogo";
 
 
 interface ErrorHandlerState {
@@ -40,13 +40,6 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
         };
     }
 
-    /**
-     * This function is called when the button to reload the page is called
-     */
-    private static exitError(): void { // todo this method's content can just be moved into the button surely?
-        window.location.reload();
-    }
-
     render(): React.ReactNode {
         if (this.state.error) {
             const errorStack = this.state.error.stack?.split("\n") ?? "unknown";
@@ -80,7 +73,7 @@ class ErrorHandler extends React.Component<RouteComponentProps, ErrorHandlerStat
                                 </tbody>
                             </table>
                         </div>
-                        <button id="error-exit" onClick={ErrorHandler.exitError.bind(this)}>Refresh</button>
+                        <button id="error-exit" onClick={window.location.reload.bind(window.location)}>Refresh</button>
                     </div>
                 </div>
             );

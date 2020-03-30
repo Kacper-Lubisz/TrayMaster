@@ -60,6 +60,10 @@ export abstract class BottomLayer<TParent extends UpperLayer, TFields extends La
         }
     }
 
+    public remove(): void {
+        this.parent.children.splice(this.index, 1);
+    }
+
     protected stageLayer(forceStage = false): void {
         if (this.changed || forceStage) {
             this.updateBlame();

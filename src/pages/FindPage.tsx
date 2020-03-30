@@ -1,15 +1,20 @@
-import {faArrowLeft as arrowLeft, faHome as menuIcon, faTimes as cross} from "@fortawesome/free-solid-svg-icons";
+import {
+    faArrowLeft as arrowLeft,
+    faDownload as downloadIcon,
+    faHome as menuIcon,
+    faTimes as cross
+} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FindPanel, PanelState} from "../components/FindPanel";
 import {LoadingSpinner} from "../components/LoadingSpinner";
-import {Category, NULL_CATEGORY_STRING, Warehouse} from "../core/WarehouseModel";
+import {Category, NULL_CATEGORY_STRING, Shelf, Warehouse} from "../core/WarehouseModel";
 import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
 import Utils from "../core/WarehouseModel/Utils";
-import "../styles/find.scss";
+import {getTextColorForBackground} from "../utils/colorUtils";
 import {getExpiryColor} from "../utils/getExpiryColor";
-import {getTextColorForBackground} from "../utils/getTextColorForBackground";
+import "./styles/find.scss";
 
 export enum SortBy {
     expiry = "expiry",
@@ -28,7 +33,6 @@ type CategoryQueryOptions = Set<Category> | "set" | "unset" | null;
 
 /**
  * Defines the find queries that can be run on the warehouse
- * todo fixme document this properly
  */
 export interface FindQuery {
     /** either a Set<Category>, or whether the category is 'set' or 'unset' */
@@ -78,16 +82,13 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
      */
     private clearQuery(): void {
         this.props.setQuery({
-            commentSubstring: null,
-            excludePickingArea: true,
-            categories: null,
-            sort: {type: SortBy.none, orderAscending: true},
-            weight: null
+            ...this.props.find.query,
+            categories: null
         });
     }
 
     buildCSVFile(): Blob {
-        const header = "Category, Expiry Name, Expiry From (Timestamp), Expiry To (Timestamp), Weight, Location, Comment\n";
+        const header = "Category, Expiry, Expiry From (Unix Timestamp), Expiry To (Unix Timestamp), Weight (kg), Location, Comment\n";
 
         const content = this.props.find.results?.map(tray => {
             const line: string[] = [
@@ -104,7 +105,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 Utils.escapeStringToCSV(element)
             ).reduce((acc, cur) =>
                 `${acc}${cur},`, "")}\n`;
-        }).reduce((acc, cur) => acc + cur) ?? null;
+        }).reduce((acc, cur) => acc + cur, "") ?? null;
 
         return new Blob([content ? header + content : ""], {type: "text/plain"});
     }
@@ -123,7 +124,12 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
             <div id="leftPanel">
                 <div id="topPanel">
                     <div id="sentenceL">
-                        <FontAwesomeIcon icon={arrowLeft} onClick={() => this.props.history.goBack()}/>
+                        <button onClick={() => this.props.history.goBack()}>
+                            <FontAwesomeIcon icon={arrowLeft}/>
+                        </button>
+                        <button onClick={() => this.props.history.push("/menu")}>
+                            <FontAwesomeIcon icon={menuIcon}/>
+                        </button>
                     </div>
                     <div id="sentenceBox">
                         {this.renderFindSentence()}
@@ -131,19 +137,20 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                     </div>
                     <div id="sentenceR">
                         <button
-                            onClick={() => this.downloadFile(
-                                `Find ${new Date().toLocaleDateString("en-GB", {
-                                    weekday: "short",
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric"
-                                })}.csv`,
-                                this.buildCSVFile()
-                            )}>
-                            .CSV
-                        </button>
-                        <button onClick={() => this.props.history.push("/menu")}>
-                            <FontAwesomeIcon icon={menuIcon}/>
+                            onClick={(e) => {
+                                e.currentTarget.blur();
+                                this.downloadFile(
+                                    `Find ${new Date().toLocaleDateString("en-GB", {
+                                        weekday: "short",
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric"
+                                    })}.csv`,
+                                    this.buildCSVFile()
+                                );
+                            }}
+                            disabled={!this.props.find.results?.length}>
+                            <FontAwesomeIcon icon={downloadIcon}/>
                         </button>
                     </div>
                 </div>
@@ -168,8 +175,8 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
     private renderFindSentence(): React.ReactNode {
 
         const categories: CategoryQueryOptions = this.props.find.query?.categories ?? null;
-        const weight = this.props.find.query.weight;
-        const sortBy = this.props.find.query.sort;
+        // const weight = this.props.find.query.weight;
+        // const sortBy = this.props.find.query.sort;
 
         const catList = (() => {
             if (categories === null) {
@@ -200,36 +207,41 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
             } else if (len === 1) {
                 return catList[0];
             } else {
-                return "Any category";
+                return "all categories";
             }
         })();
 
-        const weightString = (() => {
-            if (typeof weight === "object" && weight) {
-                return `between ${weight.from} and ${weight.to} kg`;
-            } else if (weight === "set") {
-                return "without a set weight value";
-            } else if (weight === "unset") {
-                return "with any set weight value";
-            } else { // null
-                return "with any weight value";
-            }
-        })();
-
-        const expiryString = `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" : "descending"}`;
+        // const weightString = (() => {
+        //     if (typeof weight === "object" && weight) {
+        //         return `between ${weight.from} and ${weight.to} kg`;
+        //     } else if (weight === "set") {
+        //         return "without a set weight value";
+        //     } else if (weight === "unset") {
+        //         return "with any set weight value";
+        //     } else { // null
+        //         return "with any weight value";
+        //     }
+        // })();
+        //
+        // const expiryString = `sorted by ${SortBy[sortBy.type]} ${sortBy.orderAscending ? "ascending" :
+        // "descending"}`;
 
         return <span id="findSentence">
-            <span className="findField" onClick={() => this.updatePanel("category")}>
+            Finding <span className="findField" onClick={() => this.updatePanel("category")}>
                 {filterString}
-            </span>; <span className="findField" onClick={() => this.updatePanel("weight")}>
-                {weightString}
-            </span>; <span id="findSort" className="findField">
-                {expiryString}
             </span>.
+            {/*; <span className="findField" onClick={() => this.updatePanel("weight")}>*/}
+            {/*    {weightString}*/}
+            {/*</span>; <span id="findSort" className="findField">*/}
+            {/*    {expiryString}*/}
+            {/*</span>.*/}
         </span>;
     }
 
     private renderFindResults(): React.ReactNode {
+        const shelfMap: Map<string, Shelf> = new Map<string, Shelf>(
+            this.props.warehouse?.shelves.map<[string, Shelf]>(shelf => [shelf.id, shelf]
+            ) ?? []);
         const expiryColorMode = this.props.warehouse?.expiryColorMode ?? "warehouse";
         if (this.props.find?.results && this.props.find.results.length !== 0) {
             return <table>
@@ -244,7 +256,6 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 </thead>
                 <tbody>
                 {this.props.find.results.map((tray, i) => {
-
                     const expiryStyle = (() => {
                         if (tray.expiry) {
                             const background = getExpiryColor(tray.expiry, expiryColorMode);
@@ -259,8 +270,11 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         }
                     })();
 
+                    const shelf: Shelf | undefined = shelfMap.get(tray.layerIdentifiers["shelves"]);
+                    const locationString: string = shelf ? shelf.toString() : "<SHELF DELETED>";
+                    const background: string = shelf ? shelf.parentZone.color : "#ffffff";
+
                     const zoneStyle = (() => {
-                        const background = "#ffffff"; //todo fixme tray.parentZone.color;
                         return {
                             backgroundColor: background,
                             color: getTextColorForBackground(background)
@@ -269,9 +283,8 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
 
                     const weightString = tray.weight?.toLocaleString(undefined, {minimumFractionDigits: 2}) ?? "";
 
-                    const locationString = tray.locationName === "" ? "" : tray.locationName;
                     return <tr key={i}>
-                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? ""}</td>
+                        <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCell">{weightString}</td>
                         <td style={zoneStyle}>{locationString}</td>

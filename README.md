@@ -1,4 +1,4 @@
-![](https://github.com/Kacper-Lubisz/Software-Engineering/workflows/Node%20CI/badge.svg)
+![](https://github.com/Kacper-Lubisz/TrayMaster/workflows/Node%20CI/badge.svg)
 
 # HOW WE'RE USING BRANCHES
 - Master:

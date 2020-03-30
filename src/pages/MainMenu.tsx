@@ -1,20 +1,16 @@
-import {faExchangeAlt, faExclamationTriangle as warningIcon, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
+import {faExchangeAlt, faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {withRouter} from "react-router";
 import {RouteComponentProps} from "react-router-dom";
+import {Dialog} from "../components/Dialog";
 import {CustomButtonProps, Keyboard} from "../components/Keyboard";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
-import {Dialog} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Warehouse} from "../core/WarehouseModel";
-import "../styles/mainmenu.scss";
 import {FindQuery, SortBy} from "./FindPage";
+import "./styles/mainmenu.scss";
 
-/**
- * expiryAmount is the number of items expiring soon
- * TODO needs to be fetched from db
- */
 interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
 
@@ -23,7 +19,6 @@ interface MainMenuProps {
 
     warehouse: Warehouse;
     user: User;
-    expiryAmount: number;
 
     setFind: (query: FindQuery) => void;
 }
@@ -50,17 +45,17 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
                         categories: null,
                         weight: null,
                         commentSubstring: null,
-                        excludePickingArea: true,
+                        excludePickingArea: false,
                         sort: {orderAscending: true, type: SortBy.expiry}
                     });
                     this.props.history.push("/find");
                 }
             },
-            {
+            /*{
                 name: "Report",
                 onClick: () => alert("Report"),
                 disabled: true
-            },
+            },*/
             {
                 name: "Settings",
                 onClick: () => this.props.history.push("Settings")
@@ -68,27 +63,7 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
         ];
 
         return <div className="main-menu">
-            <TrayMasterLogo message={<>{`v${process.env.REACT_APP_VERSION}`}</>}/>
-            {/*todo fixme the expiry amount ought to be derived from warehouse*/}
-            {this.props.expiryAmount === 0 ? undefined : <div
-                className="alert"
-                onClick={(_) => {
-                    this.props.setFind({
-                        categories: null,
-                        weight: null,
-                        commentSubstring: null,
-                        excludePickingArea: true,
-                        sort: {orderAscending: true, type: SortBy.expiry}
-                    });
-                    this.props.history.push("/find");
-                }}>
-                <div className="alert-header">
-                    <FontAwesomeIcon icon={warningIcon} className="alert-warning"/>
-                    <h2>Expiry Imminent</h2>
-                </div>
-                <p>There are {this.props.expiryAmount} items expiring soon! Click here to see them.</p>
-            </div>
-            }
+            <TrayMasterLogo/>
 
             <Keyboard id="menu-nav-kb" buttons={menuButtons} gridX={1}/>
 

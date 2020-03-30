@@ -2,12 +2,12 @@ import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import {cloneDeep, isEqual} from "lodash";
 import React from "react";
-import {Dialog, DialogButtons, DialogTitle} from "../core/Dialog";
 import {User} from "../core/Firebase";
 import {Category, WarehouseModel} from "../core/WarehouseModel";
 import {NEVER_EXPIRY} from "../core/WarehouseModel/Utils";
 import {SettingsTab} from "../pages/SettingsPage";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
+import {Dialog, DialogButtons, DialogTitle} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
 
@@ -25,8 +25,9 @@ interface CategoryEditorProps {
     getCategoryID: (category?: Category) => string;
     stage: (forceStage?: boolean, commit?: boolean, minLayer?: WarehouseModel) => Promise<void>;
 
-    updatePage: () => void;
+    repaintSettings: () => void;
 }
+
 
 type EditingState = {
     state: "editing";
@@ -57,7 +58,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         shortName: null,
         underStockThreshold: null,
         overStockThreshold: null,
-        type: "custom",
         group: null,
         defaultExpiry: null
     };
@@ -188,26 +188,20 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 }
             ];
 
-
-            const defaultLabel = categoryToEdit.type === "default" ? " (default)"
-                                                                   : "";
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
             return <>
                 <div id="edit-controls">
                     <div id="edit-header">
                         <h2>{
                             stateAtRender.state === "editing"
-                            ? `Edit '${categoryToEdit.name}'${defaultLabel}${unsavedLabel}`
+                            ? `Edit '${categoryToEdit.name}'${unsavedLabel}`
                             : `New Category '${categoryToEdit.name}'`
                         }</h2>
                         {
                             stateAtRender.state === "editing" ? <button
-                                disabled={categoryToEdit.type === "default"}
                                 onClick={this.deleteCategory.bind(this, stateAtRender)}
                             >Delete Category </button> : null
                         }
-                        {categoryToEdit.type === "default" ? <div id="del-msg">You cannot delete a default
-                            category!</div> : null}
                     </div>
                     <table>
                         <tbody>
@@ -286,7 +280,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             state: "editing",
             selectedCategory: state.newCategory,
             editedCategory: state.newCategory
-        }), this.props.updatePage);
+        }), this.props.repaintSettings);
 
     }
 
@@ -306,7 +300,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             state: "editing",
             selectedCategory: state.editedCategory,
             editedCategory: cloneDeep(state.editedCategory)
-        }), this.props.updatePage);
+        }), this.props.repaintSettings);
 
     }
 
@@ -330,7 +324,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
         this.setState(_ => ({
             state: "nothingSelected",
-        }), this.props.updatePage);
+        }), this.props.repaintSettings);
 
     }
 
