@@ -1,5 +1,5 @@
 import React from "react";
-import logoSkew from "../img/Logo_skew.svg";
+import logoSkew from "../img/Logo_skew.png";
 import "./styles/_tmlogo.scss";
 
 interface TrayMasterLogoProps {

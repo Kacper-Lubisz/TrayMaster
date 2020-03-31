@@ -42,3 +42,19 @@
     }
   }
 }
+
+@media screen and (max-width: 1365px), (max-height: 719px) {
+  #nav-zone .nav-bay {
+    width: 60px;
+    margin: 1px;
+
+    .nav-shelf {
+      height: 30px;
+      margin: 3px;
+
+      > p {
+        font-size: 16px;
+      }
+    }
+  }
+}

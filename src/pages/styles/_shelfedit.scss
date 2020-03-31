@@ -1,5 +1,5 @@
 // Content that appears above columns when in edit shelf mode
-.editShelfColumn {
+div.editShelfColumn {
   visibility: hidden;
   z-index: 10;
   background-color: rgba(255, 255, 255, 0.9);
@@ -9,35 +9,25 @@
   bottom: 0;
   left: 0;
 
-  // Column delete button (top left)
-  .colDeleteBtn {
-    top: 10px;
-    right: 10px;
-
-    padding: 0;
-
-    height: 5vh;
-    width: 5vh;
-  }
-
-  // Titles for each control (eg 'Tray Width:')
-  .colControlHeader {
-    font-size: 16px;
-    margin: 0 5% 10px 5%;
+  // All children of .edit-shelf-column
+  > * {
+    position: absolute;
   }
 
   // All shelf edit buttons
   button {
     cursor: pointer;
+    padding: 10px 15px;
 
     > svg {
       font-size: 20px;
     }
-  }
 
-  // All children of .edit-shelf-column
-  > * {
-    position: absolute;
+    // Column delete button (top left)
+    &.colDeleteBtn {
+      top: 10px;
+      right: 10px;
+    }
   }
 
   // All divs that are direct children of .edit-shelf-column
@@ -45,68 +35,68 @@
   > div {
     width: 100%;
     left: 50%;
-  }
 
-  // Container for column height controls and title
-  .colHeight {
-    top: 40%;
-    transform: translate(-50%, -50%);
-
-    // 'Height in Trays:' text
+    // Titles for each control (eg 'Tray Width:')
     .colControlHeader {
-      font-size: 20px;
+      font-size: 16px;
+      margin: 0 10px 10px 10px;
     }
 
-    // Numeric value representing maximum number of trays in the column
-    .colHeightValue {
-      font-weight: bold;
-      font-size: 36px;
-    }
+    // Container for column height controls and title
+    &.colHeight {
+      top: 40%;
+      transform: translate(-50%, -50%);
 
-    // Container for controls
-    .colHeightControls {
+      // 'Height in Trays:' text
+      .colControlHeader {
+        font-size: 20px;
+      }
 
-      // Height control buttons
-      > button {
-        height: 7vh;
-        width: 9vh;
+      // Numeric value representing maximum number of trays in the column
+      .colHeightValue {
+        font-weight: bold;
+        font-size: 36px;
+      }
 
-        // Last button
-        &:last-child {
+      // Container for controls
+      .colHeightControls {
+
+        // Height control buttons
+        > button:last-child {
           // Make up for the fact that numbers are typically displayed low in the line
           margin-top: 4px;
         }
       }
     }
-  }
 
-  // Container for column width controls and title
-  .colWidth {
-    bottom: 0;
-    transform: translate(-50%, 0);
+    // Container for column width controls and title
+    &.colWidth {
+      bottom: 0;
+      transform: translate(-50%, 0);
 
-    // Make tray width text bold
-    .colWidthValue {
-      font-weight: bold;
-    }
+      // Make tray width text bold
+      .colWidthValue {
+        font-weight: bold;
+      }
 
-    // Container for buttons
-    .colWidthControls {
-      width: 100%;
+      // Container for buttons
+      .colWidthControls {
+        width: 100%;
 
-      // Width buttons
-      > button {
-        width: 43%;
-        height: 7vh;
+        // Width buttons
+        > button {
+          width: 43%;
+          height: 7vh;
 
-        // First one: smaller margin on the right
-        &:first-child {
-          margin: 0 2% 15px 5%;
-        }
+          // First one: smaller margin on the right
+          &:first-child {
+            margin: 0 2% 15px 5%;
+          }
 
-        // Second one: smaller margin on the left
-        &:last-child {
-          margin: 0 5% 15px 2%;
+          // Second one: smaller margin on the left
+          &:last-child {
+            margin: 0 5% 15px 2%;
+          }
         }
       }
     }
@@ -114,12 +104,51 @@
 }
 
 .isEditShelf {
-  #sideBar #side-keyboard-container {
+  #sideBar #sidebar-buttons-main {
+    margin-top: auto;
     height: 50%;
+    flex-grow: 0;
   }
-
 
   #viewPort .editShelfColumn {
     visibility: visible;
+  }
+}
+
+@media screen and (max-width: 1279px), (max-height: 639px) {
+  div.editShelfColumn {
+    button {
+      padding: 2px 8px;
+
+      > svg {
+        font-size: 12px;
+        vertical-align: 0;
+      }
+    }
+
+    > div {
+      .colControlHeader {
+        font-size: 12px;
+        margin: 0 5px 5px 5px;
+      }
+
+      &.colHeight {
+        top: 45%;
+
+        .colControlHeader {
+          font-size: 12px;
+        }
+
+        .colHeightValue {
+          font-size: 28px;
+          line-height: 28px;
+        }
+      }
+
+      &.colWidth {
+        .colWidthControls > button {
+        }
+      }
+    }
   }
 }
