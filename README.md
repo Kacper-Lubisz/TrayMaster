@@ -1,5 +1,5 @@
 # TrayMaster
-[![GitHub Continuous Integration Badge](https://github.com/Kacper-Lubisz/TrayMaster/workflows/Node%20CI/badge.svg)](https://github.com/Kacper-Lubisz/TrayMaster/actions?query=workflow%3A%22Node+CI%22)
+[![GitHub Actions CI Badge](https://github.com/Kacper-Lubisz/TrayMaster/workflows/Node%20CI/badge.svg)](https://github.com/Kacper-Lubisz/TrayMaster/actions?query=workflow%3A%22Node+CI%22)
 
 This program is a web-app for managing warehouse stock, specifically aimed at use in food stores.
 It was originally written as part of a coursework project for [County Durham Foodbank](https://durham.foodbank.org.uk/)
@@ -23,6 +23,12 @@ The following commands are available:
 
 The project was developed using JetBrains WebStorm, and includes configuration files for both ESLint and WebStorm code
 inspectors.
+
+## Hosting
+The project, by default, is configured to run at `https://traymaster.herokuapp.com` and deploy automatically to Heroku
+on all commits to the `master` branch. This is configured in `static.json`. There's also configuration in place for
+Firebase static hosting (though certain routing features won't work on static hosts): this can be found in
+`firebase.json`.
 
 ## Contributing
 If you wish to contribute to this project, please fork this repository and make Pull requests!
