@@ -156,7 +156,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                                 })}
                                 onClick={this.changeTab.bind(this, "layout-edit")}
                             >
-                                Layout Editor
+                                Zone Editor
                             </div>
                         </div>
                         {/*<div>

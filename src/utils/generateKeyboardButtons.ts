@@ -242,7 +242,7 @@ export function buildQuarterButtons(quartersAhead: number, addYearToQuarters: bo
     const thisQuarter = Math.floor(now.getMonth() / 3);
     return Array(quartersAhead).fill(0).map((_, index) => {
 
-        const year = now.getFullYear() + (thisQuarter + index >= 4 ? 1 : 0);
+        const year = now.getFullYear() + Math.floor((thisQuarter + index) / 4);
 
         const expiry = {year: year, quarter: (index + thisQuarter) % 4};
         const properExpiry = toExpiryRange(expiry);

@@ -311,16 +311,18 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                     <div id="viewPort">
                         <div>
                             <h1>Current warehouse has no zones!</h1>
-                            <p>Go to <b>Settings > Layout Editor</b> to add zones to this warehouse</p>
+                            <p>Go to <b>Settings > Zone Editor</b> to add zones to this warehouse</p>
                         </div>
                     </div>
                 );
             } else if (this.props.availableLevel === WarehouseModel.zone) {
+                // This should not be possible, you should be unable to create a zone without any bays
+                // todo Allow zone editor to resize zones (including add new bays)
                 return (
                     <div id="viewPort">
                         <div>
                             <h1>Current zone has no bays!</h1>
-                            <p>Go to <b>Settings > Layout Editor</b> to edit zones</p>
+                            <p>Go to <b>Settings > Zone Editor</b> to edit zones</p>
                         </div>
                     </div>
                 );
