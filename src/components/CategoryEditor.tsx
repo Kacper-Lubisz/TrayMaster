@@ -136,7 +136,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     },
                     placeholder: undefined,
                     label: "Short Name"
-                }, {
+                }, /*{ todo reintroduce these settings when they are used
                     inputType: "number",
                     get: () => categoryToEdit.underStockThreshold ?? null,
                     set: (value: number | null) => {
@@ -163,7 +163,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                     max: undefined,
                     placeholder: "No threshold",
                     label: "Over-Stock Threshold (trays)"
-                }, {
+                }, */{
                     inputType: "boolean",
                     get: () => categoryToEdit?.defaultExpiry !== null,
                     set: (value: boolean) => {
