@@ -152,7 +152,7 @@ function buildCategoryButtons(warehouse: Warehouse): TrayEditingButton[] {
         label: cat.shortName ?? cat.name,
         alteration: {
             category: {type: "set", categoryID: warehouse.getCategoryID(cat)},
-            expiry: CLEAR,
+            expiry: cat.defaultExpiry ? {type: "set", expiry: cat.defaultExpiry} : CLEAR,
             weight: CLEAR,
             comment: CLEAR,
         },
@@ -166,7 +166,7 @@ function buildCategoryButtons(warehouse: Warehouse): TrayEditingButton[] {
             label: category.shortName ?? category.name,
             background: null,
             category: {type: "set", categoryID: warehouse.getCategoryID(category)},
-            expiry: CLEAR,
+            expiry: category.defaultExpiry ? {type: "set", expiry: category.defaultExpiry} : CLEAR,
             weight: CLEAR,
             comment: CLEAR,
         })),
