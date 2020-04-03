@@ -152,7 +152,7 @@ function buildCategoryButtons(warehouse: Warehouse): TrayEditingButton[] {
         label: cat.shortName ?? cat.name,
         alteration: {
             category: {type: "set", categoryID: warehouse.getCategoryID(cat)},
-            expiry: CLEAR,
+            expiry: cat.defaultExpiry ? {type: "set", expiry: cat.defaultExpiry} : CLEAR,
             weight: CLEAR,
             comment: CLEAR,
         },
@@ -166,7 +166,7 @@ function buildCategoryButtons(warehouse: Warehouse): TrayEditingButton[] {
             label: category.shortName ?? category.name,
             background: null,
             category: {type: "set", categoryID: warehouse.getCategoryID(category)},
-            expiry: CLEAR,
+            expiry: category.defaultExpiry ? {type: "set", expiry: category.defaultExpiry} : CLEAR,
             weight: CLEAR,
             comment: CLEAR,
         })),
@@ -242,7 +242,7 @@ export function buildQuarterButtons(quartersAhead: number, addYearToQuarters: bo
     const thisQuarter = Math.floor(now.getMonth() / 3);
     return Array(quartersAhead).fill(0).map((_, index) => {
 
-        const year = now.getFullYear() + (thisQuarter + index >= 4 ? 1 : 0);
+        const year = now.getFullYear() + Math.floor((thisQuarter + index) / 4);
 
         const expiry = {year: year, quarter: (index + thisQuarter) % 4};
         const properExpiry = toExpiryRange(expiry);

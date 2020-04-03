@@ -313,8 +313,16 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      */
     private async createZone(state: NewState): Promise<void> {
 
-        if (state.newZone.name.length === 0) {
+        if (!state.newZone.name) {
             state.newZone.name = LayoutEditor.DEFAULT_NAME;
+        }
+
+        if (!state.newZone.bays) {
+            state.newZone.bays = 1;
+        }
+
+        if (!state.newZone.shelves) {
+            state.newZone.shelves = 1;
         }
 
         const newZone = Zone.create(state.newZone.name, state.newZone.color, this.props.warehouse);
