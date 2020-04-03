@@ -249,7 +249,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                 <tr>
                     <th>Category</th>
                     <th>Expiry</th>
-                    <th>Weight (kg)</th>
+                    <th className="weightCol">Weight (kg)</th>
                     <th>Location</th>
                     <th>Comment</th>
                 </tr>
@@ -286,7 +286,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                     return <tr key={i}>
                         <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
-                        <td className="weightCell">{weightString}</td>
+                        <td className="weightCol"><span>{weightString}</span></td>
                         <td style={zoneStyle}>{locationString}</td>
                         <td className="commentCell">{tray.comment}</td>
                     </tr>;

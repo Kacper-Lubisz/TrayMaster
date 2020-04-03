@@ -24,13 +24,13 @@ export class Firebase {
 
     public constructor() {
         const firebaseConfig = {
-            apiKey: "AIzaSyCYLusdThwIe0NKuKPerO-LT4NKOq88qfM",
-            authDomain: "traymaster-ea059.firebaseapp.com",
-            databaseURL: "https://traymaster-ea059.firebaseio.com",
-            projectId: "traymaster-ea059",
-            storageBucket: "traymaster-ea059.appspot.com",
-            messagingSenderId: "467309929406",
-            appId: "1:467309929406:web:9f94f529e0e70e16fa8fef"
+            apiKey: process.env.REACT_APP_FIREBASE_apiKey,
+            authDomain: process.env.REACT_APP_FIREBASE_authDomain,
+            databaseURL: process.env.REACT_APP_FIREBASE_databaseURL,
+            projectId: process.env.REACT_APP_FIREBASE_projectId,
+            storageBucket: process.env.REACT_APP_FIREBASE_storageBucket,
+            messagingSenderId: process.env.REACT_APP_FIREBASE_messagingSenderId,
+            appId: process.env.REACT_APP_FIREBASE_appId
         };
 
         fb.initializeApp(firebaseConfig);

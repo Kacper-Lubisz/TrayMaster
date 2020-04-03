@@ -6,30 +6,6 @@
 @import "src/pages/styles/shelfnavigator";
 // SHELF VIEW GRID LAYOUT
 
-.dialogContent {
-  flex-direction: column;
-
-  #editCommentInput {
-    font-size: 22px;
-    padding: 10px;
-
-    background-color: #dddddd;
-    border: none;
-
-    width: calc(100% - 20px);
-  }
-
-  .infoBottom {
-    margin-top: 10px;
-
-    .dialogButtons {
-      display: flex;
-      justify-content: flex-end;
-      margin: 0;
-    }
-  }
-}
-
 #shelfView {
   // fill whole screen, centre text
   text-align: center;
@@ -77,5 +53,52 @@
     grid-column-end: 3;
     grid-row-start: 2;
     grid-row-end: 3;
+  }
+}
+
+.dialogContent {
+  flex-direction: column;
+
+  #editCommentInput {
+    font-size: 22px;
+    padding: 10px;
+
+    background-color: #dddddd;
+    border: none;
+
+    width: calc(100% - 20px);
+  }
+
+  .infoBottom {
+    margin-top: 10px;
+
+    .dialogButtons {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0;
+    }
+  }
+}
+
+@media screen and (max-width: 1023px), (max-height: 639px) {
+  .popup-content {
+    .dialogTitle {
+      font-size: 30px;
+    }
+
+    .dialogContent {
+      #editCommentInput {
+        font-size: 16px;
+        padding: 5px;
+      }
+
+      .infoBottom {
+        font-size: 14px;
+
+        .dialogButtons button {
+          font-size: 16px;
+        }
+      }
+    }
   }
 }

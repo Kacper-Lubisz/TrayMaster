@@ -220,6 +220,8 @@
           width: calc(50% - 38px);
           transform: translate(0, -50%);
 
+          font-size: 24px;
+          line-height: 28px;
           display: unset;
 
           white-space: nowrap;
@@ -246,6 +248,62 @@
           margin: 0;
           transform: translate(0, 50%);
         }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1599px) {
+  #viewPort #shelf .column.column-condensed .tray {
+    > svg.tray-tickbox {
+      margin-left: 3px;
+      font-size: 12px;
+      line-height: 12px;
+    }
+
+    > div.trayCategory {
+      left: 20px;
+      font-size: 12px;
+      width: calc(50% - 20px);
+    }
+
+    > div.trayExpiry {
+      font-size: 10px;
+      min-width: 12%;
+    }
+
+    > div.trayWeight {
+      font-size: 10px;
+      line-height: 10px;
+      right: 25%;
+    }
+
+    > div.trayComment {
+      font-size: 14px;
+      line-height: 14px;
+    }
+  }
+
+  @media (max-width: 1279px), (max-height: 399px) {
+    #viewPort #shelf .column .tray {
+      > div.trayCategory {
+        font-size: 24px;
+        line-height: 28px;
+      }
+
+      > div.trayExpiry {
+        font-size: 16px;
+        height: 20px;
+      }
+
+      > div.trayWeight {
+        font-size: 16px;
+        line-height: 16px;
+      }
+
+      > div.trayComment {
+        font-size: 16px;
+        line-height: 16px;
       }
     }
   }
