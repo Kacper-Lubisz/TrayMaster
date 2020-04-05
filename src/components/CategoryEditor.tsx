@@ -1,4 +1,4 @@
-import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import {cloneDeep, isEqual} from "lodash";
 import React from "react";
@@ -6,8 +6,9 @@ import {User} from "../core/Firebase";
 import {Category, WarehouseModel} from "../core/WarehouseModel";
 import {NEVER_EXPIRY} from "../core/WarehouseModel/Utils";
 import {SettingsTab} from "../pages/SettingsPage";
+import {createConfirmationDialog, createUnsavedDialog, DANGER_COLOR} from "../utils/dialogs";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
-import {Dialog, DialogButtons, DialogTitle} from "./Dialog";
+import {Dialog} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
 
@@ -72,7 +73,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
         this.props.setLock((_: SettingsTab) => {
             const hasUnsavedChanges = this.hasUnsavedChanges();
             if (hasUnsavedChanges) {
-                this.props.openDialog(this.createUnsavedDialog());
+                this.props.openDialog(createUnsavedDialog());
             }
             return hasUnsavedChanges;
         });
@@ -86,7 +87,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      */
     private selectCategory(cat: Category): void {
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog(this.createUnsavedDialog());
+            this.props.openDialog(createUnsavedDialog());
         } else {
             this.setState(_ => ({
                 state: "editing",
@@ -106,7 +107,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
 
         if (stateAtRender.state === "nothingSelected") {
             return <div id="empty-message-container">
-                <p id="empty-message">Select or add a category to start editing</p>
+                <p id="empty-message">Select or create a new category to start editing</p>
             </div>;
         } else {
 
@@ -200,7 +201,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                         {
                             stateAtRender.state === "editing" ? <button
                                 onClick={this.deleteCategory.bind(this, stateAtRender)}
-                            >Delete Category </button> : null
+                            >Delete</button> : null
                         }
                     </div>
                     <table>
@@ -213,21 +214,21 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 </div>
 
                 <div id="bottom-btns">
+                    <button
+                        onClick={this.resetEditor.bind(this)}
+                    >Cancel
+                    </button>
                     {stateAtRender.state === "editing" ? <button
                         disabled={!this.hasUnsavedChanges()}
                         onClick={this.hasUnsavedChanges() ? this.updateCategory.bind(this, stateAtRender)
                                                           : undefined}
-                    >Save Changes
+                    >Save
                     </button> : <button
                          disabled={!this.hasUnsavedChanges()}
                          onClick={this.hasUnsavedChanges() ? this.createCategory.bind(this, stateAtRender)
                                                            : undefined}
-                     >Create Category
+                     >Create
                      </button>}
-                    <button
-                        onClick={this.resetEditor.bind(this)}
-                    >Discard{stateAtRender.state === "editing" ? " Changes" : ""}
-                    </button>
                 </div>
 
             </>;
@@ -242,7 +243,7 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
     private newCategory(): void {
 
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog(this.createUnsavedDialog());
+            this.props.openDialog(createUnsavedDialog());
         } else {
             this.setState(_ => ({
                 state: "new",
@@ -317,14 +318,22 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Deletes category, makes sure indices inside object matches actual
      * indices after removing one category
      */
-    private async deleteCategory(state: EditingState): Promise<void> {
+    private deleteCategory(state: EditingState): void {
 
-        this.props.removeCategory(state.selectedCategory);
-        await this.props.stage(true, true);
-
-        this.setState(_ => ({
-            state: "nothingSelected",
-        }), this.props.repaintSettings);
+        this.props.openDialog(createConfirmationDialog(
+            "Confirm Deletion",
+            {icon: faExclamationTriangle, color: DANGER_COLOR},
+            "Are you sure you want to delete this category?",
+            "Delete",
+            () => {
+                this.props.removeCategory(state.selectedCategory);
+                this.props.stage(true, true).then(() => {
+                    this.setState(_ => ({
+                        state: "nothingSelected",
+                    }), this.props.repaintSettings);
+                });
+            }
+        ));
 
     }
 
@@ -352,24 +361,6 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 {this.renderEditPanel()}
             </div>
         </div>;
-    }
-
-    /**
-     * Returns the unsaved changes dialog
-     */
-    private createUnsavedDialog(): Dialog {
-        return {
-            closeOnDocumentClick: true,
-            dialog: (close: () => void) => <>
-                <DialogTitle title="Unsaved Changes" iconProps={{icon: faInfoCircle, color: "blue"}}/>
-                <div className="dialogContent">
-                    <h2>Please save or discard your current changes before proceeding</h2>
-                    <DialogButtons buttons={[
-                        {name: "OK", buttonProps: {onClick: close}}
-                    ]}/>
-                </div>
-            </>
-        };
     }
 
 }
