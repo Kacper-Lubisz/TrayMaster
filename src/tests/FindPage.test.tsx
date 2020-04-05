@@ -28,7 +28,6 @@ const newSetup: Promise<[Warehouse, User, FindQuery, FindResults]> = mockSetup.t
         };
         const results: FindResults = {
             query: query,
-            outcome: true,
             results: mockWarehouse.trays.map(tray => ({
                 locationName: tray.locationString,
                 categoryId: mockWarehouse.getCategoryID(tray.category),
