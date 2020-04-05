@@ -11,11 +11,11 @@ exports[`Keyboard matches snapshots: renders coloured buttons 1`] = `
     <KeyboardButton
       bg="#00ff00"
       name="Bob"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       name="Geoffrey"
-      onClick={[Function]}
+      onClick={[MockFunction]}
       selected={false}
     />
     <KeyboardButton
@@ -34,7 +34,7 @@ exports[`Keyboard matches snapshots: renders coloured buttons 1`] = `
         }
       }
       name="Doris"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       bg="#000000"
@@ -52,7 +52,7 @@ exports[`Keyboard matches snapshots: renders coloured buttons 1`] = `
         }
       }
       name="Steve"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
   </div>
   <div
@@ -61,7 +61,7 @@ exports[`Keyboard matches snapshots: renders coloured buttons 1`] = `
     <KeyboardButton
       bg="#212d3a"
       name="Paul"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       bg="#ffffff"
@@ -79,7 +79,7 @@ exports[`Keyboard matches snapshots: renders coloured buttons 1`] = `
         }
       }
       name="Dave"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
   </div>
 </div>
@@ -307,11 +307,11 @@ exports[`Keyboard matches snapshots: renders the big chonker 1`] = `
     <KeyboardButton
       disabled={true}
       name="Bob"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       name="Geoffrey"
-      onClick={[Function]}
+      onClick={[MockFunction]}
       selected={true}
     />
     <KeyboardButton
@@ -330,7 +330,7 @@ exports[`Keyboard matches snapshots: renders the big chonker 1`] = `
         }
       }
       name="Doris"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       disabled={false}
@@ -348,7 +348,7 @@ exports[`Keyboard matches snapshots: renders the big chonker 1`] = `
         }
       }
       name="Steve"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
   </div>
   <div
@@ -357,7 +357,7 @@ exports[`Keyboard matches snapshots: renders the big chonker 1`] = `
     <KeyboardButton
       bg="#ff0000"
       name="Paul"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       icon={
@@ -374,7 +374,7 @@ exports[`Keyboard matches snapshots: renders the big chonker 1`] = `
         }
       }
       name="Dave"
-      onClick={[Function]}
+      onClick={[MockFunction]}
       selected={true}
     />
   </div>
@@ -391,7 +391,7 @@ exports[`Keyboard matches snapshots: renders with Font Awesome icons in buttons 
   >
     <KeyboardButton
       name="Bob"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       name="Geoffrey"
@@ -413,7 +413,7 @@ exports[`Keyboard matches snapshots: renders with Font Awesome icons in buttons 
         }
       }
       name="Doris"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       icon={
@@ -430,7 +430,7 @@ exports[`Keyboard matches snapshots: renders with Font Awesome icons in buttons 
         }
       }
       name="Steve"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
   </div>
   <div
@@ -438,7 +438,7 @@ exports[`Keyboard matches snapshots: renders with Font Awesome icons in buttons 
   >
     <KeyboardButton
       name="Paul"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
     <KeyboardButton
       icon={
@@ -455,7 +455,7 @@ exports[`Keyboard matches snapshots: renders with Font Awesome icons in buttons 
         }
       }
       name="Dave"
-      onClick={[Function]}
+      onClick={[MockFunction]}
     />
   </div>
 </div>

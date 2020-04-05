@@ -1,25 +1,33 @@
+import {doesNotReject} from "assert";
 import React from "react";
 import ReactDOM from "react-dom";
-import ShelfViewPage from "../pages/ShelfViewPage";
-import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
-
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
-
+import {MemoryRouter} from "react-router-dom";
+import ShelfViewPage, {ShelfViewProps} from "../pages/ShelfViewPage";
+import {mockSetup} from "./sharedTestValues";
 
 describe("Crash tests: ", () => {
     it("renders without crashing", () => {
-        const mockOpenDialog = jest.fn();
-        const mockSetFind = jest.fn();
-        const props = {
-            openDialog: mockOpenDialog,
-            setFind: mockSetFind,
-            user: mockUser,
-            warehouse: mockWarehouse
-        };
-        const div = document.createElement("div");
 
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<ShelfViewPage.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
+        doesNotReject(mockSetup.then(([warehouse, user]) => {
+
+            const props: ShelfViewProps = {
+                openDialog: jest.fn(),
+                setFind: jest.fn(),
+                setCurrentView: jest.fn(),
+                user: user,
+                warehouse: warehouse,
+                currentView: warehouse.shelves[0],
+            };
+            console.log(document);
+
+            const div = document.createElement("div");
+
+            ReactDOM.render(<MemoryRouter>
+                <ShelfViewPage {...props} />
+            </MemoryRouter>, div);
+            ReactDOM.unmountComponentAtNode(div);
+
+        }));
+
     });
 });

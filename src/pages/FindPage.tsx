@@ -60,7 +60,7 @@ export interface FindResults {
     results: null | TrayFields[];
 }
 
-interface FindPageProps {
+export interface FindPageProps {
     warehouse?: Warehouse;
     find: FindResults;
     setQuery: (query: FindQuery) => void;

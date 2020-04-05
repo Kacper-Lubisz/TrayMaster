@@ -13,7 +13,7 @@ import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 
 import "./styles/settings.scss";
 
-interface SettingsPageProps {
+export interface SettingsPageProps {
     openDialog: (dialog: Dialog) => void;
     warehouse: Warehouse;
     user: User;

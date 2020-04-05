@@ -70,7 +70,7 @@ type ShelfMoveDirection =
 
 export type SimpleExpiryRange = { year: number } & ({ quarter: number } | { month: number } | {});
 
-interface ShelfViewProps {
+export interface ShelfViewProps {
     /**
      * This function allows for opening new dialogs.
      * @param dialog A dialog builder function which takes the function that closes the dialog.
@@ -927,8 +927,6 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
             }
         })();
 
-        const locationString = this.props.currentView.toString();
-
         const sideBarButtons = this.state.isEditShelf && this.props.currentView instanceof Shelf ? [
             /*{
                 name: this.state.currentView.isPickingArea ? "Unmark as Picking Area"
@@ -1033,8 +1031,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 />
                 <SideBar
                     zoneColor={zoneColor}
-                    locationString={locationString}
-
+                    locationString={this.props.currentView.toString()}
                     openNavigator={this.openNavigator.bind(this)}
                     openNavigatorDisabled={this.state.isEditShelf}
 

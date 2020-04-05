@@ -1,22 +1,30 @@
+import {doesNotReject} from "assert";
 import React from "react";
 import ReactDOM from "react-dom";
-import SettingsPage from "../pages/SettingsPage";
-import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
-
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+import {MemoryRouter} from "react-router-dom";
+import SettingsPage, {SettingsPageProps} from "../pages/SettingsPage";
+import {mockSetup} from "./sharedTestValues";
 
 
 describe("Crash tests: ", () => {
     it("renders without crashing", () => {
-        const mockOpenDialog = jest.fn();
-        const props = {
-            openDialog: mockOpenDialog,
-            warehouse: mockWarehouse,
-            user: mockUser
-        };
-        const div = document.createElement("div");
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<SettingsPage.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
+
+        doesNotReject(mockSetup.then(([warehouse, user]) => {
+
+            const mockOpenDialog = jest.fn();
+            const props: SettingsPageProps = {
+                openDialog: mockOpenDialog,
+                warehouse: warehouse,
+                user: user
+            };
+            const div = document.createElement("div");
+
+            ReactDOM.render(<MemoryRouter>
+                <SettingsPage {...props}/>
+            </MemoryRouter>, div);
+            ReactDOM.unmountComponentAtNode(div);
+
+        }));
+
     });
 });

@@ -1,32 +1,31 @@
+import {doesNotReject} from "assert";
 import React from "react";
 import ReactDOM from "react-dom";
-import MainMenuPage from "../pages/MainMenu";
-import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
-
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
-
+import {MemoryRouter} from "react-router-dom";
+import MainMenuPage, {MainMenuProps} from "../pages/MainMenu";
+import {mockSetup} from "./sharedTestValues";
 
 describe("Crash tests: ", () => {
     it("renders without crashing", () => {
-        const mockOpenDialog = jest.fn();
-        const mockChangeWarehouse = jest.fn();
-        const mockSignOut = jest.fn();
-        const mockSetFind = jest.fn();
 
-        const props = {
-            openDialog: mockOpenDialog,
-            changeWarehouse: mockChangeWarehouse,
-            signOut: mockSignOut,
-            setFind: mockSetFind,
-            warehouse: mockWarehouse,
-            user: mockUser,
-            expiryAmount: 4
-        };
+        doesNotReject(mockSetup.then(([mockWarehouse, mockUser]) => {
 
-        const div = document.createElement("div");
+            const props: MainMenuProps = {
+                openDialog: jest.fn(),
+                changeWarehouse: jest.fn(),
+                signOut: jest.fn(),
+                setFind: jest.fn(),
+                warehouse: mockWarehouse,
+                user: mockUser,
+            };
 
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<MainMenuPage.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
+            const div = document.createElement("div");
+
+            ReactDOM.render(<MemoryRouter>
+                <MainMenuPage {...props} />
+            </MemoryRouter>, div);
+            ReactDOM.unmountComponentAtNode(div);
+        }));
+
     });
 });

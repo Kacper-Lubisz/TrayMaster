@@ -30,7 +30,7 @@ interface SignInPageState {
     loading: boolean;
 }
 
-interface SignInPageProps {
+export interface SignInPageProps {
     openDialog: (dialog: Dialog) => void;
 }
 
