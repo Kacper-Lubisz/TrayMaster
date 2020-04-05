@@ -179,11 +179,11 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     //#endregion
 
     //region find
-    public async trayFind(query: FindQuery): Promise<[boolean, TrayFields[]]> {
+    public async trayFind(query: FindQuery): Promise<TrayFields[]> {
         let firebaseQuery: fb.firestore.Query = firebase.database.db.collection(Utils.joinPaths("warehouses", this.id, "trays")) as fb.firestore.Query;
         if (query.categories instanceof Set) {
             if (query.categories.size > 10) {
-                return [false, []];
+                return [];
             }
             firebaseQuery = firebaseQuery.where("categoryId", "in", Array.from(query.categories).map(category => this.getCategoryID(category)));
         }
@@ -219,7 +219,7 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
             byNullSafe<TrayFields>((a) => a.weight, false, true),
         ]);
 
-        return [true, filteredTrays.sort(sort)];
+        return filteredTrays.sort(sort);
     }
 
     //endregion

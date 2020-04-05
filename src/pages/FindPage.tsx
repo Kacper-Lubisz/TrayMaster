@@ -20,7 +20,6 @@ export enum SortBy {
     expiry = "expiry",
     category = "category",
     weight = "weight",
-    location = "location",
     none = "none"
 }
 
@@ -53,10 +52,6 @@ export interface FindQuery {
 
 export interface FindResults {
     query: FindQuery;
-    /**
-     * If more than 10 categories are selected, the find will fail
-     */
-    outcome: boolean;
     results: null | TrayFields[];
 }
 
@@ -298,7 +293,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
             </table>;
         } else if (!this.props.find?.results) {
             return <LoadingSpinner/>;
-        } else if (!this.props.find.outcome) {
+        } else if (this.props.find.query.categories instanceof Set && this.props.find.query.categories.size > 10) {
             return <div id="find-no-results">
                 Cannot find more than 10 categories at a time.
             </div>;
