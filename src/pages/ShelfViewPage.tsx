@@ -1228,12 +1228,11 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
                     {blameText}
                     <DialogButtons buttons={[
                         {
-                            name: "Discard", buttonProps: {
+                            name: "Cancel", buttonProps: {
                                 onClick: this.props.onDiscard,
-                                style: {borderColor: "red"}
                             }
                         }, {
-                            name: "Done", buttonProps: {
+                            name: "Save", buttonProps: {
                                 onClick: () => this.props.onSubmit(this.state.draft),
                             }
                         }

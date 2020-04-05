@@ -1,4 +1,4 @@
-import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import {cloneDeep, isEqual} from "lodash";
 import React from "react";
@@ -6,8 +6,9 @@ import {User} from "../core/Firebase";
 import {Bay, Shelf, Warehouse, WarehouseModel, Zone} from "../core/WarehouseModel";
 import {ZoneFields} from "../core/WarehouseModel/Layers/Zone";
 import {SettingsTab} from "../pages/SettingsPage";
+import {createConfirmationDialog, createUnsavedDialog, DANGER_COLOR} from "../utils/dialogs";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
-import {Dialog, DialogButtons, DialogTitle} from "./Dialog";
+import {Dialog} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
 import {ZoneDisplayComponent} from "./ZoneDisplayComponent";
@@ -86,7 +87,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         this.props.setLock((_: SettingsTab) => {
             const hasUnsavedChanges = this.hasUnsavedChanges();
             if (hasUnsavedChanges) {
-                this.props.openDialog(this.createUnsavedDialog());
+                this.props.openDialog(createUnsavedDialog());
             }
             return hasUnsavedChanges;
         });
@@ -98,7 +99,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      */
     private setSelected(zone: Zone): void {
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog(this.createUnsavedDialog());
+            this.props.openDialog(createUnsavedDialog());
         } else {
             this.setState(_ => ({
                 state: "editing",
@@ -118,7 +119,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
 
         if (stateAtRender.state === "nothingSelected") {
             return <div id="empty-message-container">
-                <p id="empty-message">Select or add a zone to start editing</p>
+                <p id="empty-message">Select or create a new zone to start editing</p>
             </div>;
         } else {
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
@@ -237,13 +238,11 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             return <>
                 <div id="edit-controls">
                     <div id="edit-header">
-                        <h4>{stateAtRender.state === "editing"
-                             ? `Edit '${stateAtRender.editedZone.name}'${unsavedLabel}`
-                             : `New Zone: '${stateAtRender.newZone.name}'`}</h4>
+                        <h4>{`Edit '${stateAtRender.editedZone.name}'${unsavedLabel}`}</h4>
 
                         {stateAtRender.state === "editing" ? <button
                             onClick={this.deleteZone.bind(this, stateAtRender)}
-                        >Delete Zone</button> : null}
+                        >Delete</button> : null}
 
                     </div>
                     <table>
@@ -259,23 +258,23 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                             zone={stateAtRender.editedZone}
                             selected={null} onSelected={null}
                         />
-                    </> : <div id="new-zone-msg">NB: A zone's dimensions can't be changed once it's created.</div>}
+                    </> : <div id="new-zone-msg">A zone's dimensions can't be changed once it has been created.</div>}
                 </div>
 
                 <div id="bottom-btns">
+                    <button
+                        onClick={this.resetEditor.bind(this)}
+                    >Cancel
+                    </button>
                     {stateAtRender.state === "editing" ? <button
                         disabled={!this.hasUnsavedChanges()}
                         onClick={this.hasUnsavedChanges() ? this.updateZone.bind(this, stateAtRender) : undefined}
-                    >Save Changes
+                    >Save
                     </button> : <button
                          disabled={!this.hasUnsavedChanges()}
                          onClick={this.hasUnsavedChanges() ? this.createZone.bind(this, stateAtRender) : undefined}
-                     >Create Zone
+                     >Create
                      </button>}
-                    <button
-                        onClick={this.resetEditor.bind(this)}
-                    >Discard {stateAtRender.state === "editing" ? "Changes" : ""}
-                    </button>
                 </div>
             </>;
 
@@ -288,7 +287,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     private newZone(): void {
 
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog(this.createUnsavedDialog());
+            this.props.openDialog(createUnsavedDialog());
 
         } else {
             this.setState(_ => ({
@@ -394,12 +393,21 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      * Deletes category, makes sure indices inside object matches actual
      * indices after removing one category
      */
-    private async deleteZone(state: EditingState): Promise<void> {
+    private deleteZone(state: EditingState): void {
 
-        await state.selectedZone.delete(true);
-        this.setState(_ => ({
-            state: "nothingSelected"
-        }), this.props.updatePage);
+        this.props.openDialog(createConfirmationDialog(
+            "Confirm Deletion",
+            {icon: faExclamationTriangle, color: DANGER_COLOR},
+            "Are you sure you want to delete this zone?",
+            "Delete",
+            () => {
+                state.selectedZone.delete(true).then(() => {
+                    this.setState(_ => ({
+                        state: "nothingSelected"
+                    }), this.props.updatePage);
+                });
+            }
+        ));
 
     }
 
@@ -431,24 +439,6 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         </div>;
 
 
-    }
-
-    /**
-     * Returns the unsaved changes dialog
-     */
-    private createUnsavedDialog(): Dialog {
-        return {
-            closeOnDocumentClick: true,
-            dialog: (close: () => void) => <>
-                <DialogTitle title="Unsaved Changes" iconProps={{icon: faInfoCircle, color: "blue"}}/>
-                <div className="dialogContent">
-                    <h2>Please save or discard your current changes before proceeding</h2>
-                    <DialogButtons buttons={[
-                        {name: "OK", buttonProps: {onClick: close}}
-                    ]}/>
-                </div>
-            </>
-        };
     }
 
 }
