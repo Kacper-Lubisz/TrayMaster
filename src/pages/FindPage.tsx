@@ -53,6 +53,9 @@ export interface FindQuery {
 
 export interface FindResults {
     query: FindQuery;
+    /**
+     * If more than 10 categories are selected, the find will fail
+     */
     outcome: boolean;
     results: null | TrayFields[];
 }

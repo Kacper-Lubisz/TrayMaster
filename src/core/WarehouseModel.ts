@@ -226,9 +226,12 @@ export class WarehouseManager {
      * @param id - The database ID of the warehouse to load
      * @returns The loaded warehouse
      */
-    public static async loadWarehouseByID(id: string): Promise<Warehouse | undefined> {
-        return typeof WarehouseManager.warehouses[id] === "undefined" ? undefined
-                                                                      : await this.loadWarehouse(this.warehouses[id]);
+    public static async loadWarehouseByID(id: string): Promise<Warehouse> {
+        if (typeof WarehouseManager.warehouses[id] === "undefined") {
+            throw Error("This warehouse can't be loaded");
+        } else {
+            return await this.loadWarehouse(this.warehouses[id]);
+        }
     }
 }
 
