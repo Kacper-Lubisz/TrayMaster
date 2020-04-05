@@ -238,7 +238,9 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             return <>
                 <div id="edit-controls">
                     <div id="edit-header">
-                        <h4>{`Edit '${stateAtRender.editedZone.name}'${unsavedLabel}`}</h4>
+                        <h4>{stateAtRender.state === "editing"
+                             ? `Edit '${stateAtRender.editedZone.name}'${unsavedLabel}`
+                             : `New Zone: '${stateAtRender.newZone.name}'`}</h4>
 
                         {stateAtRender.state === "editing" ? <button
                             onClick={this.deleteZone.bind(this, stateAtRender)}

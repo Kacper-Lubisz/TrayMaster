@@ -194,7 +194,9 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
                 <div id="edit-controls">
                     <div id="edit-header">
                         <h4>{
-                            `Edit '${categoryToEdit.name}'${unsavedLabel}`
+                            stateAtRender.state === "editing"
+                            ? `Edit '${categoryToEdit.name}'${unsavedLabel}`
+                            : `New Category '${categoryToEdit.name}'`
                         }</h4>
                         {
                             stateAtRender.state === "editing" ? <button
