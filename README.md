@@ -1,19 +1,18 @@
 # TrayMaster
 [![GitHub Actions CI Badge](https://github.com/Kacper-Lubisz/TrayMaster/workflows/Node%20CI/badge.svg)](https://github.com/Kacper-Lubisz/TrayMaster/actions?query=workflow%3A%22Node+CI%22)
 
-This program is a web-app for managing warehouse stock, specifically aimed at use in food stores.
-It was originally written for [County Durham Foodbank](https://durham.foodbank.org.uk/) and the
-[Trussell Trust](https://www.trusselltrust.org/).
+TrayMaster is a software application primarily intended for managing trays of perishable stock on shelves inside a warehouse.
+It has been designed following consultation and analysis of the processes currently in use at [Durham Christian 
+Partnership](http://www.durhamcp.org.uk/)’s [Chester-le-Street foodstore](https://durham.foodbank.org.uk/); but more
+generally will be applicable to many other [Trussell Trust](https://www.trusselltrust.org/)\-affiliated foodbanks across the
+UK, as well as other sectors with physical stock located within trays where incoming stock is hard to predict. This software
+should complement existing workflows and aid warehouse staff in their day-to-day activities.
 
-It was designed to allow them to model their warehouse digitally, with the primary aim of assisting with the existing
+It was designed to allow for warehouses to be modelled digitally, with the primary aim of assisting with the existing
 workflows of foodstore staff by:
 - Providing an efficient, flexible and intuitive stocktaking interface to maximise data collection speed
 - Minimising food wastage by allowing the warehouse to be queried for trays expiring soon
 - Allowing statistics and reports to be compiled from the data stored about the warehouse
-
-It is also designed to be configurable and flexible enough to fit into other foodstore workflows if so desired.
-In particular, a secondary goal was for the program to be able to be deployed in other Trussell Trust locations across
-the UK.
 
 ## User Manual
 This README contains only basic project information. The full project documentation (for users, administrators and developers)
@@ -38,5 +37,4 @@ Firebase static hosting (though certain routing features won't work on static ho
 If you wish to contribute to this project, please fork this repository and make pull requests!
 
 The project was developed using the JetBrains WebStorm IDE, and includes configuration files for both ESLint and
-the built-in WebStorm code inspector.
-We recommend that you use both if possible, though WebStorm does cost money for most non-students.
+the built-in WebStorm code inspector. We recommend that you use both if possible.
