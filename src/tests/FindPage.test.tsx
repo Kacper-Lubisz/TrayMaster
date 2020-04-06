@@ -66,8 +66,7 @@ describe("Crash tests: ", () => {
 
 describe("Results rendering tests:", () => {
 
-    it("loads test data", async () => {
-
+    it("takes no results without crashing", async () => {
         const [warehouse, , , results] = await newSetup;
 
         const mockSetQuery = jest.fn();
@@ -80,19 +79,42 @@ describe("Results rendering tests:", () => {
             setQuery: mockSetQuery,
             setCurrentView: jest.fn()
         };
-        let page: Enzyme.ReactWrapper;
 
-        it("takes no results without crashing", () => {
-            page = Enzyme.mount(<MemoryRouter>
-                <FindPage {...props}/>
-            </MemoryRouter>);
-        });
+        Enzyme.mount(<MemoryRouter>
+            <FindPage {...props}/>
+        </MemoryRouter>);
 
-        it("displays a message to tell the user that there are no results", () => {
-            expect(page.find("div#findResults > div").text()).toEqual("Couldn't find any trays that match this query.");
-            page.unmount();
-        });
+    });
 
+    it("displays correct message", async () => {
+        const [warehouse, , , results] = await newSetup;
+
+        const mockSetQuery = jest.fn();
+        const props: FindPageProps = {
+            warehouse: warehouse,
+            find: {
+                ...results,
+                results: []
+            },
+            setQuery: mockSetQuery,
+            setCurrentView: jest.fn()
+        };
+
+        const page: Enzyme.ReactWrapper = Enzyme.mount(<MemoryRouter>
+            <FindPage {...props}/>
+        </MemoryRouter>);
+
+        expect(page.find("div#findResults > div").text()).toEqual("Couldn't find any trays that match this query.");
+        page.unmount();
+
+    });
+
+
+    it("displays the right number of find results", async () => {
+
+        const [warehouse, , , results] = await newSetup;
+
+        const mockSetQuery = jest.fn();
         const fullProps: FindPageProps = {
             warehouse: warehouse,
             find: results,
@@ -100,14 +122,11 @@ describe("Results rendering tests:", () => {
             setCurrentView: jest.fn()
         };
 
-        it("displays the right number of find results", () => {
-            page = Enzyme.mount(<MemoryRouter>
-                <FindPage {...fullProps}/>
-            </MemoryRouter>);
+        const page: Enzyme.ReactWrapper = Enzyme.mount(<MemoryRouter>
+            <FindPage {...fullProps}/>
+        </MemoryRouter>);
 
-            expect(page.find("div#findResults > table")).toHaveLength(warehouse.trays.length);
-        });
-
+        expect(page.find("div#findResults > table")).toHaveLength(warehouse.trays.length);
     });
 
 });
