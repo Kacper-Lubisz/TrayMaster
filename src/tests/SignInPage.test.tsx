@@ -1,19 +1,23 @@
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
 import {MemoryRouter} from "react-router-dom";
 import SignInPage, {SignInPageProps} from "../pages/SignInPage";
 
+Enzyme.configure({adapter: new React16Adapter()});
+
 describe("Crash tests: ", () => {
     it("renders without crashing", () => {
-        const div = document.createElement("div");
 
         const props: SignInPageProps = {
             openDialog: jest.fn()
         };
 
-        ReactDOM.render(<MemoryRouter>
-            <SignInPage {...props} />
-        </MemoryRouter>, div);
-        ReactDOM.unmountComponentAtNode(div);
+        render(
+            <MemoryRouter>
+                <SignInPage {...props} />
+            </MemoryRouter>
+        );
+
     });
 });

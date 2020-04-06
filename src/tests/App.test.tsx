@@ -1,9 +1,12 @@
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
 import App from "../core/App";
 
+Enzyme.configure({adapter: new React16Adapter()});
+
 it("renders without crashing", () => {
-    const div = document.createElement("div");
-    ReactDOM.render(<App/>, div);
-    ReactDOM.unmountComponentAtNode(div);
+
+    render(<App/>);
+
 });

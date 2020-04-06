@@ -1,13 +1,14 @@
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
 import {LoadingPage} from "../pages/Loading";
 
+Enzyme.configure({adapter: new React16Adapter()});
 
 describe("Crash tests: ", () => {
     it("renders without crashing", () => {
-        const div = document.createElement("div");
 
-        ReactDOM.render(<LoadingPage/>, div);
-        ReactDOM.unmountComponentAtNode(div);
+        render(<LoadingPage/>);
+
     });
 });

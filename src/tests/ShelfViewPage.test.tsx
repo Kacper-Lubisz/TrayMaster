@@ -1,33 +1,29 @@
-import {doesNotReject} from "assert";
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
 import {MemoryRouter} from "react-router-dom";
 import ShelfViewPage, {ShelfViewProps} from "../pages/ShelfViewPage";
 import {mockSetup} from "./sharedTestValues";
 
+Enzyme.configure({adapter: new React16Adapter()});
+
 describe("Crash tests: ", () => {
-    it("renders without crashing", () => {
+    it("renders without crashing", async () => {
 
-        doesNotReject(mockSetup.then(([warehouse, user]) => {
+        const [warehouse, user] = await mockSetup;
 
-            const props: ShelfViewProps = {
-                openDialog: jest.fn(),
-                setFind: jest.fn(),
-                setCurrentView: jest.fn(),
-                user: user,
-                warehouse: warehouse,
-                currentView: warehouse.shelves[0],
-            };
-            console.log(document);
+        const props: ShelfViewProps = {
+            openDialog: jest.fn(),
+            setFind: jest.fn(),
+            setCurrentView: jest.fn(),
+            user: user,
+            warehouse: warehouse,
+            currentView: warehouse.shelves[0],
+        };
 
-            const div = document.createElement("div");
-
-            ReactDOM.render(<MemoryRouter>
-                <ShelfViewPage {...props} />
-            </MemoryRouter>, div);
-            ReactDOM.unmountComponentAtNode(div);
-
-        }));
+        render(<MemoryRouter>
+            <ShelfViewPage {...props} />
+        </MemoryRouter>);
 
     });
 });

@@ -1,9 +1,8 @@
 import {doesNotReject} from "assert";
-import Enzyme from "enzyme";
+import Enzyme, {render} from "enzyme";
 import React16Adapter from "enzyme-adapter-react-16";
 
 import React from "react";
-import ReactDOM from "react-dom";
 import {MemoryRouter} from "react-router-dom";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel";
@@ -55,12 +54,10 @@ describe("Crash tests: ", () => {
                 setQuery: mockSetQuery,
                 setCurrentView: jest.fn()
             };
-            const div = document.createElement("div");
 
-            ReactDOM.render(<MemoryRouter>
+            render(<MemoryRouter>
                 <FindPage {...props} />
-            </MemoryRouter>, div);
-            ReactDOM.unmountComponentAtNode(div);
+            </MemoryRouter>);
 
         }));
 
@@ -69,11 +66,13 @@ describe("Crash tests: ", () => {
 
 describe("Results rendering tests:", () => {
 
-    doesNotReject(newSetup.then(([mockWarehouse, , , results]) => {
+    it("loads test data", async () => {
+
+        const [warehouse, , , results] = await newSetup;
 
         const mockSetQuery = jest.fn();
         const props: FindPageProps = {
-            warehouse: mockWarehouse,
+            warehouse: warehouse,
             find: {
                 ...results,
                 results: []
@@ -95,7 +94,7 @@ describe("Results rendering tests:", () => {
         });
 
         const fullProps: FindPageProps = {
-            warehouse: mockWarehouse,
+            warehouse: warehouse,
             find: results,
             setQuery: mockSetQuery,
             setCurrentView: jest.fn()
@@ -106,9 +105,9 @@ describe("Results rendering tests:", () => {
                 <FindPage {...fullProps}/>
             </MemoryRouter>);
 
-            expect(page.find("div#findResults > table")).toHaveLength(mockWarehouse.trays.length);
+            expect(page.find("div#findResults > table")).toHaveLength(warehouse.trays.length);
         });
 
-    }));
+    });
 
 });

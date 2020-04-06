@@ -1,29 +1,28 @@
-import {doesNotReject} from "assert";
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
 import {MemoryRouter} from "react-router-dom";
 import WarehouseSwitcher, {WarehouseSwitcherProps} from "../pages/WarehouseSwitcher";
 import {mockSetup} from "./sharedTestValues";
 
+Enzyme.configure({adapter: new React16Adapter()});
 
 describe("Crash tests: ", () => {
-    it("renders without crashing", () => {
+    it("renders without crashing", async () => {
 
-        doesNotReject(mockSetup.then(([, user]) => {
+        const [, user] = await mockSetup;
 
-            const props: WarehouseSwitcherProps = {
-                user: user,
-                setWarehouse: jest.fn(),
-                signOut: jest.fn(),
-            };
-            const div = document.createElement("div");
+        const props: WarehouseSwitcherProps = {
+            user: user,
+            setWarehouse: jest.fn(),
+            signOut: jest.fn(),
+        };
 
-
-            ReactDOM.render(<MemoryRouter>
+        render(
+            <MemoryRouter initialEntries={["/warehouses"]}>
                 <WarehouseSwitcher {...props} />
-            </MemoryRouter>, div);
-            ReactDOM.unmountComponentAtNode(div);
+            </MemoryRouter>
+        );
 
-        }));
     });
 });
