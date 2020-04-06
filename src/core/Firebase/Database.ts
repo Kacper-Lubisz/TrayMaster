@@ -107,24 +107,38 @@ export class Database {
         if (!ONLINE) {
             return;
         }
-        const response: DocumentSnapshot = await this.db.doc(path).get();
-        return new DatabaseDocument<TFields>(response.ref.parent.path, response.id, response.data() as TFields);
+        try {
+            const response: DocumentSnapshot = await this.db.doc(path).get();
+            return new DatabaseDocument<TFields>(response.ref.parent.path, response.id, response.data() as TFields);
+        } catch (e) {
+            console.warn(`Warning: could not load document at '${path}'.`);
+        }
     }
 
     public async loadCollection<TFields>(path: string): Promise<DatabaseDocument<TFields>[]> {
         if (!ONLINE) {
             return [];
         }
-        return (await this.db.collection(path).get()).docs.map(snapshot =>
-            new DatabaseDocument<TFields>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TFields));
+        try {
+            return (await this.db.collection(path).get()).docs.map(snapshot =>
+                new DatabaseDocument<TFields>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TFields));
+        } catch (e) {
+            console.warn(`Warning: could not load documents at '${path}'.`);
+            return [];
+        }
     }
 
     public async loadQuery<TFields>(query: Query): Promise<DatabaseDocument<TFields>[]> {
         if (!ONLINE) {
             return [];
         }
-        return (await query.get()).docs.map(snapshot =>
-            new DatabaseDocument<TFields>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TFields));
+        try {
+            return (await query.get()).docs.map(snapshot =>
+                new DatabaseDocument<TFields>(snapshot.ref.parent.path, snapshot.id, snapshot.data() as TFields));
+        } catch (e) {
+            console.warn("Warning: could not perform load query.");
+            return [];
+        }
     }
 
     //#endregion
