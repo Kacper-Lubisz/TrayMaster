@@ -1,71 +1,40 @@
-![](https://github.com/Kacper-Lubisz/TrayMaster/workflows/Node%20CI/badge.svg)
+# TrayMaster
+[![GitHub Actions CI Badge](https://github.com/Kacper-Lubisz/TrayMaster/workflows/Node%20CI/badge.svg)](https://github.com/Kacper-Lubisz/TrayMaster/actions?query=workflow%3A%22Node+CI%22)
 
-# HOW WE'RE USING BRANCHES
-- Master:
-    - Stable
-    - Committed irregularly
-    - For 'major' updates
+TrayMaster is a software application primarily intended for managing trays of perishable stock on shelves inside a warehouse.
+It has been designed following consultation and analysis of the processes currently in use at [Durham Christian 
+Partnership](http://www.durhamcp.org.uk/)’s [Chester-le-Street foodstore](https://durham.foodbank.org.uk/); but more
+generally will be applicable to many other [Trussell Trust](https://www.trusselltrust.org/)\-affiliated foodbanks across the
+UK, as well as other sectors with physical stock located within trays where incoming stock is hard to predict. This software
+should complement existing workflows and aid warehouse staff in their day-to-day activities.
 
+It was designed to allow for warehouses to be modelled digitally, with the primary aim of assisting with the existing
+workflows of foodstore staff by:
+- Providing an efficient, flexible and intuitive stocktaking interface to maximise data collection speed
+- Minimising food wastage by allowing the warehouse to be queried for trays expiring soon
+- Allowing statistics and reports to be compiled from the data stored about the warehouse
 
-- Staging / Sprint branch:
-    - Stable
-    - Used as a group 'working' branch
-    - Committed to when a feature is:
-        - finished
-        - fully commented and tidied
-        - compliant with group code style guidelines
-        - fully documented
-    - Commits need approval from one other group member
-    - Merged to master
+## User Manual
+This README contains only basic project information. The full project documentation (for users, administrators and developers)
+can be found at [TODO add manual link].
 
+## Installation & Usage
+To install, clone this repository and run `npm install`.
+We also offer prebuilt versions on the [Releases](https://github.com/Kacper-Lubisz/TrayMaster/releases) page.
 
-- Individual branches:
-    - Unstable
-    - For working on features
-    - Merged to staging
+The following commands are available:
+- `npm start`: launch a local development copy of the application at `localhost:3000`
+- `npm run build`: build the application for production deployment (outputs to the `build` directory)
+- `npm test`: run all Jest test suites
 
+### Hosting
+The project, by default, is configured to run at `https://traymaster.herokuapp.com` and deploy automatically to Heroku
+on all commits to the `master` branch. This is configured in `static.json`. There's also configuration in place for
+Firebase static hosting (though certain routing features won't work on static hosts): this can be found in
+`firebase.json`.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Contributing
+If you wish to contribute to this project, please fork this repository and make pull requests!
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+The project was developed using the JetBrains WebStorm IDE, and includes configuration files for both ESLint and
+the built-in WebStorm code inspector. We recommend that you use both if possible.
