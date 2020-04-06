@@ -260,7 +260,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                             zone={stateAtRender.editedZone}
                             selected={null} onSelected={null}
                         />
-                    </> : <div id="new-zone-msg">A zone's dimensions can't be changed once it has been created.</div>}
+                    </> : <div id="new-zone-msg">A zone's dimensions cannot be changed once it has been created.</div>}
                 </div>
 
                 <div id="bottom-btns">
