@@ -196,6 +196,14 @@ class App extends React.Component<unknown, AppState> {
                             warehouse={this.state.warehouse}
                             find={this.state.find}
                             setQuery={this.setFindQuery.bind(this)}
+                            setCurrentView={async (newView) => {
+                                this.setState((state) => ({
+                                    ...state,
+                                    currentView: newView
+                                }));
+                                await newView.load(true, WarehouseModel.tray);
+                                this.forceUpdate();
+                            }}
                         /> : <Redirect to="/"/> : <Redirect to="/menu"/>
                     }</Route>
                     <Route component={PageNotFoundPage}/>

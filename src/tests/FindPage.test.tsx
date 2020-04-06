@@ -28,7 +28,6 @@ const newSetup: Promise<[Warehouse, User, FindQuery, FindResults]> = mockSetup.t
         };
         const results: FindResults = {
             query: query,
-            outcome: true,
             results: mockWarehouse.trays.map(tray => ({
                 locationName: tray.locationString,
                 categoryId: mockWarehouse.getCategoryID(tray.category),
@@ -53,7 +52,8 @@ describe("Crash tests: ", () => {
             const props: FindPageProps = {
                 warehouse: mockWarehouse,
                 find: results,
-                setQuery: mockSetQuery
+                setQuery: mockSetQuery,
+                setCurrentView: jest.fn()
             };
             const div = document.createElement("div");
 
@@ -78,7 +78,8 @@ describe("Results rendering tests:", () => {
                 ...results,
                 results: []
             },
-            setQuery: mockSetQuery
+            setQuery: mockSetQuery,
+            setCurrentView: jest.fn()
         };
         let page: Enzyme.ReactWrapper;
 
@@ -96,7 +97,8 @@ describe("Results rendering tests:", () => {
         const fullProps: FindPageProps = {
             warehouse: mockWarehouse,
             find: results,
-            setQuery: mockSetQuery
+            setQuery: mockSetQuery,
+            setCurrentView: jest.fn()
         };
 
         it("displays the right number of find results", () => {

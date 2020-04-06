@@ -9,6 +9,7 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FindPanel, PanelState} from "../components/FindPanel";
 import {LoadingSpinner} from "../components/LoadingSpinner";
+import {ViewPortLocation} from "../components/ViewPort";
 import {Category, NULL_CATEGORY_STRING, Shelf, Warehouse} from "../core/WarehouseModel";
 import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
 import Utils from "../core/WarehouseModel/Utils";
@@ -59,6 +60,7 @@ export interface FindPageProps {
     warehouse?: Warehouse;
     find: FindResults;
     setQuery: (query: FindQuery) => void;
+    setCurrentView: (newView: ViewPortLocation) => void;
 }
 
 interface FindPageState {
@@ -285,7 +287,15 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCol"><span>{weightString}</span></td>
-                        <td style={zoneStyle}>{locationString}</td>
+                        <td
+                            style={zoneStyle}
+                            onClick={() => {
+                                if (shelf) {
+                                    this.props.history.push("/");
+                                    this.props.setCurrentView(shelf);
+                                }
+                            }}
+                        >{locationString}</td>
                         <td className="commentCell">{tray.comment}</td>
                     </tr>;
                 })}
