@@ -1185,8 +1185,8 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
         const blameText = (() => {
             if (this.props.numberOfTrays > 1) {
                 return <div>
-                    Multiple trays selected!<br/>
-                    Saving will overwrite any existing comments. Select a single tray to view Last Modified data.
+                    Multiple trays selected. Saving will overwrite any existing comments!<br/>
+                    Select a single tray to edit an existing comment or view Last Modified data.
                 </div>;
             } else {
                 const blameName = this.state.blameName ? this.state.blameName : "Unknown";
