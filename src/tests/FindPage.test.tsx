@@ -126,7 +126,7 @@ describe("Results rendering tests:", () => {
             <FindPage {...fullProps}/>
         </MemoryRouter>);
 
-        expect(page.find("div#findResults > table")).toHaveLength(warehouse.trays.length);
+        expect(page.find("div#findResults > table > tbody > tr")).toHaveLength(warehouse.trays.length);
     });
 
 });
