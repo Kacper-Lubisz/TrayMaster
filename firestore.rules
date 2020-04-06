@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow write: if request.auth.uid == uid &&
+        request.resource.data.isAdmin == resource.data.isAdmin;
+      allow read: if request.auth.uid == uid || resource.data.isAdmin;
+    }
+
+    match /warehouses/{warehouseID} {
+      function warehouseAccess() {
+        return request.auth.uid != null &&
+          warehouseID in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accessibleWarehouseIDs
+      }
+
+      allow read: if true;
+      allow write: if warehouseAccess();
+
+      match /{warehouseDocument=**} {
+        allow read, write: if warehouseAccess();
+      }
+    }
+  }
+}
