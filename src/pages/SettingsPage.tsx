@@ -51,6 +51,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 user={this.props.user}
                 warehouse={this.props.warehouse}
                 repaintSettings={this.forceUpdate.bind(this)}
+                openDialog={this.props.openDialog}
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor

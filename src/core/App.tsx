@@ -123,7 +123,7 @@ class App extends React.Component<unknown, AppState> {
                 <Switch>
                     <Route path="/" exact>
                         {this.state.user && this.state.warehouse && this.state.currentView ? <ShelfViewPage
-                            setFind={this.setFindQuery.bind(this)}
+                            setFind={this.setFindQuery.bind(this, this.state.warehouse)}
                             openDialog={this.openDialog.bind(this)}
 
                             warehouse={this.state.warehouse}
@@ -149,7 +149,7 @@ class App extends React.Component<unknown, AppState> {
                                 }}
                                 signOut={this.signOut.bind(this)}
                                 user={this.state.user}
-                                setFind={this.setFindQuery.bind(this)}
+                                setFind={this.setFindQuery.bind(this, this.state.warehouse)}
                                 warehouse={this.state.warehouse}
                                 openDialog={this.openDialog.bind(this)}
                             />;
@@ -195,14 +195,22 @@ class App extends React.Component<unknown, AppState> {
                         this.state.find ? <FindPage
                             warehouse={this.state.warehouse}
                             find={this.state.find}
-                            setQuery={this.setFindQuery.bind(this)}
+                            setQuery={this.setFindQuery.bind(this, this.state.warehouse)}
                             setCurrentView={async (newView) => {
                                 this.setState((state) => ({
                                     ...state,
                                     currentView: newView
                                 }));
-                                await newView.load(true, WarehouseModel.tray);
-                                this.forceUpdate();
+                                try {
+                                    await newView.load(true, WarehouseModel.tray);
+                                    this.forceUpdate();
+                                } catch (e) {
+                                    this.openDialog(buildErrorDialog(
+                                        "Failed to load shelf",
+                                        e.toString(),
+                                        true
+                                    ));
+                                }
                             }}
                         /> : <Redirect to="/"/> : <Redirect to="/menu"/>
                     }</Route>
@@ -222,13 +230,17 @@ class App extends React.Component<unknown, AppState> {
     }
 
     private async signOut(): Promise<void> {
-        await firebase.auth.signOut();
-        this.setState(state => ({
-            ...state,
-            dialog: state.dialog,
-            user: null,
-            warehouse: null
-        }));
+        try {
+            await firebase.auth.signOut();
+            this.setState(state => ({
+                ...state,
+                dialog: state.dialog,
+                user: null,
+                warehouse: null
+            }));
+        } catch (e) {
+            this.openDialog(buildErrorDialog("Failed to sign out", e.toString(), true));
+        }
     }
 
     /**
@@ -236,34 +248,39 @@ class App extends React.Component<unknown, AppState> {
      * @param warehouse The warehouse to be set
      */
     private async setWarehouse(warehouse: Warehouse): Promise<void> {
+        try {
 
-        if (this.state.user) {
-            this.state.user.lastWarehouseID = warehouse.id;
-            if (!warehouse.childrenLoaded) {
-                await WarehouseManager.loadWarehouse(warehouse);
+            if (this.state.user) {
+                this.state.user.lastWarehouseID = warehouse.id;
+                if (!warehouse.childrenLoaded) {
+                    await WarehouseManager.loadWarehouse(warehouse);
+                }
+                await this.state.user.stage(false, true);
             }
-            await this.state.user.stage(false, true);
+
+            const currentView: ViewPortLocation = (() => {
+                if (warehouse.zones.length === 0) {
+                    return warehouse;
+                } else if (warehouse.shelves.length === 0) {
+                    return warehouse.zones[0];
+                } else {
+                    warehouse.shelves[0].load(true, WarehouseModel.tray).then(() => {
+                        this.forceUpdate();
+                    });
+                    return warehouse.shelves[0];
+                }
+            })();
+
+
+            this.setState(state => ({
+                ...state,
+                warehouse: warehouse,
+                currentView: currentView
+            }));
+
+        } catch (e) {
+            this.openDialog(buildErrorDialog("Failed to load warehouse and save settings", e.toString(), true));
         }
-
-        const currentView: ViewPortLocation = (() => {
-            if (warehouse.zones.length === 0) {
-                return warehouse;
-            } else if (warehouse.shelves.length === 0) {
-                return warehouse.zones[0];
-            } else {
-                warehouse.shelves[0].load(true, WarehouseModel.tray).then(() => {
-                    this.forceUpdate();
-                });
-                return warehouse.shelves[0];
-            }
-        })();
-
-
-        this.setState(state => ({
-            ...state,
-            warehouse: warehouse,
-            currentView: currentView
-        }));
     }
 
 
@@ -271,10 +288,8 @@ class App extends React.Component<unknown, AppState> {
      * This method allows for setting the find query
      * @param query
      */
-    private async setFindQuery(query: FindQuery): Promise<void> {
-        if (this.state.warehouse) {
-            const warehouse = this.state.warehouse;
-
+    private async setFindQuery(warehouse: Warehouse, query: FindQuery): Promise<void> {
+        try {
             this.setState(state => ({
                 ...state,
                 find: {
@@ -293,8 +308,8 @@ class App extends React.Component<unknown, AppState> {
                 }
             }));
 
-        } else {
-            throw new Error("Can't perform find when the warehouse is undefined");
+        } catch (e) {
+            this.openDialog(buildErrorDialog("Failed to search", e.toString(), true));
         }
     }
 

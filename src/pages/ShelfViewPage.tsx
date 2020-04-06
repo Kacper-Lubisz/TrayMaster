@@ -18,7 +18,7 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import Popup from "reactjs-popup";
 import {BottomPanel} from "../components/BottomPanel";
-import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
+import {buildErrorDialog, Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
 import {SideBar, SideBarButtonProps} from "../components/SideBar";
 import {ViewPort, ViewPortLocation} from "../components/ViewPort";
 import {ZoneDisplayComponent} from "../components/ZoneDisplayComponent";
@@ -101,11 +101,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
         cancellable.promise.then(() => {
             ShelfViewPage.cancellablePromises.delete(cancellable);
-        }).catch((reason) => {
-            if (reason !== "cancelled") {
-                throw reason;
-            }
-        });
+        }).catch();
     }
 
     static cancelAllPendingPromises(): void {
@@ -172,7 +168,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
     /**
      * This method changes the current shelf that is displayed in shelf view.  The shelf can be changed to a specific
-     * shelf or can derive a new shelf from the current shelf and a direction.  The method throws an error if the
+     * shelf or can derive a new shelf from the current shelf and a direction.  The method opens an error dialog if the
      * direction can't be moved in.  If moving to another zone the method will choose the first shelf or otherwise
      * set the view to the zone itself (if no shelves available)
      * @param direction The shelf to move to or otherwise the direction in which to move.
@@ -186,7 +182,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                 if (reason === "cancelled") {
                     console.warn("Loading promise cancelled");
                 } else {
-                    throw reason;
+                    this.props.openDialog(buildErrorDialog("Failed to load shelf", reason.toString(), true));
                 }
             });
             ShelfViewPage.cancelAllPendingPromises();
@@ -243,7 +239,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         if (reason === "cancelled") {
                             console.warn("Loading promise cancelled");
                         } else {
-                            throw reason;
+                            this.props.openDialog(buildErrorDialog("Failed to load shelf", reason.toString(), true));
                         }
                     });
                     ShelfViewPage.cancelAllPendingPromises();
@@ -284,7 +280,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                     if (reason === "cancelled") {
                         console.warn("Loading promise cancelled");
                     } else {
-                        throw reason;
+                        this.props.openDialog(buildErrorDialog("Failed to load shelf", reason.toString(), true));
                     }
                 });
                 ShelfViewPage.cancelAllPendingPromises();
@@ -315,7 +311,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                         if (reason === "cancelled") {
                             console.warn("Loading promise cancelled");
                         } else {
-                            throw reason;
+                            this.props.openDialog(buildErrorDialog("Failed to load shelf", reason.toString(), true));
                         }
                     });
                     ShelfViewPage.cancelAllPendingPromises();
@@ -358,7 +354,7 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
                             if (reason === "cancelled") {
                                 console.warn("Loading promise cancelled");
                             } else {
-                                throw reason;
+                                this.props.openDialog(buildErrorDialog("Failed to load shelf", reason.toString(), true));
                             }
                         });
                         ShelfViewPage.cancelAllPendingPromises();
@@ -660,8 +656,14 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param column The column to remove
      */
     private async removeColumn(column: Column): Promise<void> {
-        await column.delete(true);
-        this.forceUpdate();
+        try {
+
+            await column.delete(true);
+            this.forceUpdate();
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to remove columns", e.toString(), true));
+        }
     }
 
     /**
@@ -669,22 +671,28 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      * @param shelf The shelf in question
      */
     private async finaliseEditShelf(shelf: Shelf): Promise<void> {
-        shelf.columns.forEach(column => { // remove trays over max height
-            if (column.maxHeight) {
-                const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
-                column.trays.slice(column.trays.length - 1 - traysToPop, column.trays.length - 1).forEach(removed => {
-                    this.state.selected.delete(removed);
-                    removed.delete(true);
-                });
-            }
-        });
+        try {
 
-        this.setState(state => ({
-            ...state,
-            isEditShelf: !this.state.isEditShelf
-        }));
+            shelf.columns.forEach(column => { // remove trays over max height
+                if (column.maxHeight) {
+                    const traysToPop = Math.max(column.trays.length - column.maxHeight, 0);
+                    column.trays.slice(column.trays.length - 1 - traysToPop, column.trays.length - 1).forEach(removed => {
+                        this.state.selected.delete(removed);
+                        removed.delete(true);
+                    });
+                }
+            });
 
-        await shelf.stage(false, true, WarehouseModel.column);
+            this.setState(state => ({
+                ...state,
+                isEditShelf: !this.state.isEditShelf
+            }));
+
+            await shelf.stage(false, true, WarehouseModel.column);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to save changes", e.toString(), true));
+        }
     }
 
     /**
@@ -721,51 +729,56 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
      */
 
     private async clearTrays(): Promise<void> {
+        try {
 
-        const columnMap: Map<Column, TrayCell[]> = new Map();
-        this.getSelectedTrayCells().forEach(cell => {
-            if (columnMap.has(cell.parentColumn)) {
-                columnMap.get(cell.parentColumn)?.push(cell);
-            } else {
-                columnMap.set(cell.parentColumn, [cell]);
-            }
-        });
-
-        const newSelectedMap = new Map(this.state.selected);
-        Array.from(columnMap.entries()).forEach(([column, cells]) => {
-
-            if (this.props.user.clearAboveSelection) {
-                const bottomCellIndex = cells.reduce((prev, current) => {
-                    if (prev === null) {
-                        return current;
-                    } else if (prev.index > current.index) {
-                        return current;
-                    } else {
-                        return prev;
-                    }
-                }, cells[0]).index;
-
-                for (let i = column.trays.length - 1; i >= 0; i--) {
-                    const tray = column.trays[i];
-                    if (tray.index >= bottomCellIndex) {
-                        newSelectedMap.set(tray, false);
-                        tray.delete(true);
-                    }
+            const columnMap: Map<Column, TrayCell[]> = new Map();
+            this.getSelectedTrayCells().forEach(cell => {
+                if (columnMap.has(cell.parentColumn)) {
+                    columnMap.get(cell.parentColumn)?.push(cell);
+                } else {
+                    columnMap.set(cell.parentColumn, [cell]);
                 }
-            } else {
-                cells.forEach(cell => {
-                    if (cell instanceof Tray) {
-                        newSelectedMap.set(cell, false);
-                        cell.delete(true);
+            });
+
+            const newSelectedMap = new Map(this.state.selected);
+            Array.from(columnMap.entries()).forEach(([column, cells]) => {
+
+                if (this.props.user.clearAboveSelection) {
+                    const bottomCellIndex = cells.reduce((prev, current) => {
+                        if (prev === null) {
+                            return current;
+                        } else if (prev.index > current.index) {
+                            return current;
+                        } else {
+                            return prev;
+                        }
+                    }, cells[0]).index;
+
+                    for (let i = column.trays.length - 1; i >= 0; i--) {
+                        const tray = column.trays[i];
+                        if (tray.index >= bottomCellIndex) {
+                            newSelectedMap.set(tray, false);
+                            tray.delete(true);
+                        }
                     }
-                });
-            }
+                } else {
+                    cells.forEach(cell => {
+                        if (cell instanceof Tray) {
+                            newSelectedMap.set(cell, false);
+                            cell.delete(true);
+                        }
+                    });
+                }
 
-        });
+            });
 
-        this.setSelected(newSelectedMap);
+            this.setSelected(newSelectedMap);
 
-        await this.props.currentView.stage(false, true, WarehouseModel.tray);
+            await this.props.currentView.stage(false, true, WarehouseModel.tray);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to save changes", e.toString(), true));
+        }
     }
 
     /**
@@ -868,47 +881,52 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
         comment: CommentAlteration,
         couldAdvance: boolean,
     ): Promise<void> {
+        try {
 
-        const modify = (tray: Tray): void => {
-            if (category.type !== "nothing") {
-                tray.category = category.type === "set"
-                                ? this.props.warehouse.getCategoryByID(category.categoryID) ?? undefined
-                                : undefined;
-            }
-            if (expiry.type !== "nothing") {
-                tray.expiry = expiry.type === "set" ? toExpiryRange(expiry.expiry) : undefined;
-            }
-            if (weight.type !== "nothing") {
-                if (weight.type === "clear") {
-                    tray.weight = undefined;
-                } else {
-                    tray.weight = isNaN(Number(weight.weight)) ? tray.weight : Number(weight.weight);
+            const modify = (tray: Tray): void => {
+                if (category.type !== "nothing") {
+                    tray.category = category.type === "set"
+                                    ? this.props.warehouse.getCategoryByID(category.categoryID) ?? undefined
+                                    : undefined;
                 }
+                if (expiry.type !== "nothing") {
+                    tray.expiry = expiry.type === "set" ? toExpiryRange(expiry.expiry) : undefined;
+                }
+                if (weight.type !== "nothing") {
+                    if (weight.type === "clear") {
+                        tray.weight = undefined;
+                    } else {
+                        tray.weight = isNaN(Number(weight.weight)) ? tray.weight : Number(weight.weight);
+                    }
+                }
+                if (comment.type !== "nothing") {
+                    tray.comment = comment.type === "set" ? comment.comment : undefined;
+                }
+            };
+
+            if (couldAdvance) {
+                this.applyAndAdvance(
+                    true,
+                    true,
+                    modify);
+            } else {
+                this.getSelectedTrays(
+                    true,
+                    true
+                ).forEach(modify);
             }
-            if (comment.type !== "nothing") {
-                tray.comment = comment.type === "set" ? comment.comment : undefined;
+
+            await this.props.currentView.stage(false, true, WarehouseModel.tray);
+
+            if (!couldAdvance && weight !== undefined && weight.type === "set") {
+                this.setState(state => ({
+                    ...state,
+                    weight: weight.weight
+                }));
             }
-        };
 
-        if (couldAdvance) {
-            this.applyAndAdvance(
-                true,
-                true,
-                modify);
-        } else {
-            this.getSelectedTrays(
-                true,
-                true
-            ).forEach(modify);
-        }
-
-        await this.props.currentView.stage(false, true, WarehouseModel.tray);
-
-        if (!couldAdvance && weight !== undefined && weight.type === "set") {
-            this.setState(state => ({
-                ...state,
-                weight: weight.weight
-            }));
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to save changes", e.toString(), true));
         }
 
     }
