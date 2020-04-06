@@ -1203,9 +1203,8 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
         const blameText = (() => {
             if (this.props.numberOfTrays > 1) {
                 return <div>
-                    Multiple trays selected!<br/>
-                    Adding a comment will overwrite any existing comments. Select a single tray to view Last Modified
-                    data.
+                    Multiple trays selected. Saving will overwrite any existing comments!<br/>
+                    Select a single tray to edit an existing comment or view Last Modified data.
                 </div>;
             } else {
                 const blameName = this.state.blameName ? this.state.blameName : "Unknown";
@@ -1213,7 +1212,7 @@ class TrayInfoContent extends React.Component<TrayInfoDialogProps, TrayInfoDialo
                                         ? new Date(this.props.lastModified).toLocaleString("en-GB")
                                         : "Unknown";
                 return <div>
-                    This shelf was last modified by {blameName} at {blameTimeString}
+                    This tray was last modified by {blameName} at {blameTimeString}
                 </div>;
             }
 
