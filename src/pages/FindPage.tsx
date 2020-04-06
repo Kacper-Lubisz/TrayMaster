@@ -277,7 +277,8 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                     const zoneStyle = (() => {
                         return {
                             backgroundColor: background,
-                            color: getTextColorForBackground(background)
+                            color: getTextColorForBackground(background),
+                            cursor: shelf ? "pointer" : "auto"
                         };
                     })();
 
@@ -289,12 +290,10 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         <td className="weightCol"><span>{weightString}</span></td>
                         <td
                             style={zoneStyle}
-                            onClick={() => {
-                                if (shelf) {
-                                    this.props.history.push("/");
-                                    this.props.setCurrentView(shelf);
-                                }
-                            }}
+                            onClick={shelf ? () => {
+                                this.props.history.push("/");
+                                this.props.setCurrentView(shelf);
+                            } : undefined}
                         >{locationString}</td>
                         <td className="commentCell">{tray.comment}</td>
                     </tr>;
