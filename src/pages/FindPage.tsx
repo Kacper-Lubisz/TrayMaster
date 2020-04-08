@@ -291,8 +291,8 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         <td
                             style={zoneStyle}
                             onClick={shelf ? () => {
-                                this.props.history.push("/");
                                 this.props.setCurrentView(shelf);
+                                this.props.history.push("/");
                             } : undefined}
                         >{locationString}</td>
                         <td className="commentCell">{tray.comment}</td>
