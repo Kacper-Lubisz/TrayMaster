@@ -1,22 +1,28 @@
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
-import WarehouseSwitcher from "../pages/WarehouseSwitcher";
-import {mockUser, routeProps} from "./sharedTestValues";
+import {MemoryRouter} from "react-router-dom";
+import WarehouseSwitcher, {WarehouseSwitcherProps} from "../pages/WarehouseSwitcher";
+import {mockSetup} from "./sharedTestValues";
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
-
+Enzyme.configure({adapter: new React16Adapter()});
 
 describe("Crash tests: ", () => {
-    it("renders without crashing", () => {
-        const mockSetWarehouse = jest.fn();
-        const props = {
-            user: mockUser,
-            setWarehouse: mockSetWarehouse
-        };
-        const div = document.createElement("div");
+    it("renders without crashing", async () => {
 
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<WarehouseSwitcher.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
+        const [, user] = await mockSetup;
+
+        const props: WarehouseSwitcherProps = {
+            user: user,
+            setWarehouse: jest.fn(),
+            signOut: jest.fn(),
+        };
+
+        render(
+            <MemoryRouter initialEntries={["/warehouses"]}>
+                <WarehouseSwitcher {...props} />
+            </MemoryRouter>
+        );
+
     });
 });

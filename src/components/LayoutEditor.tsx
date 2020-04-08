@@ -8,7 +8,7 @@ import {ZoneFields} from "../core/WarehouseModel/Layers/Zone";
 import {SettingsTab} from "../pages/SettingsPage";
 import {createConfirmationDialog, createUnsavedDialog, DANGER_COLOR} from "../utils/dialogs";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
-import {Dialog} from "./Dialog";
+import {buildErrorDialog, Dialog} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
 import {ZoneDisplayComponent} from "./ZoneDisplayComponent";
@@ -313,52 +313,57 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      * @param state The editor state containing the new zone
      */
     private async createZone(state: NewState): Promise<void> {
+        try {
 
-        if (!state.newZone.name) {
-            state.newZone.name = LayoutEditor.DEFAULT_NAME;
-        }
-
-        if (!state.newZone.bays) {
-            state.newZone.bays = 1;
-        }
-
-        if (!state.newZone.shelves) {
-            state.newZone.shelves = 1;
-        }
-
-        const newZone = Zone.create(state.newZone.name, state.newZone.color, this.props.warehouse);
-
-        for (let bay = 0; bay < state.newZone.bays; bay++) {
-            const bayName = state.newZone.mirrorBayLabels ? toAlphabetBase(state.newZone.bays - bay - 1)
-                                                          : toAlphabetBase(bay);
-
-            const newBay = Bay.create(bayName, newZone);
-
-            for (let shelf = 0; shelf < state.newZone.shelves; shelf++) {
-
-                const shelfName = (() => {
-                    if (state.newZone.addGroundShelves) {
-                        if (shelf === 0) {
-                            return LayoutEditor.GROUND_ROW_NAME;
-                        } else {
-                            return shelf.toString();
-                        }
-                    } else {
-                        return (shelf + 1).toString();
-                    }
-                })();
-
-                Shelf.create(shelfName, false, newBay);
+            if (!state.newZone.name) {
+                state.newZone.name = LayoutEditor.DEFAULT_NAME;
             }
+
+            if (!state.newZone.bays || state.newZone.bays <= 0) {
+                state.newZone.bays = 1;
+            }
+
+            if (!state.newZone.shelves || state.newZone.shelves <= 0) {
+                state.newZone.shelves = 1;
+            }
+
+            const newZone = Zone.create(state.newZone.name, state.newZone.color, this.props.warehouse);
+
+            for (let bay = 0; bay < state.newZone.bays; bay++) {
+                const bayName = state.newZone.mirrorBayLabels ? toAlphabetBase(state.newZone.bays - bay - 1)
+                                                              : toAlphabetBase(bay);
+
+                const newBay = Bay.create(bayName, newZone);
+
+                for (let shelf = 0; shelf < state.newZone.shelves; shelf++) {
+
+                    const shelfName = (() => {
+                        if (state.newZone.addGroundShelves) {
+                            if (shelf === 0) {
+                                return LayoutEditor.GROUND_ROW_NAME;
+                            } else {
+                                return shelf.toString();
+                            }
+                        } else {
+                            return (shelf + 1).toString();
+                        }
+                    })();
+
+                    Shelf.create(shelfName, false, newBay);
+                }
+            }
+
+
+            await newZone.stage(true, true, WarehouseModel.shelf);
+            this.setState(_ => ({
+                state: "editing",
+                selectedZone: newZone,
+                editedZone: cloneDeep(newZone)
+            }), this.props.updatePage);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to create a new zone", e.toString(), true));
         }
-
-
-        await newZone.stage(true, true, WarehouseModel.shelf);
-        this.setState(_ => ({
-            state: "editing",
-            selectedZone: newZone,
-            editedZone: cloneDeep(newZone)
-        }), this.props.updatePage);
 
     }
 
@@ -366,20 +371,24 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      *Saves changes to categories, doesn't let user save category with empty name
      */
     private async updateZone(state: EditingState): Promise<void> {
+        try {
 
-        if (state.editedZone.name.length === 0) {
-            state.editedZone.name = LayoutEditor.DEFAULT_NAME;
+            if (state.editedZone.name.length === 0) {
+                state.editedZone.name = LayoutEditor.DEFAULT_NAME;
+            }
+
+            Object.assign(state.selectedZone, state.editedZone);
+            await state.editedZone.stage(true, true);
+
+            this.setState(_ => ({
+                state: "editing",
+                selectedZone: state.selectedZone,
+                editedZone: cloneDeep(state.selectedZone)
+            }), this.props.updatePage);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to save the changes", e.toString(), true));
         }
-
-        Object.assign(state.selectedZone, state.editedZone);
-        await state.editedZone.stage(true, true);
-
-        this.setState(_ => ({
-            state: "editing",
-            selectedZone: state.selectedZone,
-            editedZone: cloneDeep(state.selectedZone)
-        }), this.props.updatePage);
-
     }
 
     /**

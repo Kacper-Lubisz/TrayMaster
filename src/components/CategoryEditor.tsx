@@ -8,7 +8,7 @@ import {NEVER_EXPIRY} from "../core/WarehouseModel/Utils";
 import {SettingsTab} from "../pages/SettingsPage";
 import {createConfirmationDialog, createUnsavedDialog, DANGER_COLOR} from "../utils/dialogs";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
-import {Dialog} from "./Dialog";
+import {buildErrorDialog, Dialog} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
 
@@ -268,20 +268,25 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * @param state The editor state containing the new category
      */
     private async createCategory(state: NewState): Promise<void> {
+        try {
 
-        if (state.newCategory.name.length === 0) {
-            state.newCategory.name = CategoryEditor.DEFAULT_NAME;
+            if (state.newCategory.name.length === 0) {
+                state.newCategory.name = CategoryEditor.DEFAULT_NAME;
+            }
+            state.newCategory.index = this.props.categories[this.props.categories.length - 1].index + 1;
+
+            this.props.addCategory(state.newCategory);
+            await this.props.stage(true, true);
+
+            this.setState(_ => ({
+                state: "editing",
+                selectedCategory: state.newCategory,
+                editedCategory: state.newCategory
+            }), this.props.repaintSettings);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to create a new category", e.toString(), true));
         }
-        state.newCategory.index = this.props.categories[this.props.categories.length - 1].index + 1;
-
-        this.props.addCategory(state.newCategory);
-        await this.props.stage(true, true);
-
-        this.setState(_ => ({
-            state: "editing",
-            selectedCategory: state.newCategory,
-            editedCategory: state.newCategory
-        }), this.props.repaintSettings);
 
     }
 
@@ -289,20 +294,24 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
      * Saves changes to the edited category in the EditingState state
      */
     private async updateCategory(state: EditingState): Promise<void> {
+        try {
 
-        if (state.editedCategory.name.length === 0) {
-            state.editedCategory.name = CategoryEditor.DEFAULT_NAME;
+            if (state.editedCategory.name.length === 0) {
+                state.editedCategory.name = CategoryEditor.DEFAULT_NAME;
+            }
+
+            this.props.editCategory(this.props.getCategoryID(state.selectedCategory), state.editedCategory);
+            await this.props.stage(true, true);
+
+            this.setState(_ => ({
+                state: "editing",
+                selectedCategory: state.editedCategory,
+                editedCategory: cloneDeep(state.editedCategory)
+            }), this.props.repaintSettings);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to save the changes", e.toString(), true));
         }
-
-        this.props.editCategory(this.props.getCategoryID(state.selectedCategory), state.editedCategory);
-        await this.props.stage(true, true);
-
-        this.setState(_ => ({
-            state: "editing",
-            selectedCategory: state.editedCategory,
-            editedCategory: cloneDeep(state.editedCategory)
-        }), this.props.repaintSettings);
-
     }
 
     /**

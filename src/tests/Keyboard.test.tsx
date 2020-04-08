@@ -31,12 +31,7 @@ describe("Keyboard matches snapshots:", () => {
     it("renders one key", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    }
-                }
+                {name: "Bob", onClick: jest.fn()}
             ],
             gridX: 1
         };
@@ -48,25 +43,9 @@ describe("Keyboard matches snapshots:", () => {
     it("renders selected buttons", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    }
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: true
-                },
-                {
-                    name: "Doris",
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                }
+                {name: "Bob", onClick: jest.fn()},
+                {name: "Geoffrey", onClick: jest.fn(), selected: true},
+                {name: "Doris", onClick: jest.fn()}
             ],
             gridX: 3
         };
@@ -78,43 +57,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders multi-line keyboards", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    }
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: false
-                },
-                {
-                    name: "Doris",
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                },
-                {
-                    name: "Steve",
-                    onClick: () => {
-                        alert("No");
-                    }
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    }
-                },
-                {
-                    name: "Dave",
-                    onClick: () => {
-                        alert("Absolutely not");
-                    }
-                }
+                {name: "Bob", onClick: jest.fn()},
+                {name: "Geoffrey", onClick: jest.fn(), selected: false},
+                {name: "Doris", onClick: jest.fn()},
+                {name: "Steve", onClick: jest.fn()},
+                {name: "Paul", onClick: jest.fn()},
+                {name: "Dave", onClick: jest.fn()}
             ],
             gridX: 3
         };
@@ -126,43 +74,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders disabled keyboard", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    }
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: false
-                },
-                {
-                    name: "Doris",
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                },
-                {
-                    name: "Steve",
-                    onClick: () => {
-                        alert("No");
-                    }
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    }
-                },
-                {
-                    name: "Dave",
-                    onClick: () => {
-                        alert("Absolutely not");
-                    }
-                }
+                {name: "Bob", onClick: jest.fn()},
+                {name: "Geoffrey", onClick: jest.fn(), selected: false},
+                {name: "Doris", onClick: jest.fn()},
+                {name: "Steve", onClick: jest.fn()},
+                {name: "Paul", onClick: jest.fn()},
+                {name: "Dave", onClick: jest.fn()}
             ],
             gridX: 3,
             disabled: true
@@ -175,43 +92,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders keyboard with a number of buttons that's not divisible by gridX", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    }
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: false
-                },
-                {
-                    name: "Doris",
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                },
-                {
-                    name: "Steve",
-                    onClick: () => {
-                        alert("No");
-                    }
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    }
-                },
-                {
-                    name: "Dave",
-                    onClick: () => {
-                        alert("Absolutely not");
-                    }
-                }
+                {name: "Bob", onClick: jest.fn()},
+                {name: "Geoffrey", onClick: jest.fn(), selected: false},
+                {name: "Doris", onClick: jest.fn()},
+                {name: "Steve", onClick: jest.fn()},
+                {name: "Paul", onClick: jest.fn()},
+                {name: "Dave", onClick: jest.fn()}
             ],
             gridX: 4
         };
@@ -223,43 +109,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders with a given id", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    }
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: false
-                },
-                {
-                    name: "Doris",
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                },
-                {
-                    name: "Steve",
-                    onClick: () => {
-                        alert("No");
-                    }
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    }
-                },
-                {
-                    name: "Dave",
-                    onClick: () => {
-                        alert("Absolutely not");
-                    }
-                }
+                {name: "Bob", onClick: jest.fn()},
+                {name: "Geoffrey", onClick: jest.fn(), selected: false},
+                {name: "Doris", onClick: jest.fn()},
+                {name: "Steve", onClick: jest.fn()},
+                {name: "Paul", onClick: jest.fn()},
+                {name: "Dave", onClick: jest.fn()}
             ],
             gridX: 4,
             id: "BigBoy"
@@ -272,51 +127,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders coloured buttons", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    },
-                    bg: "#00ff00"
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: false
-                },
-                {
-                    name: "Doris",
-                    icon: icon2,
-                    onClick: () => {
-                        alert("Yes");
-                    },
-                    bg: "#00d2ff"
-                },
-                {
-                    name: "Steve",
-                    icon: icon3,
-                    onClick: () => {
-                        alert("No");
-                    },
-                    bg: "#000000"
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    },
-                    bg: "#212d3a"
-                },
-                {
-                    name: "Dave",
-                    icon: icon1,
-                    onClick: () => {
-                        alert("Absolutely not");
-                    },
-                    bg: "#ffffff"
-                }
+                {name: "Bob", onClick: jest.fn(), bg: "#00ff00"},
+                {name: "Geoffrey", onClick: jest.fn(), selected: false},
+                {name: "Doris", icon: icon2, onClick: jest.fn(), bg: "#00d2ff"},
+                {name: "Steve", icon: icon3, onClick: jest.fn(), bg: "#000000"},
+                {name: "Paul", onClick: jest.fn(), bg: "#212d3a"},
+                {name: "Dave", icon: icon1, onClick: jest.fn(), bg: "#ffffff"}
             ],
             gridX: 4,
             id: "BigBoy"
@@ -331,46 +147,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders with Font Awesome icons in buttons", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    }
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: false
-                },
-                {
-                    name: "Doris",
-                    icon: icon2,
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                },
-                {
-                    name: "Steve",
-                    icon: icon3,
-                    onClick: () => {
-                        alert("No");
-                    }
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    }
-                },
-                {
-                    name: "Dave",
-                    icon: icon1,
-                    onClick: () => {
-                        alert("Absolutely not");
-                    }
-                }
+                {name: "Bob", onClick: jest.fn()},
+                {name: "Geoffrey", onClick: () => jest.fn(), selected: false},
+                {name: "Doris", icon: icon2, onClick: jest.fn()},
+                {name: "Steve", icon: icon3, onClick: jest.fn()},
+                {name: "Paul", onClick: jest.fn()},
+                {name: "Dave", icon: icon1, onClick: jest.fn()}
             ],
             gridX: 4,
             id: "BigBoy"
@@ -385,46 +167,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders with multiple selected buttons", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    },
-                    selected: true
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: true
-                },
-                {
-                    name: "Doris",
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                },
-                {
-                    name: "Steve",
-                    onClick: () => {
-                        alert("No");
-                    }
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    },
-                    selected: true
-                },
-                {
-                    name: "Dave",
-                    onClick: () => {
-                        alert("Absolutely not");
-                    },
-                    selected: false
-                }
+                {name: "Bob", onClick: jest.fn(), selected: true},
+                {name: "Geoffrey", onClick: jest.fn(), selected: true},
+                {name: "Doris", onClick: jest.fn()},
+                {name: "Steve", onClick: jest.fn()},
+                {name: "Paul", onClick: jest.fn(), selected: true},
+                {name: "Dave", onClick: jest.fn(), selected: false}
             ],
             gridX: 4,
             id: "BigBoy"
@@ -437,47 +185,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders with multiple disabled buttons", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    },
-                    disabled: true
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    disabled: true
-                },
-                {
-                    name: "Doris",
-                    onClick: () => {
-                        alert("Yes");
-                    }
-                },
-                {
-                    name: "Steve",
-                    onClick: () => {
-                        alert("No");
-                    },
-                    disabled: true
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    },
-                    disabled: true
-                },
-                {
-                    name: "Dave",
-                    onClick: () => {
-                        alert("Absolutely not");
-                    },
-                    disabled: false
-                }
+                {name: "Bob", onClick: jest.fn(), disabled: true},
+                {name: "Geoffrey", onClick: jest.fn(), disabled: true},
+                {name: "Doris", onClick: jest.fn()},
+                {name: "Steve", onClick: jest.fn(), disabled: true},
+                {name: "Paul", onClick: jest.fn(), disabled: true},
+                {name: "Dave", onClick: jest.fn(), disabled: false}
             ],
             gridX: 4,
             id: "BigBoy"
@@ -490,51 +203,12 @@ describe("Keyboard matches snapshots:", () => {
     it("renders the big chonker", () => {
         const props = {
             buttons: [
-                {
-                    name: "Bob",
-                    onClick: () => {
-                        alert("hello");
-                    },
-                    disabled: true
-                },
-                {
-                    name: "Geoffrey",
-                    onClick: () => {
-                        alert("I am the coolest because I'm selected");
-                    },
-                    selected: true
-                },
-                {
-                    name: "Doris",
-                    icon: icon2,
-                    onClick: () => {
-                        alert("Yes");
-                    },
-                    bg: "#000000"
-                },
-                {
-                    name: "Steve",
-                    icon: icon3,
-                    onClick: () => {
-                        alert("No");
-                    },
-                    disabled: false
-                },
-                {
-                    name: "Paul",
-                    onClick: () => {
-                        alert("Perhaps");
-                    },
-                    bg: "#ff0000"
-                },
-                {
-                    name: "Dave",
-                    icon: icon1,
-                    onClick: () => {
-                        alert("Absolutely not");
-                    },
-                    selected: true
-                }
+                {name: "Bob", onClick: jest.fn(), disabled: true},
+                {name: "Geoffrey", onClick: jest.fn(), selected: true},
+                {name: "Doris", icon: icon2, onClick: jest.fn(), bg: "#000000"},
+                {name: "Steve", icon: icon3, onClick: jest.fn(), disabled: false},
+                {name: "Paul", onClick: jest.fn(), bg: "#ff0000"},
+                {name: "Dave", icon: icon1, onClick: jest.fn(), selected: true}
             ],
             gridX: 4,
             id: "BigBoy"
@@ -550,13 +224,11 @@ describe("Keyboard matches snapshots:", () => {
 describe("Keyboard DOM tests:", () => {
     it("Buttons execute their onClick functions", () => {
         // https://stackoverflow.com/a/46211877/5094386
+
         const mockCallback = jest.fn();
         const props = {
             buttons: [
-                {
-                    name: "Geoff",
-                    onClick: mockCallback
-                }
+                {name: "Geoff", onClick: mockCallback}
             ],
             gridX: 1
         };

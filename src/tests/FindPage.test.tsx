@@ -1,74 +1,132 @@
-import Enzyme from "enzyme";
+import {doesNotReject} from "assert";
+import Enzyme, {render} from "enzyme";
 import React16Adapter from "enzyme-adapter-react-16";
-import React from "react";
-import ReactDOM from "react-dom";
-import FindPage, {SortBy} from "../pages/FindPage";
-import {mockWarehouse, routeProps} from "./sharedTestValues";
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+import React from "react";
+import {MemoryRouter} from "react-router-dom";
+import {User} from "../core/Firebase/Authentication";
+import {Warehouse} from "../core/WarehouseModel";
+
+import FindPage, {FindPageProps, FindQuery, FindResults, SortBy} from "../pages/FindPage";
+import {mockSetup} from "./sharedTestValues";
 
 Enzyme.configure({adapter: new React16Adapter()});
 
-const mockFind = {
-    query: {
-        categories: "set",
-        weight: "set",
-        commentSubstring: null,
-        excludePickingArea: false,
-        sort: SortBy["expiry"]
-    },
-    outcome: true,
-    results: mockWarehouse.trays
-};
+const newSetup: Promise<[Warehouse, User, FindQuery, FindResults]> = mockSetup.then(
+    ([mockWarehouse, user]) => {
+
+        const query: FindQuery = {
+            categories: "set",
+            weight: "set",
+            commentSubstring: null,
+            excludePickingArea: false,
+            sort: {
+                orderAscending: true,
+                type: SortBy.category,
+            }
+        };
+        const results: FindResults = {
+            query: query,
+            results: mockWarehouse.trays.map(tray => ({
+                locationName: tray.locationString,
+                categoryId: mockWarehouse.getCategoryID(tray.category),
+                expiry: tray.expiry ?? null,
+                weight: tray.weight ?? null,
+                comment: tray.comment ?? null,
+                lastModified: 0,
+                blame: "person",
+                layerIdentifiers: {}
+            }))
+        };
+
+        return [mockWarehouse, user, query, results];
+    });
 
 describe("Crash tests: ", () => {
     it("renders without crashing", () => {
-        const mockSetQuery = jest.fn();
-        const props = {
-            warehouse: mockWarehouse,
-            find: mockFind,
-            setQuery: mockSetQuery
-        };
-        const div = document.createElement("div");
 
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<FindPage.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
+        doesNotReject(newSetup.then(([mockWarehouse, , , results]) => {
+
+            const mockSetQuery = jest.fn();
+            const props: FindPageProps = {
+                warehouse: mockWarehouse,
+                find: results,
+                setQuery: mockSetQuery,
+                setCurrentView: jest.fn()
+            };
+
+            render(<MemoryRouter>
+                <FindPage {...props} />
+            </MemoryRouter>);
+
+        }));
+
     });
 });
 
 describe("Results rendering tests:", () => {
-    const mockSetQuery = jest.fn();
-    const props = {
-        warehouse: mockWarehouse,
-        find: {
-            ...mockFind,
-            results: []
-        },
-        setQuery: mockSetQuery
-    };
-    let page: Enzyme.ReactWrapper;
 
-    it("takes no results without crashing", () => {
-        // @ts-ignore stop TS getting angry about missing Route props
-        page = Enzyme.mount(<FindPage.WrappedComponent {...props} {...routeProps} />);
+    it("takes no results without crashing", async () => {
+        const [warehouse, , , results] = await newSetup;
+
+        const mockSetQuery = jest.fn();
+        const props: FindPageProps = {
+            warehouse: warehouse,
+            find: {
+                ...results,
+                results: []
+            },
+            setQuery: mockSetQuery,
+            setCurrentView: jest.fn()
+        };
+
+        Enzyme.mount(<MemoryRouter>
+            <FindPage {...props}/>
+        </MemoryRouter>);
+
     });
 
-    it("displays a message to tell the user that there are no results", () => {
+    it("displays correct message", async () => {
+        const [warehouse, , , results] = await newSetup;
+
+        const mockSetQuery = jest.fn();
+        const props: FindPageProps = {
+            warehouse: warehouse,
+            find: {
+                ...results,
+                results: []
+            },
+            setQuery: mockSetQuery,
+            setCurrentView: jest.fn()
+        };
+
+        const page: Enzyme.ReactWrapper = Enzyme.mount(<MemoryRouter>
+            <FindPage {...props}/>
+        </MemoryRouter>);
+
         expect(page.find("div#findResults > div").text()).toEqual("Couldn't find any trays that match this query.");
         page.unmount();
+
     });
 
-    const fullProps = {
-        warehouse: mockWarehouse,
-        find: mockFind,
-        setQuery: mockSetQuery
-    };
 
-    it("displays the right number of find results", () => {
-        // @ts-ignore stop TS getting angry about missing Route props
-        page = Enzyme.mount(<FindPage.WrappedComponent {...fullProps} {...routeProps} />);
+    it("displays the right number of find results", async () => {
 
-        expect(page.find("div#findResults > table")).toHaveLength(mockWarehouse.trays.length);
+        const [warehouse, , , results] = await newSetup;
+
+        const mockSetQuery = jest.fn();
+        const fullProps: FindPageProps = {
+            warehouse: warehouse,
+            find: results,
+            setQuery: mockSetQuery,
+            setCurrentView: jest.fn()
+        };
+
+        const page: Enzyme.ReactWrapper = Enzyme.mount(<MemoryRouter>
+            <FindPage {...fullProps}/>
+        </MemoryRouter>);
+
+        expect(page.find("div#findResults > table > tbody > tr")).toHaveLength(warehouse.trays.length);
     });
+
 });

@@ -11,7 +11,7 @@ import {Warehouse} from "../core/WarehouseModel";
 import {FindQuery, SortBy} from "./FindPage";
 import "./styles/mainmenu.scss";
 
-interface MainMenuProps {
+export interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
 
     changeWarehouse: (user: User) => void;
