@@ -16,7 +16,7 @@ workflows of foodstore staff by:
 
 ## User Manual
 This README contains only basic project information. The full project documentation (for users, administrators and developers)
-can be found at [https://traymaster.herokuapp.com/Manual/UserManual.pdf](https://traymaster.herokuapp.com/Manual/UserManual.pdf).
+can be found at [https://traymaster.herokuapp.com/manual.pdf](https://traymaster.herokuapp.com/manual.pdf).
 
 ## Installation & Usage
 To install, clone this repository and run `npm install`.
