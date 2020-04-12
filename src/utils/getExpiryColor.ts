@@ -1,9 +1,11 @@
 import dayjs, {Dayjs} from "dayjs";
+import utc from "dayjs/plugin/utc";
 import {ExpiryRange} from "../core/WarehouseModel";
 import {SimpleExpiryRange} from "../pages/ShelfViewPage";
 import {hslToHex, rgbToHex} from "./colorUtils";
 import {MONTHS_TRANSLATOR} from "./monthsTranslator";
 
+dayjs.extend(utc);
 
 /**
  *  interface specifying an ExpiryRange with non-null from and to
@@ -52,7 +54,7 @@ function getSaturation(days: number): number {
  */
 function computeColorFromRange(range: SafeExpiryRange): string {
     // get a dayjs date corresponding to the from property of the range, to use later
-    const djsDate: Dayjs = dayjs(range.from);
+    const djsDate: Dayjs = dayjs.utc(range.from);
 
     // Year modulo YEAR_PERIOD
     const modYear: number = djsDate.year() % YEAR_PERIOD;
@@ -67,7 +69,7 @@ function computeColorFromRange(range: SafeExpiryRange): string {
     const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
 
     // get saturation from difference between from and to and return hex value
-    const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
+    const saturation = getSaturation(dayjs.utc(range.to).diff(djsDate, "day"));
     return hslToHex(ratioPeriod * 360, saturation, 1);
 }
 
@@ -86,9 +88,9 @@ function computeHybridColorFromRange(range: SafeExpiryRange): string {
         120
     ];
 
-    const djsDate: Dayjs = dayjs(range.from);
+    const djsDate: Dayjs = dayjs.utc(range.from);
 
-    const saturation = getSaturation(dayjs(range.to).diff(djsDate, "day"));
+    const saturation = getSaturation(dayjs.utc(range.to).diff(djsDate, "day"));
     return hslToHex(yearHueCycle[djsDate.year() % 4], saturation, 1);
 }
 
@@ -106,7 +108,7 @@ function getWarehouseColor(range: SafeExpiryRange): string {
         "#49ff55"
     ];
 
-    return yearCycle[dayjs(range.from).year() % 4];
+    return yearCycle[dayjs.utc(range.from).year() % 4];
 }
 
 
