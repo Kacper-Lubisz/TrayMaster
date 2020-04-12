@@ -1,11 +1,8 @@
-import dayjs, {Dayjs} from "dayjs";
-import utc from "dayjs/plugin/utc";
 import {ExpiryRange} from "../core/WarehouseModel";
 import {SimpleExpiryRange} from "../pages/ShelfViewPage";
 import {hslToHex, rgbToHex} from "./colorUtils";
 import {MONTHS_TRANSLATOR} from "./monthsTranslator";
 
-dayjs.extend(utc);
 
 /**
  *  interface specifying an ExpiryRange with non-null from and to
@@ -22,6 +19,14 @@ interface SafeExpiryRange {
  * Using 8 currently because that's the number on the expiry keyboard (and what common food lasts longer than 8 years??)
  */
 const YEAR_PERIOD = 8;
+
+/**
+ * Returns the difference in days between two JS Date objects
+ * @param dates - list of two Date objects
+ */
+function diffDates(dates: Date[]): number {
+    return Math.ceil(Math.abs(dates[1].valueOf() - dates[0].valueOf()) / (1000 * 60 * 60 * 24));
+}
 
 /**
  * Takes in the length of an expiry range in days (1-366 inclusive) and returns a saturation value to use
@@ -53,23 +58,30 @@ function getSaturation(days: number): number {
  * @return string - the 7-digit hex value to use for that expiry range
  */
 function computeColorFromRange(range: SafeExpiryRange): string {
-    // get a dayjs date corresponding to the from property of the range, to use later
-    const djsDate: Dayjs = dayjs.utc(range.from);
+    // get a date corresponding to the from property of the range, to use later
+    const fromDate = new Date(range.from);
+    const toDate = new Date(range.to);
 
     // Year modulo YEAR_PERIOD
-    const modYear: number = djsDate.year() % YEAR_PERIOD;
+    const modYear: number = fromDate.getUTCFullYear() % YEAR_PERIOD;
+
+    // Get the end of the month, for use to calculate the how far through the month we are
+    const monthEnd: Date = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth() + 1, 0));
 
     // Ratio of the way through the month
-    const ratioMonth: number = (djsDate.date()) / djsDate.date(-1).date();
+    const ratioMonth: number = (fromDate.getUTCDate()) / monthEnd.getUTCDate();
 
     // Ratio of the way through the year
-    const ratioYear: number = ((djsDate.month()) + ratioMonth) / 12;
+    const ratioYear: number = ((fromDate.getUTCMonth()) + ratioMonth) / 12;
 
     // Ratio of the way through the period
     const ratioPeriod = (modYear + ratioYear) / YEAR_PERIOD;
 
-    // get saturation from difference between from and to and return hex value
-    const saturation = getSaturation(dayjs.utc(range.to).diff(djsDate, "day"));
+    // Calculate the difference in days between the two dates
+    const diff = diffDates([fromDate, toDate]);
+
+    // Get saturation from difference between from and to and return hex color value
+    const saturation = getSaturation(diff);
     return hslToHex(ratioPeriod * 360, saturation, 1);
 }
 
@@ -88,10 +100,11 @@ function computeHybridColorFromRange(range: SafeExpiryRange): string {
         120
     ];
 
-    const djsDate: Dayjs = dayjs.utc(range.from);
+    const fromDate = new Date(range.from);
+    const toDate = new Date(range.to);
 
-    const saturation = getSaturation(dayjs.utc(range.to).diff(djsDate, "day"));
-    return hslToHex(yearHueCycle[djsDate.year() % 4], saturation, 1);
+    const saturation = getSaturation(diffDates([fromDate, toDate]));
+    return hslToHex(yearHueCycle[fromDate.getUTCFullYear() % 4], saturation, 1);
 }
 
 /**
@@ -108,7 +121,7 @@ function getWarehouseColor(range: SafeExpiryRange): string {
         "#49ff55"
     ];
 
-    return yearCycle[dayjs.utc(range.from).year() % 4];
+    return yearCycle[new Date(range.from).getUTCFullYear() % 4];
 }
 
 

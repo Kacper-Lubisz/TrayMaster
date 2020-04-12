@@ -212,7 +212,7 @@ function buildYearButtons(yearsAhead: number): (SingleEdit & ButtonProperties)[]
 export function buildMonthButtons(addYearToMonths: boolean): TrayEditingButton[] {
     const now = new Date();
     return Array(12).fill(0).map((_, index) => {
-        const year = now.getFullYear() + (now.getMonth() + index >= 12 ? 1 : 0);
+        const year = now.getFullYear() + Math.floor((now.getMonth() + index) / 12);
 
         const expiry = {year: year, month: (now.getMonth() + index) % 12};
         const properExpiry = toExpiryRange(expiry);
