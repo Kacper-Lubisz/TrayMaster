@@ -286,6 +286,7 @@ class App extends React.Component<unknown, AppState> {
 
     /**
      * This method allows for setting the find query
+     * @param warehouse
      * @param query
      */
     private async setFindQuery(warehouse: Warehouse, query: FindQuery): Promise<void> {

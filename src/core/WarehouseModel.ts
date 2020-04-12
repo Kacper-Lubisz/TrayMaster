@@ -82,39 +82,39 @@ const trayExpiries: ExpiryRange[] = [
         label: "Never"
     },
     {
-        from: new Date(2020, 2).getTime(),
-        to: new Date(2020, 3).getTime(),
+        from: Date.UTC(2020, 2),
+        to: Date.UTC(2020, 3),
         label: "Mar 2020"
     },
     {
-        from: new Date(2020, 1).getTime(),
-        to: new Date(2020, 2).getTime(),
+        from: Date.UTC(2020, 1),
+        to: Date.UTC(2020, 2),
         label: "Feb 2020"
     },
     {
-        from: new Date(2020, 0).getTime(),
-        to: new Date(2020, 3).getTime(),
+        from: Date.UTC(2020, 0),
+        to: Date.UTC(2020, 3),
         label: "Q1 2020"
     },
     {
-        from: new Date(2020, 3).getTime(),
-        to: new Date(2020, 6).getTime(),
+        from: Date.UTC(2020, 3),
+        to: Date.UTC(2020, 6),
         label: "Q2 2020"
     },
     {
-        from: new Date(2020, 0).getTime(),
-        to: new Date(2021, 0).getTime(),
+        from: Date.UTC(2020, 0),
+        to: Date.UTC(2021, 0),
         label: "2020"
     },
     {
-        from: new Date(2021, 0).getTime(),
-        to: new Date(2022, 0).getTime(),
+        from: Date.UTC(2021, 0),
+        to: Date.UTC(2022, 0),
         label: "2021"
     },
 ].concat(Array(10).fill(0).map((_, j) => {
     return {
-        from: new Date(2022 + j, 0).getTime(),
-        to: new Date(2023 + j, 0).getTime(),
+        from: Date.UTC(2022 + j, 0),
+        to: Date.UTC(2023 + j, 0),
         label: (2022 + j).toString()
     };
 }));

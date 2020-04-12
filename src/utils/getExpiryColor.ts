@@ -141,7 +141,7 @@ export function toExpiryRange(range: SimpleExpiryRange | ExpiryRange): ExpiryRan
         return range;
     } else if ("month" in range) {
 
-        const fromDate = new Date(range.year, range.month);
+        const fromDate = new Date(Date.UTC(range.year, range.month));
         const toDate = new Date(fromDate);
         toDate.setMonth(fromDate.getMonth() + 1);
 
@@ -153,7 +153,7 @@ export function toExpiryRange(range: SimpleExpiryRange | ExpiryRange): ExpiryRan
     } else if ("quarter" in range) {
 
         // Multiply by 3 to map quarter indices to the first month in that range
-        const fromDate = new Date(range.year, range.quarter * 3);
+        const fromDate = new Date(Date.UTC(range.year, range.quarter * 3));
         const toDate = new Date(fromDate);
 
         toDate.setMonth(fromDate.getMonth() + 3); // increment by 1Q or 3 months
@@ -166,8 +166,8 @@ export function toExpiryRange(range: SimpleExpiryRange | ExpiryRange): ExpiryRan
     } else { // Year
 
         return {
-            from: new Date(range.year, 0).getTime(),
-            to: new Date(range.year + 1, 0).getTime(),
+            from: Date.UTC(range.year, 0),
+            to: Date.UTC(range.year + 1, 0),
             label: `${range.year}`
         };
     }
