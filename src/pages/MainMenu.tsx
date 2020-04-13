@@ -30,6 +30,15 @@ export interface MainMenuProps {
  */
 class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> {
 
+    downloadManual(): void {
+        const element = document.createElement("a");
+        element.href = "/manual.pdf";
+        element.download = "TrayMaster User Manual";
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+        document.body.removeChild(element);
+    }
+
     render(): React.ReactNode {
 
         const menuButtons: CustomButtonProps[] = [
@@ -58,6 +67,10 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             {
                 name: "Settings",
                 onClick: () => this.props.history.push("Settings")
+            },
+            {
+                name: "User Manual",
+                onClick: () => this.downloadManual()
             }
         ];
 
