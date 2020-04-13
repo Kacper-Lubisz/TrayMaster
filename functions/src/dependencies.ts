@@ -25,7 +25,7 @@ export interface Category {
     defaultExpiry: null | ExpiryRange;
 }
 
-export const NULL_CATEGORY_STRING = "Unsorted";
+export const NULL_CATEGORY_STRING = "";
 
 /**
  * Join any number of paths together and normalise them
