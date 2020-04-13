@@ -37,7 +37,7 @@ export interface TraySpace {
     parentColumn: Column;
 }
 
-export const NULL_CATEGORY_STRING = "Unsorted";
+export const NULL_CATEGORY_STRING = "";
 
 /**
  * Represents a single tray category
