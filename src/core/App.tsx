@@ -115,6 +115,24 @@ class App extends React.Component<unknown, AppState> {
 
     }
 
+    private async setCurrentView(newView: ViewPortLocation | null): Promise<void> {
+        this.setState((state) => ({
+            ...state,
+            currentView: newView
+        }));
+        try {
+            await newView?.load(true, WarehouseModel.tray);
+            this.forceUpdate();
+        } catch (e) {
+            this.openDialog(buildErrorDialog(
+                "Failed to load shelf",
+                e.toString(),
+                true
+            ));
+        }
+    }
+
+
     render(): React.ReactNode {
 
         return <>
@@ -170,11 +188,15 @@ class App extends React.Component<unknown, AppState> {
                                 user={this.state.user}
                                 warehouse={this.state.warehouse}
                                 openDialog={this.openDialog.bind(this)}
+
+                                setCurrentView={this.setCurrentView.bind(this)}
+                                currentView={this.state.currentView}
                             />;
                         }
                     })()}</Route>
                     <Route path="/signin">{
-                        this.state.user ? <Redirect to={"/menu"}/> : <SignInPage openDialog={this.openDialog.bind(this)}
+                        this.state.user ? <Redirect to={"/menu"}/>
+                                        : <SignInPage openDialog={this.openDialog.bind(this)}
                         />
                     }</Route>
                     <Route path="/warehouses">{(() => {
@@ -196,22 +218,8 @@ class App extends React.Component<unknown, AppState> {
                             warehouse={this.state.warehouse}
                             find={this.state.find}
                             setQuery={this.setFindQuery.bind(this, this.state.warehouse)}
-                            setCurrentView={async (newView) => {
-                                this.setState((state) => ({
-                                    ...state,
-                                    currentView: newView
-                                }));
-                                try {
-                                    await newView.load(true, WarehouseModel.tray);
-                                    this.forceUpdate();
-                                } catch (e) {
-                                    this.openDialog(buildErrorDialog(
-                                        "Failed to load shelf",
-                                        e.toString(),
-                                        true
-                                    ));
-                                }
-                            }}
+
+                            setCurrentView={this.setCurrentView.bind(this)}
                         /> : <Redirect to="/"/> : <Redirect to="/menu"/>
                     }</Route>
                     <Route component={PageNotFoundPage}/>
@@ -270,7 +278,6 @@ class App extends React.Component<unknown, AppState> {
                     return warehouse.shelves[0];
                 }
             })();
-
 
             this.setState(state => ({
                 ...state,

@@ -11,6 +11,7 @@ import {ControlledInputComponent, ControlledInputComponentProps} from "./Control
 import {buildErrorDialog, Dialog} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
+import {ViewPortLocation} from "./ViewPort";
 import {ZoneDisplayComponent} from "./ZoneDisplayComponent";
 
 
@@ -23,6 +24,9 @@ interface LayoutEditorProps {
     setLock: (lockFunction: (tab: SettingsTab) => boolean) => void;
 
     updatePage: () => void;
+
+    currentView: ViewPortLocation | null;
+    setCurrentView: (newView: ViewPortLocation | null) => void;
 }
 
 type NewZone = ZoneFields & {
@@ -353,8 +357,12 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                 }
             }
 
-
             await newZone.stage(true, true, WarehouseModel.shelf);
+
+            if (this.props.warehouse.zones.length === 1) {
+                this.props.setCurrentView(newZone.shelves.length === 0 ? newZone : newZone.shelves[0]);
+            }
+
             this.setState(_ => ({
                 state: "editing",
                 selectedZone: newZone,
@@ -412,7 +420,26 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
             "Are you sure you want to delete this zone?",
             "Delete",
             () => {
-                state.selectedZone.delete(true).then(() => {
+                const toDelete = state.selectedZone;
+                toDelete.delete(true).then(() => {
+                    if (
+                        (this.props.currentView instanceof Zone && this.props.currentView === toDelete) ||
+                        (this.props.currentView instanceof Shelf && this.props.currentView.parentZone === toDelete) ||
+                        this.props.warehouse.zones.length === 0
+                    ) {
+                        this.props.setCurrentView((() => {
+                            if (this.props.warehouse.zones.length === 0) {
+                                return this.props.warehouse;
+                            } else if (this.props.warehouse.shelves.length === 0) {
+                                return this.props.warehouse.zones[0];
+                            } else {
+                                this.props.warehouse.shelves[0].load(true, WarehouseModel.tray).then(() => {
+                                    this.forceUpdate();
+                                });
+                                return this.props.warehouse.shelves[0];
+                            }
+                        })());
+                    }
                     this.setState(_ => ({
                         state: "nothingSelected"
                     }), this.props.updatePage);
