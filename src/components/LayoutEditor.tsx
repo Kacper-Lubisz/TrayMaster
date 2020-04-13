@@ -72,7 +72,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         bays: 5,
         shelves: 5,
         mirrorBayLabels: false,
-        addGroundShelves: true
+        addGroundShelves: false
     };
 
     private static readonly GROUND_ROW_NAME = "G";
