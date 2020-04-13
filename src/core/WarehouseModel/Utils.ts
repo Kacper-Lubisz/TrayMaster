@@ -219,8 +219,8 @@ export const defaultCategories: Category[] = [
         defaultExpiry: null,
         group: null,
         shortName: null,
-        underStockThreshold: null,
-        overStockThreshold: null,
+        underStockThreshold: 4,
+        overStockThreshold: 75,
         name: "Biscuits"
     },
     {
@@ -540,15 +540,7 @@ export const defaultCategories: Category[] = [
         overStockThreshold: 12,
         name: "Pop/Squash"
     },
-    {
-        index: 0,
-        defaultExpiry: null,
-        group: null,
-        shortName: null,
-        underStockThreshold: 4,
-        overStockThreshold: 75,
-        name: "Biscuits"
-    },
+
     {
         index: 0,
         defaultExpiry: null,
