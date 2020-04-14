@@ -14,7 +14,7 @@ import {Database} from "./Firebase/Database";
  * Further Documentation:
  * https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env
  */
-export const ONLINE = process.env.REACT_APP_ONLINE === "true" && !process.env.CI;
+export const ONLINE = process.env.REACT_APP_ONLINE !== "false";
 
 export class Firebase {
     public static readonly firebase: Firebase = new Firebase();
