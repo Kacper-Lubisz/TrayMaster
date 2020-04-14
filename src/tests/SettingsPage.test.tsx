@@ -15,7 +15,9 @@ describe("Crash tests: ", () => {
         const props: SettingsPageProps = {
             openDialog: jest.fn(),
             warehouse: warehouse,
-            user: user
+            user: user,
+            setCurrentView: jest.fn(),
+            currentView: null
         };
 
         render(<MemoryRouter>
