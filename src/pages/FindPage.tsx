@@ -60,7 +60,7 @@ export interface FindPageProps {
     warehouse?: Warehouse;
     find: FindResults;
     setQuery: (query: FindQuery) => void;
-    setCurrentView: (newView: ViewPortLocation) => void;
+    setCurrentView: (newView: ViewPortLocation | null) => void;
 }
 
 interface FindPageState {

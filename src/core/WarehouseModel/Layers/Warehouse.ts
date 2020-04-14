@@ -7,7 +7,7 @@ import {DatabaseCollection} from "../../Firebase/DatabaseCollection";
 import {Bay, Category, Column, Shelf, Tray, WarehouseModel, Zone} from "../../WarehouseModel";
 import {LayerFields} from "../LayerStructure/Layer";
 import {TopLayer} from "../LayerStructure/TopLayer";
-import Utils, {defaultCategories} from "../Utils";
+import Utils from "../Utils";
 import {TrayFields} from "./Tray";
 
 interface WarehouseFields extends LayerFields {
@@ -16,15 +16,15 @@ interface WarehouseFields extends LayerFields {
     expiryColorMode: "computed" | "hybrid" | "warehouse";
 }
 
-const MIXED_CATEGORY: Category = {
-    index: defaultCategories.length,
-    name: "Mixed",
-    shortName: null,
-    underStockThreshold: null,
-    overStockThreshold: null,
-    group: null,
-    defaultExpiry: null,
-};
+// const MIXED_CATEGORY: Category = {
+//     index: defaultCategories.length,
+//     name: "Mixed",
+//     shortName: null,
+//     underStockThreshold: null,
+//     overStockThreshold: null,
+//     group: null,
+//     defaultExpiry: null,
+// };
 
 export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     public readonly layerID: WarehouseModel = WarehouseModel.warehouse;
@@ -84,16 +84,16 @@ export class Warehouse extends TopLayer<WarehouseFields, Zone> {
     private async loadCollections(forceLoad: boolean): Promise<void> {
         await this.categoryCollection.load(forceLoad, "index");
 
-        if (this.categoryCollection.size === 0) {
-            for (let i = 0; i < defaultCategories.length; i++) {
-                this.categoryCollection.add({
-                    ...defaultCategories[i],
-                    index: i
-                });
-            }
-            this.categoryCollection.add(MIXED_CATEGORY);
-            await this.categoryCollection.stage(true, true);
-        }
+        // if (this.categoryCollection.size === 0) {
+        //     for (let i = 0; i < defaultCategories.length; i++) {
+        //         this.categoryCollection.add({
+        //             ...defaultCategories[i],
+        //             index: i
+        //         });
+        //     }
+        //     this.categoryCollection.add(MIXED_CATEGORY);
+        //     await this.categoryCollection.stage(true, true);
+        // }
     }
 
     public toString(): string {

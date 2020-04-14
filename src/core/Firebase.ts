@@ -7,9 +7,9 @@ import {Database} from "./Firebase/Database";
  * If false, generate a randomised offline mock warehouse
  *
  * NOTE:
- * To configure process.env.REACT_APP_ONLINE, in the root project directory create a file named ".env.local",
- * in this file place the line "REACT_APP_ONLINE=true" or "REACT_APP_ONLINE=false" (without quotes).
- * DO NOT change the value in ".env" or ".env.production".
+ * To configure process.env.REACT_APP_ONLINE locally, in the project root directory create a file named ".env.local".
+ * In this file place the line "REACT_APP_ONLINE=true" or "REACT_APP_ONLINE=false" (without quotes).
+ * DO NOT change the value in ".env".
  * For any changes to take effect, restart the development server.
  * Further Documentation:
  * https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env

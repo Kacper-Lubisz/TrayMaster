@@ -273,7 +273,8 @@ export class CategoryEditor extends React.Component<CategoryEditorProps, Categor
             if (state.newCategory.name.length === 0) {
                 state.newCategory.name = CategoryEditor.DEFAULT_NAME;
             }
-            state.newCategory.index = this.props.categories[this.props.categories.length - 1].index + 1;
+            state.newCategory.index = this.props.categories.length === 0 ? 0
+                                                                         : this.props.categories[this.props.categories.length - 1].index + 1;
 
             this.props.addCategory(state.newCategory);
             await this.props.stage(true, true);

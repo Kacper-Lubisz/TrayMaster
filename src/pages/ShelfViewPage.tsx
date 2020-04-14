@@ -534,9 +534,9 @@ class ShelfViewPage extends React.Component<RouteComponentProps & ShelfViewProps
 
             } else {
                 return (this.props.user.useCustomKeyboard ? [
-                    "category", "expiry", "weight"
-                ] : [
                     "custom", "weight"
+                ] : [
+                    "category", "expiry", "weight"
                 ]) as KeyboardName[];
             }
         })();
