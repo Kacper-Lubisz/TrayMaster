@@ -246,6 +246,15 @@ export const defaultCategories: Category[] = [
         defaultExpiry: null,
         group: null,
         shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Christmas"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        group: null,
+        shortName: null,
         underStockThreshold: 3,
         overStockThreshold: 10,
         name: "Coffee",
@@ -280,8 +289,6 @@ export const defaultCategories: Category[] = [
     {
         index: 0,
         defaultExpiry: null,
-
-
         group: null,
         shortName: null,
         underStockThreshold: 20,
@@ -314,6 +321,15 @@ export const defaultCategories: Category[] = [
         underStockThreshold: 1,
         overStockThreshold: 4,
         name: "Hot Chocolate"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        group: "Household",
+        shortName: null,
+        underStockThreshold: 1,
+        overStockThreshold: 10,
+        name: "Household Cleaning"
     },
     {
         index: 0,
@@ -383,6 +399,15 @@ export const defaultCategories: Category[] = [
         defaultExpiry: null,
         group: null,
         shortName: null,
+        underStockThreshold: null,
+        overStockThreshold: null,
+        name: "Mixed"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        group: null,
+        shortName: null,
         underStockThreshold: 36,
         overStockThreshold: 120,
         name: "Pasta"
@@ -404,6 +429,15 @@ export const defaultCategories: Category[] = [
         underStockThreshold: 3,
         overStockThreshold: 12,
         name: "Pet Food"
+    },
+    {
+        index: 0,
+        defaultExpiry: null,
+        group: null,
+        shortName: null,
+        underStockThreshold: 2,
+        overStockThreshold: 12,
+        name: "Pop/Squash"
     },
     {
         index: 0,
@@ -530,42 +564,5 @@ export const defaultCategories: Category[] = [
         underStockThreshold: 36,
         overStockThreshold: 100,
         name: "Vegetables"
-    },
-    {
-        index: 0,
-        defaultExpiry: null,
-        group: null,
-        shortName: null,
-        underStockThreshold: 2,
-        overStockThreshold: 12,
-        name: "Pop/Squash"
-    },
-
-    {
-        index: 0,
-        defaultExpiry: null,
-        group: "Household",
-        shortName: null,
-        underStockThreshold: 1,
-        overStockThreshold: 10,
-        name: "Household Cleaning"
-    },
-    {
-        index: 0,
-        defaultExpiry: null,
-        group: null,
-        shortName: null,
-        underStockThreshold: null,
-        overStockThreshold: null,
-        name: "Christmas"
-    },
-    {
-        index: 0,
-        defaultExpiry: null,
-        group: null,
-        shortName: null,
-        underStockThreshold: null,
-        overStockThreshold: null,
-        name: "Mixed"
     }
 ];
