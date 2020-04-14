@@ -294,38 +294,41 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 this.trayRefs = this.props.current.columns.map(_ => React.createRef<HTMLDivElement>());
             }
 
-            return (
-                <div id="viewPort" touch-action="none" onPointerUp={this.onDragSelectEnd.bind(this)}
-                     onPointerLeave={this.onDragSelectEnd.bind(this)}>
+            if (this.props.current.columns.length === 0 && !this.props.isShelfEdit) {
+                return <div id="viewPort">
+                    <div>
+                        <h1>This shelf has no columns!</h1>
+                        <p>Tap <b>Edit Shelf</b> to add columns to this shelf</p>
+                    </div>
+                </div>;
+            } else {
+                return <div id="viewPort" touch-action="none" onPointerUp={this.onDragSelectEnd.bind(this)}
+                            onPointerLeave={this.onDragSelectEnd.bind(this)}>
                     {/* DO NOT attach any touch/onClick/pointer stuff to #shelf, it won't receive them */}
                     <div id="shelf">
                         {shelf.columns.map((column, columnIndex) =>
                             this.renderColumn(shelf, column, columnIndex)
                         )}
                     </div>
-                </div>
-            );
+                </div>;
+            }
         } else {
             if (this.props.availableLevel === WarehouseModel.warehouse) {
-                return (
-                    <div id="viewPort">
-                        <div>
-                            <h1>Current warehouse has no zones!</h1>
-                            <p>Go to <b>Settings > Zone Editor</b> to add zones to this warehouse</p>
-                        </div>
+                return <div id="viewPort">
+                    <div>
+                        <h1>This warehouse has no zones!</h1>
+                        <p>Go to <b>Settings > Zone Editor</b> to add zones to this warehouse</p>
                     </div>
-                );
+                </div>;
             } else if (this.props.availableLevel === WarehouseModel.zone) {
                 // This should not be possible, you should be unable to create a zone without any bays
                 // todo Allow zone editor to resize zones (including add new bays)
-                return (
-                    <div id="viewPort">
-                        <div>
-                            <h1>Current zone has no bays!</h1>
-                            <p>Go to <b>Settings > Zone Editor</b> to edit zones</p>
-                        </div>
+                return <div id="viewPort">
+                    <div>
+                        <h1>This zone has no bays!</h1>
+                        <p>Go to <b>Settings > Zone Editor</b> to edit zones</p>
                     </div>
-                );
+                </div>;
             }
         }
     }
