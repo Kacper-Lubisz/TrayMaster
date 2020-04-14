@@ -398,7 +398,8 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
         return <div
             style={{
                 order: order,
-                flexGrow: column.traySize.sizeRatio
+                flexGrow: column.traySize.sizeRatio,
+                maxWidth: (column.traySize.sizeRatio / traySizes[1].sizeRatio) * 450 // normal = 450px
             }}
             className={classNames("column", {
                 "column-condensed": this.state.condensed[order]
