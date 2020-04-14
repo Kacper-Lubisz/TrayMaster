@@ -8,15 +8,19 @@ import {CustomKeyboardEditor} from "../components/CustomKeyboardPage";
 import {Dialog} from "../components/Dialog";
 import {LayoutEditor} from "../components/LayoutEditor";
 import {UserSettings} from "../components/UserSettings";
+import {ViewPortLocation} from "../components/ViewPort";
 import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 
 import "./styles/settings.scss";
 
-interface SettingsPageProps {
+export interface SettingsPageProps {
     openDialog: (dialog: Dialog) => void;
     warehouse: Warehouse;
     user: User;
+
+    setCurrentView: (newView: ViewPortLocation | null) => void;
+    currentView: ViewPortLocation | null;
 }
 
 export type SettingsTab =
@@ -51,6 +55,7 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 user={this.props.user}
                 warehouse={this.props.warehouse}
                 repaintSettings={this.forceUpdate.bind(this)}
+                openDialog={this.props.openDialog}
             />;
         } else if (this.state.currentTab === "cat-edit") {
             return <CategoryEditor
@@ -78,6 +83,9 @@ class SettingsPage extends React.Component<RouteComponentProps & SettingsPagePro
                 warehouse={this.props.warehouse}
 
                 updatePage={() => this.forceUpdate()}
+
+                currentView={this.props.currentView}
+                setCurrentView={this.props.setCurrentView}
             />;
 
         } else if (this.state.currentTab === "handle-warehouses") {

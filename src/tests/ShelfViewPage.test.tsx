@@ -1,25 +1,29 @@
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
-import ShelfViewPage from "../pages/ShelfViewPage";
-import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
+import {MemoryRouter} from "react-router-dom";
+import ShelfViewPage, {ShelfViewProps} from "../pages/ShelfViewPage";
+import {mockSetup} from "./sharedTestValues";
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
-
+Enzyme.configure({adapter: new React16Adapter()});
 
 describe("Crash tests: ", () => {
-    it("renders without crashing", () => {
-        const mockOpenDialog = jest.fn();
-        const mockSetFind = jest.fn();
-        const props = {
-            openDialog: mockOpenDialog,
-            setFind: mockSetFind,
-            user: mockUser,
-            warehouse: mockWarehouse
-        };
-        const div = document.createElement("div");
+    it("renders without crashing", async () => {
 
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<ShelfViewPage.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
+        const [warehouse, user] = await mockSetup;
+
+        const props: ShelfViewProps = {
+            openDialog: jest.fn(),
+            setFind: jest.fn(),
+            setCurrentView: jest.fn(),
+            user: user,
+            warehouse: warehouse,
+            currentView: warehouse.shelves[0],
+        };
+
+        render(<MemoryRouter>
+            <ShelfViewPage {...props} />
+        </MemoryRouter>);
+
     });
 });

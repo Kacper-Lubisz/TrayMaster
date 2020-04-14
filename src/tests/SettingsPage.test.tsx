@@ -1,22 +1,28 @@
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
-import SettingsPage from "../pages/SettingsPage";
-import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
+import {MemoryRouter} from "react-router-dom";
+import SettingsPage, {SettingsPageProps} from "../pages/SettingsPage";
+import {mockSetup} from "./sharedTestValues";
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
-
+Enzyme.configure({adapter: new React16Adapter()});
 
 describe("Crash tests: ", () => {
-    it("renders without crashing", () => {
-        const mockOpenDialog = jest.fn();
-        const props = {
-            openDialog: mockOpenDialog,
-            warehouse: mockWarehouse,
-            user: mockUser
+    it("renders without crashing", async () => {
+
+        const [warehouse, user] = await mockSetup;
+
+        const props: SettingsPageProps = {
+            openDialog: jest.fn(),
+            warehouse: warehouse,
+            user: user,
+            setCurrentView: jest.fn(),
+            currentView: null
         };
-        const div = document.createElement("div");
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<SettingsPage.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
+
+        render(<MemoryRouter>
+            <SettingsPage {...props}/>
+        </MemoryRouter>);
+
     });
 });

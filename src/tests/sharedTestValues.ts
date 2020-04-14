@@ -1,19 +1,7 @@
-import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
+import {User} from "../core/Firebase";
+import {Warehouse, WarehouseManager} from "../core/WarehouseModel";
 
-export const routeProps = {
-    history: {
-        push: jest.fn()
-    }
-};
-
-export const mockWarehouse = Warehouse.create("wh1", "Tha big zone");
-
-export const mockUser = {
-    isAdmin: true,
-    name: "Geraldinho",
-    lastWarehouseID: "wh1",
-    enableAutoAdvance: false,
-    onlySingleAutoAdvance: false,
-    showPreviousShelfButton: true,
-    accessibleWarehouses: [mockWarehouse]
-};
+export const mockSetup: Promise<[Warehouse, User]> = Promise.all([
+    WarehouseManager.loadWarehouses().then((warehouse) => warehouse[0]),
+    new User("MOCK_USER").load()
+]);

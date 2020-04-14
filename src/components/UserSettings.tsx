@@ -2,6 +2,7 @@ import React from "react";
 import {AutoAdvanceModes, User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel/Layers/Warehouse";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
+import {buildErrorDialog, Dialog} from "./Dialog";
 
 
 import "./styles/_usersettings.scss";
@@ -11,6 +12,7 @@ interface UserSettingsProps {
     user: User;
     warehouse: Warehouse;
     repaintSettings: () => void;
+    openDialog: (dialog: Dialog) => void;
 }
 
 export class UserSettings extends React.Component<UserSettingsProps, any> {
@@ -22,24 +24,36 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 inputType: "boolean",
                 get: () => this.props.user.showPreviousShelfButton,
                 set: async (value: boolean) => {
-                    this.props.user.showPreviousShelfButton = value;
-                    await this.props.user.stage(true, true);
+                    try {
+                        this.props.user.showPreviousShelfButton = value;
+                        await this.props.user.stage(true, true);
+                    } catch (e) { // todo update these
+                        this.props.openDialog(buildErrorDialog("Failed to update settings", e.toString(), true));
+                    }
                 },
                 label: "Show Previous Shelf button"
             }, {
                 inputType: "boolean",
                 get: () => this.props.user.clearAboveSelection,
                 set: async (value: boolean) => {
-                    this.props.user.clearAboveSelection = value;
-                    await this.props.user.stage(true, true);
+                    try {
+                        this.props.user.clearAboveSelection = value;
+                        await this.props.user.stage(true, true);
+                    } catch (e) {
+                        this.props.openDialog(buildErrorDialog("Failed to update settings", e.toString(), true));
+                    }
                 },
                 label: "Clear all trays above when clearing"
             }, {
                 inputType: "dropDown",
                 get: () => this.props.user.autoAdvanceMode,
                 set: async (value: AutoAdvanceModes) => {
-                    this.props.user.autoAdvanceMode = value;
-                    await this.props.user.stage(true, true);
+                    try {
+                        this.props.user.autoAdvanceMode = value;
+                        await this.props.user.stage(true, true);
+                    } catch (e) {
+                        this.props.openDialog(buildErrorDialog("Failed to update settings", e.toString(), true));
+                    }
                 },
                 options: [
                     {label: "Off", key: null},
@@ -53,17 +67,25 @@ export class UserSettings extends React.Component<UserSettingsProps, any> {
                 inputType: "boolean",
                 get: () => !this.props.user.onlySingleAutoAdvance,
                 set: async (value: boolean) => {
-                    this.props.user.onlySingleAutoAdvance = !value;
-                    await this.props.user.stage(true, true);
+                    try {
+                        this.props.user.onlySingleAutoAdvance = !value;
+                        await this.props.user.stage(true, true);
+                    } catch (e) {
+                        this.props.openDialog(buildErrorDialog("Failed to update settings", e.toString(), true));
+                    }
                 },
                 label: "Auto-advance with multiple trays selected"
             }, {
                 inputType: "boolean",
                 get: () => this.props.user.useCustomKeyboard,
                 set: async (value: boolean) => {
-                    this.props.repaintSettings();
-                    this.props.user.useCustomKeyboard = value;
-                    await this.props.user.stage(true, true);
+                    try {
+                        this.props.repaintSettings();
+                        this.props.user.useCustomKeyboard = value;
+                        await this.props.user.stage(true, true);
+                    } catch (e) {
+                        this.props.openDialog(buildErrorDialog("Failed to update settings", e.toString(), true));
+                    }
                 },
                 label: "Use unified keyboard (beta)"
             }

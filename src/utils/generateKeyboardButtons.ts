@@ -202,7 +202,7 @@ function buildYearButtons(yearsAhead: number): (SingleEdit & ButtonProperties)[]
                 weight: NOTHING,
                 comment: NOTHING,
             },
-            expiryFrom: new Date(year, 0).getTime(),
+            expiryFrom: Date.UTC(year, 0),
             background: color
         };
 
@@ -212,7 +212,7 @@ function buildYearButtons(yearsAhead: number): (SingleEdit & ButtonProperties)[]
 export function buildMonthButtons(addYearToMonths: boolean): TrayEditingButton[] {
     const now = new Date();
     return Array(12).fill(0).map((_, index) => {
-        const year = now.getFullYear() + (now.getMonth() + index >= 12 ? 1 : 0);
+        const year = now.getFullYear() + Math.floor((now.getMonth() + index) / 12);
 
         const expiry = {year: year, month: (now.getMonth() + index) % 12};
         const properExpiry = toExpiryRange(expiry);
@@ -231,7 +231,7 @@ export function buildMonthButtons(addYearToMonths: boolean): TrayEditingButton[]
                 weight: NOTHING,
                 comment: NOTHING,
             },
-            expiryFrom: new Date(year, index).getTime(),
+            expiryFrom: Date.UTC(year, index),
             background: color
         };
     });
@@ -261,7 +261,7 @@ export function buildQuarterButtons(quartersAhead: number, addYearToQuarters: bo
                 weight: NOTHING,
                 comment: NOTHING,
             },
-            expiryFrom: new Date(year, index * 3).getTime(),
+            expiryFrom: Date.UTC(year, index * 3),
             background: color
         };
     });

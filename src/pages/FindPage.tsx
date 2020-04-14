@@ -9,6 +9,7 @@ import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import {FindPanel, PanelState} from "../components/FindPanel";
 import {LoadingSpinner} from "../components/LoadingSpinner";
+import {ViewPortLocation} from "../components/ViewPort";
 import {Category, NULL_CATEGORY_STRING, Shelf, Warehouse} from "../core/WarehouseModel";
 import {TrayFields} from "../core/WarehouseModel/Layers/Tray";
 import Utils from "../core/WarehouseModel/Utils";
@@ -20,7 +21,6 @@ export enum SortBy {
     expiry = "expiry",
     category = "category",
     weight = "weight",
-    location = "location",
     none = "none"
 }
 
@@ -53,14 +53,14 @@ export interface FindQuery {
 
 export interface FindResults {
     query: FindQuery;
-    outcome: boolean;
     results: null | TrayFields[];
 }
 
-interface FindPageProps {
+export interface FindPageProps {
     warehouse?: Warehouse;
     find: FindResults;
     setQuery: (query: FindQuery) => void;
+    setCurrentView: (newView: ViewPortLocation | null) => void;
 }
 
 interface FindPageState {
@@ -277,7 +277,8 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                     const zoneStyle = (() => {
                         return {
                             backgroundColor: background,
-                            color: getTextColorForBackground(background)
+                            color: getTextColorForBackground(background),
+                            cursor: shelf ? "pointer" : "auto"
                         };
                     })();
 
@@ -287,7 +288,13 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
                         <td>{this.props.warehouse?.getCategoryByID(tray.categoryId)?.name ?? NULL_CATEGORY_STRING}</td>
                         <td style={expiryStyle}>{tray.expiry?.label ?? ""}</td>
                         <td className="weightCol"><span>{weightString}</span></td>
-                        <td style={zoneStyle}>{locationString}</td>
+                        <td
+                            style={zoneStyle}
+                            onClick={shelf ? () => {
+                                this.props.setCurrentView(shelf);
+                                this.props.history.push("/");
+                            } : undefined}
+                        >{locationString}</td>
                         <td className="commentCell">{tray.comment}</td>
                     </tr>;
                 })}
@@ -295,7 +302,7 @@ class FindPage extends React.Component<FindPageProps & RouteComponentProps, Find
             </table>;
         } else if (!this.props.find?.results) {
             return <LoadingSpinner/>;
-        } else if (!this.props.find.outcome) {
+        } else if (this.props.find.query.categories instanceof Set && this.props.find.query.categories.size > 10) {
             return <div id="find-no-results">
                 Cannot find more than 10 categories at a time.
             </div>;

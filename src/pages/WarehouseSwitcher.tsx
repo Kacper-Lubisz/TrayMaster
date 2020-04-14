@@ -8,7 +8,7 @@ import {User} from "../core/Firebase/Authentication";
 import {Warehouse} from "../core/WarehouseModel";
 import "./styles/warehouseswitcher.scss";
 
-interface WarehouseSwitcherProps {
+export interface WarehouseSwitcherProps {
     user: User;
     setWarehouse: (warehouse: Warehouse) => void;
     signOut: () => void;

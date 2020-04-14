@@ -11,7 +11,7 @@ import {Warehouse} from "../core/WarehouseModel";
 import {FindQuery, SortBy} from "./FindPage";
 import "./styles/mainmenu.scss";
 
-interface MainMenuProps {
+export interface MainMenuProps {
     openDialog: (dialog: Dialog) => void;
 
     changeWarehouse: (user: User) => void;
@@ -29,6 +29,15 @@ interface MainMenuProps {
  * by changing state values when buttons are pressed
  */
 class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> {
+
+    downloadManual(): void {
+        const element = document.createElement("a");
+        element.href = "/manual.pdf";
+        element.download = "TrayMaster User Manual";
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+        document.body.removeChild(element);
+    }
 
     render(): React.ReactNode {
 
@@ -58,6 +67,10 @@ class MainMenuPage extends React.Component<RouteComponentProps & MainMenuProps> 
             {
                 name: "Settings",
                 onClick: () => this.props.history.push("Settings")
+            },
+            {
+                name: "User Manual",
+                onClick: () => this.downloadManual()
             }
         ];
 

@@ -1,7 +1,7 @@
 import React from "react";
 import {RouteComponentProps, withRouter} from "react-router-dom";
 import storageAvailable from "storage-available";
-import {Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
+import {buildErrorDialog, Dialog, DialogButtons, DialogTitle} from "../components/Dialog";
 import {LoadingSpinner} from "../components/LoadingSpinner";
 import {TrayMasterLogo} from "../components/TrayMasterLogo";
 import firebase from "../core/Firebase";
@@ -30,7 +30,7 @@ interface SignInPageState {
     loading: boolean;
 }
 
-interface SignInPageProps {
+export interface SignInPageProps {
     openDialog: (dialog: Dialog) => void;
 }
 
@@ -55,8 +55,13 @@ class SignInPage extends React.Component<RouteComponentProps & SignInPageProps, 
                 <h1>Sign in</h1>
                 {this.state.loading ? <div id="spinnerDiv"><LoadingSpinner/></div> : <>
                     <form onSubmit={async (event) => {
-                        event.preventDefault();
-                        await this.signIn(this.state.emailField, this.state.passwordField);
+                        try {
+                            event.preventDefault();
+                            await this.signIn(this.state.emailField, this.state.passwordField);
+
+                        } catch (e) {
+                            this.props.openDialog(buildErrorDialog("Failed to sign in", e.toString(), true));
+                        }
                     }}>
                         <input
                             onChange={(event) => {
@@ -108,7 +113,6 @@ class SignInPage extends React.Component<RouteComponentProps & SignInPageProps, 
                     loading: true,
                 }));
                 await firebase.auth.signIn(email, password);
-
 
                 if (storageAvailable("localStorage")) {
                     const oldVersion = localStorage.getItem("VERSION_NUMBER");

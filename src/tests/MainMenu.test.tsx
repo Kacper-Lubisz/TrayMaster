@@ -1,32 +1,29 @@
+import Enzyme, {render} from "enzyme";
+import React16Adapter from "enzyme-adapter-react-16";
 import React from "react";
-import ReactDOM from "react-dom";
-import MainMenuPage from "../pages/MainMenu";
-import {mockUser, mockWarehouse, routeProps} from "./sharedTestValues";
+import {MemoryRouter} from "react-router-dom";
+import MainMenuPage, {MainMenuProps} from "../pages/MainMenu";
+import {mockSetup} from "./sharedTestValues";
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
-
+Enzyme.configure({adapter: new React16Adapter()});
 
 describe("Crash tests: ", () => {
-    it("renders without crashing", () => {
-        const mockOpenDialog = jest.fn();
-        const mockChangeWarehouse = jest.fn();
-        const mockSignOut = jest.fn();
-        const mockSetFind = jest.fn();
+    it("renders without crashing", async () => {
 
-        const props = {
-            openDialog: mockOpenDialog,
-            changeWarehouse: mockChangeWarehouse,
-            signOut: mockSignOut,
-            setFind: mockSetFind,
-            warehouse: mockWarehouse,
-            user: mockUser,
-            expiryAmount: 4
+        const [warehouse, user] = await mockSetup;
+
+        const props: MainMenuProps = {
+            openDialog: jest.fn(),
+            changeWarehouse: jest.fn(),
+            signOut: jest.fn(),
+            setFind: jest.fn(),
+            warehouse: warehouse,
+            user: user,
         };
 
-        const div = document.createElement("div");
+        render(<MemoryRouter>
+            <MainMenuPage {...props} />
+        </MemoryRouter>);
 
-        // @ts-ignore stop TS getting angry about missing Route props
-        ReactDOM.render(<MainMenuPage.WrappedComponent {...props} {...routeProps} />, div);
-        ReactDOM.unmountComponentAtNode(div);
     });
 });

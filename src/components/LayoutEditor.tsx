@@ -1,4 +1,4 @@
-import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import {cloneDeep, isEqual} from "lodash";
 import React from "react";
@@ -6,10 +6,12 @@ import {User} from "../core/Firebase";
 import {Bay, Shelf, Warehouse, WarehouseModel, Zone} from "../core/WarehouseModel";
 import {ZoneFields} from "../core/WarehouseModel/Layers/Zone";
 import {SettingsTab} from "../pages/SettingsPage";
+import {createConfirmationDialog, createUnsavedDialog, DANGER_COLOR} from "../utils/dialogs";
 import {ControlledInputComponent, ControlledInputComponentProps} from "./ControlledInputComponent";
-import {Dialog, DialogButtons, DialogTitle} from "./Dialog";
+import {buildErrorDialog, Dialog} from "./Dialog";
 
 import "./styles/_sidelisteditor.scss";
+import {ViewPortLocation} from "./ViewPort";
 import {ZoneDisplayComponent} from "./ZoneDisplayComponent";
 
 
@@ -22,6 +24,9 @@ interface LayoutEditorProps {
     setLock: (lockFunction: (tab: SettingsTab) => boolean) => void;
 
     updatePage: () => void;
+
+    currentView: ViewPortLocation | null;
+    setCurrentView: (newView: ViewPortLocation | null) => void;
 }
 
 type NewZone = ZoneFields & {
@@ -71,7 +76,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         bays: 5,
         shelves: 5,
         mirrorBayLabels: false,
-        addGroundShelves: true
+        addGroundShelves: false
     };
 
     private static readonly GROUND_ROW_NAME = "G";
@@ -86,7 +91,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         this.props.setLock((_: SettingsTab) => {
             const hasUnsavedChanges = this.hasUnsavedChanges();
             if (hasUnsavedChanges) {
-                this.props.openDialog(this.createUnsavedDialog());
+                this.props.openDialog(createUnsavedDialog());
             }
             return hasUnsavedChanges;
         });
@@ -98,7 +103,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      */
     private setSelected(zone: Zone): void {
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog(this.createUnsavedDialog());
+            this.props.openDialog(createUnsavedDialog());
         } else {
             this.setState(_ => ({
                 state: "editing",
@@ -118,7 +123,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
 
         if (stateAtRender.state === "nothingSelected") {
             return <div id="empty-message-container">
-                <p id="empty-message">Select or add a zone to start editing</p>
+                <p id="empty-message">Select or create a new zone to start editing</p>
             </div>;
         } else {
             const unsavedLabel = this.hasUnsavedChanges() ? "*" : "";
@@ -243,7 +248,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
 
                         {stateAtRender.state === "editing" ? <button
                             onClick={this.deleteZone.bind(this, stateAtRender)}
-                        >Delete Zone</button> : null}
+                        >Delete</button> : null}
 
                     </div>
                     <table>
@@ -259,23 +264,23 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
                             zone={stateAtRender.editedZone}
                             selected={null} onSelected={null}
                         />
-                    </> : <div id="new-zone-msg">NB: A zone's dimensions can't be changed once it's created.</div>}
+                    </> : <div id="new-zone-msg">A zone's dimensions cannot be changed once it has been created.</div>}
                 </div>
 
                 <div id="bottom-btns">
+                    <button
+                        onClick={this.resetEditor.bind(this)}
+                    >Cancel
+                    </button>
                     {stateAtRender.state === "editing" ? <button
                         disabled={!this.hasUnsavedChanges()}
                         onClick={this.hasUnsavedChanges() ? this.updateZone.bind(this, stateAtRender) : undefined}
-                    >Save Changes
+                    >Save
                     </button> : <button
                          disabled={!this.hasUnsavedChanges()}
                          onClick={this.hasUnsavedChanges() ? this.createZone.bind(this, stateAtRender) : undefined}
-                     >Create Zone
+                     >Create
                      </button>}
-                    <button
-                        onClick={this.resetEditor.bind(this)}
-                    >Discard {stateAtRender.state === "editing" ? "Changes" : ""}
-                    </button>
                 </div>
             </>;
 
@@ -288,7 +293,7 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
     private newZone(): void {
 
         if (this.hasUnsavedChanges()) {
-            this.props.openDialog(this.createUnsavedDialog());
+            this.props.openDialog(createUnsavedDialog());
 
         } else {
             this.setState(_ => ({
@@ -312,52 +317,61 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      * @param state The editor state containing the new zone
      */
     private async createZone(state: NewState): Promise<void> {
+        try {
 
-        if (!state.newZone.name) {
-            state.newZone.name = LayoutEditor.DEFAULT_NAME;
-        }
-
-        if (!state.newZone.bays) {
-            state.newZone.bays = 1;
-        }
-
-        if (!state.newZone.shelves) {
-            state.newZone.shelves = 1;
-        }
-
-        const newZone = Zone.create(state.newZone.name, state.newZone.color, this.props.warehouse);
-
-        for (let bay = 0; bay < state.newZone.bays; bay++) {
-            const bayName = state.newZone.mirrorBayLabels ? toAlphabetBase(state.newZone.bays - bay - 1)
-                                                          : toAlphabetBase(bay);
-
-            const newBay = Bay.create(bayName, newZone);
-
-            for (let shelf = 0; shelf < state.newZone.shelves; shelf++) {
-
-                const shelfName = (() => {
-                    if (state.newZone.addGroundShelves) {
-                        if (shelf === 0) {
-                            return LayoutEditor.GROUND_ROW_NAME;
-                        } else {
-                            return shelf.toString();
-                        }
-                    } else {
-                        return (shelf + 1).toString();
-                    }
-                })();
-
-                Shelf.create(shelfName, false, newBay);
+            if (!state.newZone.name) {
+                state.newZone.name = LayoutEditor.DEFAULT_NAME;
             }
+
+            if (!state.newZone.bays || state.newZone.bays <= 0) {
+                state.newZone.bays = 1;
+            }
+
+            if (!state.newZone.shelves || state.newZone.shelves <= 0) {
+                state.newZone.shelves = 1;
+            }
+
+            const newZone = Zone.create(state.newZone.name, state.newZone.color, this.props.warehouse);
+
+            for (let bay = 0; bay < state.newZone.bays; bay++) {
+                const bayName = state.newZone.mirrorBayLabels ? toAlphabetBase(state.newZone.bays - bay - 1)
+                                                              : toAlphabetBase(bay);
+
+                const newBay = Bay.create(bayName, newZone);
+
+                for (let shelf = 0; shelf < state.newZone.shelves; shelf++) {
+
+                    const shelfName = (() => {
+                        if (state.newZone.addGroundShelves) {
+                            if (shelf === 0) {
+                                return LayoutEditor.GROUND_ROW_NAME;
+                            } else {
+                                return shelf.toString();
+                            }
+                        } else {
+                            return (shelf + 1).toString();
+                        }
+                    })();
+
+                    Shelf.create(shelfName, false, newBay);
+                }
+            }
+
+            await newZone.stage(true, true, WarehouseModel.shelf);
+
+            if (this.props.warehouse.zones.length === 1) {
+                this.props.setCurrentView(newZone.shelves.length === 0 ? newZone : newZone.shelves[0]);
+            }
+
+            this.setState(_ => ({
+                state: "editing",
+                selectedZone: newZone,
+                editedZone: cloneDeep(newZone)
+            }), this.props.updatePage);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to create a new zone", e.toString(), true));
         }
-
-
-        await newZone.stage(true, true, WarehouseModel.shelf);
-        this.setState(_ => ({
-            state: "editing",
-            selectedZone: newZone,
-            editedZone: cloneDeep(newZone)
-        }), this.props.updatePage);
 
     }
 
@@ -365,20 +379,24 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      *Saves changes to categories, doesn't let user save category with empty name
      */
     private async updateZone(state: EditingState): Promise<void> {
+        try {
 
-        if (state.editedZone.name.length === 0) {
-            state.editedZone.name = LayoutEditor.DEFAULT_NAME;
+            if (state.editedZone.name.length === 0) {
+                state.editedZone.name = LayoutEditor.DEFAULT_NAME;
+            }
+
+            Object.assign(state.selectedZone, state.editedZone);
+            await state.editedZone.stage(true, true);
+
+            this.setState(_ => ({
+                state: "editing",
+                selectedZone: state.selectedZone,
+                editedZone: cloneDeep(state.selectedZone)
+            }), this.props.updatePage);
+
+        } catch (e) {
+            this.props.openDialog(buildErrorDialog("Failed to save the changes", e.toString(), true));
         }
-
-        Object.assign(state.selectedZone, state.editedZone);
-        await state.editedZone.stage(true, true);
-
-        this.setState(_ => ({
-            state: "editing",
-            selectedZone: state.selectedZone,
-            editedZone: cloneDeep(state.selectedZone)
-        }), this.props.updatePage);
-
     }
 
     /**
@@ -394,12 +412,40 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
      * Deletes category, makes sure indices inside object matches actual
      * indices after removing one category
      */
-    private async deleteZone(state: EditingState): Promise<void> {
+    private deleteZone(state: EditingState): void {
 
-        await state.selectedZone.delete(true);
-        this.setState(_ => ({
-            state: "nothingSelected"
-        }), this.props.updatePage);
+        this.props.openDialog(createConfirmationDialog(
+            "Confirm Deletion",
+            {icon: faExclamationTriangle, color: DANGER_COLOR},
+            "Are you sure you want to delete this zone?",
+            "Delete",
+            () => {
+                const toDelete = state.selectedZone;
+                toDelete.delete(true).then(() => {
+                    if (
+                        (this.props.currentView instanceof Zone && this.props.currentView === toDelete) ||
+                        (this.props.currentView instanceof Shelf && this.props.currentView.parentZone === toDelete) ||
+                        this.props.warehouse.zones.length === 0
+                    ) {
+                        this.props.setCurrentView((() => {
+                            if (this.props.warehouse.zones.length === 0) {
+                                return this.props.warehouse;
+                            } else if (this.props.warehouse.shelves.length === 0) {
+                                return this.props.warehouse.zones[0];
+                            } else {
+                                this.props.warehouse.shelves[0].load(true, WarehouseModel.tray).then(() => {
+                                    this.forceUpdate();
+                                });
+                                return this.props.warehouse.shelves[0];
+                            }
+                        })());
+                    }
+                    this.setState(_ => ({
+                        state: "nothingSelected"
+                    }), this.props.updatePage);
+                });
+            }
+        ));
 
     }
 
@@ -431,24 +477,6 @@ export class LayoutEditor extends React.Component<LayoutEditorProps, LayoutEdito
         </div>;
 
 
-    }
-
-    /**
-     * Returns the unsaved changes dialog
-     */
-    private createUnsavedDialog(): Dialog {
-        return {
-            closeOnDocumentClick: true,
-            dialog: (close: () => void) => <>
-                <DialogTitle title="Unsaved Changes" iconProps={{icon: faInfoCircle, color: "blue"}}/>
-                <div className="dialogContent">
-                    <h2>Please save or discard your current changes before proceeding</h2>
-                    <DialogButtons buttons={[
-                        {name: "OK", buttonProps: {onClick: close}}
-                    ]}/>
-                </div>
-            </>
-        };
     }
 
 }

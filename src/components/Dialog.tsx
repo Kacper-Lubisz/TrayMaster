@@ -50,14 +50,15 @@ export class DialogButtons extends React.Component<DialogButtonsProps> {
 }
 
 /**
- * This method builds a dialog function for a standard error message.
- * @param title THe title of the error dialog
+ * This method builds a dialog function for a standard error message.  The dialog consists of a message, reload button
+ * and an ok button which can be hidden.
+ * @param title The title of the error dialog
  * @param message The body of the dialog
- * @param forceReload If the dialog forces the page to be reloaded
+ * @param hideOk Hides the ok button such that only the reload button is visible
  */
-export function buildErrorDialog(title: string, message: string, forceReload: boolean): Dialog {
+export function buildErrorDialog(title: string, message: string, hideOk: boolean): Dialog {
     return {
-        closeOnDocumentClick: !forceReload,
+        closeOnDocumentClick: !hideOk,
         dialog: (close: () => void) => <>
             <DialogTitle title={title} iconProps={{icon: warningIcon, color: "red"}}/>
             <div className="dialogContent">
@@ -69,7 +70,7 @@ export function buildErrorDialog(title: string, message: string, forceReload: bo
                             className: "dialogBtnRed"
                         }
                     }
-                ].concat(forceReload ? [] : {
+                ].concat(hideOk ? [] : {
                     name: "Ok", buttonProps: {
                         onClick: close,
                         className: "dialogBtnRed"
