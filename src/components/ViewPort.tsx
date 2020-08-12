@@ -317,7 +317,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 return <div id="viewPort">
                     <div>
                         <h1>This warehouse has no zones!</h1>
-                        <p>Go to <b>Settings > Zone Editor</b> to add zones to this warehouse</p>
+                        <p>Go to <b>Settings &gt; Zone Editor</b> to add zones to this warehouse</p>
                     </div>
                 </div>;
             } else if (this.props.availableLevel === WarehouseModel.zone) {
@@ -326,7 +326,7 @@ export class ViewPort extends React.Component<ViewPortProps, ViewPortState> {
                 return <div id="viewPort">
                     <div>
                         <h1>This zone has no bays!</h1>
-                        <p>Go to <b>Settings > Zone Editor</b> to edit zones</p>
+                        <p>Go to <b>Settings &gt; Zone Editor</b> to edit zones</p>
                     </div>
                 </div>;
             }
